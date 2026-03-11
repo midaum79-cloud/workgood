@@ -1,0 +1,149 @@
+<% preset_processes = [
+  "철거", "확장", "설비", "샤시",
+  "목공", "전기", "타일", "필름",
+  "도배", "바닥", "가구", "조명",
+  "기타공사", "청소"
+] %>
+
+<div style="padding:16px;">
+  <%= form_with(model: work_process, local: true) do |f| %>
+
+    <% if work_process.errors.any? %>
+      <div style="background:#fff1f2; color:#be123c; border:1px solid #fecdd3; border-radius:16px; padding:14px 16px; margin-bottom:16px;">
+        <div style="font-weight:900; margin-bottom:8px;">입력 내용을 확인해주세요.</div>
+        <% work_process.errors.full_messages.each do |message| %>
+          <div style="font-size:14px; margin-top:4px;">• <%= message %></div>
+        <% end %>
+      </div>
+    <% end %>
+
+    <div style="background:white; border-radius:20px; padding:18px; box-shadow:0 2px 10px rgba(0,0,0,0.04); margin-bottom:16px;">
+      <div style="font-size:17px; font-weight:900; margin-bottom:14px;">기본 정보</div>
+
+      <div style="margin-bottom:14px;">
+        <label style="display:block; font-size:14px; font-weight:800; margin-bottom:8px;">현장 선택</label>
+        <%= f.collection_select :project_id, Project.order(created_at: :desc), :id, :project_name, { prompt: "현장을 선택하세요" }, {
+          style: "width:100%; height:48px; border:1px solid #dcdcdc; border-radius:14px; padding:0 14px; font-size:16px; background:white;"
+        } %>
+      </div>
+
+      <div style="margin-bottom:14px;">
+        <label style="display:block; font-size:14px; font-weight:800; margin-bottom:10px;">빠른 공정 선택</label>
+
+        <div style="display:flex; flex-wrap:wrap; gap:8px; margin-bottom:12px;">
+          <% preset_processes.each do |name| %>
+            <button
+              type="button"
+              onclick="document.getElementById('work_process_process_name').value='<%= name %>'"
+              style="padding:10px 12px; border:none; border-radius:12px; background:#eef2f7; color:#111827; font-size:14px; font-weight:800; cursor:pointer;">
+              <%= name %>
+            </button>
+          <% end %>
+        </div>
+
+        <label style="display:block; font-size:14px; font-weight:800; margin-bottom:8px;">공정명</label>
+        <%= f.text_field :process_name,
+          placeholder: "예: 철거, 목공, 전기배관, 에어컨, 유리공사",
+          style: "width:100%; height:50px; border:1px solid #dcdcdc; border-radius:14px; padding:0 14px; font-size:16px;" %>
+      </div>
+
+      <div style="margin-bottom:14px;">
+        <label style="display:block; font-size:14px; font-weight:800; margin-bottom:8px;">업체명</label>
+        <%= f.text_field :vendor_name,
+          placeholder: "예: 목수삼촌, 전기팀, 유리팀",
+          style: "width:100%; height:50px; border:1px solid #dcdcdc; border-radius:14px; padding:0 14px; font-size:16px;" %>
+      </div>
+
+      <div>
+        <label style="display:block; font-size:14px; font-weight:800; margin-bottom:8px;">상태</label>
+        <%= f.select :status,
+          [["예정", "예정"], ["진행중", "진행중"], ["완료", "완료"]],
+          {},
+          style: "width:100%; height:50px; border:1px solid #dcdcdc; border-radius:14px; padding:0 14px; font-size:16px; background:white;" %>
+      </div>
+    </div>
+
+    <div style="background:white; border-radius:20px; padding:18px; box-shadow:0 2px 10px rgba(0,0,0,0.04); margin-bottom:16px;">
+      <div style="font-size:17px; font-weight:900; margin-bottom:14px;">일정 정보</div>
+
+      <div style="margin-bottom:14px;">
+        <label style="display:block; font-size:14px; font-weight:800; margin-bottom:8px;">시작일</label>
+        <%= f.date_field :start_date,
+          style: "width:100%; height:50px; border:1px solid #dcdcdc; border-radius:14px; padding:0 14px; font-size:16px; background:white;" %>
+      </div>
+
+      <div>
+        <label style="display:block; font-size:14px; font-weight:800; margin-bottom:8px;">종료일</label>
+        <%= f.date_field :end_date,
+          style: "width:100%; height:50px; border:1px solid #dcdcdc; border-radius:14px; padding:0 14px; font-size:16px; background:white;" %>
+      </div>
+    </div>
+
+    <div style="background:white; border-radius:20px; padding:18px; box-shadow:0 2px 10px rgba(0,0,0,0.04); margin-bottom:16px;">
+      <div style="font-size:17px; font-weight:900; margin-bottom:14px;">비용 정보</div>
+
+      <div style="margin-bottom:14px;">
+        <label style="display:block; font-size:14px; font-weight:800; margin-bottom:8px;">자재비</label>
+        <%= f.number_field :material_cost,
+          id: "material_cost_input",
+          placeholder: "예: 500000",
+          value: (work_process.material_cost || 0),
+          oninput: "updateTotalCost()",
+          style: "width:100%; height:50px; border:1px solid #dcdcdc; border-radius:14px; padding:0 14px; font-size:16px;" %>
+      </div>
+
+      <div style="margin-bottom:14px;">
+        <label style="display:block; font-size:14px; font-weight:800; margin-bottom:8px;">인건비</label>
+        <%= f.number_field :labor_cost,
+          id: "labor_cost_input",
+          placeholder: "예: 300000",
+          value: (work_process.labor_cost || 0),
+          oninput: "updateTotalCost()",
+          style: "width:100%; height:50px; border:1px solid #dcdcdc; border-radius:14px; padding:0 14px; font-size:16px;" %>
+      </div>
+
+      <div style="background:#eef6ff; border-radius:14px; padding:14px 16px;">
+        <div style="font-size:13px; color:#6b7280; font-weight:700; margin-bottom:4px;">예상 합계</div>
+        <div id="total_cost_text" style="font-size:22px; font-weight:900; color:#111827;">0원</div>
+      </div>
+    </div>
+
+    <div style="background:white; border-radius:20px; padding:18px; box-shadow:0 2px 10px rgba(0,0,0,0.04); margin-bottom:16px;">
+      <div style="font-size:17px; font-weight:900; margin-bottom:14px;">추가 메모</div>
+
+      <div>
+        <label style="display:block; font-size:14px; font-weight:800; margin-bottom:8px;">메모</label>
+        <%= f.text_area :memo,
+          placeholder: "공정 관련 메모를 입력하세요",
+          style: "width:100%; height:120px; border:1px solid #dcdcdc; border-radius:14px; padding:14px; font-size:16px; resize:none;" %>
+      </div>
+    </div>
+
+    <div style="display:flex; flex-direction:column; gap:10px;">
+      <%= f.submit submit_label,
+        style: "width:100%; height:54px; border:none; border-radius:16px; background:#374151; color:white; font-size:19px; font-weight:900; cursor:pointer;" %>
+
+      <%= link_to cancel_label,
+        cancel_path,
+        style: "display:block; width:100%; height:54px; line-height:54px; text-align:center; text-decoration:none; border-radius:16px; background:#e5e7eb; color:#111827; font-size:18px; font-weight:800;" %>
+    </div>
+
+  <% end %>
+</div>
+
+<script>
+  function updateTotalCost() {
+    const material = parseInt(document.getElementById("material_cost_input")?.value || 0, 10);
+    const labor = parseInt(document.getElementById("labor_cost_input")?.value || 0, 10);
+    const total = material + labor;
+
+    const formatter = new Intl.NumberFormat("ko-KR");
+    const totalText = document.getElementById("total_cost_text");
+    if (totalText) {
+      totalText.textContent = formatter.format(total) + "원";
+    }
+  }
+
+  document.addEventListener("DOMContentLoaded", updateTotalCost);
+  document.addEventListener("turbo:load", updateTotalCost);
+</script>

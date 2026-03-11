@@ -1,0 +1,15 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  title: MyString
+  message: MyText
+  status: MyString
+  project: one
+  work_process: one
+
+two:
+  title: MyString
+  message: MyText
+  status: MyString
+  project: two
+  work_process: two

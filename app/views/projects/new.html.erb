@@ -1,0 +1,348 @@
+<div style="min-height:100vh; background:#f5f5f5; padding:16px;">
+
+  <div style="background:white; padding:18px 20px 14px 20px; border-bottom:1px solid #ececec; position:sticky; top:0; z-index:20; margin:-16px -16px 16px -16px;">
+    <div style="display:flex; justify-content:space-between; align-items:center;">
+      <%= link_to "←", projects_path, style: "font-size:24px; color:#111; text-decoration:none; font-weight:800; padding-left:16px;" %>
+      <div style="font-size:22px; font-weight:900;">현장 추가</div>
+      <div style="width:40px;"></div>
+    </div>
+  </div>
+
+  <% residential_processes = ["철거", "확장설비", "샤시", "목공", "전기", "필름", "타일", "도배", "바닥", "가구", "조명", "청소"] %>
+  <% commercial_processes = ["철거", "설비", "목공", "전기", "페인트", "금속공사", "유리공사", "자동문", "간판", "조명", "청소"] %>
+
+  <%= form_with(model: @project, local: true) do |form| %>
+    <% if @project.errors.any? %>
+      <div style="background:#fee2e2; color:#b91c1c; padding:14px; border-radius:14px; margin-bottom:16px; font-size:14px; font-weight:700;">
+        입력 내용을 확인해주세요.
+      </div>
+    <% end %>
+
+    <div style="background:white; border-radius:20px; padding:18px; box-shadow:0 2px 10px rgba(0,0,0,0.04); display:flex; flex-direction:column; gap:16px;">
+
+      <div>
+        <div style="font-size:14px; font-weight:800; color:#374151; margin-bottom:8px;">현장명</div>
+        <%= form.text_field :project_name,
+            placeholder: "예: 광명 이편한 센트레빌 201동 1304호",
+            style: "width:100%; padding:14px 16px; border:1px solid #dcdfe4; border-radius:14px; font-size:16px; box-sizing:border-box;" %>
+      </div>
+
+      <div>
+        <div style="font-size:14px; font-weight:800; color:#374151; margin-bottom:8px;">고객명</div>
+        <%= form.text_field :client_name,
+            placeholder: "예: 홍길동",
+            style: "width:100%; padding:14px 16px; border:1px solid #dcdfe4; border-radius:14px; font-size:16px; box-sizing:border-box;" %>
+      </div>
+
+      <div>
+        <div style="font-size:14px; font-weight:800; color:#374151; margin-bottom:8px;">주소</div>
+
+        <%= form.text_field :address,
+            id: "project_address",
+            placeholder: "주소찾기 버튼으로 입력",
+            readonly: true,
+            style: "width:100%; padding:14px 16px; border:1px solid #dcdfe4; border-radius:14px; font-size:16px; box-sizing:border-box; background:#f9fafb;" %>
+
+        <button type="button"
+                id="address_search_button"
+                style="margin-top:8px; width:100%; padding:14px 16px; border:none; border-radius:14px; background:#111827; color:white; font-size:14px; font-weight:800;">
+          주소찾기
+        </button>
+
+        <input type="text"
+               id="project_detail_address"
+               placeholder="상세주소 입력"
+               style="margin-top:8px; width:100%; padding:14px 16px; border:1px solid #dcdfe4; border-radius:14px; font-size:16px; box-sizing:border-box;">
+      </div>
+
+      <div>
+        <div style="font-size:14px; font-weight:800; color:#374151; margin-bottom:8px;">프로젝트 유형</div>
+        <%= form.select :project_type,
+            [["주거공간", "apartment"], ["상업공간", "commercial"]],
+            { selected: (@project.project_type.presence || "apartment") },
+            {
+              id: "project_type_select",
+              style: "width:100%; padding:14px 16px; border:1px solid #dcdfe4; border-radius:14px; font-size:16px; box-sizing:border-box; background:white;"
+            } %>
+      </div>
+
+      <div>
+        <div style="font-size:14px; font-weight:800; color:#374151; margin-bottom:10px;">기본 공정 선택</div>
+
+        <div id="residential_process_box" style="background:#fafafa; border:1px solid #ececec; border-radius:14px; padding:14px;">
+          <div style="font-size:13px; font-weight:800; color:#6b7280; margin-bottom:12px;">주거공간 기본 공정</div>
+          <div style="display:flex; flex-wrap:wrap; gap:10px;">
+            <% residential_processes.each do |name| %>
+              <label style="cursor:pointer;">
+                <%= check_box_tag "project[selected_process_names][]", name, false, style: "display:none;", class: "process-checkbox residential-checkbox" %>
+                <span class="process-pill" style="display:inline-flex; align-items:center; justify-content:center; padding:10px 14px; border-radius:999px; background:white; color:#374151; font-size:14px; font-weight:800; border:1px solid #d1d5db;">
+                  <%= name %>
+                </span>
+              </label>
+            <% end %>
+          </div>
+        </div>
+
+        <div id="commercial_process_box" style="display:none; background:#fafafa; border:1px solid #ececec; border-radius:14px; padding:14px;">
+          <div style="font-size:13px; font-weight:800; color:#6b7280; margin-bottom:12px;">상업공간 기본 공정</div>
+          <div style="display:flex; flex-wrap:wrap; gap:10px;">
+            <% commercial_processes.each do |name| %>
+              <label style="cursor:pointer;">
+                <%= check_box_tag "project[selected_process_names][]", name, false, style: "display:none;", class: "process-checkbox commercial-checkbox" %>
+                <span class="process-pill" style="display:inline-flex; align-items:center; justify-content:center; padding:10px 14px; border-radius:999px; background:white; color:#374151; font-size:14px; font-weight:800; border:1px solid #d1d5db;">
+                  <%= name %>
+                </span>
+              </label>
+            <% end %>
+          </div>
+        </div>
+
+        <div style="font-size:12px; color:#6b7280; font-weight:700; margin-top:10px; line-height:1.5;">
+          필요한 공정만 눌러서 선택하세요.
+        </div>
+      </div>
+
+      <div>
+        <div style="font-size:14px; font-weight:800; color:#374151; margin-bottom:8px;">추가 공사명</div>
+
+        <div style="display:flex; gap:8px; align-items:center;">
+          <input type="text"
+                 id="custom_process_input"
+                 placeholder="예: 탄성코트"
+                 style="flex:1; min-width:0; padding:14px 16px; border:1px solid #dcdfe4; border-radius:14px; font-size:15px; box-sizing:border-box;">
+
+          <button type="button"
+                  id="add_custom_process_button"
+                  style="padding:14px 14px; border:none; border-radius:14px; background:#2563eb; color:white; font-size:14px; font-weight:800; white-space:nowrap; flex-shrink:0;">
+            추가
+          </button>
+        </div>
+
+        <div id="custom_process_chip_box" style="display:flex; flex-wrap:wrap; gap:10px; margin-top:12px;"></div>
+
+        <div style="font-size:12px; color:#6b7280; font-weight:700; margin-top:8px;">
+          추가공정은 하나씩 입력 후 추가 버튼을 누르세요.
+        </div>
+      </div>
+
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+        <div>
+          <div style="font-size:14px; font-weight:800; color:#374151; margin-bottom:8px;">시작일</div>
+          <%= form.date_field :start_date,
+              style: "width:100%; padding:14px 16px; border:1px solid #dcdfe4; border-radius:14px; font-size:16px; box-sizing:border-box; background:white;" %>
+        </div>
+
+        <div>
+          <div style="font-size:14px; font-weight:800; color:#374151; margin-bottom:8px;">종료일</div>
+          <%= form.date_field :end_date,
+              style: "width:100%; padding:14px 16px; border:1px solid #dcdfe4; border-radius:14px; font-size:16px; box-sizing:border-box; background:white;" %>
+        </div>
+      </div>
+
+      <div>
+        <div style="font-size:14px; font-weight:800; color:#374151; margin-bottom:8px;">상태</div>
+        <%= form.select :status,
+            [["예정", "예정"], ["진행중", "진행중"], ["완료", "완료"]],
+            { selected: (@project.status.presence || "예정") },
+            {
+              style: "width:100%; padding:14px 16px; border:1px solid #dcdfe4; border-radius:14px; font-size:16px; box-sizing:border-box; background:white;"
+            } %>
+      </div>
+
+      <div>
+        <div style="font-size:14px; font-weight:800; color:#374151; margin-bottom:8px;">색상</div>
+        <%= form.select :color,
+            [["파랑", "blue"], ["초록", "green"], ["주황", "orange"], ["빨강", "red"], ["보라", "purple"], ["골드", "gold"]],
+            { selected: (@project.color.presence || "blue") },
+            {
+              style: "width:100%; padding:14px 16px; border:1px solid #dcdfe4; border-radius:14px; font-size:16px; box-sizing:border-box; background:white;"
+            } %>
+      </div>
+
+      <div>
+        <div style="font-size:14px; font-weight:800; color:#374151; margin-bottom:8px;">메모</div>
+        <%= form.text_area :memo,
+            rows: 4,
+            placeholder: "현장 관련 메모를 입력하세요",
+            style: "width:100%; padding:14px 16px; border:1px solid #dcdfe4; border-radius:14px; font-size:16px; box-sizing:border-box; resize:none;" %>
+      </div>
+
+      <div style="display:flex; flex-direction:column; gap:10px; margin-top:4px;">
+        <%= form.submit "현장 저장하기",
+            style: "width:100%; padding:16px; border:none; border-radius:14px; background:#374151; color:white; font-size:18px; font-weight:800; cursor:pointer;" %>
+
+        <%= link_to "목록으로",
+            projects_path,
+            style: "display:block; text-align:center; width:100%; padding:16px; border:none; border-radius:14px; background:#e5e7eb; color:#374151; font-size:18px; font-weight:800; text-decoration:none; box-sizing:border-box;" %>
+      </div>
+
+    </div>
+  <% end %>
+</div>
+
+<script src="//t1.kakaocdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
+
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const projectTypeSelect = document.getElementById("project_type_select");
+    const residentialBox = document.getElementById("residential_process_box");
+    const commercialBox = document.getElementById("commercial_process_box");
+    const addressSearchButton = document.getElementById("address_search_button");
+    const addressField = document.getElementById("project_address");
+    const detailAddressField = document.getElementById("project_detail_address");
+    const customInput = document.getElementById("custom_process_input");
+    const addCustomButton = document.getElementById("add_custom_process_button");
+    const customChipBox = document.getElementById("custom_process_chip_box");
+
+    function updateProcessBoxes() {
+      const selectedType = projectTypeSelect.value;
+
+      if (selectedType === "commercial") {
+        residentialBox.style.display = "none";
+        commercialBox.style.display = "block";
+
+        document.querySelectorAll(".residential-checkbox").forEach(function(input) {
+          input.checked = false;
+          renderChipState(input);
+        });
+      } else {
+        residentialBox.style.display = "block";
+        commercialBox.style.display = "none";
+
+        document.querySelectorAll(".commercial-checkbox").forEach(function(input) {
+          input.checked = false;
+          renderChipState(input);
+        });
+      }
+    }
+
+    function renderChipState(input) {
+      const pill = input.nextElementSibling;
+      if (!pill) return;
+
+      if (input.checked) {
+        pill.style.background = "#eef2ff";
+        pill.style.color = "#1f3fbf";
+        pill.style.border = "1px solid #c7d2fe";
+      } else {
+        pill.style.background = "white";
+        pill.style.color = "#374151";
+        pill.style.border = "1px solid #d1d5db";
+      }
+    }
+
+    document.querySelectorAll(".process-checkbox").forEach(function (input) {
+      renderChipState(input);
+
+      input.addEventListener("change", function () {
+        renderChipState(input);
+      });
+    });
+
+    if (projectTypeSelect) {
+      projectTypeSelect.addEventListener("change", updateProcessBoxes);
+      updateProcessBoxes();
+    }
+
+    if (addressSearchButton) {
+      addressSearchButton.addEventListener("click", function () {
+        new daum.Postcode({
+          oncomplete: function(data) {
+            let addr = "";
+            let extraAddr = "";
+
+            if (data.userSelectedType === "R") {
+              addr = data.roadAddress;
+            } else {
+              addr = data.jibunAddress;
+            }
+
+            if (data.userSelectedType === "R") {
+              if (data.bname && /[동|로|가]$/g.test(data.bname)) {
+                extraAddr += data.bname;
+              }
+              if (data.buildingName && data.apartment === "Y") {
+                extraAddr += (extraAddr !== "" ? ", " + data.buildingName : data.buildingName);
+              }
+              if (extraAddr !== "") {
+                extraAddr = " (" + extraAddr + ")";
+              }
+            }
+
+            addressField.value = addr + extraAddr;
+            detailAddressField.focus();
+          }
+        }).open();
+      });
+    }
+
+    function addCustomProcessChip(name) {
+      const trimmedName = name.trim();
+      if (!trimmedName) return;
+
+      const existing = Array.from(customChipBox.querySelectorAll("input[type='hidden']")).some(function(input) {
+        return input.value === trimmedName;
+      });
+
+      if (existing) return;
+
+      const wrapper = document.createElement("div");
+      wrapper.style.display = "inline-flex";
+      wrapper.style.alignItems = "center";
+      wrapper.style.gap = "8px";
+      wrapper.style.padding = "10px 14px";
+      wrapper.style.borderRadius = "999px";
+      wrapper.style.background = "#eff6ff";
+      wrapper.style.color = "#1d4ed8";
+      wrapper.style.fontSize = "14px";
+      wrapper.style.fontWeight = "800";
+      wrapper.style.border = "1px solid #bfdbfe";
+
+      const text = document.createElement("span");
+      text.textContent = trimmedName;
+
+      const removeButton = document.createElement("button");
+      removeButton.type = "button";
+      removeButton.textContent = "×";
+      removeButton.style.border = "none";
+      removeButton.style.background = "transparent";
+      removeButton.style.color = "#1d4ed8";
+      removeButton.style.fontSize = "16px";
+      removeButton.style.fontWeight = "900";
+      removeButton.style.cursor = "pointer";
+      removeButton.style.padding = "0";
+
+      removeButton.addEventListener("click", function () {
+        wrapper.remove();
+      });
+
+      const hidden = document.createElement("input");
+      hidden.type = "hidden";
+      hidden.name = "project[selected_process_names][]";
+      hidden.value = trimmedName;
+
+      wrapper.appendChild(text);
+      wrapper.appendChild(removeButton);
+      wrapper.appendChild(hidden);
+      customChipBox.appendChild(wrapper);
+    }
+
+    if (addCustomButton) {
+      addCustomButton.addEventListener("click", function () {
+        addCustomProcessChip(customInput.value);
+        customInput.value = "";
+        customInput.focus();
+      });
+    }
+
+    if (customInput) {
+      customInput.addEventListener("keydown", function (event) {
+        if (event.key === "Enter") {
+          event.preventDefault();
+          addCustomProcessChip(customInput.value);
+          customInput.value = "";
+        }
+      });
+    }
+  });
+</script>

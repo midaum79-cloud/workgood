@@ -1,0 +1,16 @@
+<div style="max-width: 430px; margin: 0 auto; min-height: 100vh; background:#f5f5f5; padding-bottom:40px;">
+
+  <div style="background:white; padding:18px 20px 14px 20px; border-bottom:1px solid #ececec; position:sticky; top:0; z-index:20;">
+    <div style="display:flex; justify-content:space-between; align-items:center;">
+      <%= link_to "←", (@work_process.project.present? ? project_path(@work_process.project) : projects_path), style:"font-size:24px; color:#111; text-decoration:none; font-weight:900;" %>
+      <div style="font-size:22px; font-weight:900;">공정 추가</div>
+      <div style="width:24px;"></div>
+    </div>
+  </div>
+
+  <%= render "form",
+      work_process: @work_process,
+      submit_label: "저장하기",
+      cancel_label: "현장 목록으로",
+      cancel_path: projects_path %>
+</div>

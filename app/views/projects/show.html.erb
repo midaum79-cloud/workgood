@@ -1,0 +1,249 @@
+<p style="color: green; margin-bottom: 12px; text-align:center;"><%= notice %></p>
+
+<% ordered_processes = @project.work_processes.order(:start_date) %>
+<% current_process = ordered_processes.find { |p| p.status == "진행중" } || ordered_processes.last %>
+<% current_index = current_process ? ordered_processes.index(current_process) : nil %>
+
+<% project_badge_style =
+  case @project.status
+  when "완료"
+    "background:#dcfce7; color:#166534;"
+  when "진행중"
+    "background:#dbeafe; color:#1d4ed8;"
+  else
+    "background:#fef3c7; color:#92400e;"
+  end
+%>
+
+<% total_count = @project.total_work_processes_count %>
+<% completed_count = @project.completed_work_processes_count %>
+<% in_progress_count = @project.in_progress_work_processes_count %>
+<% scheduled_count = @project.scheduled_work_processes_count %>
+<% progress_percentage = @project.progress_percentage %>
+
+<div style="min-height: 100vh; background: #f5f5f5; padding-bottom: 24px;">
+
+  <div style="background: white; padding: 18px 20px 14px 20px; border-bottom: 1px solid #ececec; position: sticky; top: 0; z-index: 10;">
+    <div style="display:flex; justify-content:space-between; align-items:center;">
+      <%= link_to "←", projects_path, style: "font-size:24px; color:#111; text-decoration:none; font-weight:800;" %>
+      <div style="font-size: 22px; font-weight: 900;">현장 상세</div>
+      <div style="width:24px;"></div>
+    </div>
+  </div>
+
+  <div style="padding: 16px; display:flex; flex-direction:column; gap:16px;">
+
+    <div style="background:white; border-radius:20px; padding:18px; box-shadow:0 2px 10px rgba(0,0,0,0.04);">
+      <div style="display:flex; align-items:flex-start; justify-content:space-between; gap:12px; margin-bottom:14px;">
+        <div style="font-size:22px; font-weight:900; color:#111827; line-height:1.3;">
+          <%= @project.project_name %>
+        </div>
+
+        <span style="display:inline-block; padding:6px 10px; border-radius:10px; font-size:13px; font-weight:800; white-space:nowrap; <%= project_badge_style %>">
+          <%= @project.status.presence || "예정" %>
+        </span>
+      </div>
+
+      <div style="background:#f7f7f7; border-radius:12px; padding:12px 14px; margin-bottom:10px; color:#4b5563; font-size:15px; font-weight:600;">
+        📅 <%= @project.start_date %> ~ <%= @project.end_date %>
+      </div>
+
+      <div style="background:#f7f7f7; border-radius:12px; padding:12px 14px; margin-bottom:10px; color:#4b5563; font-size:15px; font-weight:600;">
+        📍 <%= @project.address %>
+      </div>
+
+      <div style="background:#f7f7f7; border-radius:12px; padding:12px 14px; color:#4b5563; font-size:15px; font-weight:600;">
+        👤 <%= @project.client_name %>
+      </div>
+    </div>
+
+    <div style="background:white; border-radius:20px; padding:18px; box-shadow:0 2px 10px rgba(0,0,0,0.04);">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
+        <div style="font-size:18px; font-weight:900;">프로젝트 진행률</div>
+        <div style="font-size:22px; font-weight:900; color:#111827;">
+          <%= progress_percentage %>%
+        </div>
+      </div>
+
+      <div style="height:12px; background:#e5e7eb; border-radius:999px; overflow:hidden; margin-bottom:16px;">
+        <div style="height:12px; width:<%= progress_percentage %>%; background:#f4c430; border-radius:999px;"></div>
+      </div>
+
+      <div style="display:grid; grid-template-columns:repeat(4, 1fr); gap:10px;">
+        <div style="background:#f9fafb; border-radius:14px; padding:12px; text-align:center;">
+          <div style="font-size:12px; color:#6b7280; font-weight:700; margin-bottom:4px;">전체</div>
+          <div style="font-size:20px; font-weight:900; color:#111827;"><%= total_count %></div>
+        </div>
+
+        <div style="background:#ecfdf5; border-radius:14px; padding:12px; text-align:center;">
+          <div style="font-size:12px; color:#166534; font-weight:700; margin-bottom:4px;">완료</div>
+          <div style="font-size:20px; font-weight:900; color:#166534;"><%= completed_count %></div>
+        </div>
+
+        <div style="background:#fffbeb; border-radius:14px; padding:12px; text-align:center;">
+          <div style="font-size:12px; color:#92400e; font-weight:700; margin-bottom:4px;">진행중</div>
+          <div style="font-size:20px; font-weight:900; color:#92400e;"><%= in_progress_count %></div>
+        </div>
+
+        <div style="background:#f3f4f6; border-radius:14px; padding:12px; text-align:center;">
+          <div style="font-size:12px; color:#6b7280; font-weight:700; margin-bottom:4px;">예정</div>
+          <div style="font-size:20px; font-weight:900; color:#6b7280;"><%= scheduled_count %></div>
+        </div>
+      </div>
+    </div>
+
+    <div style="background:white; border-radius:20px; padding:18px; box-shadow:0 2px 10px rgba(0,0,0,0.04);">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
+        <div style="font-size:18px; font-weight:900;">공정 진행 현황</div>
+
+        <% if current_process.present? %>
+          <span style="font-size:13px; font-weight:800; color:#92400e; background:#fef3c7; padding:6px 10px; border-radius:10px;">
+            현재 <%= current_process.process_name %>
+          </span>
+        <% end %>
+      </div>
+
+      <% if ordered_processes.any? %>
+        <div style="overflow-x:auto; padding-bottom:4px;">
+          <div style="display:flex; align-items:flex-start; min-width:max-content;">
+
+            <% ordered_processes.each_with_index do |process, index| %>
+              <div style="display:flex; align-items:flex-start;">
+                <div style="display:flex; flex-direction:column; align-items:center; min-width:84px;">
+                  <% done_or_current = current_index.present? && index <= current_index %>
+
+                  <div style="
+                    width:24px;
+                    height:24px;
+                    border-radius:999px;
+                    display:flex;
+                    align-items:center;
+                    justify-content:center;
+                    font-size:12px;
+                    font-weight:900;
+                    color:white;
+                    background:<%= done_or_current ? '#f4c430' : '#d1d5db' %>;
+                  ">
+                    <%= index + 1 %>
+                  </div>
+
+                  <div style="margin-top:10px; font-size:14px; font-weight:800; color:#374151; text-align:center; line-height:1.3;">
+                    <%= process.process_name %>
+                  </div>
+
+                  <div style="margin-top:4px; font-size:12px; color:#9ca3af; font-weight:700; text-align:center;">
+                    <%= process.status.presence || "예정" %>
+                  </div>
+                </div>
+
+                <% unless index == ordered_processes.length - 1 %>
+                  <% line_active = current_index.present? && index < current_index %>
+                  <div style="
+                    width:48px;
+                    height:4px;
+                    border-radius:999px;
+                    margin-top:10px;
+                    background:<%= line_active ? '#f4c430' : '#e5e7eb' %>;
+                  "></div>
+                <% end %>
+              </div>
+            <% end %>
+
+          </div>
+        </div>
+      <% else %>
+        <div style="padding:16px; background:#fafafa; border-radius:14px; color:#888; text-align:center;">
+          아직 등록된 공정이 없습니다.
+        </div>
+      <% end %>
+    </div>
+
+    <div style="display:flex; justify-content:space-between; align-items:center;">
+      <div style="font-size:18px; font-weight:900;">공정 목록</div>
+      <%= link_to "공정 추가", new_work_process_path(project_id: @project.id), style: "display:inline-block; padding:10px 14px; background:#111827; color:white; text-decoration:none; border-radius:12px; font-size:15px; font-weight:800;" %>
+    </div>
+
+    <% if ordered_processes.any? %>
+      <div style="display:flex; flex-direction:column; gap:12px;">
+        <% ordered_processes.each do |work_process| %>
+          <% badge_style =
+            case work_process.status
+            when "완료"
+              "background:#86efac; color:#166534;"
+            when "진행중"
+              "background:#facc15; color:#92400e;"
+            else
+              "background:#e5e7eb; color:#6b7280;"
+            end
+          %>
+
+          <div style="background:white; border-radius:20px; padding:16px; box-shadow:0 2px 10px rgba(0,0,0,0.04);">
+            <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:12px; margin-bottom:10px;">
+              <div style="min-width:0;">
+                <div style="display:flex; align-items:center; gap:10px; margin-bottom:6px;">
+                  <span style="display:inline-block; width:14px; height:14px; border-radius:999px; background:<%= @project.color.presence || 'gold' %>; border:1px solid #ddd;"></span>
+                  <div style="font-size:18px; font-weight:900; color:#111827; line-height:1.3;">
+                    <%= work_process.process_name %>
+                  </div>
+                </div>
+
+                <div style="font-size:14px; color:#6b7280; font-weight:600;">
+                  <%= work_process.start_date %> ~ <%= work_process.end_date %>
+                </div>
+              </div>
+
+              <span style="display:inline-block; padding:6px 10px; border-radius:10px; font-size:13px; font-weight:800; white-space:nowrap; <%= badge_style %>">
+                <%= work_process.status.presence || "예정" %>
+              </span>
+            </div>
+
+            <div style="display:flex; flex-direction:column; gap:6px; color:#374151; font-size:14px; font-weight:600; margin-bottom:14px;">
+              <div><strong>업체명</strong> : <%= work_process.vendor_name.presence || "미입력" %></div>
+              <div><strong>자재비</strong> : <%= number_with_delimiter(work_process.material_cost || 0) %>원</div>
+              <div><strong>인건비</strong> : <%= number_with_delimiter(work_process.labor_cost || 0) %>원</div>
+              <div><strong>합계</strong> : <%= number_with_delimiter((work_process.material_cost || 0) + (work_process.labor_cost || 0)) %>원</div>
+            </div>
+
+            <%= link_to "공정 상세", work_process, style: "display:block; text-align:center; padding:12px 14px; background:#2563eb; color:white; text-decoration:none; border-radius:12px; font-size:16px; font-weight:800;" %>
+          </div>
+        <% end %>
+      </div>
+    <% else %>
+      <div style="padding:18px; text-align:center; color:#888; background:#fafafa; border-radius:14px;">
+        아직 등록된 공정이 없습니다.
+      </div>
+    <% end %>
+
+    <% total_material = ordered_processes.sum { |p| p.material_cost || 0 } %>
+    <% total_labor = ordered_processes.sum { |p| p.labor_cost || 0 } %>
+    <% total_amount = total_material + total_labor %>
+
+    <div style="background:white; border-radius:20px; padding:18px; box-shadow:0 2px 10px rgba(0,0,0,0.04);">
+      <div style="font-size:18px; font-weight:900; margin-bottom:14px;">비용 요약</div>
+
+      <div style="display:flex; flex-direction:column; gap:10px;">
+        <div style="background:#f9fafb; border-radius:12px; padding:12px 14px; display:flex; justify-content:space-between; align-items:center; font-size:15px; font-weight:700; color:#374151;">
+          <span>총 자재비</span>
+          <span><%= number_with_delimiter(total_material) %>원</span>
+        </div>
+
+        <div style="background:#f9fafb; border-radius:12px; padding:12px 14px; display:flex; justify-content:space-between; align-items:center; font-size:15px; font-weight:700; color:#374151;">
+          <span>총 인건비</span>
+          <span><%= number_with_delimiter(total_labor) %>원</span>
+        </div>
+
+        <div style="background:#eef6ff; border-radius:12px; padding:14px; display:flex; justify-content:space-between; align-items:center; font-size:17px; font-weight:900; color:#111827;">
+          <span>총 합계</span>
+          <span><%= number_with_delimiter(total_amount) %>원</span>
+        </div>
+      </div>
+    </div>
+
+    <div style="display:flex; flex-direction:column; gap:10px;">
+      <%= link_to "현장 수정", edit_project_path(@project), style: "display:block; text-align:center; padding:16px; background:#2563eb; color:white; text-decoration:none; border-radius:14px; font-size:18px; font-weight:900;" %>
+
+      <%= button_to "현장 삭제", @project, method: :delete, data: { turbo_confirm: "정말로 이 현장을 삭제하시겠습니까? 모든 공정 데이터가 함께 삭제됩니다." }, style: "width:100%; padding:16px; background:#dc2626; color:white; border:none; border-radius:14px; font-size:18px; font-weight:900; cursor:pointer;" %>
+    </div>
+
+  </div>
+</div>

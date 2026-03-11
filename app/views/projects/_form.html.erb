@@ -1,0 +1,63 @@
+<%= form_with(model: project) do |form| %>
+  <% if project.errors.any? %>
+    <div style="color: #b91c1c; background:#fee2e2; border:1px solid #fecaca; padding:16px; border-radius:12px; margin-bottom:20px;">
+      <h2 style="margin-top:0; font-size:18px; font-weight:800;"><%= project.errors.count %>개의 오류가 있습니다.</h2>
+      <ul style="margin:0; padding-left:18px;">
+        <% project.errors.each do |error| %>
+          <li><%= error.full_message %></li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <div style="max-width: 900px; margin: 0 auto; padding: 24px;">
+    <div style="background:white; border:1px solid #e5e7eb; border-radius:16px; padding:24px; box-shadow:0 4px 12px rgba(0,0,0,0.06);">
+      <div style="display:grid; grid-template-columns: 1fr 1fr; gap:20px;">
+        <div>
+          <%= form.label :project_name, "현장명", style: "display:block; margin-bottom:8px; font-weight:700; color:#111827;" %>
+          <%= form.text_field :project_name, style: "width:100%; padding:12px; border:1px solid #d1d5db; border-radius:10px;" %>
+        </div>
+
+        <div>
+          <%= form.label :client_name, "고객명", style: "display:block; margin-bottom:8px; font-weight:700; color:#111827;" %>
+          <%= form.text_field :client_name, style: "width:100%; padding:12px; border:1px solid #d1d5db; border-radius:10px;" %>
+        </div>
+
+        <div style="grid-column: 1 / -1;">
+          <%= form.label :address, "주소", style: "display:block; margin-bottom:8px; font-weight:700; color:#111827;" %>
+          <%= form.text_field :address, style: "width:100%; padding:12px; border:1px solid #d1d5db; border-radius:10px;" %>
+        </div>
+
+        <div>
+          <%= form.label :start_date, "공사 시작일", style: "display:block; margin-bottom:8px; font-weight:700; color:#111827;" %>
+          <%= form.date_field :start_date, style: "width:100%; padding:12px; border:1px solid #d1d5db; border-radius:10px;" %>
+        </div>
+
+        <div>
+          <%= form.label :end_date, "공사 종료일", style: "display:block; margin-bottom:8px; font-weight:700; color:#111827;" %>
+          <%= form.date_field :end_date, style: "width:100%; padding:12px; border:1px solid #d1d5db; border-radius:10px;" %>
+        </div>
+
+        <div>
+          <%= form.label :status, "상태", style: "display:block; margin-bottom:8px; font-weight:700; color:#111827;" %>
+          <%= form.select :status, ["예정", "진행중", "완료"], {}, style: "width:100%; padding:12px; border:1px solid #d1d5db; border-radius:10px; background:white;" %>
+        </div>
+
+        <div>
+          <%= form.label :color, "색상", style: "display:block; margin-bottom:8px; font-weight:700; color:#111827;" %>
+          <%= form.select :color, [["파랑", "blue"], ["초록", "green"], ["주황", "orange"], ["빨강", "red"], ["보라", "purple"]], {}, style: "width:100%; padding:12px; border:1px solid #d1d5db; border-radius:10px; background:white;" %>
+        </div>
+
+        <div style="grid-column: 1 / -1;">
+          <%= form.label :memo, "메모", style: "display:block; margin-bottom:8px; font-weight:700; color:#111827;" %>
+          <%= form.text_area :memo, rows: 5, style: "width:100%; padding:12px; border:1px solid #d1d5db; border-radius:10px;" %>
+        </div>
+      </div>
+
+      <div style="margin-top:24px; display:flex; gap:12px; flex-wrap:wrap;">
+        <%= form.submit "저장하기", style: "padding:12px 18px; background:#111827; color:white; border:none; border-radius:10px; font-weight:700; cursor:pointer;" %>
+        <%= link_to "목록으로", projects_path, style: "display:inline-block; padding:12px 18px; background:#f3f4f6; color:#111827; text-decoration:none; border-radius:10px; font-weight:700;" %>
+      </div>
+    </div>
+  </div>
+<% end %>

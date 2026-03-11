@@ -1,0 +1,23 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  project: one
+  process_name: MyString
+  start_date: 2026-03-08
+  end_date: 2026-03-08
+  contractor_name: MyString
+  material_cost: 1
+  labor_cost: 1
+  memo: MyText
+  status: MyString
+
+two:
+  project: two
+  process_name: MyString
+  start_date: 2026-03-08
+  end_date: 2026-03-08
+  contractor_name: MyString
+  material_cost: 1
+  labor_cost: 1
+  memo: MyText
+  status: MyString

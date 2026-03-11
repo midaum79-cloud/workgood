@@ -1,0 +1,225 @@
+<%
+  today = Date.today
+
+  display_year =
+    if params[:year].present?
+      params[:year].to_i
+    else
+      today.year
+    end
+
+  display_month =
+    if params[:month].present?
+      params[:month].to_i
+    else
+      today.month
+    end
+
+  current_month_date = Date.new(display_year, display_month, 1)
+  prev_month_date = current_month_date.prev_month
+  next_month_date = current_month_date.next_month
+
+  calendar_start = current_month_date.beginning_of_week(:sunday)
+  calendar_end = current_month_date.end_of_month.end_of_week(:sunday)
+  calendar_days = (calendar_start..calendar_end).to_a
+
+  selected_dates = @work_process.work_days.map(&:work_date)
+%>
+
+<div style="max-width:430px; margin:0 auto; min-height:100vh; background:#f5f5f5; padding:16px;">
+
+  <div style="background:white; padding:18px 20px 14px 20px; border-bottom:1px solid #ececec; position:sticky; top:0; z-index:20; margin:-16px -16px 16px -16px;">
+    <div style="display:flex; justify-content:space-between; align-items:center;">
+      <%= link_to "←", work_process_path(@work_process), style: "font-size:24px; color:#111; text-decoration:none; font-weight:800; padding-left:16px;" %>
+      <div style="font-size:22px; font-weight:900;">공정 수정</div>
+      <div style="width:40px;"></div>
+    </div>
+  </div>
+
+  <%= form_with(model: @work_process, local: true) do |form| %>
+    <% if @work_process.errors.any? %>
+      <div style="background:#fee2e2; color:#b91c1c; padding:14px; border-radius:14px; margin-bottom:16px; font-size:14px; font-weight:700;">
+        입력 내용을 확인해주세요.
+      </div>
+    <% end %>
+
+    <div style="display:flex; flex-direction:column; gap:16px;">
+
+      <div style="background:white; border-radius:20px; padding:18px; box-shadow:0 2px 10px rgba(0,0,0,0.04);">
+        <div style="font-size:20px; font-weight:900; margin-bottom:16px;">기본 정보</div>
+
+        <div style="display:flex; flex-direction:column; gap:14px;">
+          <div>
+            <div style="font-size:14px; font-weight:800; color:#374151; margin-bottom:8px;">공정명</div>
+            <%= form.text_field :process_name,
+                placeholder: "예: 철거, 목공, 전기배관",
+                style: "width:100%; padding:14px 16px; border:1px solid #dcdfe4; border-radius:14px; font-size:16px; box-sizing:border-box;" %>
+          </div>
+
+          <div>
+            <div style="font-size:14px; font-weight:800; color:#374151; margin-bottom:8px;">업체명</div>
+            <%= form.text_field :vendor_name,
+                placeholder: "예: 목수삼촌, 한샘팀, 전기팀",
+                style: "width:100%; padding:14px 16px; border:1px solid #dcdfe4; border-radius:14px; font-size:16px; box-sizing:border-box;" %>
+          </div>
+
+          <div>
+            <div style="font-size:14px; font-weight:800; color:#374151; margin-bottom:8px;">상태</div>
+            <%= form.select :status,
+                [["예정", "예정"], ["진행중", "진행중"], ["완료", "완료"]],
+                {},
+                {
+                  style: "width:100%; padding:14px 16px; border:1px solid #dcdfe4; border-radius:14px; font-size:16px; box-sizing:border-box; background:white;"
+                } %>
+          </div>
+        </div>
+      </div>
+
+      <div style="background:white; border-radius:20px; padding:18px; box-shadow:0 2px 10px rgba(0,0,0,0.04);">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+          <div style="font-size:20px; font-weight:900;">작업 날짜 선택</div>
+
+          <div style="display:flex; align-items:center; gap:10px;">
+            <%= link_to "◀",
+                edit_work_process_path(@work_process, year: prev_month_date.year, month: prev_month_date.month),
+                style: "text-decoration:none; color:#374151; font-size:18px; font-weight:900;" %>
+
+            <div style="font-size:16px; font-weight:900; color:#374151; min-width:90px; text-align:center;">
+              <%= current_month_date.year %>.<%= format("%02d", current_month_date.month) %>
+            </div>
+
+            <%= link_to "▶",
+                edit_work_process_path(@work_process, year: next_month_date.year, month: next_month_date.month),
+                style: "text-decoration:none; color:#374151; font-size:18px; font-weight:900;" %>
+          </div>
+        </div>
+
+        <div style="display:grid; grid-template-columns:repeat(7, 1fr); gap:6px; margin-bottom:10px; font-size:13px; font-weight:800; color:#6b7280; text-align:center;">
+          <div>일</div>
+          <div>월</div>
+          <div>화</div>
+          <div>수</div>
+          <div>목</div>
+          <div>금</div>
+          <div>토</div>
+        </div>
+
+        <div style="display:grid; grid-template-columns:repeat(7, 1fr); gap:6px;">
+          <% calendar_days.each do |day| %>
+            <% selected = selected_dates.include?(day) %>
+            <% is_current_month = (day.month == current_month_date.month) %>
+
+            <button
+              type="button"
+              class="workday-button"
+              data-date="<%= day %>"
+              data-work-process-id="<%= @work_process.id %>"
+              data-current-month="<%= is_current_month ? 'true' : 'false' %>"
+              style="
+                min-height:44px;
+                border:none;
+                border-radius:12px;
+                font-size:14px;
+                font-weight:800;
+                cursor:pointer;
+                background:<%= selected ? '#2563eb' : '#f3f4f6' %>;
+                color:<%= selected ? 'white' : (is_current_month ? '#111827' : '#9ca3af') %>;
+              ">
+              <%= day.day %>
+            </button>
+          <% end %>
+        </div>
+
+        <div style="font-size:12px; color:#6b7280; font-weight:700; margin-top:10px; line-height:1.5;">
+          날짜를 한 번 누르면 추가되고, 다시 누르면 취소됩니다.
+        </div>
+      </div>
+
+      <div style="background:white; border-radius:20px; padding:18px; box-shadow:0 2px 10px rgba(0,0,0,0.04);">
+        <div style="font-size:20px; font-weight:900; margin-bottom:16px;">비용 정보</div>
+
+        <div style="display:flex; flex-direction:column; gap:14px;">
+          <div>
+            <div style="font-size:14px; font-weight:800; color:#374151; margin-bottom:8px;">자재비</div>
+            <%= form.number_field :material_cost,
+                placeholder: "예: 500000",
+                style: "width:100%; padding:14px 16px; border:1px solid #dcdfe4; border-radius:14px; font-size:16px; box-sizing:border-box;" %>
+          </div>
+
+          <div>
+            <div style="font-size:14px; font-weight:800; color:#374151; margin-bottom:8px;">인건비</div>
+            <%= form.number_field :labor_cost,
+                placeholder: "예: 300000",
+                style: "width:100%; padding:14px 16px; border:1px solid #dcdfe4; border-radius:14px; font-size:16px; box-sizing:border-box;" %>
+          </div>
+        </div>
+      </div>
+
+      <div style="background:white; border-radius:20px; padding:18px; box-shadow:0 2px 10px rgba(0,0,0,0.04);">
+        <div style="font-size:20px; font-weight:900; margin-bottom:16px;">추가 메모</div>
+
+        <div>
+          <div style="font-size:14px; font-weight:800; color:#374151; margin-bottom:8px;">메모</div>
+          <%= form.text_area :memo,
+              rows: 4,
+              placeholder: "공정 관련 메모를 입력하세요",
+              style: "width:100%; padding:14px 16px; border:1px solid #dcdfe4; border-radius:14px; font-size:16px; box-sizing:border-box; resize:none;" %>
+        </div>
+      </div>
+
+      <div style="display:flex; flex-direction:column; gap:10px; margin-top:4px;">
+        <%= form.submit "저장하기",
+            style: "width:100%; padding:16px; border:none; border-radius:14px; background:#374151; color:white; font-size:18px; font-weight:800; cursor:pointer;" %>
+
+        <%= link_to "공정 상세로",
+            work_process_path(@work_process),
+            style: "display:block; text-align:center; width:100%; padding:16px; border:none; border-radius:14px; background:#e5e7eb; color:#374151; font-size:18px; font-weight:800; text-decoration:none; box-sizing:border-box;" %>
+      </div>
+
+    </div>
+  <% end %>
+</div>
+
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const buttons = document.querySelectorAll(".workday-button");
+    const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute("content");
+
+    buttons.forEach(function(button) {
+      button.addEventListener("click", function() {
+        const workDate = button.dataset.date;
+        const workProcessId = button.dataset.workProcessId;
+
+        fetch("/work_days/toggle", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "X-CSRF-Token": csrfToken,
+            "Accept": "application/json"
+          },
+          body: JSON.stringify({
+            work_process_id: workProcessId,
+            work_date: workDate
+          })
+        })
+        .then(response => response.json())
+        .then(data => {
+          if (!data.success) return;
+
+          const isCurrentMonth = button.dataset.currentMonth === "true";
+
+          if (data.selected) {
+            button.style.background = "#2563eb";
+            button.style.color = "white";
+          } else {
+            button.style.background = "#f3f4f6";
+            button.style.color = isCurrentMonth ? "#111827" : "#9ca3af";
+          }
+        })
+        .catch(error => {
+          console.error("날짜 선택 오류:", error);
+        });
+      });
+    });
+  });
+</script>

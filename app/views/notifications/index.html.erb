@@ -1,0 +1,81 @@
+<div style="max-width:430px; margin:0 auto; min-height:100vh; background:#f5f5f5; padding:16px 16px 32px 16px;">
+
+  <div style="background:white; padding:18px 20px 14px 20px; border-bottom:1px solid #ececec; position:sticky; top:0; z-index:20; margin:-16px -16px 16px -16px;">
+    <div style="display:flex; justify-content:space-between; align-items:center;">
+      <%= link_to "←", projects_path, style: "font-size:24px; color:#111; text-decoration:none; font-weight:800; padding-left:16px;" %>
+      <div style="font-size:22px; font-weight:900;">알림</div>
+      <div style="width:40px;"></div>
+    </div>
+  </div>
+
+  <% if @notifications.any? %>
+    <div style="display:flex; flex-direction:column; gap:12px;">
+      <% @notifications.each do |n| %>
+        <div style="
+          background:white;
+          border-radius:16px;
+          padding:16px;
+          border:1px solid #eee;
+          box-shadow:0 2px 8px rgba(0,0,0,0.04);
+        ">
+
+          <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:12px; margin-bottom:8px;">
+            <div style="font-size:16px; font-weight:900; color:#111827;">
+              <%= n.title %>
+            </div>
+
+            <% if n.status == "unread" %>
+              <span style="display:inline-block; padding:4px 8px; border-radius:999px; background:#fee2e2; color:#b91c1c; font-size:12px; font-weight:800;">
+                새 알림
+              </span>
+            <% else %>
+              <span style="display:inline-block; padding:4px 8px; border-radius:999px; background:#e5e7eb; color:#6b7280; font-size:12px; font-weight:800;">
+                읽음
+              </span>
+            <% end %>
+          </div>
+
+          <div style="font-size:14px; color:#4b5563; line-height:1.5; margin-bottom:10px;">
+            <%= n.message %>
+          </div>
+
+          <% if n.project.present? %>
+            <div style="font-size:13px; color:#6b7280; font-weight:700; margin-bottom:6px;">
+              현장: <%= n.project.project_name %>
+            </div>
+          <% end %>
+
+          <div style="font-size:12px; color:#9ca3af; margin-bottom:12px;">
+            <%= n.created_at.strftime("%Y-%m-%d %H:%M") %>
+          </div>
+
+          <div style="display:flex; gap:8px;">
+            <% if n.work_process.present? %>
+              <%= link_to "공정 보기",
+                  work_process_path(n.work_process),
+                  style: "display:inline-block; padding:10px 12px; background:#2563eb; color:white; text-decoration:none; border-radius:10px; font-size:13px; font-weight:800;" %>
+            <% end %>
+
+            <% if n.status == "unread" %>
+              <%= button_to "읽음 처리",
+                  read_notification_path(n),
+                  method: :post,
+                  style: "padding:10px 12px; border:none; background:#111827; color:white; border-radius:10px; font-size:13px; font-weight:800; cursor:pointer;" %>
+            <% end %>
+          </div>
+        </div>
+      <% end %>
+    </div>
+  <% else %>
+    <div style="
+      background:white;
+      border-radius:16px;
+      padding:28px 20px;
+      text-align:center;
+      color:#888;
+      box-shadow:0 2px 8px rgba(0,0,0,0.04);
+    ">
+      알림이 없습니다.
+    </div>
+  <% end %>
+</div>

@@ -1,0 +1,561 @@
+<div style="min-height:100vh; background:#f5f5f5; padding:16px 16px 100px 16px;">
+
+  <div style="background:white; padding:18px 20px 14px 20px; border-bottom:1px solid #ececec; position:sticky; top:0; z-index:30; margin:-16px -16px 16px -16px;">
+    <div style="display:flex; justify-content:space-between; align-items:center;">
+      <div style="font-size:24px; color:#111827; font-weight:900; cursor:pointer;" onclick="openDrawer()">☰</div>
+
+      <div style="display:flex; align-items:center;">
+        <img src="/logo.png" alt="일머리" style="height:44px;">
+      </div>
+
+      <%= link_to notifications_path, style: "position:relative; text-decoration:none;" do %>
+        <div style="font-size:24px;">🔔</div>
+        <% if @unread_notifications_count.to_i > 0 %>
+          <div style="
+            position:absolute;
+            top:-6px;
+            right:-8px;
+            min-width:18px;
+            height:18px;
+            padding:0 5px;
+            border-radius:999px;
+            background:#ef4444;
+            color:white;
+            font-size:11px;
+            font-weight:900;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            box-sizing:border-box;
+          ">
+            <%= @unread_notifications_count %>
+          </div>
+        <% end %>
+      <% end %>
+    </div>
+  </div>
+
+  <div style="background:white; border-radius:20px; padding:18px; box-shadow:0 2px 10px rgba(0,0,0,0.04); margin-bottom:18px;">
+    <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:12px;">
+      <div>
+        <div style="font-size:18px; font-weight:900; color:#111827;">오늘 일정</div>
+        <div style="font-size:14px; font-weight:700; color:#6b7280;"><%= Date.today %></div>
+      </div>
+
+      <%= link_to "오늘 보기",
+          projects_path(
+            status: @selected_status,
+            view_mode: @view_mode,
+            year: Date.today.year,
+            month: Date.today.month,
+            selected_date: Date.today
+          ),
+          style: "
+            padding:10px 14px;
+            border-radius:12px;
+            text-decoration:none;
+            font-size:14px;
+            font-weight:800;
+            background:#111827;
+            color:white;
+          " %>
+    </div>
+
+    <% if @today_work_processes.any? %>
+      <div style="display:flex; flex-direction:column; gap:10px;">
+        <% @today_work_processes.each do |process| %>
+          <%= link_to work_process_path(process), style: "text-decoration:none; color:inherit;" do %>
+            <div style="border:1px solid #ececec; border-radius:16px; padding:14px 16px;">
+              <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:10px;">
+                <div style="display:flex; align-items:flex-start; gap:10px;">
+                  <div style="width:10px; height:10px; min-width:10px; border-radius:50%; background:#2f8f2f; margin-top:6px;"></div>
+
+                  <div>
+                    <div style="font-size:17px; font-weight:900; color:#111827; margin-bottom:4px;">
+                      <%= process.process_name %>
+                    </div>
+                    <div style="font-size:14px; font-weight:700; color:#6b7280; margin-bottom:2px;">
+                      <%= process.project.project_name %>
+                    </div>
+                    <div style="font-size:13px; font-weight:700; color:#9ca3af;">
+                      업체명: <%= process.vendor_name.presence || "미입력" %>
+                    </div>
+                  </div>
+                </div>
+
+                <div style="padding:6px 10px; border-radius:999px; font-size:12px; font-weight:800; background:#fef3c7; color:#92400e; white-space:nowrap;">
+                  <%= process.status %>
+                </div>
+              </div>
+            </div>
+          <% end %>
+        <% end %>
+      </div>
+    <% else %>
+      <div style="color:#9ca3af; font-size:14px; font-weight:700;">
+        오늘 등록된 공정이 없습니다.
+      </div>
+    <% end %>
+  </div>
+
+  <div style="background:white; border-radius:20px; padding:18px; box-shadow:0 2px 10px rgba(0,0,0,0.04); margin-bottom:18px;">
+    <div style="font-size:20px; font-weight:900; color:#111827; margin-bottom:14px;">리마인드 센터</div>
+
+    <div style="display:flex; flex-direction:column; gap:12px;">
+      <div style="background:#f6ead7; border-radius:16px; padding:14px 16px;">
+        <div style="font-size:15px; font-weight:900; color:#92400e; margin-bottom:4px;">오늘 시작 공정</div>
+        <div style="font-size:14px; font-weight:700; color:#6b7280;">
+          <% if @today_start_processes.any? %>
+            <%= @today_start_processes.map { |p| "#{p.process_name}(#{p.project.project_name})" }.join(", ") %>
+          <% else %>
+            오늘 시작 공정 없음
+          <% end %>
+        </div>
+      </div>
+
+      <div style="background:#e8eef8; border-radius:16px; padding:14px 16px;">
+        <div style="font-size:15px; font-weight:900; color:#1d4ed8; margin-bottom:4px;">내일 시작 공정</div>
+        <div style="font-size:14px; font-weight:700; color:#6b7280;">
+          <% if @tomorrow_start_processes.any? %>
+            <%= @tomorrow_start_processes.map { |p| "#{p.process_name}(#{p.project.project_name})" }.join(", ") %>
+          <% else %>
+            내일 시작 공정 없음
+          <% end %>
+        </div>
+      </div>
+
+      <div style="background:#f7efe2; border-radius:16px; padding:14px 16px;">
+        <div style="font-size:15px; font-weight:900; color:#b45309; margin-bottom:4px;">곧 끝나는 공정</div>
+        <div style="font-size:14px; font-weight:700; color:#6b7280;">
+          <% if @ending_soon_processes.present? && @ending_soon_processes.any? %>
+            <%= @ending_soon_processes.map { |p| "#{p.process_name}(#{p.project.project_name})" }.join(", ") %>
+          <% else %>
+            곧 종료되는 공정 없음
+          <% end %>
+        </div>
+      </div>
+
+      <div style="background:#f9e3e3; border-radius:16px; padding:14px 16px;">
+        <div style="font-size:15px; font-weight:900; color:#b91c1c; margin-bottom:4px;">지연 가능 공정</div>
+        <div style="font-size:14px; font-weight:700; color:#6b7280;">
+          <% if @delayed_processes.any? %>
+            <%= @delayed_processes.map { |p| "#{p.process_name}(#{p.project.project_name})" }.join(", ") %>
+          <% else %>
+            지연 가능 공정 없음
+          <% end %>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div style="background:white; border-radius:20px; padding:18px; box-shadow:0 2px 10px rgba(0,0,0,0.04); margin-bottom:18px;">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
+      <div style="font-size:22px; font-weight:900; color:#111827;">인테리어 공정 일정</div>
+
+      <div style="display:flex; align-items:center; gap:12px;">
+        <%= link_to "◀",
+            projects_path(
+              status: @selected_status,
+              view_mode: @view_mode,
+              year: @prev_month.year,
+              month: @prev_month.month,
+              selected_date: @selected_date
+            ),
+            style: "text-decoration:none; color:#374151; font-size:18px; font-weight:900;" %>
+
+        <div style="font-size:16px; font-weight:900; color:#6b7280; min-width:110px; text-align:center;">
+          <%= @calendar_year %>년 <%= @calendar_month %>월
+        </div>
+
+        <%= link_to "▶",
+            projects_path(
+              status: @selected_status,
+              view_mode: @view_mode,
+              year: @next_month.year,
+              month: @next_month.month,
+              selected_date: @selected_date
+            ),
+            style: "text-decoration:none; color:#374151; font-size:18px; font-weight:900;" %>
+      </div>
+    </div>
+
+    <div style="display:flex; gap:8px; margin-bottom:16px;">
+      <%= link_to "전체",
+          projects_path(
+            status: @selected_status,
+            view_mode: "month",
+            year: @calendar_year,
+            month: @calendar_month,
+            selected_date: @selected_date
+          ),
+          style: "
+            padding:10px 14px;
+            border-radius:12px;
+            text-decoration:none;
+            font-size:14px;
+            font-weight:800;
+            background:#{@view_mode == 'month' ? '#f3f4f6' : '#fafafa'};
+            color:#374151;
+            border:1px solid #ececec;
+          " %>
+
+      <%= link_to "2주",
+          projects_path(
+            status: @selected_status,
+            view_mode: "2weeks",
+            year: @calendar_year,
+            month: @calendar_month,
+            selected_date: @selected_date
+          ),
+          style: "
+            padding:10px 14px;
+            border-radius:12px;
+            text-decoration:none;
+            font-size:14px;
+            font-weight:800;
+            background:#{@view_mode == '2weeks' ? '#f3f4f6' : '#fafafa'};
+            color:#374151;
+            border:1px solid #ececec;
+          " %>
+    </div>
+
+    <div style="border:1px solid #ececec; border-radius:18px; overflow:hidden; background:white;">
+      <div style="display:grid; grid-template-columns:repeat(7, 1fr); border-bottom:1px solid #ececec; background:#fafafa;">
+        <% ["일", "월", "화", "수", "목", "금", "토"].each do |weekday| %>
+          <div style="padding:12px 0; text-align:center; font-size:14px; font-weight:800; color:#6b7280;">
+            <%= weekday %>
+          </div>
+        <% end %>
+      </div>
+
+      <% @calendar_rows.each_with_index do |row_days, row_index| %>
+        <div style="border-bottom:<%= row_index == @calendar_rows.length - 1 ? 'none' : '1px solid #ececec' %>;">
+          <div style="display:grid; grid-template-columns:repeat(7, 1fr);">
+            <% row_days.each do |day| %>
+              <% is_current_month = (day.month == @calendar_month) %>
+              <% is_selected = (day == @selected_date) %>
+
+              <%= link_to projects_path(
+                    status: @selected_status,
+                    view_mode: @view_mode,
+                    year: @calendar_year,
+                    month: @calendar_month,
+                    selected_date: day
+                  ),
+                  style: "
+                    min-height:58px;
+                    text-decoration:none;
+                    border-right:1px solid #f3f4f6;
+                    padding:10px 0;
+                    box-sizing:border-box;
+                    text-align:center;
+                    background:#{is_selected ? '#f6e8b0' : 'white'};
+                    color:#{is_current_month ? '#111827' : '#9ca3af'};
+                    font-size:16px;
+                    font-weight:900;
+                    display:flex;
+                    align-items:flex-start;
+                    justify-content:center;
+                  " do %>
+                <span><%= format('%02d', day.day) %></span>
+              <% end %>
+            <% end %>
+          </div>
+
+          <div style="position:relative; height:<%= @calendar_row_heights[row_index] || 26 %>px; margin:0 6px 4px 6px;">
+            <% (@calendar_bars_by_row[row_index] || []).each do |bar| %>
+              <% work_process = bar[:work_process] %>
+              <% left_percent = (bar[:start_index] * 100.0 / 7.0) %>
+              <% width_percent = (bar[:span_days] * 100.0 / 7.0) %>
+              <% top_offset = (bar[:lane] * 26) %>
+
+              <% bar_color = bar[:project].color.presence || 'gold' %>
+              <% text_color = case bar_color
+                when 'blue' then '#2563eb'
+                when 'green' then '#16a34a'
+                when 'orange' then '#ea580c'
+                when 'red' then '#dc2626'
+                when 'purple' then '#7c3aed'
+                else '#b8860b'
+                end %>
+              <% bg_color = case bar_color
+                when 'blue' then '#eff6ff'
+                when 'green' then '#f0fdf4'
+                when 'orange' then '#fff7ed'
+                when 'red' then '#fef2f2'
+                when 'purple' then '#f5f3ff'
+                else '#fefce8'
+                end %>
+              <%= link_to work_process_path(work_process),
+                  style: "
+                    position:absolute;
+                    left:#{left_percent}%;
+                    width:calc(#{width_percent}% - 4px);
+                    top:#{top_offset}px;
+                    height:22px;
+                    background:#{bg_color};
+                    color:#{text_color};
+                    border-radius:4px;
+                    border-left:3px solid #{text_color};
+                    text-decoration:none;
+                    display:flex;
+                    align-items:center;
+                    padding:0 4px;
+                    font-size:10px;
+                    font-weight:800;
+                    letter-spacing:-0.3px;
+                    overflow:hidden;
+                    white-space:nowrap;
+                    text-overflow:ellipsis;
+                    box-sizing:border-box;
+                  " do %>
+                <span style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">
+                  <%= work_process.process_name %>
+                </span>
+              <% end %>
+            <% end %>
+          </div>
+        </div>
+      <% end %>
+    </div>
+
+    <div style="margin-top:18px;">
+      <div style="font-size:18px; font-weight:900; color:#111827; margin-bottom:12px;">
+        <%= @selected_date %> 일정
+      </div>
+
+      <% if @selected_day_work_processes.any? %>
+        <div style="display:flex; flex-direction:column; gap:10px;">
+          <% @selected_day_work_processes.each do |process| %>
+            <%= link_to work_process_path(process), style: "text-decoration:none; color:inherit;" do %>
+              <div style="background:white; border-radius:16px; padding:14px 16px; border:1px solid #ececec;">
+                <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:10px;">
+                  <div style="display:flex; align-items:flex-start; gap:10px;">
+                    <div style="width:10px; height:10px; min-width:10px; border-radius:50%; background:#2563eb; margin-top:6px;"></div>
+
+                    <div>
+                      <div style="font-size:17px; font-weight:900; color:#111827; margin-bottom:4px;">
+                        <%= process.process_name %>
+                      </div>
+                      <div style="font-size:14px; font-weight:700; color:#6b7280; margin-bottom:2px;">
+                        <%= process.project.project_name %>
+                      </div>
+                      <div style="font-size:13px; font-weight:700; color:#9ca3af;">
+                        업체명: <%= process.vendor_name.presence || "미입력" %>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div style="padding:6px 10px; border-radius:999px; font-size:12px; font-weight:800; background:#f3f4f6; color:#6b7280; white-space:nowrap;">
+                    <%= process.status %>
+                  </div>
+                </div>
+              </div>
+            <% end %>
+          <% end %>
+        </div>
+      <% else %>
+        <div style="background:white; border-radius:16px; padding:18px; color:#9ca3af; font-size:14px; font-weight:700; border:1px solid #ececec;">
+          선택한 날짜에 등록된 공정이 없습니다.
+        </div>
+      <% end %>
+    </div>
+  </div>
+
+  <div style="display:flex; gap:10px; margin-bottom:18px;">
+    <%= link_to "전체",
+        projects_path(
+          view_mode: @view_mode,
+          year: @calendar_year,
+          month: @calendar_month,
+          selected_date: @selected_date
+        ),
+        style: "
+          flex:1;
+          text-align:center;
+          padding:12px 0;
+          border-radius:14px;
+          text-decoration:none;
+          font-size:15px;
+          font-weight:800;
+          background:#{@selected_status.blank? ? '#111827' : '#f3f4f6'};
+          color:#{@selected_status.blank? ? 'white' : '#374151'};
+        " %>
+
+    <% ["진행중", "예정", "완료"].each do |status| %>
+      <%= link_to status,
+          projects_path(
+            status: status,
+            view_mode: @view_mode,
+            year: @calendar_year,
+            month: @calendar_month,
+            selected_date: @selected_date
+          ),
+          style: "
+            flex:1;
+            text-align:center;
+            padding:12px 0;
+            border-radius:14px;
+            text-decoration:none;
+            font-size:15px;
+            font-weight:800;
+            background:#{@selected_status == status ? '#111827' : '#f3f4f6'};
+            color:#{@selected_status == status ? 'white' : '#374151'};
+          " %>
+    <% end %>
+  </div>
+
+  <div style="margin-bottom:16px;">
+    <%= link_to "+ 프로젝트 추가하기",
+        new_project_path,
+        style: "
+          display:block;
+          width:100%;
+          text-align:center;
+          padding:16px;
+          border-radius:16px;
+          text-decoration:none;
+          font-size:18px;
+          font-weight:900;
+          background:white;
+          color:#9ca3af;
+          border:1px solid #ececec;
+          box-sizing:border-box;
+        " %>
+  </div>
+
+  <div style="display:flex; flex-direction:column; gap:14px;">
+    <% @projects.each do |project| %>
+      <% work_processes = project.ordered_work_processes %>
+      <% current_process = project.current_work_process %>
+
+      <%= link_to project_path(project), style: "text-decoration:none; color:inherit;" do %>
+        <div style="background:white; border-radius:20px; padding:18px; box-shadow:0 2px 10px rgba(0,0,0,0.04);">
+          <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:12px;">
+            <div style="font-size:22px; font-weight:900; color:#111827; line-height:1.2;">
+              <%= project.project_name %>
+            </div>
+
+            <% status_bg = case project.status
+              when '완료' then '#dcfce7'
+              when '진행중' then '#fef3c7'
+              else '#dbeafe'
+              end %>
+            <% status_color = case project.status
+              when '완료' then '#166534'
+              when '진행중' then '#92400e'
+              else '#2563eb'
+              end %>
+            <div style="
+              padding:6px 12px;
+              border-radius:999px;
+              font-size:13px;
+              font-weight:800;
+              background:#{status_bg};
+              color:#{status_color};
+            ">
+              <%= project.status.presence || '예정' %>
+            </div>
+          </div>
+
+          <div style="display:flex; flex-direction:column; gap:10px; margin-bottom:14px;">
+            <div style="background:#f3f4f6; border-radius:14px; padding:12px 14px; font-size:15px; font-weight:800; color:#4b5563;">
+              📅 <%= project.start_date || "시작일 미정" %> ~ <%= project.end_date || "종료일 미정" %>
+            </div>
+
+            <div style="background:#f3f4f6; border-radius:14px; padding:12px 14px; font-size:15px; font-weight:800; color:#4b5563;">
+              📍 <%= project.address.presence || "주소 미입력" %>
+            </div>
+          </div>
+
+          <div style="margin-bottom:12px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+              <div style="font-size:15px; font-weight:800; color:#374151;">진행률</div>
+              <div style="font-size:15px; font-weight:900; color:#111827;"><%= project.progress_percentage %>%</div>
+            </div>
+
+            <div style="width:100%; height:10px; background:#e5e7eb; border-radius:999px; overflow:hidden;">
+              <div style="width:<%= project.progress_percentage %>%; height:100%; background:#e1c04b; border-radius:999px;"></div>
+            </div>
+          </div>
+
+          <div style="display:grid; grid-template-columns:repeat(4, 1fr); gap:10px; margin-bottom:14px;">
+            <div style="background:#f9fafb; border-radius:14px; padding:12px 8px; text-align:center;">
+              <div style="font-size:12px; font-weight:800; color:#6b7280;">전체</div>
+              <div style="font-size:16px; font-weight:900; color:#111827;"><%= project.total_work_processes_count %></div>
+            </div>
+
+            <div style="background:#ecfdf5; border-radius:14px; padding:12px 8px; text-align:center;">
+              <div style="font-size:12px; font-weight:800; color:#16a34a;">완료</div>
+              <div style="font-size:16px; font-weight:900; color:#166534;"><%= project.completed_work_processes_count %></div>
+            </div>
+
+            <div style="background:#fef3c7; border-radius:14px; padding:12px 8px; text-align:center;">
+              <div style="font-size:12px; font-weight:800; color:#92400e;">진행중</div>
+              <div style="font-size:16px; font-weight:900; color:#92400e;"><%= project.in_progress_work_processes_count %></div>
+            </div>
+
+            <div style="background:#f3f4f6; border-radius:14px; padding:12px 8px; text-align:center;">
+              <div style="font-size:12px; font-weight:800; color:#6b7280;">예정</div>
+              <div style="font-size:16px; font-weight:900; color:#374151;"><%= project.scheduled_work_processes_count %></div>
+            </div>
+          </div>
+
+          <div style="background:#fafafa; border-radius:16px; padding:14px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+              <div style="font-size:16px; font-weight:900; color:#111827;">공정 진행 현황</div>
+              <% if current_process.present? %>
+                <div style="padding:6px 10px; border-radius:999px; background:#fef3c7; color:#92400e; font-size:12px; font-weight:800;">
+                  현재 <%= current_process.process_name %>
+                </div>
+              <% end %>
+            </div>
+
+            <% if work_processes.any? %>
+              <div style="display:flex; align-items:flex-start; gap:8px; overflow-x:auto; padding-bottom:2px;">
+                <% work_processes.each_with_index do |process, index| %>
+                  <div style="display:flex; align-items:center; gap:8px;">
+                    <div style="min-width:70px; text-align:center;">
+                      <div style="
+                        width:30px;
+                        height:30px;
+                        margin:0 auto 8px auto;
+                        border-radius:50%;
+                        display:flex;
+                        align-items:center;
+                        justify-content:center;
+                        font-size:13px;
+                        font-weight:900;
+                        background:<%= process.status == '완료' ? '#22c55e' : (process.status == '진행중' ? '#e1c04b' : '#d1d5db') %>;
+                        color:white;
+                      ">
+                        <%= index + 1 %>
+                      </div>
+
+                      <div style="font-size:13px; font-weight:900; color:#111827; white-space:nowrap;">
+                        <%= process.process_name %>
+                      </div>
+
+                      <div style="font-size:12px; font-weight:700; color:#6b7280;">
+                        <%= process.status %>
+                      </div>
+                    </div>
+
+                    <% unless index == work_processes.length - 1 %>
+                      <div style="width:40px; height:4px; border-radius:999px; background:#e5e7eb; margin-top:13px;"></div>
+                    <% end %>
+                  </div>
+                <% end %>
+              </div>
+            <% else %>
+              <div style="font-size:14px; font-weight:700; color:#9ca3af;">
+                등록된 공정이 없습니다.
+              </div>
+            <% end %>
+          </div>
+        </div>
+      <% end %>
+    <% end %>
+  </div>
+
+</div>

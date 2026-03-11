@@ -1,0 +1,9 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  work_process: one
+  work_date: 2026-03-11
+
+two:
+  work_process: two
+  work_date: 2026-03-11

@@ -1,0 +1,231 @@
+class ProjectsController < ApplicationController
+  before_action :set_project, only: %i[show edit update destroy]
+
+  def index
+    @selected_status = params[:status]
+    @view_mode = params[:view_mode].presence || "month"
+
+    @projects =
+      case @selected_status
+      when "진행중", "예정", "완료"
+        Project.where(status: @selected_status).order(created_at: :desc)
+      else
+        Project.order(created_at: :desc)
+      end
+
+    @featured_project = @projects.first
+    @unread_notifications_count = Notification.where(status: "unread").count
+
+    base_date =
+      if params[:year].present? && params[:month].present?
+        Date.new(params[:year].to_i, params[:month].to_i, 1)
+      elsif Date.today.present?
+        Date.today
+      else
+        Date.today
+      end
+
+    @calendar_year = base_date.year
+    @calendar_month = base_date.month
+
+    if @view_mode == "2weeks"
+      calendar_start = base_date.beginning_of_week(:sunday)
+      calendar_end = calendar_start + 13.days
+      all_days = (calendar_start..calendar_end).to_a
+      @calendar_rows = [all_days.first(7), all_days.last(7)]
+    else
+      month_first_day = Date.new(@calendar_year, @calendar_month, 1)
+      month_last_day = Date.new(@calendar_year, @calendar_month, -1)
+      calendar_start = month_first_day.beginning_of_week(:sunday)
+      calendar_end = month_last_day.end_of_week(:sunday)
+      all_days = (calendar_start..calendar_end).to_a
+      @calendar_rows = all_days.each_slice(7).to_a
+    end
+
+    @prev_month = base_date.prev_month
+    @next_month = base_date.next_month
+
+    available_days = @calendar_rows.flatten.compact
+
+    @selected_date =
+      if params[:selected_date].present?
+        begin
+          Date.parse(params[:selected_date])
+        rescue ArgumentError
+          available_days.first || Date.today
+        end
+      elsif available_days.include?(Date.today)
+        Date.today
+      else
+        available_days.first || Date.today
+      end
+
+    project_ids = @projects.pluck(:id)
+
+    work_day_scope = WorkDay.includes(work_process: :project)
+                            .joins(:work_process)
+                            .where(work_processes: { project_id: project_ids })
+
+    @calendar_bars_by_row = {}
+    @calendar_row_heights = {}
+
+    @calendar_rows.each_with_index do |row_days, row_index|
+      row_start = row_days.first
+      row_end = row_days.last
+
+      raw_bars = work_day_scope.map do |work_day|
+        next unless row_days.include?(work_day.work_date)
+
+        start_index = (work_day.work_date - row_start).to_i
+
+        {
+          work_day: work_day,
+          work_process: work_day.work_process,
+          project: work_day.work_process.project,
+          start_index: start_index,
+          end_index: start_index,
+          span_days: 1
+        }
+      end.compact
+
+      sorted_bars = raw_bars.sort_by do |bar|
+        [
+          bar[:work_process].position || 9999,
+          bar[:start_index],
+          bar[:work_process].id || 0,
+          bar[:work_day].id || 0
+        ]
+      end
+
+      lane_end_indexes = []
+
+      sorted_bars.each do |bar|
+        assigned_lane = nil
+
+        lane_end_indexes.each_with_index do |lane_end_index, lane|
+          if bar[:start_index] > lane_end_index
+            assigned_lane = lane
+            break
+          end
+        end
+
+        assigned_lane ||= lane_end_indexes.length
+        lane_end_indexes[assigned_lane] = bar[:end_index]
+        bar[:lane] = assigned_lane
+      end
+
+      @calendar_bars_by_row[row_index] = sorted_bars
+      @calendar_row_heights[row_index] = [lane_end_indexes.length, 1].max * 26
+    end
+
+    selected_day_work_days = work_day_scope.select { |wd| wd.work_date == @selected_date }
+
+    @selected_day_work_processes = selected_day_work_days
+      .map(&:work_process)
+      .uniq
+      .sort_by { |process| [process.position || 9999, process.id || 0] }
+
+    today_work_days = work_day_scope.select { |wd| wd.work_date == Date.today }
+
+    @today_work_processes = today_work_days
+      .map(&:work_process)
+      .uniq
+      .sort_by { |process| [process.position || 9999, process.id || 0] }
+
+    tomorrow_work_days = work_day_scope.select { |wd| wd.work_date == Date.tomorrow }
+
+    @tomorrow_start_processes = tomorrow_work_days
+      .map(&:work_process)
+      .uniq
+      .sort_by { |process| [process.position || 9999, process.id || 0] }
+
+    @today_start_processes = @today_work_processes
+
+    @ending_soon_processes = []
+
+    @delayed_processes = WorkProcess.includes(:project, :work_days)
+                                    .where(project_id: project_ids)
+                                    .select do |process|
+      next false if process.work_days.blank?
+
+      process_last_day = process.work_days.map(&:work_date).max
+      process_last_day.present? && process_last_day < Date.today && process.effective_status(Date.today) != "완료"
+    end
+    .sort_by do |process|
+      [
+        process.position || 9999,
+        process.work_days.map(&:work_date).min || Date.new(2100, 1, 1)
+      ]
+    end
+  end
+
+  def show
+    @work_processes = @project.ordered_work_processes
+  end
+
+  def new
+    @project = Project.new
+  end
+
+  def edit
+  end
+
+  def create
+    @project = Project.new(project_params)
+    @project.selected_process_names = params[:project][:selected_process_names]
+    @project.custom_process_names_text = params[:project][:custom_process_names_text]
+
+    if detail_address_present?
+      @project.address = [@project.address, params[:detail_address]].reject(&:blank?).join(" ")
+    end
+
+    if @project.save
+      redirect_to @project, notice: "현장이 등록되었습니다."
+    else
+      render :new, status: :unprocessable_entity
+    end
+  end
+
+  def update
+    if detail_address_present?
+      merged_address = [params[:project][:address], params[:detail_address]].reject(&:blank?).join(" ")
+      params[:project][:address] = merged_address
+    end
+
+    if @project.update(project_params)
+      redirect_to @project, notice: "현장이 수정되었습니다."
+    else
+      render :edit, status: :unprocessable_entity
+    end
+  end
+
+  def destroy
+    @project.destroy
+    redirect_to projects_path, notice: "현장이 삭제되었습니다."
+  end
+
+  private
+
+  def set_project
+    @project = Project.find(params[:id])
+  end
+
+  def detail_address_present?
+    params[:detail_address].present?
+  end
+
+  def project_params
+    params.require(:project).permit(
+      :project_name,
+      :client_name,
+      :address,
+      :start_date,
+      :end_date,
+      :status,
+      :color,
+      :memo,
+      :project_type,
+      selected_process_names: []
+    )
+  end
+end
