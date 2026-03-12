@@ -344,10 +344,9 @@
         <%= link_to process_templates_path, class: "drawer-item", onclick: "closeDrawer()" do %>
           <span class="drawer-item-icon">📋</span> 공정 템플릿 관리
         <% end %>
-        <a href="#" class="drawer-item">
+        <%= link_to vendors_path, class: "drawer-item", onclick: "closeDrawer()" do %>
           <span class="drawer-item-icon">🏢</span> 업체 관리
-          <span class="drawer-item-badge">준비중</span>
-        </a>
+        <% end %>
 
         <div class="drawer-divider"></div>
 

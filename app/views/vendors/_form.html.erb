@@ -1,0 +1,122 @@
+<%# Shared partial for new/edit vendor %>
+<div style="max-width:430px; margin:0 auto; min-height:100vh; background:#f5f5f5;">
+
+  <%# Header %>
+  <div style="background:white; padding:18px 20px 14px 20px; border-bottom:1px solid #ececec; position:sticky; top:0; z-index:30; margin-bottom:16px;">
+    <div style="display:flex; justify-content:space-between; align-items:center;">
+      <%= link_to "←", vendors_path, style: "font-size:24px; color:#111; text-decoration:none; font-weight:800;" %>
+      <div style="font-size:20px; font-weight:900;"><%= vendor.new_record? ? "업체 등록" : "업체 수정" %></div>
+      <div style="width:40px;"></div>
+    </div>
+  </div>
+
+  <div style="padding:0 16px 100px 16px;">
+    <% if vendor.errors.any? %>
+      <div style="background:#fee2e2; color:#dc2626; border-radius:14px; padding:12px 16px; margin-bottom:16px; font-size:14px; font-weight:700;">
+        <%= vendor.errors.full_messages.first %>
+      </div>
+    <% end %>
+
+    <%= form_with model: vendor, local: true do |f| %>
+      <div style="background:white; border-radius:16px; padding:18px; box-shadow:0 2px 8px rgba(0,0,0,0.04); display:flex; flex-direction:column; gap:16px;">
+
+        <%# 업체명 %>
+        <div>
+          <label style="font-size:13px; font-weight:800; color:#374151; display:block; margin-bottom:6px;">업체명 *</label>
+          <%= f.text_field :name, placeholder: "업체 이름",
+              style: "width:100%; height:48px; border:1.5px solid #e5e7eb; border-radius:12px; padding:0 14px; font-size:15px; font-weight:700; font-family:inherit; box-sizing:border-box;" %>
+        </div>
+
+        <%# 담당자명 %>
+        <div>
+          <label style="font-size:13px; font-weight:800; color:#374151; display:block; margin-bottom:6px;">담당자명</label>
+          <%= f.text_field :contact_name, placeholder: "담당자 이름",
+              style: "width:100%; height:48px; border:1.5px solid #e5e7eb; border-radius:12px; padding:0 14px; font-size:15px; font-weight:700; font-family:inherit; box-sizing:border-box;" %>
+        </div>
+
+        <%# 전화번호 %>
+        <div>
+          <label style="font-size:13px; font-weight:800; color:#374151; display:block; margin-bottom:6px;">전화번호</label>
+          <%= f.telephone_field :phone, placeholder: "010-0000-0000",
+              style: "width:100%; height:48px; border:1.5px solid #e5e7eb; border-radius:12px; padding:0 14px; font-size:15px; font-weight:700; font-family:inherit; box-sizing:border-box;" %>
+        </div>
+
+        <%# 전문분야 %>
+        <div>
+          <label style="font-size:13px; font-weight:800; color:#374151; display:block; margin-bottom:8px;">전문분야</label>
+          <div style="display:flex; flex-wrap:wrap; gap:8px; margin-bottom:8px;">
+            <% Vendor::SPECIALTIES.each do |spec| %>
+              <label style="cursor:pointer;">
+                <%= f.radio_button :specialty, spec, id: "spec_#{spec}", style: "display:none;" %>
+                <span class="spec-btn" data-value="<%= spec %>"
+                  style="display:inline-block; padding:8px 14px; border-radius:999px; font-size:13px; font-weight:800; border:1.5px solid #e5e7eb; color:#6b7280; background:white; cursor:pointer; transition:all 0.15s;">
+                  <%= spec %>
+                </span>
+              </label>
+            <% end %>
+          </div>
+          <%= f.text_field :specialty, id: "specialty_custom",
+              placeholder: "또는 직접 입력",
+              style: "width:100%; height:44px; border:1.5px solid #e5e7eb; border-radius:12px; padding:0 14px; font-size:14px; font-family:inherit; box-sizing:border-box;" %>
+        </div>
+
+        <%# 메모 %>
+        <div>
+          <label style="font-size:13px; font-weight:800; color:#374151; display:block; margin-bottom:6px;">메모</label>
+          <%= f.text_area :memo, placeholder: "간단한 메모 (예: 결제 조건, 특이사항)",
+              rows: 3,
+              style: "width:100%; border:1.5px solid #e5e7eb; border-radius:12px; padding:12px 14px; font-size:14px; font-weight:600; font-family:inherit; box-sizing:border-box; resize:none; line-height:1.6;" %>
+        </div>
+
+      </div>
+
+      <%# Action buttons %>
+      <div style="display:flex; flex-direction:column; gap:10px; margin-top:20px;">
+        <%= f.submit vendor.new_record? ? "업체 등록하기" : "수정 완료",
+            style: "display:block; width:100%; padding:16px; background:#111827; color:white; border:none; border-radius:14px; font-size:18px; font-weight:900; cursor:pointer; font-family:inherit; box-sizing:border-box;" %>
+
+        <% unless vendor.new_record? %>
+          <%= button_to "업체 삭제", vendor_path(vendor), method: :delete,
+              data: { confirm: "\"#{vendor.name}\" 업체를 삭제할까요?" },
+              style: "width:100%; padding:14px; background:#fee2e2; color:#dc2626; border:none; border-radius:14px; font-size:16px; font-weight:900; cursor:pointer; font-family:inherit;" %>
+        <% end %>
+
+        <%= link_to "취소", vendors_path,
+            style: "display:block; width:100%; padding:14px; background:#e5e7eb; color:#374151; border-radius:14px; font-size:16px; font-weight:800; text-decoration:none; text-align:center; box-sizing:border-box;" %>
+      </div>
+
+    <% end %>
+  </div>
+</div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const customInput = document.getElementById('specialty_custom');
+    const btns = document.querySelectorAll('.spec-btn');
+    let currentValue = customInput.value;
+
+    function updateButtons() {
+      btns.forEach(btn => {
+        const isActive = btn.dataset.value === currentValue;
+        btn.style.background = isActive ? '#111827' : 'white';
+        btn.style.color = isActive ? 'white' : '#6b7280';
+        btn.style.borderColor = isActive ? '#111827' : '#e5e7eb';
+      });
+    }
+
+    btns.forEach(btn => {
+      btn.addEventListener('click', function() {
+        currentValue = this.dataset.value;
+        customInput.value = currentValue;
+        updateButtons();
+      });
+    });
+
+    customInput.addEventListener('input', function() {
+      currentValue = this.value;
+      updateButtons();
+    });
+
+    updateButtons();
+  });
+</script>

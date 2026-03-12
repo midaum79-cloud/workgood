@@ -1,0 +1,88 @@
+<div style="max-width:430px; margin:0 auto; min-height:100vh; background:#f5f5f5;">
+
+  <%# Sticky Header %>
+  <div style="background:white; padding:18px 20px 14px 20px; border-bottom:1px solid #ececec; position:sticky; top:0; z-index:30; margin-bottom:16px;">
+    <div style="display:flex; justify-content:space-between; align-items:center;">
+      <div style="font-size:24px; color:#111827; font-weight:900; cursor:pointer;" onclick="openDrawer()">☰</div>
+      <div style="font-size:20px; font-weight:900;">업체 관리</div>
+      <%= link_to new_vendor_path,
+          style: "background:#111827; color:white; padding:8px 14px; border-radius:12px; text-decoration:none; font-size:14px; font-weight:800;" do %>
+        + 추가
+      <% end %>
+    </div>
+  </div>
+
+  <div style="padding:0 16px 100px 16px;">
+
+    <% if notice %>
+      <div style="background:#dcfce7; color:#166534; border-radius:14px; padding:12px 16px; margin-bottom:16px; font-size:14px; font-weight:700;">
+        <%= notice %>
+      </div>
+    <% end %>
+
+    <%# Stats bar %>
+    <div style="background:white; border-radius:16px; padding:16px; margin-bottom:16px; box-shadow:0 2px 8px rgba(0,0,0,0.04); display:flex; gap:16px; justify-content:space-around; text-align:center;">
+      <div>
+        <div style="font-size:22px; font-weight:900; color:#111827;"><%= @vendors.count %></div>
+        <div style="font-size:12px; font-weight:700; color:#9ca3af;">전체 업체</div>
+      </div>
+      <div style="width:1px; background:#f3f4f6;"></div>
+      <div>
+        <div style="font-size:22px; font-weight:900; color:#2563eb;"><%= @vendors.where.not(specialty: [nil, ""]).count %></div>
+        <div style="font-size:12px; font-weight:700; color:#9ca3af;">전문분야 등록</div>
+      </div>
+      <div style="width:1px; background:#f3f4f6;"></div>
+      <div>
+        <div style="font-size:22px; font-weight:900; color:#16a34a;"><%= @vendors.where.not(phone: [nil, ""]).count %></div>
+        <div style="font-size:12px; font-weight:700; color:#9ca3af;">연락처 등록</div>
+      </div>
+    </div>
+
+    <%# Vendor list %>
+    <% if @vendors.any? %>
+      <div style="display:flex; flex-direction:column; gap:12px;">
+        <% @vendors.each do |vendor| %>
+          <div style="background:white; border-radius:16px; padding:16px; box-shadow:0 2px 8px rgba(0,0,0,0.04);">
+            <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:10px;">
+              <div>
+                <div style="font-size:17px; font-weight:900; color:#111827; margin-bottom:4px;"><%= vendor.name %></div>
+                <% if vendor.specialty.present? %>
+                  <span style="font-size:12px; font-weight:800; color:#2563eb; background:#dbeafe; padding:3px 9px; border-radius:999px;"><%= vendor.specialty %></span>
+                <% end %>
+              </div>
+              <div style="display:flex; gap:8px;">
+                <%= link_to edit_vendor_path(vendor),
+                    style: "padding:8px 12px; background:#f3f4f6; color:#374151; border-radius:10px; font-size:13px; font-weight:800; text-decoration:none;" do %>
+                  수정
+                <% end %>
+              </div>
+            </div>
+
+            <% if vendor.contact_name.present? || vendor.phone.present? %>
+              <div style="display:flex; flex-direction:column; gap:6px; margin-top:10px; padding-top:10px; border-top:1px solid #f3f4f6;">
+                <% if vendor.contact_name.present? %>
+                  <div style="font-size:13px; font-weight:700; color:#6b7280;">👤 담당자: <%= vendor.contact_name %></div>
+                <% end %>
+                <% if vendor.phone.present? %>
+                  <a href="tel:<%= vendor.phone %>" style="font-size:13px; font-weight:700; color:#2563eb; text-decoration:none;">📞 <%= vendor.phone %></a>
+                <% end %>
+                <% if vendor.memo.present? %>
+                  <div style="font-size:13px; font-weight:600; color:#9ca3af; margin-top:4px;"><%= vendor.memo %></div>
+                <% end %>
+              </div>
+            <% end %>
+          </div>
+        <% end %>
+      </div>
+    <% else %>
+      <div style="text-align:center; padding:60px 20px; color:#9ca3af;">
+        <div style="font-size:48px; margin-bottom:16px;">🏢</div>
+        <div style="font-size:18px; font-weight:900; color:#374151; margin-bottom:8px;">등록된 업체가 없습니다</div>
+        <div style="font-size:14px; font-weight:600; margin-bottom:24px;">자주 사용하는 업체를 미리 등록해두면<br>공정 입력 시 편리합니다.</div>
+        <%= link_to "+ 첫 업체 등록하기", new_vendor_path,
+            style: "display:inline-block; padding:14px 24px; background:#111827; color:white; border-radius:14px; text-decoration:none; font-size:16px; font-weight:900;" %>
+      </div>
+    <% end %>
+
+  </div>
+</div>

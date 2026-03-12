@@ -12,6 +12,7 @@ Rails.application.routes.draw do
   end
 
   resources :work_processes
+  resources :vendors
   resources :process_templates, only: [:index, :create, :destroy] do
     member do
       post :move_up
