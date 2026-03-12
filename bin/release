@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+set -e
+
+echo "==> Checking if database tables exist..."
+TABLE_COUNT=$(bundle exec rails runner "puts ActiveRecord::Base.connection.tables.count" 2>/dev/null || echo "0")
+
+if [ "$TABLE_COUNT" -lt "3" ]; then
+  echo "==> Fresh database detected ($TABLE_COUNT tables). Loading schema..."
+  bundle exec rails db:schema:load
+  echo "==> Running seeds..."
+  bundle exec rails db:seed || true
+else
+  echo "==> Existing database ($TABLE_COUNT tables). Running migrations..."
+  bundle exec rails db:migrate
+fi
+
+echo "==> Database ready!"
