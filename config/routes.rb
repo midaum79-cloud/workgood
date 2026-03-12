@@ -29,6 +29,10 @@ Rails.application.routes.draw do
   # Widget Settings
   get "widget_settings", to: "widget_settings#index", as: :widget_settings
 
+  # Legal
+  get "terms",   to: "legal#terms",   as: :terms
+  get "privacy", to: "legal#privacy", as: :privacy
+
   # Notifications
   resources :notifications do
     member do
