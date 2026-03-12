@@ -20,7 +20,8 @@ class User < ApplicationRecord
       user.provider = auth.provider
       user.uid      = auth.uid
       user.name     = auth.info.name.presence || auth.info.email.split("@").first
-      user.subscription_plan ||= "free"
+      user.subscription_plan ||= "standard"
+      user.subscription_expires_at ||= 1.month.from_now
       # OAuth users get a random secure password they never need to use
       user.password = SecureRandom.hex(24) unless user.persisted?
       user.save!
@@ -31,7 +32,22 @@ class User < ApplicationRecord
   end
 
   def subscription_plan
-    self[:subscription_plan].presence || "free"
+    plan = self[:subscription_plan].presence || "free"
+    # 체험 만료 체크: 유료 플랜 + 만료일 지남 + 결제(빌링키) 없음 → 무료로 다운그레이드
+    if plan != "free" && subscription_expires_at.present? && subscription_expires_at < Time.current && billing_key.blank?
+      update_columns(subscription_plan: "free")
+      return "free"
+    end
+    plan
+  end
+
+  def trial?
+    subscription_plan != "free" && billing_key.blank? && subscription_expires_at.present?
+  end
+
+  def trial_days_remaining
+    return 0 unless trial?
+    [(subscription_expires_at.to_date - Date.current).to_i, 0].max
   end
 
   def plan_limit
