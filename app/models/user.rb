@@ -10,7 +10,7 @@ class User < ApplicationRecord
 
   before_save :downcase_email
 
-  PLAN_LIMITS  = { "free" => 1, "standard" => 3, "premium" => Float::INFINITY }.freeze
+  PLAN_LIMITS  = { "free" => 1, "standard" => 3, "premium" => 10 }.freeze
   PLAN_PRICES  = { "free" => 0, "standard" => 4_900, "premium" => 9_900 }.freeze
   PLAN_LABELS  = { "free" => "무료", "standard" => "스탠다드", "premium" => "프리미엄" }.freeze
 
