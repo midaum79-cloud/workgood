@@ -148,8 +148,10 @@ class ProjectsController < ApplicationController
       end
 
       @calendar_bars_by_row[row_index] = sorted_bars
-      @calendar_row_heights[row_index] = [lane_end_indexes.length, 1].max * 26
+      @calendar_row_heights[row_index] = [lane_end_indexes.length, 1].max * 20
     end
+
+    @calendar_projects = @calendar_bars_by_row.values.flatten.map { |bar| bar[:project] }.uniq
 
     selected_day_work_days = work_day_scope.select { |wd| wd.work_date == @selected_date }
 
