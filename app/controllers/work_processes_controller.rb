@@ -14,7 +14,8 @@ class WorkProcessesController < ApplicationController
     assign_default_position(@work_process)
 
     if @work_process.save
-      @work_process.sync_work_days!(params[:work_process][:selected_dates]) if params[:work_process][:selected_dates].present?
+      selected_dates = params.dig(:work_process, :selected_dates)
+      @work_process.sync_work_days!(Array(selected_dates).reject(&:blank?)) if selected_dates.present?
       redirect_to project_path(@work_process.project), notice: "공정이 등록되었습니다."
     else
       @projects = Project.order(created_at: :desc)
@@ -27,7 +28,8 @@ class WorkProcessesController < ApplicationController
 
   def update
     if @work_process.update(work_process_params)
-      @work_process.sync_work_days!(params[:work_process][:selected_dates]) if params[:work_process][:selected_dates].present?
+      selected_dates = params.dig(:work_process, :selected_dates)
+      @work_process.sync_work_days!(Array(selected_dates).reject(&:blank?)) if selected_dates.present?
       redirect_to work_process_path(@work_process, year: params[:year], month: params[:month]), notice: "공정이 수정되었습니다."
     else
       render :edit, status: :unprocessable_entity
@@ -58,8 +60,7 @@ class WorkProcessesController < ApplicationController
       :end_date,
       :material_cost,
       :labor_cost,
-      :memo,
-      selected_dates: []
+      :memo
     )
   end
 
