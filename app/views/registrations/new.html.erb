@@ -6,7 +6,7 @@
   <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/npm/pretendard/dist/web/static/pretendard.css" />
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { font-family: "Pretendard", -apple-system, sans-serif; background: #0f172a; min-height: 100vh; display: flex; align-items: center; justify-content: center; }
+    body { font-family: "Pretendard", -apple-system, sans-serif; background: #0f172a; min-height: 100vh; display: flex; align-items: flex-start; justify-content: center; padding: 40px 0; overflow-y: auto; }
     .card { background: white; border-radius: 28px; padding: 32px 28px; width: 100%; max-width: 400px; margin: 20px; }
     .logo { text-align: center; margin-bottom: 24px; }
     .logo-title { font-size: 26px; font-weight: 900; color: #111827; }
@@ -66,5 +66,14 @@
     <div class="divider">이미 계정이 있으신가요?</div>
     <%= link_to "로그인", login_path, class: "btn-secondary" %>
   </div>
+  <script>
+    document.querySelectorAll('input').forEach(input => {
+      input.addEventListener('focus', () => {
+        setTimeout(() => {
+          input.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }, 300);
+      });
+    });
+  </script>
 </body>
 </html>
