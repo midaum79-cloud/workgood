@@ -351,8 +351,12 @@
         <div class="drawer-divider"></div>
 
         <!-- 설정 / 알림 -->
-        <%= link_to notifications_path, class: "drawer-item" do %>
+        <%= link_to notifications_path, class: "drawer-item", onclick: "closeDrawer()" do %>
           <span class="drawer-item-icon">🔔</span> 알림함
+        <% end %>
+        <%= link_to widget_settings_path, class: "drawer-item", onclick: "closeDrawer()" do %>
+          <span class="drawer-item-icon">📱</span> 위젯 설정
+          <span class="drawer-item-badge" style="background:#fde68a; color:#92400e;">PRO</span>
         <% end %>
         <a href="#" class="drawer-item">
           <span class="drawer-item-icon">⚙️</span> 앱 설정

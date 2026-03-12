@@ -1,4 +1,5 @@
 Rails.application.routes.draw do
+  get "widget_settings", to: "widget_settings#index", as: :widget_settings
   resources :notifications do
     member do
       post :read
