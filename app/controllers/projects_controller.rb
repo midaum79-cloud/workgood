@@ -10,9 +10,9 @@ class ProjectsController < ApplicationController
     @projects =
       case @selected_status
       when "진행중", "예정", "완료"
-        Project.where(status: @selected_status).order(created_at: :desc)
+        current_user.projects.where(status: @selected_status).order(created_at: :desc)
       else
-        Project.order(created_at: :desc)
+        current_user.projects.order(created_at: :desc)
       end
 
     @featured_project = @projects.first
@@ -47,9 +47,9 @@ class ProjectsController < ApplicationController
     @projects =
       case @selected_status
       when "진행중", "예정", "완료"
-        Project.where(status: @selected_status).order(created_at: :desc)
+        current_user.projects.where(status: @selected_status).order(created_at: :desc)
       else
-        Project.order(created_at: :desc)
+        current_user.projects.order(created_at: :desc)
       end
   end
 
@@ -60,9 +60,9 @@ class ProjectsController < ApplicationController
     @projects =
       case @selected_status
       when "진행중", "예정", "완료"
-        Project.where(status: @selected_status).order(created_at: :desc)
+        current_user.projects.where(status: @selected_status).order(created_at: :desc)
       else
-        Project.order(created_at: :desc)
+        current_user.projects.order(created_at: :desc)
       end
 
     base_date =
@@ -224,7 +224,7 @@ class ProjectsController < ApplicationController
   private
 
   def set_project
-    @project = Project.find(params[:id])
+    @project = current_user.projects.find(params[:id])
   end
 
   def detail_address_present?
