@@ -1,0 +1,98 @@
+<div style="max-width:430px; margin:0 auto; min-height:100vh; background:#f5f5f5;">
+
+  <%# Sticky Header %>
+  <div style="background:white; padding:18px 20px 14px 20px; border-bottom:1px solid #ececec; position:sticky; top:0; z-index:30; margin-bottom:16px;">
+    <div style="display:flex; justify-content:space-between; align-items:center;">
+      <div style="font-size:24px; color:#111827; font-weight:900; cursor:pointer;" onclick="openDrawer()">☰</div>
+      <div style="font-size:20px; font-weight:900;">공정 템플릿 관리</div>
+      <div style="width:40px;"></div>
+    </div>
+  </div>
+
+  <div style="padding:0 16px 100px 16px;">
+
+    <%# Flash notice %>
+    <% if notice %>
+      <div style="background:#dcfce7; color:#166534; border-radius:14px; padding:12px 16px; margin-bottom:16px; font-size:14px; font-weight:700;">
+        <%= notice %>
+      </div>
+    <% end %>
+
+    <%# Description Card %>
+    <div style="background:white; border-radius:16px; padding:16px; margin-bottom:20px; box-shadow:0 2px 8px rgba(0,0,0,0.04);">
+      <div style="font-size:15px; font-weight:900; color:#111827; margin-bottom:6px;">📋 공정 템플릿이란?</div>
+      <div style="font-size:13px; font-weight:600; color:#6b7280; line-height:1.6;">
+        공정 등록 시 빠른 선택 버튼에 표시될 공정 이름들입니다.<br>
+        자주 사용하는 공정을 미리 추가해두면 편리합니다.
+      </div>
+    </div>
+
+    <%# Add New Template Form %>
+    <div style="background:white; border-radius:16px; padding:16px; margin-bottom:20px; box-shadow:0 2px 8px rgba(0,0,0,0.04);">
+      <div style="font-size:15px; font-weight:900; color:#111827; margin-bottom:12px;">+ 새 템플릿 추가</div>
+
+      <%= form_with model: @new_template, url: process_templates_path, local: true do |f| %>
+        <% if @new_template.errors.any? %>
+          <div style="background:#fee2e2; color:#dc2626; border-radius:10px; padding:10px 12px; margin-bottom:10px; font-size:13px; font-weight:700;">
+            <%= @new_template.errors.full_messages.first %>
+          </div>
+        <% end %>
+        <div style="display:flex; gap:10px;">
+          <%= f.text_field :name,
+              placeholder: "공정 이름 입력 (예: 도장, 방수공사)",
+              style: "flex:1; height:46px; border:1.5px solid #e5e7eb; border-radius:12px; padding:0 14px; font-size:15px; font-family:inherit;" %>
+          <%= f.submit "추가",
+              style: "width:70px; height:46px; background:#111827; color:white; border:none; border-radius:12px; font-size:15px; font-weight:900; cursor:pointer; flex-shrink:0;" %>
+        </div>
+      <% end %>
+    </div>
+
+    <%# Template List %>
+    <div style="background:white; border-radius:16px; overflow:hidden; box-shadow:0 2px 8px rgba(0,0,0,0.04);">
+      <div style="padding:16px; border-bottom:1px solid #f3f4f6; display:flex; justify-content:space-between; align-items:center;">
+        <div style="font-size:15px; font-weight:900; color:#111827;">전체 템플릿 (<%= @templates.count %>개)</div>
+        <div style="font-size:12px; color:#9ca3af; font-weight:600;">순서 조정 가능</div>
+      </div>
+
+      <% if @templates.any? %>
+        <% @templates.each_with_index do |template, idx| %>
+          <div style="display:flex; align-items:center; padding:14px 16px; border-bottom:<%= idx == @templates.length - 1 ? 'none' : '1px solid #f3f4f6' %>; gap:12px;">
+
+            <%# Order buttons %>
+            <div style="display:flex; flex-direction:column; gap:2px; flex-shrink:0;">
+              <%= button_to "▲", move_up_process_template_path(template),
+                  method: :post,
+                  style: "width:24px; height:22px; border:1px solid #e5e7eb; border-radius:6px; background:#fafafa; color:#6b7280; font-size:10px; cursor:pointer; display:flex; align-items:center; justify-content:center; padding:0;" %>
+              <%= button_to "▼", move_down_process_template_path(template),
+                  method: :post,
+                  style: "width:24px; height:22px; border:1px solid #e5e7eb; border-radius:6px; background:#fafafa; color:#6b7280; font-size:10px; cursor:pointer; display:flex; align-items:center; justify-content:center; padding:0;" %>
+            </div>
+
+            <%# Position number + name %>
+            <div style="flex:1;">
+              <div style="display:flex; align-items:center; gap:8px;">
+                <span style="font-size:11px; font-weight:800; color:#9ca3af; min-width:20px;">#<%= idx + 1 %></span>
+                <span style="font-size:16px; font-weight:800; color:#111827;"><%= template.name %></span>
+                <% if template.is_default %>
+                  <span style="font-size:10px; font-weight:700; color:#2563eb; background:#dbeafe; padding:2px 7px; border-radius:999px;">기본</span>
+                <% end %>
+              </div>
+            </div>
+
+            <%# Delete button %>
+            <%= button_to "삭제",
+                process_template_path(template),
+                method: :delete,
+                data: { confirm: "\"#{template.name}\" 템플릿을 삭제할까요?" },
+                style: "padding:8px 12px; background:#fee2e2; color:#dc2626; border:none; border-radius:10px; font-size:13px; font-weight:800; cursor:pointer; flex-shrink:0;" %>
+          </div>
+        <% end %>
+      <% else %>
+        <div style="padding:40px; text-align:center; color:#9ca3af; font-size:14px; font-weight:600;">
+          등록된 템플릿이 없습니다. 위에서 추가해보세요!
+        </div>
+      <% end %>
+    </div>
+
+  </div>
+</div>

@@ -1,9 +1,5 @@
-<% preset_processes = [
-  "철거", "확장", "설비", "샤시",
-  "목공", "전기", "타일", "필름",
-  "도배", "바닥", "가구", "조명",
-  "기타공사", "청소"
-] %>
+<% preset_processes = ProcessTemplate.ordered.map(&:name) %>
+<% preset_processes = ProcessTemplate::DEFAULT_NAMES if preset_processes.empty? %>
 
 <div style="padding:16px;">
   <%= form_with(model: work_process, local: true) do |f| %>

@@ -12,6 +12,12 @@ Rails.application.routes.draw do
   end
 
   resources :work_processes
+  resources :process_templates, only: [:index, :create, :destroy] do
+    member do
+      post :move_up
+      post :move_down
+    end
+  end
   resources :projects do
     collection do
       get :calendar
