@@ -1,16 +1,10 @@
-databases:
-  - name: workhead
-    databaseName: workhead
-    user: workhead
-    plan: free
-
 services:
   - type: web
     name: ilmeori
     runtime: ruby
-    plan: free
+    plan: starter
     region: singapore
-    buildCommand: "bundle install && bundle exec rails assets:precompile"
+    buildCommand: "bundle install && SECRET_KEY_BASE_DUMMY=1 bundle exec rails assets:precompile"
     startCommand: "bundle exec rails db:migrate && bundle exec rails server -b 0.0.0.0"
     envVars:
       - key: RAILS_ENV
