@@ -1,4 +1,6 @@
 class ProjectsController < ApplicationController
+  before_action :require_login
+  before_action :require_plan_for_project!, only: %i[new create]
   before_action :set_project, only: %i[show edit update destroy]
 
   def index
