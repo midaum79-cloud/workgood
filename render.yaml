@@ -5,7 +5,7 @@ services:
     plan: starter
     region: singapore
     buildCommand: "bundle install && SECRET_KEY_BASE_DUMMY=1 bundle exec rails assets:precompile"
-    startCommand: "bash bin/release && bundle exec rails server -b 0.0.0.0"
+    startCommand: "bundle exec rails db:prepare && bundle exec rails server -b 0.0.0.0"
     envVars:
       - key: RAILS_ENV
         value: production
