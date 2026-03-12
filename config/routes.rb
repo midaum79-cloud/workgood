@@ -21,8 +21,10 @@ Rails.application.routes.draw do
   patch "app_settings/notifications",         to: "app_settings#update_notifications",as: :update_notifications_app_settings
 
   # Subscription
-  get   "subscription", to: "subscriptions#index",  as: :subscription
-  patch "subscription", to: "subscriptions#update"
+  get   "subscription",        to: "subscriptions#index",  as: :subscription
+  patch "subscription",        to: "subscriptions#update"
+  post  "subscription/verify", to: "subscriptions#verify", as: :verify_subscription
+  delete "subscription",       to: "subscriptions#cancel", as: :cancel_subscription
 
   # Widget Settings
   get "widget_settings", to: "widget_settings#index", as: :widget_settings

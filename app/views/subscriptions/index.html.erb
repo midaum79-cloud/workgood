@@ -14,6 +14,9 @@
     <% if notice %>
       <div style="background:#dcfce7; color:#166534; border-radius:14px; padding:12px 16px; margin-bottom:16px; font-size:14px; font-weight:700;"><%= notice %></div>
     <% end %>
+    <% if alert %>
+      <div style="background:#fef2f2; color:#991b1b; border-radius:14px; padding:12px 16px; margin-bottom:16px; font-size:14px; font-weight:700;"><%= alert %></div>
+    <% end %>
 
     <%# Current Plan Card %>
     <div style="background:linear-gradient(135deg, #111827 0%, #1e3a5f 100%); border-radius:20px; padding:22px; margin-bottom:20px; color:white;">
@@ -34,6 +37,13 @@
           <%= usage_pct %>% 사용
         </div>
       </div>
+
+      <% if @current_plan != "free" && @last_payment %>
+        <div style="margin-top:14px; padding-top:14px; border-top:1px solid rgba(255,255,255,0.15); display:flex; justify-content:space-between; font-size:12px; color:rgba(255,255,255,0.6);">
+          <span>결제일: <%= @last_payment.paid_at&.strftime("%Y-%m-%d") %></span>
+          <span>만료일: <%= @last_payment.expires_at&.strftime("%Y-%m-%d") %></span>
+        </div>
+      <% end %>
     </div>
 
     <%# Plans %>
@@ -89,8 +99,9 @@
         <% if is_current %>
           <div style="text-align:center; padding:11px; background:#dbeafe; border-radius:12px; font-size:14px; font-weight:800; color:#2563eb;">현재 플랜</div>
         <% else %>
-          <%= button_to "스탠다드 시작", subscription_path, method: :patch, params: { plan: "standard" },
-              style: "width:100%; padding:12px; background:#2563eb; color:white; border:none; border-radius:12px; font-size:14px; font-weight:900; cursor:pointer; font-family:inherit;" %>
+          <button onclick="requestPayment('standard', 4900)" style="width:100%; padding:12px; background:#2563eb; color:white; border:none; border-radius:12px; font-size:14px; font-weight:900; cursor:pointer; font-family:inherit;">
+            스탠다드 시작 · ₩4,900/월
+          </button>
         <% end %>
       </div>
 
@@ -119,20 +130,97 @@
         <% if is_current %>
           <div style="text-align:center; padding:11px; background:rgba(255,255,255,0.15); border-radius:12px; font-size:14px; font-weight:800; color:white;">현재 플랜</div>
         <% else %>
-          <%= button_to "프리미엄 시작", subscription_path, method: :patch, params: { plan: "premium" },
-              style: "width:100%; padding:12px; background:linear-gradient(90deg, #6366f1, #818cf8); color:white; border:none; border-radius:12px; font-size:14px; font-weight:900; cursor:pointer; font-family:inherit;" %>
+          <button onclick="requestPayment('premium', 9900)" style="width:100%; padding:12px; background:linear-gradient(90deg, #6366f1, #818cf8); color:white; border:none; border-radius:12px; font-size:14px; font-weight:900; cursor:pointer; font-family:inherit;">
+            프리미엄 시작 · ₩9,900/월
+          </button>
         <% end %>
       </div>
 
     </div>
 
-    <div style="margin-top:16px; background:#fef3c7; border-radius:14px; padding:14px 16px;">
-      <div style="font-size:13px; font-weight:700; color:#92400e; line-height:1.7;">
-        💬 <strong>현재 결제 시스템은 준비 중입니다.</strong><br>
-        플랜 변경 버튼은 테스트용으로 즉시 적용됩니다.<br>
-        실제 결제 연동 후 정식 오픈됩니다.
+    <%# Cancel Subscription %>
+    <% if @current_plan != "free" %>
+      <div style="margin-top:20px; text-align:center;">
+        <%= button_to "구독 해지", cancel_subscription_path, method: :delete,
+            data: { turbo_confirm: "정말 구독을 해지하시겠습니까? 무료 플랜으로 전환됩니다." },
+            style: "background:none; border:none; color:#ef4444; font-size:14px; font-weight:700; cursor:pointer; font-family:inherit; padding:12px;" %>
+      </div>
+    <% end %>
+
+    <%# Info Box %>
+    <div style="margin-top:16px; background:#f0f9ff; border-radius:14px; padding:14px 16px;">
+      <div style="font-size:13px; font-weight:700; color:#0c4a6e; line-height:1.7;">
+        💳 <strong>안전한 결제</strong><br>
+        카드 정보는 PortOne(포트원)을 통해 안전하게 처리됩니다.<br>
+        매월 자동 결제되며, 언제든 해지 가능합니다.
       </div>
     </div>
 
   </div>
 </div>
+
+<%# PortOne JS SDK %>
+<script src="https://cdn.portone.io/v2/browser-sdk.js"></script>
+<script>
+  const STORE_ID = "<%= ENV['PORTONE_STORE_ID'] || '' %>";
+  const CHANNEL_KEY = "<%= ENV['PORTONE_CHANNEL_KEY'] || '' %>";
+
+  async function requestPayment(plan, amount) {
+    if (!STORE_ID || !CHANNEL_KEY) {
+      alert("결제 시스템이 아직 설정되지 않았습니다. 관리자에게 문의해주세요.");
+      return;
+    }
+
+    const planLabels = { standard: "스탠다드", premium: "프리미엄" };
+    const paymentId = `ilmeori_${plan}_<%= current_user.id %>_${Date.now()}`;
+
+    try {
+      const response = await PortOne.requestPayment({
+        storeId: STORE_ID,
+        channelKey: CHANNEL_KEY,
+        paymentId: paymentId,
+        orderName: `일머리 ${planLabels[plan]} 플랜 (월간)`,
+        totalAmount: amount,
+        currency: "KRW",
+        payMethod: "CARD",
+        customer: {
+          customerId: "customer_<%= current_user.id %>",
+          email: "<%= current_user.email %>",
+          fullName: "<%= current_user.name %>"
+        }
+      });
+
+      if (response.code) {
+        // 사용자가 결제를 취소하거나 오류 발생
+        if (response.code !== "FAILURE_TYPE_PG" || !response.message.includes("cancel")) {
+          alert("결제 실패: " + response.message);
+        }
+        return;
+      }
+
+      // 서버에서 결제 검증
+      const verifyRes = await fetch("/subscription/verify", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-CSRF-Token": document.querySelector('meta[name="csrf-token"]').content
+        },
+        body: JSON.stringify({
+          paymentId: response.paymentId,
+          plan: plan
+        })
+      });
+
+      const result = await verifyRes.json();
+      if (result.success) {
+        alert(result.message);
+        window.location.reload();
+      } else {
+        alert(result.message || "결제 검증 실패");
+      }
+    } catch (error) {
+      console.error("Payment error:", error);
+      alert("결제 처리 중 오류가 발생했습니다.");
+    }
+  }
+</script>

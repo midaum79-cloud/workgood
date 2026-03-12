@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_03_12_080545) do
+ActiveRecord::Schema[8.1].define(version: 2026_03_12_143217) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -147,8 +147,26 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_12_080545) do
     t.index ["company_id"], name: "index_sites_on_company_id"
   end
 
-  create_table "users", force: :cascade do |t|
+  create_table "subscription_payments", force: :cascade do |t|
+    t.integer "amount"
+    t.string "billing_key"
     t.datetime "created_at", null: false
+    t.datetime "expires_at"
+    t.string "imp_uid"
+    t.string "merchant_uid"
+    t.datetime "paid_at"
+    t.string "plan"
+    t.string "status"
+    t.datetime "updated_at", null: false
+    t.bigint "user_id", null: false
+    t.index ["user_id"], name: "index_subscription_payments_on_user_id"
+  end
+
+  create_table "users", force: :cascade do |t|
+    t.string "billing_key"
+    t.datetime "billing_started_at"
+    t.datetime "created_at", null: false
+    t.string "customer_uid"
     t.string "email"
     t.boolean "evening_alert_enabled"
     t.string "evening_alert_time"
@@ -212,6 +230,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_12_080545) do
   add_foreign_key "site_members", "users"
   add_foreign_key "site_photos", "sites"
   add_foreign_key "sites", "companies"
+  add_foreign_key "subscription_payments", "users"
   add_foreign_key "work_days", "work_processes"
   add_foreign_key "work_processes", "projects"
 end
