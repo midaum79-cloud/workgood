@@ -189,6 +189,7 @@ class ProjectsController < ApplicationController
 
   def create
     @project = Project.new(project_params)
+    @project.user = current_user
     @project.selected_process_names = params[:project][:selected_process_names]
     @project.custom_process_names_text = params[:project][:custom_process_names_text]
 
