@@ -15,6 +15,7 @@ Rails.application.routes.draw do
   resources :projects do
     collection do
       get :calendar
+      get :manage
     end
   end
 

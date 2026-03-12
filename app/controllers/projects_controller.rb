@@ -38,6 +38,19 @@ class ProjectsController < ApplicationController
     @ending_soon_processes = []
   end
 
+  def manage
+    @selected_status = params[:status]
+    @unread_notifications_count = Notification.where(status: "unread").count
+
+    @projects =
+      case @selected_status
+      when "진행중", "예정", "완료"
+        Project.where(status: @selected_status).order(created_at: :desc)
+      else
+        Project.order(created_at: :desc)
+      end
+  end
+
   def calendar
     @selected_status = params[:status]
     @view_mode = "month"
