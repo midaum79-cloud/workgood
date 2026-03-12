@@ -16,6 +16,4 @@ services:
       - key: SECRET_KEY_BASE
         generateValue: true
       - key: DATABASE_URL
-        fromDatabase:
-          name: workhead
-          property: connectionString
+        sync: false
