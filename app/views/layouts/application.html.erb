@@ -336,8 +336,32 @@
 
         <!-- 계정 / 구독 -->
         <% if logged_in? %>
-          <%= link_to subscription_path, class: "drawer-item", onclick: "closeDrawer()" do %>
-            <span class="drawer-item-icon">💳</span> 요금제 / 구독
+          <%= link_to subscription_path, class: "drawer-item", onclick: "closeDrawer()", style: "flex-direction:column; align-items:flex-start; gap:10px; padding-bottom:16px;" do %>
+            <div style="display:flex; align-items:center; gap:8px; width:100%;">
+              <span class="drawer-item-icon">💳</span>
+              <span style="font-weight:900; color:#111827;">요금제 / 구독</span>
+              <span style="margin-left:auto; font-size:11px; font-weight:800; background:linear-gradient(90deg,#6366f1,#818cf8); color:white; padding:3px 9px; border-radius:999px;">
+                <%= current_user.plan_label %> 이용중
+              </span>
+            </div>
+            <%# mini pricing table %>
+            <div style="width:100%; display:grid; grid-template-columns:1fr 1fr 1fr; gap:6px;">
+              <div style="background:<%= current_user.subscription_plan == 'free' ? '#111827' : '#f3f4f6' %>; border-radius:10px; padding:8px 6px; text-align:center;">
+                <div style="font-size:11px; font-weight:800; color:<%= current_user.subscription_plan == 'free' ? 'white' : '#6b7280' %>;">FREE</div>
+                <div style="font-size:12px; font-weight:900; color:<%= current_user.subscription_plan == 'free' ? 'white' : '#374151' %>; margin-top:2px;">₩0</div>
+                <div style="font-size:10px; color:<%= current_user.subscription_plan == 'free' ? 'rgba(255,255,255,0.7)' : '#9ca3af' %>;">1개</div>
+              </div>
+              <div style="background:<%= current_user.subscription_plan == 'standard' ? '#2563eb' : '#f3f4f6' %>; border-radius:10px; padding:8px 6px; text-align:center;">
+                <div style="font-size:11px; font-weight:800; color:<%= current_user.subscription_plan == 'standard' ? 'white' : '#6b7280' %>;">STANDARD</div>
+                <div style="font-size:12px; font-weight:900; color:<%= current_user.subscription_plan == 'standard' ? 'white' : '#374151' %>; margin-top:2px;">₩4,900</div>
+                <div style="font-size:10px; color:<%= current_user.subscription_plan == 'standard' ? 'rgba(255,255,255,0.7)' : '#9ca3af' %>;">3개</div>
+              </div>
+              <div style="background:<%= current_user.subscription_plan == 'premium' ? '#312e81' : '#f3f4f6' %>; border-radius:10px; padding:8px 6px; text-align:center;">
+                <div style="font-size:11px; font-weight:800; color:<%= current_user.subscription_plan == 'premium' ? '#fde68a' : '#6b7280' %>;">PREMIUM</div>
+                <div style="font-size:12px; font-weight:900; color:<%= current_user.subscription_plan == 'premium' ? 'white' : '#374151' %>; margin-top:2px;">₩9,900</div>
+                <div style="font-size:10px; color:<%= current_user.subscription_plan == 'premium' ? 'rgba(255,255,255,0.7)' : '#9ca3af' %>;">무제한</div>
+              </div>
+            </div>
           <% end %>
         <% else %>
           <%= link_to login_path, class: "drawer-item", onclick: "closeDrawer()" do %>
@@ -364,9 +388,20 @@
         <%= link_to notifications_path, class: "drawer-item", onclick: "closeDrawer()" do %>
           <span class="drawer-item-icon">🔔</span> 알림함
         <% end %>
-        <%= link_to widget_settings_path, class: "drawer-item", onclick: "closeDrawer()" do %>
-          <span class="drawer-item-icon">📱</span> 위젯 설정
-          <span class="drawer-item-badge" style="background:#fde68a; color:#92400e;">PRO</span>
+        <%= link_to widget_settings_path, onclick: "closeDrawer()",
+            style: "display:block; margin:2px 8px; text-decoration:none; border-radius:16px; overflow:hidden;" do %>
+          <div style="background:linear-gradient(135deg, #1e1b4b 0%, #312e81 100%); padding:14px 16px;">
+            <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px;">
+              <span style="font-size:18px;">📱</span>
+              <span style="font-size:15px; font-weight:900; color:white;">위젯 설정</span>
+              <span style="margin-left:auto; font-size:10px; font-weight:800; background:#fde68a; color:#78350f; padding:2px 8px; border-radius:999px;">PREMIUM</span>
+            </div>
+            <div style="font-size:12px; color:#c7d2fe; font-weight:600; line-height:1.6;">
+              잠금화면에서 내일 공정을<br>
+              바로 확인하세요 ⭐
+            </div>
+            <div style="margin-top:10px; font-size:11px; font-weight:800; color:#818cf8;">자세히 보기 →</div>
+          </div>
         <% end %>
         <a href="#" class="drawer-item">
           <span class="drawer-item-icon">⚙️</span> 앱 설정
