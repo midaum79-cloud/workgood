@@ -253,9 +253,18 @@
         </div>
 
         <%# Date %>
-        <div style="background:#f3f4f6; border-radius:12px; padding:10px 14px; font-size:14px; font-weight:800; color:#4b5563; margin-bottom:12px;">
+        <div style="background:#f3f4f6; border-radius:12px; padding:10px 14px; font-size:14px; font-weight:800; color:#4b5563; margin-bottom:8px;">
           📅 <%= project.start_date || "시작일 미정" %> ~ <%= project.end_date || "종료일 미정" %>
         </div>
+
+        <%# Address %>
+        <% if project.address.present? %>
+          <div style="background:#f3f4f6; border-radius:12px; padding:10px 14px; font-size:13px; font-weight:700; color:#6b7280; margin-bottom:12px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
+            📍 <%= project.address %>
+          </div>
+        <% else %>
+          <div style="margin-bottom:12px;"></div>
+        <% end %>
 
         <%# Progress Bar %>
         <div style="margin-bottom:14px;">

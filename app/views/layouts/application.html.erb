@@ -338,7 +338,7 @@
         <div class="drawer-divider"></div>
 
         <!-- 관리 -->
-        <%= link_to projects_path, class: "drawer-item" do %>
+        <%= link_to projects_path, class: "drawer-item", onclick: "closeDrawer()" do %>
           <span class="drawer-item-icon">🏗️</span> 프로젝트 관리
         <% end %>
         <a href="#" class="drawer-item">
