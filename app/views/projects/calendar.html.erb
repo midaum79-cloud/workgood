@@ -98,7 +98,7 @@
       </div>
     <% end %>
 
-    <div style="border:1px solid #ececec; border-radius:18px; overflow:hidden; background:white; flex:1;">
+    <div style="border:1px solid #ececec; border-radius:18px; overflow:hidden; background:white; flex:1; display:flex; flex-direction:column;">
       <div style="display:grid; grid-template-columns:repeat(7, 1fr); border-bottom:1px solid #ececec; background:#fafafa;">
         <% ["일", "월", "화", "수", "목", "금", "토"].each do |weekday| %>
           <% header_color = case weekday
@@ -112,9 +112,8 @@
         <% end %>
       </div>
 
-      <% max_row_height = [@calendar_row_heights.values.max || 20, 20].max %>
       <% @calendar_rows.each_with_index do |row_days, row_index| %>
-        <div style="border-bottom:<%= row_index == @calendar_rows.length - 1 ? 'none' : '1px solid #ececec' %>;">
+        <div style="flex:1; border-bottom:<%= row_index == @calendar_rows.length - 1 ? 'none' : '1px solid #ececec' %>; display:flex; flex-direction:column;">
           <div style="display:grid; grid-template-columns:repeat(7, 1fr);">
             <% row_days.each do |day| %>
               <% is_current_month = (day.month == @calendar_month) %>
@@ -157,7 +156,7 @@
             <% end %>
           </div>
 
-          <div style="position:relative; height:<%= max_row_height %>px; margin:0 6px 6px 6px;">
+          <div style="position:relative; flex:1; min-height:<%= [@calendar_row_heights[row_index] || 20, 20].max %>px; margin:0 6px 6px 6px;">
             <% (@calendar_bars_by_row[row_index] || []).each do |bar| %>
               <% work_process = bar[:work_process] %>
               <% left_percent = (bar[:start_index] * 100.0 / 7.0) %>
