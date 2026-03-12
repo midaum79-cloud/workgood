@@ -1,4 +1,6 @@
 class WorkProcess < ApplicationRecord
+  attr_accessor :selected_dates
+
   belongs_to :project
   has_many :notifications, dependent: :destroy
   has_many :work_days, dependent: :destroy
@@ -27,6 +29,21 @@ class WorkProcess < ApplicationRecord
 
   def stored_status
     self[:status]
+  end
+
+  def sync_work_days!(date_strings)
+    date_strings = Array(date_strings).reject(&:blank?)
+    return if date_strings.empty?
+
+    dates = date_strings.map { |d| Date.parse(d) }.sort
+
+    work_days.destroy_all
+    dates.each { |d| work_days.create!(work_date: d) }
+
+    update_columns(
+      start_date: dates.first,
+      end_date: dates.last
+    )
   end
 
   private

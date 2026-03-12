@@ -20,12 +20,11 @@
     <div style="background:white; border-radius:20px; padding:18px; box-shadow:0 2px 10px rgba(0,0,0,0.04); margin-bottom:16px;">
       <div style="font-size:17px; font-weight:900; margin-bottom:14px;">기본 정보</div>
 
-      <div style="margin-bottom:14px;">
-        <label style="display:block; font-size:14px; font-weight:800; margin-bottom:8px;">현장 선택</label>
-        <%= f.collection_select :project_id, Project.order(created_at: :desc), :id, :project_name, { prompt: "현장을 선택하세요" }, {
-          style: "width:100%; height:48px; border:1px solid #dcdcdc; border-radius:14px; padding:0 14px; font-size:16px; background:white;"
-        } %>
-      </div>
+      <% if @work_process.new_record? && params[:project_id].present? %>
+        <%= f.hidden_field :project_id, value: params[:project_id] %>
+      <% else %>
+        <%= f.hidden_field :project_id %>
+      <% end %>
 
       <div style="margin-bottom:14px;">
         <label style="display:block; font-size:14px; font-weight:800; margin-bottom:10px;">빠른 공정 선택</label>
@@ -64,18 +63,30 @@
     </div>
 
     <div style="background:white; border-radius:20px; padding:18px; box-shadow:0 2px 10px rgba(0,0,0,0.04); margin-bottom:16px;">
-      <div style="font-size:17px; font-weight:900; margin-bottom:14px;">일정 정보</div>
-
-      <div style="margin-bottom:14px;">
-        <label style="display:block; font-size:14px; font-weight:800; margin-bottom:8px;">시작일</label>
-        <%= f.date_field :start_date,
-          style: "width:100%; height:50px; border:1px solid #dcdcdc; border-radius:14px; padding:0 14px; font-size:16px; background:white;" %>
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+        <div style="font-size:17px; font-weight:900;">작업 날짜 선택</div>
+        <div style="display:flex; align-items:center; gap:10px;">
+          <button type="button" onclick="changeCalendarMonth(-1)" style="border:none; background:none; color:#374151; font-size:18px; font-weight:900; cursor:pointer;">◀</button>
+          <div id="calendar-header-text" style="font-size:16px; font-weight:900; color:#374151; min-width:80px; text-align:center;">
+          </div>
+          <button type="button" onclick="changeCalendarMonth(1)" style="border:none; background:none; color:#374151; font-size:18px; font-weight:900; cursor:pointer;">▶</button>
+        </div>
       </div>
 
-      <div>
-        <label style="display:block; font-size:14px; font-weight:800; margin-bottom:8px;">종료일</label>
-        <%= f.date_field :end_date,
-          style: "width:100%; height:50px; border:1px solid #dcdcdc; border-radius:14px; padding:0 14px; font-size:16px; background:white;" %>
+      <div style="display:grid; grid-template-columns:repeat(7, 1fr); gap:6px; margin-bottom:10px; font-size:13px; font-weight:800; color:#6b7280; text-align:center;">
+        <div>일</div><div>월</div><div>화</div><div>수</div><div>목</div><div>금</div><div>토</div>
+      </div>
+
+      <div id="calendar-grid" style="display:grid; grid-template-columns:repeat(7, 1fr); gap:6px;">
+        <!-- Calendar days injected by JS -->
+      </div>
+      
+      <div id="hidden-dates-container">
+        <!-- Hidden inputs injected by JS -->
+      </div>
+
+      <div style="font-size:12px; color:#6b7280; font-weight:700; margin-top:10px; line-height:1.5;">
+        날짜를 한 번 누르면 추가되고, 다시 누르면 취소됩니다.
       </div>
     </div>
 
@@ -132,6 +143,80 @@
 </div>
 
 <script>
+  let selectedDates = new Set(<%= raw @work_process.work_days.map { |wd| "'#{wd.work_date}'" }.join(',') %>);
+  let currentViewDate = new Date();
+
+  function renderCalendar() {
+    const year = currentViewDate.getFullYear();
+    const month = currentViewDate.getMonth();
+    
+    document.getElementById("calendar-header-text").textContent = `${year}.${String(month + 1).padStart(2, '0')}`;
+    
+    const firstDayOfMonth = new Date(year, month, 1);
+    const lastDayOfMonth = new Date(year, month + 1, 0);
+    
+    // Get the nearest Sunday before or equal to the first day of the month
+    const startCalendarDate = new Date(firstDayOfMonth);
+    startCalendarDate.setDate(firstDayOfMonth.getDate() - firstDayOfMonth.getDay());
+    
+    // Get the nearest Saturday after or equal to the last day of the month
+    const endCalendarDate = new Date(lastDayOfMonth);
+    if (lastDayOfMonth.getDay() !== 6) {
+      endCalendarDate.setDate(lastDayOfMonth.getDate() + (6 - lastDayOfMonth.getDay()));
+    }
+
+    const grid = document.getElementById("calendar-grid");
+    grid.innerHTML = "";
+    
+    let currentDate = new Date(startCalendarDate);
+    while (currentDate <= endCalendarDate) {
+      const dateStr = `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, '0')}-${String(currentDate.getDate()).padStart(2, '0')}`;
+      const isCurrentMonth = currentDate.getMonth() === month;
+      const isSelected = selectedDates.has(dateStr);
+
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.textContent = currentDate.getDate();
+      btn.dataset.date = dateStr;
+      
+      const bgColor = isSelected ? "#2563eb" : "#f3f4f6";
+      const textColor = isSelected ? "white" : (isCurrentMonth ? "#111827" : "#9ca3af");
+      
+      btn.setAttribute("style", `min-height:44px; border:none; border-radius:12px; font-size:14px; font-weight:800; cursor:pointer; background:${bgColor}; color:${textColor};`);
+      
+      btn.onclick = function() {
+        if (selectedDates.has(this.dataset.date)) {
+          selectedDates.delete(this.dataset.date);
+        } else {
+          selectedDates.add(this.dataset.date);
+        }
+        updateHiddenInputs();
+        renderCalendar();
+      };
+      
+      grid.appendChild(btn);
+      
+      currentDate.setDate(currentDate.getDate() + 1);
+    }
+  }
+
+  function updateHiddenInputs() {
+    const container = document.getElementById("hidden-dates-container");
+    container.innerHTML = "";
+    selectedDates.forEach(date => {
+      const input = document.createElement("input");
+      input.type = "hidden";
+      input.name = "work_process[selected_dates][]";
+      input.value = date;
+      container.appendChild(input);
+    });
+  }
+
+  function changeCalendarMonth(delta) {
+    currentViewDate.setMonth(currentViewDate.getMonth() + delta);
+    renderCalendar();
+  }
+
   function updateTotalCost() {
     const material = parseInt(document.getElementById("material_cost_input")?.value || 0, 10);
     const labor = parseInt(document.getElementById("labor_cost_input")?.value || 0, 10);
@@ -144,6 +229,15 @@
     }
   }
 
-  document.addEventListener("DOMContentLoaded", updateTotalCost);
-  document.addEventListener("turbo:load", updateTotalCost);
+  document.addEventListener("DOMContentLoaded", () => {
+    updateTotalCost();
+    updateHiddenInputs();
+    renderCalendar();
+  });
+  
+  document.addEventListener("turbo:load", () => {
+    updateTotalCost();
+    updateHiddenInputs();
+    renderCalendar();
+  });
 </script>

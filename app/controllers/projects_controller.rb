@@ -16,13 +16,47 @@ class ProjectsController < ApplicationController
     @featured_project = @projects.first
     @unread_notifications_count = Notification.where(status: "unread").count
 
+    project_ids = @projects.pluck(:id)
+    work_day_scope = WorkDay.includes(work_process: :project)
+                            .joins(:work_process)
+                            .where(work_processes: { project_id: project_ids })
+
+    today_work_days = work_day_scope.select { |wd| wd.work_date == Time.zone.today }
+
+    @today_work_processes = today_work_days
+      .map(&:work_process)
+      .uniq
+      .sort_by { |process| [process.position || 9999, process.id || 0] }
+
+    tomorrow_work_days = work_day_scope.select { |wd| wd.work_date == Time.zone.tomorrow }
+
+    @tomorrow_work_processes = tomorrow_work_days
+      .map(&:work_process)
+      .uniq
+      .sort_by { |process| [process.position || 9999, process.id || 0] }
+
+    @ending_soon_processes = []
+  end
+
+  def calendar
+    @selected_status = params[:status]
+    @view_mode = params[:view_mode].presence || "month"
+
+    @projects =
+      case @selected_status
+      when "진행중", "예정", "완료"
+        Project.where(status: @selected_status).order(created_at: :desc)
+      else
+        Project.order(created_at: :desc)
+      end
+
     base_date =
       if params[:year].present? && params[:month].present?
         Date.new(params[:year].to_i, params[:month].to_i, 1)
-      elsif Date.today.present?
-        Date.today
+      elsif Time.zone.today.present?
+        Time.zone.today
       else
-        Date.today
+        Time.zone.today
       end
 
     @calendar_year = base_date.year
@@ -52,12 +86,12 @@ class ProjectsController < ApplicationController
         begin
           Date.parse(params[:selected_date])
         rescue ArgumentError
-          available_days.first || Date.today
+          available_days.first || Time.zone.today
         end
-      elsif available_days.include?(Date.today)
-        Date.today
+      elsif available_days.include?(Time.zone.today)
+        Time.zone.today
       else
-        available_days.first || Date.today
+        available_days.first || Time.zone.today
       end
 
     project_ids = @projects.pluck(:id)
@@ -71,7 +105,6 @@ class ProjectsController < ApplicationController
 
     @calendar_rows.each_with_index do |row_days, row_index|
       row_start = row_days.first
-      row_end = row_days.last
 
       raw_bars = work_day_scope.map do |work_day|
         next unless row_days.include?(work_day.work_date)
@@ -124,39 +157,6 @@ class ProjectsController < ApplicationController
       .map(&:work_process)
       .uniq
       .sort_by { |process| [process.position || 9999, process.id || 0] }
-
-    today_work_days = work_day_scope.select { |wd| wd.work_date == Date.today }
-
-    @today_work_processes = today_work_days
-      .map(&:work_process)
-      .uniq
-      .sort_by { |process| [process.position || 9999, process.id || 0] }
-
-    tomorrow_work_days = work_day_scope.select { |wd| wd.work_date == Date.tomorrow }
-
-    @tomorrow_start_processes = tomorrow_work_days
-      .map(&:work_process)
-      .uniq
-      .sort_by { |process| [process.position || 9999, process.id || 0] }
-
-    @today_start_processes = @today_work_processes
-
-    @ending_soon_processes = []
-
-    @delayed_processes = WorkProcess.includes(:project, :work_days)
-                                    .where(project_id: project_ids)
-                                    .select do |process|
-      next false if process.work_days.blank?
-
-      process_last_day = process.work_days.map(&:work_date).max
-      process_last_day.present? && process_last_day < Date.today && process.effective_status(Date.today) != "완료"
-    end
-    .sort_by do |process|
-      [
-        process.position || 9999,
-        process.work_days.map(&:work_date).min || Date.new(2100, 1, 1)
-      ]
-    end
   end
 
   def show

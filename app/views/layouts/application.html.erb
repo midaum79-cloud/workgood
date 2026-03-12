@@ -41,6 +41,8 @@
         font-family: "Pretendard", -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Noto Sans KR", "Malgun Gothic", sans-serif;
         -webkit-font-smoothing: antialiased;
         -moz-osx-font-smoothing: grayscale;
+        overflow-x: hidden;
+        -webkit-text-size-adjust: 100%;
       }
 
       a, button {
@@ -70,7 +72,6 @@
         min-height: 100dvh;
         background: #f5f5f5;
         position: relative;
-        overflow-x: hidden;
       }
 
       /* Desktop: show phone-like frame */
@@ -273,7 +274,7 @@
 
     <nav class="bottom-nav">
       <div class="bottom-nav-inner">
-        <%= link_to projects_path, class: "bottom-nav-item #{current_path == '/' || current_path.start_with?('/projects') ? 'active' : ''}" do %>
+        <%= link_to projects_path, class: "bottom-nav-item #{current_path == '/' || (current_path.start_with?('/projects') && current_path != '/projects/calendar' && current_path != '/projects/new') ? 'active' : ''}" do %>
           <span class="bottom-nav-icon">🏠</span>
           <span>홈</span>
         <% end %>
@@ -283,12 +284,9 @@
           <span>현장추가</span>
         <% end %>
 
-        <%= link_to notifications_path, class: "bottom-nav-item #{current_path.start_with?('/notifications') ? 'active' : ''}" do %>
-          <span class="bottom-nav-icon">🔔</span>
-          <% if unread_count > 0 %>
-            <span class="bottom-nav-badge"><%= unread_count %></span>
-          <% end %>
-          <span>알림</span>
+        <%= link_to calendar_projects_path, class: "bottom-nav-item #{current_path == '/projects/calendar' ? 'active' : ''}" do %>
+          <span class="bottom-nav-icon">📅</span>
+          <span>캘린더</span>
         <% end %>
       </div>
     </nav>

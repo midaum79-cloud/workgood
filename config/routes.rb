@@ -12,7 +12,11 @@ Rails.application.routes.draw do
   end
 
   resources :work_processes
-  resources :projects
+  resources :projects do
+    collection do
+      get :calendar
+    end
+  end
 
   root "projects#index"
 end

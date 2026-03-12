@@ -99,6 +99,17 @@ class Project < ApplicationRecord
     end
   end
 
+  def theme_color_hex
+    case color
+    when "blue"   then "#2563eb"
+    when "green"  then "#16a34a"
+    when "orange" then "#ea580c"
+    when "red"    then "#dc2626"
+    when "purple" then "#7c3aed"
+    else "#b8860b" # gold/default
+    end
+  end
+
   private
 
   def create_selected_processes
