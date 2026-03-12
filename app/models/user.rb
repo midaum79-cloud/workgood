@@ -1,5 +1,6 @@
 class User < ApplicationRecord
-  has_secure_password
+  has_secure_password validations: false
+  validates :password, length: { minimum: 8 }, if: -> { password.present? }
 
   has_many :projects, dependent: :nullify
 
@@ -8,9 +9,25 @@ class User < ApplicationRecord
 
   before_save :downcase_email
 
-  PLAN_LIMITS = { "free" => 1, "standard" => 3, "premium" => Float::INFINITY }.freeze
-  PLAN_PRICES = { "free" => 0, "standard" => 4_900, "premium" => 9_900 }.freeze
-  PLAN_LABELS = { "free" => "무료", "standard" => "스탠다드", "premium" => "프리미엄" }.freeze
+  PLAN_LIMITS  = { "free" => 1, "standard" => 3, "premium" => Float::INFINITY }.freeze
+  PLAN_PRICES  = { "free" => 0, "standard" => 4_900, "premium" => 9_900 }.freeze
+  PLAN_LABELS  = { "free" => "무료", "standard" => "스탠다드", "premium" => "프리미엄" }.freeze
+
+  # ── Google OAuth ──────────────────────────────────────────────────────
+  def self.find_or_create_from_omniauth(auth)
+    find_or_initialize_by(email: auth.info.email.downcase).tap do |user|
+      user.provider = auth.provider
+      user.uid      = auth.uid
+      user.name     = auth.info.name.presence || auth.info.email.split("@").first
+      user.subscription_plan ||= "free"
+      # OAuth users get a random secure password they never need to use
+      user.password = SecureRandom.hex(24) unless user.persisted?
+      user.save!
+    end
+  rescue => e
+    Rails.logger.error "OmniAuth user creation failed: #{e.message}"
+    nil
+  end
 
   def subscription_plan
     self[:subscription_plan].presence || "free"

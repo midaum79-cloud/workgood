@@ -8,6 +8,10 @@ Rails.application.routes.draw do
   get  "signup", to: "registrations#new",     as: :signup
   post "signup", to: "registrations#create"
 
+  # OmniAuth (Google)
+  get  "/auth/:provider/callback", to: "omniauth_callbacks#google_oauth2"
+  get  "/auth/failure",            to: "omniauth_callbacks#failure"
+
   # App Settings
   get  "app_settings",                        to: "app_settings#index",               as: :app_settings
   patch "app_settings/profile",               to: "app_settings#update_profile",      as: :update_profile_app_settings
