@@ -123,8 +123,8 @@ class ProjectsController < ApplicationController
 
       sorted_bars = raw_bars.sort_by do |bar|
         [
-          bar[:work_process].position || 9999,
           bar[:start_index],
+          bar[:work_process].position || 9999,
           bar[:work_process].id || 0,
           bar[:work_day].id || 0
         ]
