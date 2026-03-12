@@ -27,9 +27,10 @@ class ApplicationController < ActionController::Base
   def require_plan_for_project!
     return unless logged_in?
     if current_user.project_limit_reached?
-      limit = current_user.plan_limit
-      redirect_to projects_path,
-        alert: "프로젝트 수가 요금제 한도(#{limit}개)를 초과했습니다. 요금제를 업그레이드해주세요."
+      plan = current_user.plan_label
+      limit = current_user.plan_limit == Float::INFINITY ? "무제한" : "#{current_user.plan_limit}개"
+      redirect_to subscription_path,
+        alert: "#{plan} 플랜은 프로젝트 #{limit}까지 가능합니다. 업그레이드하시면 더 많은 현장을 관리할 수 있어요!"
     end
   end
 end
