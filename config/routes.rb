@@ -1,5 +1,6 @@
 Rails.application.routes.draw do
   get "announcements", to: "announcements#index", as: :announcements
+  get "my_account",    to: "my_account#show",     as: :my_account
   # Auth
   get  "login",  to: "sessions#new",          as: :login
   post "login",  to: "sessions#create"
