@@ -219,135 +219,76 @@
 
   <div style="display:flex; flex-direction:column; gap:14px;">
     <% @projects.each do |project| %>
-      <% work_processes = project.ordered_work_processes %>
-      <% current_process = project.current_work_process %>
 
-      <%= link_to project_path(project), style: "text-decoration:none; color:inherit;" do %>
-        <div style="background:white; border-radius:20px; padding:18px; box-shadow:0 2px 10px rgba(0,0,0,0.04);">
-          <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:12px;">
-            <div style="font-size:20px; font-weight:900; color:<%= project.theme_color_hex %>; line-height:1.2;">
-              <%= project.project_name %>
-            </div>
+      <div style="background:white; border-radius:20px; padding:18px; box-shadow:0 2px 10px rgba(0,0,0,0.04);">
 
-            <% status_bg = case project.status
-              when '완료' then '#dcfce7'
-              when '진행중' then '#fef3c7'
-              else '#dbeafe'
-              end %>
-            <% status_color = case project.status
-              when '완료' then '#166534'
-              when '진행중' then '#92400e'
-              else '#2563eb'
-              end %>
-            <div style="
-              padding:6px 12px;
-              border-radius:999px;
-              font-size:13px;
-              font-weight:800;
-              background:#{status_bg};
-              color:#{status_color};
-            ">
-              <%= project.status.presence || '예정' %>
-            </div>
+        <%# Title + Status %>
+        <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:12px;">
+          <div style="font-size:20px; font-weight:900; color:<%= project.theme_color_hex %>; line-height:1.2; flex:1; padding-right:10px;">
+            <%= project.project_name %>
           </div>
 
-          <div style="display:flex; flex-direction:column; gap:10px; margin-bottom:14px;">
-            <div style="background:#f3f4f6; border-radius:14px; padding:12px 14px; font-size:15px; font-weight:800; color:#4b5563;">
-              📅 <%= project.start_date || "시작일 미정" %> ~ <%= project.end_date || "종료일 미정" %>
-            </div>
-
-            <div style="background:#f3f4f6; border-radius:14px; padding:12px 14px; font-size:15px; font-weight:800; color:#4b5563;">
-              📍 <%= project.address.presence || "주소 미입력" %>
-            </div>
-          </div>
-
-          <div style="margin-bottom:12px;">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
-              <div style="font-size:15px; font-weight:800; color:#374151;">진행률</div>
-              <div style="font-size:15px; font-weight:900; color:#111827;"><%= project.progress_percentage %>%</div>
-            </div>
-
-            <div style="width:100%; height:10px; background:#e5e7eb; border-radius:999px; overflow:hidden;">
-              <div style="width:<%= project.progress_percentage %>%; height:100%; background:#e1c04b; border-radius:999px;"></div>
-            </div>
-          </div>
-
-          <div style="display:grid; grid-template-columns:repeat(4, 1fr); gap:10px; margin-bottom:14px;">
-            <div style="background:#f9fafb; border-radius:14px; padding:12px 8px; text-align:center;">
-              <div style="font-size:12px; font-weight:800; color:#6b7280;">전체</div>
-              <div style="font-size:16px; font-weight:900; color:#111827;"><%= project.total_work_processes_count %></div>
-            </div>
-
-            <div style="background:#ecfdf5; border-radius:14px; padding:12px 8px; text-align:center;">
-              <div style="font-size:12px; font-weight:800; color:#16a34a;">완료</div>
-              <div style="font-size:16px; font-weight:900; color:#166534;"><%= project.completed_work_processes_count %></div>
-            </div>
-
-            <div style="background:#fef3c7; border-radius:14px; padding:12px 8px; text-align:center;">
-              <div style="font-size:12px; font-weight:800; color:#92400e;">진행중</div>
-              <div style="font-size:16px; font-weight:900; color:#92400e;"><%= project.in_progress_work_processes_count %></div>
-            </div>
-
-            <div style="background:#f3f4f6; border-radius:14px; padding:12px 8px; text-align:center;">
-              <div style="font-size:12px; font-weight:800; color:#6b7280;">예정</div>
-              <div style="font-size:16px; font-weight:900; color:#374151;"><%= project.scheduled_work_processes_count %></div>
-            </div>
-          </div>
-
-          <div style="background:#fafafa; border-radius:16px; padding:14px;">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
-              <div style="font-size:16px; font-weight:900; color:#111827;">공정 진행 현황</div>
-              <% if current_process.present? %>
-                <div style="padding:6px 10px; border-radius:999px; background:#fef3c7; color:#92400e; font-size:12px; font-weight:800;">
-                  현재 <%= current_process.process_name %>
-                </div>
-              <% end %>
-            </div>
-
-            <% if work_processes.any? %>
-              <div style="display:flex; align-items:flex-start; gap:8px; overflow-x:auto; padding-bottom:2px;">
-                <% work_processes.each_with_index do |process, index| %>
-                  <div style="display:flex; align-items:center; gap:8px;">
-                    <div style="min-width:70px; text-align:center;">
-                      <div style="
-                        width:30px;
-                        height:30px;
-                        margin:0 auto 8px auto;
-                        border-radius:50%;
-                        display:flex;
-                        align-items:center;
-                        justify-content:center;
-                        font-size:13px;
-                        font-weight:900;
-                        background:<%= process.status == '완료' ? '#22c55e' : (process.status == '진행중' ? '#e1c04b' : '#d1d5db') %>;
-                        color:white;
-                      ">
-                        <%= index + 1 %>
-                      </div>
-
-                      <div style="font-size:13px; font-weight:900; color:#111827; white-space:nowrap;">
-                        <%= process.process_name %>
-                      </div>
-
-                      <div style="font-size:12px; font-weight:700; color:#6b7280;">
-                        <%= process.status %>
-                      </div>
-                    </div>
-
-                    <% unless index == work_processes.length - 1 %>
-                      <div style="width:40px; height:4px; border-radius:999px; background:#e5e7eb; margin-top:13px;"></div>
-                    <% end %>
-                  </div>
-                <% end %>
-              </div>
-            <% else %>
-              <div style="font-size:14px; font-weight:700; color:#9ca3af;">
-                등록된 공정이 없습니다.
-              </div>
-            <% end %>
+          <% status_bg = case project.status
+            when '완료' then '#dcfce7'
+            when '진행중' then '#fef3c7'
+            else '#dbeafe'
+            end %>
+          <% status_color = case project.status
+            when '완료' then '#166534'
+            when '진행중' then '#92400e'
+            else '#2563eb'
+            end %>
+          <div style="
+            padding:6px 12px;
+            border-radius:999px;
+            font-size:13px;
+            font-weight:800;
+            background:<%= status_bg %>;
+            color:<%= status_color %>;
+            white-space:nowrap;
+            flex-shrink:0;
+          ">
+            <%= project.status.presence || '예정' %>
           </div>
         </div>
-      <% end %>
+
+        <%# Date %>
+        <div style="background:#f3f4f6; border-radius:12px; padding:10px 14px; font-size:14px; font-weight:800; color:#4b5563; margin-bottom:12px;">
+          📅 <%= project.start_date || "시작일 미정" %> ~ <%= project.end_date || "종료일 미정" %>
+        </div>
+
+        <%# Progress Bar %>
+        <div style="margin-bottom:14px;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+            <div style="font-size:13px; font-weight:800; color:#6b7280;">진행률</div>
+            <div style="font-size:13px; font-weight:900; color:#111827;"><%= project.progress_percentage %>%</div>
+          </div>
+          <div style="width:100%; height:8px; background:#e5e7eb; border-radius:999px; overflow:hidden;">
+            <div style="width:<%= project.progress_percentage %>%; height:100%; background:#e1c04b; border-radius:999px;"></div>
+          </div>
+        </div>
+
+        <%# 공사상세보기 Banner %>
+        <%= link_to project_path(project),
+            style: "
+              display:block;
+              width:100%;
+              padding:12px 0;
+              border-radius:14px;
+              text-align:center;
+              text-decoration:none;
+              font-size:15px;
+              font-weight:900;
+              color:#{project.theme_color_hex};
+              background:white;
+              border:1.5px solid #{project.theme_color_hex};
+              box-sizing:border-box;
+            " do %>
+          공사 상세보기 →
+        <% end %>
+
+      </div>
+
     <% end %>
   </div>
 
