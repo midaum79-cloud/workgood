@@ -40,7 +40,7 @@ class ProjectsController < ApplicationController
 
   def calendar
     @selected_status = params[:status]
-    @view_mode = params[:view_mode].presence || "month"
+    @view_mode = "month"
 
     @projects =
       case @selected_status

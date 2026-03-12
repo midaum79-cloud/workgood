@@ -66,45 +66,7 @@
       </div>
     </div>
 
-    <div style="display:flex; gap:8px; margin-bottom:16px;">
-      <%= link_to "전체",
-          calendar_projects_path(
-            status: @selected_status,
-            view_mode: "month",
-            year: @calendar_year,
-            month: @calendar_month,
-            selected_date: @selected_date
-          ),
-          style: "
-            padding:10px 14px;
-            border-radius:12px;
-            text-decoration:none;
-            font-size:14px;
-            font-weight:800;
-            background:#{@view_mode == 'month' ? '#f3f4f6' : '#fafafa'};
-            color:#374151;
-            border:1px solid #ececec;
-          " %>
 
-      <%= link_to "2주",
-          calendar_projects_path(
-            status: @selected_status,
-            view_mode: "2weeks",
-            year: @calendar_year,
-            month: @calendar_month,
-            selected_date: @selected_date
-          ),
-          style: "
-            padding:10px 14px;
-            border-radius:12px;
-            text-decoration:none;
-            font-size:14px;
-            font-weight:800;
-            background:#{@view_mode == '2weeks' ? '#f3f4f6' : '#fafafa'};
-            color:#374151;
-            border:1px solid #ececec;
-          " %>
-    </div>
 
     <% if @calendar_projects.any? %>
       <div style="display:flex; flex-wrap:wrap; gap:6px; margin-bottom:14px;">
