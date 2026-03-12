@@ -105,12 +105,32 @@
           edit_work_process_path(@work_process),
           style: "display:block; width:100%; text-align:center; padding:16px; background:#3b82f6; color:white; border-radius:14px; font-size:18px; font-weight:800; text-decoration:none; box-sizing:border-box;" %>
 
-      <%= button_to "공정 삭제",
-          work_process_path(@work_process),
-          method: :delete,
-          form: { style: "width:100%;" },
-          data: { confirm: "\"#{@work_process.process_name}\" 공정을 삭제할까요? 이 작업은 되돌릴 수 없습니다." },
-          style: "display:block; width:100%; text-align:center; padding:16px; background:#fee2e2; color:#dc2626; border:none; border-radius:14px; font-size:18px; font-weight:800; cursor:pointer; box-sizing:border-box;" %>
+      <%# Step 1: Trigger button %>
+      <button type="button"
+        onclick="document.getElementById('delete-confirm-box').style.display='block'; this.style.display='none';"
+        style="display:block; width:100%; text-align:center; padding:16px; background:#fee2e2; color:#dc2626; border:none; border-radius:14px; font-size:18px; font-weight:800; cursor:pointer; box-sizing:border-box;">
+        공정 삭제
+      </button>
+
+      <%# Step 2: Confirmation box (hidden initially) %>
+      <div id="delete-confirm-box" style="display:none; background:#fff1f2; border:2px solid #fca5a5; border-radius:16px; padding:18px;">
+        <div style="font-size:16px; font-weight:900; color:#dc2626; margin-bottom:6px;">⚠️ 정말 삭제하시겠습니까?</div>
+        <div style="font-size:14px; font-weight:700; color:#6b7280; margin-bottom:16px;">
+          "<%= @work_process.process_name %>" 공정이 영구적으로 삭제됩니다.<br>이 작업은 되돌릴 수 없습니다.
+        </div>
+        <div style="display:flex; gap:10px;">
+          <%= button_to "진짜 삭제하기",
+              work_process_path(@work_process),
+              method: :delete,
+              form: { style: "flex:1;" },
+              style: "width:100%; padding:14px; background:#dc2626; color:white; border:none; border-radius:12px; font-size:16px; font-weight:900; cursor:pointer;" %>
+          <button type="button"
+            onclick="document.getElementById('delete-confirm-box').style.display='none'; document.querySelector('[onclick*=delete-confirm-box]').style.display='block';"
+            style="flex:1; padding:14px; background:#e5e7eb; color:#374151; border:none; border-radius:12px; font-size:16px; font-weight:900; cursor:pointer;">
+            취소
+          </button>
+        </div>
+      </div>
 
       <%= link_to "현장으로 돌아가기",
           project_path(@work_process.project),
