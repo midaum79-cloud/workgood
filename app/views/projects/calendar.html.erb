@@ -150,6 +150,7 @@
         <% end %>
       </div>
 
+      <% max_row_height = [@calendar_row_heights.values.max || 20, 20].max %>
       <% @calendar_rows.each_with_index do |row_days, row_index| %>
         <div style="border-bottom:<%= row_index == @calendar_rows.length - 1 ? 'none' : '1px solid #ececec' %>;">
           <div style="display:grid; grid-template-columns:repeat(7, 1fr);">
@@ -194,7 +195,7 @@
             <% end %>
           </div>
 
-          <div style="position:relative; height:<%= [@calendar_row_heights[row_index] || 20, 20].max %>px; margin:0 6px 6px 6px;">
+          <div style="position:relative; height:<%= max_row_height %>px; margin:0 6px 6px 6px;">
             <% (@calendar_bars_by_row[row_index] || []).each do |bar| %>
               <% work_process = bar[:work_process] %>
               <% left_percent = (bar[:start_index] * 100.0 / 7.0) %>
