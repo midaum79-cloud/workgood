@@ -1,0 +1,198 @@
+<div style="max-width:430px; margin:0 auto; min-height:100vh; background:#f5f5f5;">
+
+  <%# Header %>
+  <div style="background:white; padding:18px 20px 14px 20px; border-bottom:1px solid #ececec; position:sticky; top:0; z-index:30; margin-bottom:16px;">
+    <div style="display:flex; justify-content:space-between; align-items:center;">
+      <div style="font-size:24px; color:#111827; font-weight:900; cursor:pointer;" onclick="openDrawer()">☰</div>
+      <div style="font-size:20px; font-weight:900;">앱 설정</div>
+      <div style="width:40px;"></div>
+    </div>
+  </div>
+
+  <% if notice %>
+    <div style="margin:0 16px 14px; background:#dcfce7; color:#166534; border-radius:14px; padding:12px 16px; font-size:14px; font-weight:700;"><%= notice %></div>
+  <% end %>
+  <% if alert %>
+    <div style="margin:0 16px 14px; background:#fee2e2; color:#dc2626; border-radius:14px; padding:12px 16px; font-size:14px; font-weight:700;"><%= alert %></div>
+  <% end %>
+
+  <div style="padding:0 16px 100px 16px; display:flex; flex-direction:column; gap:16px;">
+
+    <%# ── 1. 내 프로필 ── %>
+    <div style="background:white; border-radius:20px; overflow:hidden;">
+      <div style="padding:16px 18px; border-bottom:1px solid #f3f4f6; display:flex; align-items:center; gap:10px;">
+        <span style="font-size:18px;">👤</span>
+        <span style="font-size:16px; font-weight:900; color:#111827;">내 프로필</span>
+      </div>
+
+      <%# 이메일 (읽기 전용) %>
+      <div style="padding:14px 18px; border-bottom:1px solid #f9fafb;">
+        <div style="font-size:12px; font-weight:700; color:#9ca3af; margin-bottom:4px;">이메일 (변경 불가)</div>
+        <div style="font-size:15px; font-weight:700; color:#374151;"><%= current_user.email %></div>
+      </div>
+
+      <%= form_with url: update_profile_app_settings_path, method: :patch, local: true do |f| %>
+        <div style="padding:14px 18px 0; display:flex; flex-direction:column; gap:12px;">
+          <div>
+            <label style="font-size:12px; font-weight:800; color:#6b7280; display:block; margin-bottom:6px;">이름</label>
+            <%= f.text_field :name, name: "user[name]", value: current_user.name,
+                style: "width:100%; height:46px; border:1.5px solid #e5e7eb; border-radius:12px; padding:0 14px; font-size:15px; font-family:inherit; outline:none; box-sizing:border-box;",
+                onfocus: "this.style.borderColor='#2563eb'", onblur: "this.style.borderColor='#e5e7eb'" %>
+          </div>
+          <div>
+            <label style="font-size:12px; font-weight:800; color:#6b7280; display:block; margin-bottom:6px;">전화번호</label>
+            <%= f.text_field :phone, name: "user[phone]", value: current_user.phone,
+                placeholder: "010-0000-0000",
+                style: "width:100%; height:46px; border:1.5px solid #e5e7eb; border-radius:12px; padding:0 14px; font-size:15px; font-family:inherit; outline:none; box-sizing:border-box;",
+                onfocus: "this.style.borderColor='#2563eb'", onblur: "this.style.borderColor='#e5e7eb'" %>
+          </div>
+        </div>
+        <div style="padding:14px 18px;">
+          <%= f.submit "프로필 저장",
+              style: "width:100%; height:46px; background:#111827; color:white; border:none; border-radius:12px; font-size:15px; font-weight:900; cursor:pointer; font-family:inherit;" %>
+        </div>
+      <% end %>
+    </div>
+
+    <%# ── 2. 비밀번호 변경 ── %>
+    <div style="background:white; border-radius:20px; overflow:hidden;">
+      <div style="padding:16px 18px; border-bottom:1px solid #f3f4f6; display:flex; align-items:center; gap:10px;">
+        <span style="font-size:18px;">🔒</span>
+        <span style="font-size:16px; font-weight:900; color:#111827;">비밀번호 변경</span>
+      </div>
+
+      <%= form_with url: update_password_app_settings_path, method: :patch, local: true do |f| %>
+        <div style="padding:14px 18px 0; display:flex; flex-direction:column; gap:12px;">
+          <div>
+            <label style="font-size:12px; font-weight:800; color:#6b7280; display:block; margin-bottom:6px;">현재 비밀번호</label>
+            <%= password_field_tag :current_password, "",
+                style: "width:100%; height:46px; border:1.5px solid #e5e7eb; border-radius:12px; padding:0 14px; font-size:15px; font-family:inherit; outline:none; box-sizing:border-box;",
+                autocomplete: "current-password" %>
+          </div>
+          <div>
+            <label style="font-size:12px; font-weight:800; color:#6b7280; display:block; margin-bottom:6px;">새 비밀번호 (8자 이상)</label>
+            <%= password_field_tag :new_password, "",
+                style: "width:100%; height:46px; border:1.5px solid #e5e7eb; border-radius:12px; padding:0 14px; font-size:15px; font-family:inherit; outline:none; box-sizing:border-box;",
+                autocomplete: "new-password" %>
+          </div>
+          <div>
+            <label style="font-size:12px; font-weight:800; color:#6b7280; display:block; margin-bottom:6px;">새 비밀번호 확인</label>
+            <%= password_field_tag :new_password_confirmation, "",
+                style: "width:100%; height:46px; border:1.5px solid #e5e7eb; border-radius:12px; padding:0 14px; font-size:15px; font-family:inherit; outline:none; box-sizing:border-box;",
+                autocomplete: "new-password" %>
+          </div>
+        </div>
+        <div style="padding:14px 18px;">
+          <%= submit_tag "비밀번호 변경",
+              style: "width:100%; height:46px; background:#374151; color:white; border:none; border-radius:12px; font-size:15px; font-weight:900; cursor:pointer; font-family:inherit;" %>
+        </div>
+      <% end %>
+    </div>
+
+    <%# ── 3. 저녁 알림 설정 ── %>
+    <div style="background:white; border-radius:20px; overflow:hidden;">
+      <div style="padding:16px 18px; border-bottom:1px solid #f3f4f6; display:flex; align-items:center; gap:10px;">
+        <span style="font-size:18px;">🔔</span>
+        <span style="font-size:16px; font-weight:900; color:#111827;">저녁 알림 설정</span>
+        <% unless current_user.premium? %>
+          <span style="margin-left:auto; font-size:11px; font-weight:800; background:linear-gradient(90deg,#6366f1,#818cf8); color:white; padding:3px 9px; border-radius:999px;">PREMIUM</span>
+        <% end %>
+      </div>
+
+      <% if current_user.premium? %>
+        <%= form_with url: update_notifications_app_settings_path, method: :patch, local: true do |f| %>
+          <div style="padding:16px 18px; border-bottom:1px solid #f9fafb;">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+              <div>
+                <div style="font-size:14px; font-weight:800; color:#111827;">내일 공정 알림</div>
+                <div style="font-size:12px; color:#9ca3af; margin-top:2px;">설정 시간에 내일 현장 일정을 알려드려요</div>
+              </div>
+              <label style="position:relative; display:inline-block; width:50px; height:28px; cursor:pointer;">
+                <%= f.check_box :evening_alert_enabled, name: "user[evening_alert_enabled]",
+                    checked: current_user.evening_alert_enabled,
+                    style: "opacity:0; width:0; height:0; position:absolute;",
+                    onchange: "this.closest('form').submit()" %>
+                <span id="toggleTrack" style="position:absolute; top:0; left:0; right:0; bottom:0; background:<%= current_user.evening_alert_enabled ? '#2563eb' : '#d1d5db' %>; border-radius:999px; transition:background 0.2s;"></span>
+                <span style="position:absolute; top:3px; left:<%= current_user.evening_alert_enabled ? '25px' : '3px' %>; width:22px; height:22px; background:white; border-radius:50%; transition:left 0.2s; box-shadow:0 1px 4px rgba(0,0,0,0.2);"></span>
+              </label>
+            </div>
+          </div>
+          <% if current_user.evening_alert_enabled %>
+            <div style="padding:14px 18px;">
+              <label style="font-size:12px; font-weight:800; color:#6b7280; display:block; margin-bottom:8px;">알림 시간</label>
+              <div style="display:grid; grid-template-columns:repeat(4, 1fr); gap:8px;">
+                <% ["17:00", "18:00", "19:00", "20:00", "21:00", "22:00"].each do |time| %>
+                  <% is_selected = current_user.evening_alert_time == time %>
+                  <label style="cursor:pointer;">
+                    <%= f.radio_button :evening_alert_time, time, name: "user[evening_alert_time]",
+                        checked: is_selected, style: "display:none;",
+                        onchange: "this.closest('form').submit()" %>
+                    <div style="text-align:center; padding:10px 4px; border-radius:12px; border:2px solid <%= is_selected ? '#2563eb' : '#e5e7eb' %>; background:<%= is_selected ? '#eff6ff' : 'white' %>; font-size:13px; font-weight:<%= is_selected ? '900' : '600' %>; color:<%= is_selected ? '#2563eb' : '#6b7280' %>;">
+                      <%= time.sub(":00", "시") %>
+                    </div>
+                  </label>
+                <% end %>
+              </div>
+              <div style="margin-top:12px; padding:12px; background:#eff6ff; border-radius:12px;">
+                <div style="font-size:13px; font-weight:700; color:#1d4ed8; margin-bottom:4px;">📨 알림 예시</div>
+                <div style="font-size:12px; color:#374151; line-height:1.7;">
+                  <strong>내일 현장 안내</strong><br>
+                  · 목공 — 퇴계주공 604동<br>
+                  · 타일 — 광명 센트레빌
+                </div>
+              </div>
+            </div>
+          <% end %>
+        <% end %>
+      <% else %>
+        <div style="padding:18px; text-align:center;">
+          <div style="font-size:32px; margin-bottom:10px;">🔕</div>
+          <div style="font-size:14px; font-weight:800; color:#111827; margin-bottom:6px;">프리미엄 전용 기능</div>
+          <div style="font-size:13px; color:#9ca3af; line-height:1.6; margin-bottom:16px;">
+            매일 저녁 내일 공정 알림을<br>자동으로 받아보세요
+          </div>
+          <%= link_to subscription_path,
+              style: "display:block; padding:12px; background:linear-gradient(90deg,#6366f1,#818cf8); color:white; border-radius:12px; text-decoration:none; font-size:14px; font-weight:900; text-align:center;" do %>
+            프리미엄으로 업그레이드 →
+          <% end %>
+        </div>
+      <% end %>
+    </div>
+
+    <%# ── 4. 앱 정보 ── %>
+    <div style="background:white; border-radius:20px; overflow:hidden;">
+      <div style="padding:16px 18px; border-bottom:1px solid #f3f4f6; display:flex; align-items:center; gap:10px;">
+        <span style="font-size:18px;">ℹ️</span>
+        <span style="font-size:16px; font-weight:900; color:#111827;">앱 정보</span>
+      </div>
+      <div style="padding:14px 18px; border-bottom:1px solid #f9fafb; display:flex; justify-content:space-between;">
+        <span style="font-size:14px; color:#374151; font-weight:600;">앱 버전</span>
+        <span style="font-size:14px; color:#9ca3af; font-weight:700;">v1.0.0</span>
+      </div>
+      <div style="padding:14px 18px; border-bottom:1px solid #f9fafb; display:flex; justify-content:space-between;">
+        <span style="font-size:14px; color:#374151; font-weight:600;">가입일</span>
+        <span style="font-size:14px; color:#9ca3af; font-weight:700;"><%= current_user.created_at.strftime("%Y년 %-m월 %-d일") %></span>
+      </div>
+      <a href="mailto:support@ilmeori.com" style="display:flex; justify-content:space-between; padding:14px 18px; text-decoration:none; border-bottom:1px solid #f9fafb;">
+        <span style="font-size:14px; color:#374151; font-weight:600;">📧 문의하기</span>
+        <span style="font-size:14px; color:#2563eb; font-weight:700;">support@ilmeori.com</span>
+      </a>
+      <div style="padding:14px 18px; display:flex; justify-content:space-between;">
+        <span style="font-size:14px; color:#374151; font-weight:600;">이용약관 / 개인정보처리방침</span>
+        <span style="font-size:14px; color:#9ca3af;">→</span>
+      </div>
+    </div>
+
+    <%# ── 5. 계정 위험 구역 ── %>
+    <div style="background:white; border-radius:20px; overflow:hidden;">
+      <div style="padding:16px 18px; border-bottom:1px solid #f3f4f6;">
+        <span style="font-size:14px; font-weight:900; color:#9ca3af;">계정</span>
+      </div>
+      <%= button_to logout_path, method: :delete,
+          style: "width:100%; padding:16px 18px; background:none; border:none; text-align:left; font-size:15px; font-weight:800; color:#ef4444; cursor:pointer; font-family:inherit; display:block;" do %>
+        🚪 로그아웃
+      <% end %>
+    </div>
+
+  </div>
+</div>
