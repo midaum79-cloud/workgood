@@ -97,6 +97,29 @@
         -webkit-overflow-scrolling: touch;
       }
 
+      /* No bottom padding when nav is hidden (login page) */
+      .app-content.no-nav {
+        padding-bottom: 0;
+      }
+
+      /* Portrait orientation lock */
+      @media screen and (orientation: landscape) {
+        body::after {
+          content: '📱 세로 모드로 전환해주세요';
+          position: fixed;
+          top: 0; left: 0; right: 0; bottom: 0;
+          z-index: 9999;
+          background: #0a0f1e;
+          color: white;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 18px;
+          font-weight: 800;
+          font-family: inherit;
+        }
+      }
+
       /* ========== Bottom Navigation ========== */
       .bottom-nav {
         position: fixed;
@@ -284,7 +307,7 @@
 
   <body>
     <div class="app-shell">
-      <div class="app-content">
+      <div class="app-content<%= ' no-nav' unless logged_in? %>">
         <%= yield %>
       </div>
     </div>
@@ -292,6 +315,7 @@
     <% unread_count = Notification.where(status: "unread").count rescue 0 %>
     <% current_path = request.path %>
 
+    <% if logged_in? %>
     <nav class="bottom-nav">
       <div class="bottom-nav-inner">
         <%= link_to projects_path, class: "bottom-nav-item #{current_path == '/' || (current_path.start_with?('/projects') && current_path != '/projects/calendar' && current_path != '/projects/new') ? 'active' : ''}" do %>
@@ -310,7 +334,9 @@
         <% end %>
       </div>
     </nav>
+    <% end %>
 
+    <% if logged_in? %>
     <div class="drawer-overlay" id="drawerOverlay" onclick="closeDrawer()"></div>
     <div class="drawer" id="mainDrawer">
       <!-- Drawer Header -->
@@ -441,6 +467,7 @@
 
       </div>
     </div>
+    <% end %>
 
     <script>
       function openDrawer() {
