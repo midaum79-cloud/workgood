@@ -10,12 +10,8 @@ services:
     runtime: ruby
     plan: free
     region: singapore
-    buildCommand: |
-      bundle install
-      bundle exec rails assets:precompile
-      bundle exec rails db:migrate
-      bundle exec rails db:seed
-    startCommand: bundle exec rails server -b 0.0.0.0
+    buildCommand: "bundle install && bundle exec rails assets:precompile"
+    startCommand: "bundle exec rails db:migrate && bundle exec rails server -b 0.0.0.0"
     envVars:
       - key: RAILS_ENV
         value: production
