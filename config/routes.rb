@@ -19,7 +19,8 @@ Rails.application.routes.draw do
   patch "app_settings/notifications",         to: "app_settings#update_notifications",as: :update_notifications_app_settings
 
   # Subscription
-  resource :subscription, only: [:index, :update]
+  get   "subscription", to: "subscriptions#index",  as: :subscription
+  patch "subscription", to: "subscriptions#update"
 
   # Widget Settings
   get "widget_settings", to: "widget_settings#index", as: :widget_settings
