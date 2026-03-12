@@ -1,0 +1,148 @@
+<div style="max-width:430px; margin:0 auto; min-height:100vh; background:#f5f5f5;">
+
+  <%# Header %>
+  <div style="background:white; padding:18px 20px 14px 20px; border-bottom:1px solid #ececec; position:sticky; top:0; z-index:30; margin-bottom:16px;">
+    <div style="display:flex; justify-content:space-between; align-items:center;">
+      <div style="font-size:24px; color:#111827; font-weight:900; cursor:pointer;" onclick="openDrawer()">☰</div>
+      <div style="font-size:20px; font-weight:900;">공지사항 / 문의</div>
+      <div style="width:40px;"></div>
+    </div>
+  </div>
+
+  <div style="padding:0 16px 100px 16px; display:flex; flex-direction:column; gap:16px;">
+
+    <%# ── 공지사항 ── %>
+    <div>
+      <div style="font-size:13px; font-weight:800; color:#9ca3af; margin-bottom:10px; padding-left:4px; letter-spacing:0.5px;">📢 공지사항</div>
+
+      <div style="background:white; border-radius:20px; overflow:hidden;">
+
+        <%# 주요 공지 — 서비스 런칭 %>
+        <div style="padding:18px; border-bottom:1px solid #f3f4f6;">
+          <div style="display:flex; align-items:flex-start; gap:10px;">
+            <div style="min-width:36px; height:36px; background:#111827; border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:16px;">🚀</div>
+            <div style="flex:1;">
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+                <div style="font-size:14px; font-weight:900; color:#111827;">일머리 v1.0 출시</div>
+                <div style="font-size:11px; color:#9ca3af;">2026.03.01</div>
+              </div>
+              <div style="font-size:13px; color:#6b7280; line-height:1.6;">
+                인테리어 현장 공정관리 앱 일머리가 정식 출시되었습니다. 현장 관리, 공정 일정, 캘린더를 한 곳에서 관리해보세요!
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <%# 공지 — 구독 출시 예정 %>
+        <div style="padding:18px; border-bottom:1px solid #f3f4f6;">
+          <div style="display:flex; align-items:flex-start; gap:10px;">
+            <div style="min-width:36px; height:36px; background:#eff6ff; border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:16px;">💳</div>
+            <div style="flex:1;">
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+                <div style="font-size:14px; font-weight:900; color:#111827;">구독 서비스 오픈 예정</div>
+                <div style="font-size:11px; color:#9ca3af;">2026.03.12</div>
+              </div>
+              <div style="font-size:13px; color:#6b7280; line-height:1.6;">
+                STANDARD(₩4,900) / PREMIUM(₩9,900) 구독 서비스가 곧 오픈됩니다. 프로젝트 제한 없이 무제한으로 사용하세요!
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <%# 공지 — 위젯 예정 %>
+        <div style="padding:18px;">
+          <div style="display:flex; align-items:flex-start; gap:10px;">
+            <div style="min-width:36px; height:36px; background:#f5f3ff; border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:16px;">📱</div>
+            <div style="flex:1;">
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+                <div style="font-size:14px; font-weight:900; color:#111827;">잠금화면 위젯 출시 준비중</div>
+                <div style="font-size:11px; color:#9ca3af;">2026.03.12</div>
+              </div>
+              <div style="font-size:13px; color:#6b7280; line-height:1.6;">
+                iOS / Android 잠금화면에서 내일 공정을 바로 확인하는 위젯 기능을 개발 중입니다. 프리미엄 구독자에게 우선 제공됩니다.
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <%# ── 문의하기 ── %>
+    <div>
+      <div style="font-size:13px; font-weight:800; color:#9ca3af; margin-bottom:10px; padding-left:4px; letter-spacing:0.5px;">💬 문의하기</div>
+
+      <div style="background:white; border-radius:20px; overflow:hidden;">
+
+        <%# 이메일 문의 %>
+        <a href="mailto:support@ilmeori.com" style="display:flex; align-items:center; gap:14px; padding:18px; text-decoration:none; border-bottom:1px solid #f3f4f6;">
+          <div style="width:44px; height:44px; background:#eff6ff; border-radius:14px; display:flex; align-items:center; justify-content:center; font-size:20px; flex-shrink:0;">📧</div>
+          <div style="flex:1;">
+            <div style="font-size:14px; font-weight:900; color:#111827; margin-bottom:2px;">이메일 문의</div>
+            <div style="font-size:13px; color:#2563eb; font-weight:700;">support@ilmeori.com</div>
+          </div>
+          <div style="font-size:16px; color:#d1d5db;">→</div>
+        </a>
+
+        <%# 카카오톡 채널 %>
+        <a href="https://pf.kakao.com/_ilmeori" target="_blank" style="display:flex; align-items:center; gap:14px; padding:18px; text-decoration:none; border-bottom:1px solid #f3f4f6;">
+          <div style="width:44px; height:44px; background:#fefce8; border-radius:14px; display:flex; align-items:center; justify-content:center; font-size:20px; flex-shrink:0;">💬</div>
+          <div style="flex:1;">
+            <div style="font-size:14px; font-weight:900; color:#111827; margin-bottom:2px;">카카오톡 채널</div>
+            <div style="font-size:13px; color:#9ca3af; font-weight:700;">@일머리 • 평일 09:00~18:00</div>
+          </div>
+          <div style="font-size:16px; color:#d1d5db;">→</div>
+        </a>
+
+        <%# 자주 묻는 질문 %>
+        <div style="padding:16px 18px; border-bottom:1px solid #f3f4f6;">
+          <div style="font-size:14px; font-weight:900; color:#111827; margin-bottom:12px;">❓ 자주 묻는 질문</div>
+
+          <% faqs = [
+            { q: "무료 플랜에서 프로젝트를 더 추가하려면?", a: "STANDARD 이상 구독 시 최대 3개, PREMIUM은 무제한 프로젝트를 사용할 수 있습니다." },
+            { q: "비밀번호를 잊었어요.", a: "앱 설정 → 비밀번호 변경에서 현재 비밀번호 확인 후 변경 가능합니다. 기억이 나지 않으시면 이메일로 문의해주세요." },
+            { q: "공정 삭제 후 복구가 가능한가요?", a: "현재 버전에서는 삭제된 공정 복구가 지원되지 않습니다. 삭제 시 확인 단계를 반드시 확인해주세요." },
+            { q: "잠금화면 위젯은 언제 사용 가능하나요?", a: "PREMIUM 구독 출시 후 iOS/Android 네이티브 앱을 통해 제공됩니다. 현재 개발 중입니다." }
+          ] %>
+
+          <div style="display:flex; flex-direction:column; gap:10px;">
+            <% faqs.each_with_index do |faq, i| %>
+              <div style="background:#f9fafb; border-radius:12px; overflow:hidden;">
+                <button onclick="toggleFaq(<%= i %>)"
+                  style="width:100%; display:flex; justify-content:space-between; align-items:center; padding:12px 14px; background:none; border:none; cursor:pointer; font-family:inherit; text-align:left;">
+                  <span style="font-size:13px; font-weight:800; color:#374151;"><%= faq[:q] %></span>
+                  <span id="faq-icon-<%= i %>" style="font-size:16px; color:#9ca3af; flex-shrink:0; margin-left:8px;">＋</span>
+                </button>
+                <div id="faq-answer-<%= i %>" style="display:none; padding:0 14px 12px; font-size:13px; color:#6b7280; line-height:1.6;">
+                  <%= faq[:a] %>
+                </div>
+              </div>
+            <% end %>
+          </div>
+        </div>
+
+        <%# 앱 버전 %>
+        <div style="padding:14px 18px; display:flex; justify-content:space-between; align-items:center;">
+          <span style="font-size:13px; color:#9ca3af; font-weight:600;">일머리 v1.0.0 · <%= Date.today.strftime("%Y") %></span>
+          <span style="font-size:12px; color:#d1d5db;">Made with ❤️</span>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+function toggleFaq(index) {
+  const answer = document.getElementById('faq-answer-' + index);
+  const icon = document.getElementById('faq-icon-' + index);
+  if (answer.style.display === 'none') {
+    answer.style.display = 'block';
+    icon.textContent = '－';
+  } else {
+    answer.style.display = 'none';
+    icon.textContent = '＋';
+  }
+}
+</script>
