@@ -56,32 +56,41 @@ class AiImportsController < ApplicationController
       end
 
 
-      # 3. Initialize Gemini
-      client = Gemini.new(
-        credentials: {
-          service: "generative-language-api",
-          api_key: ENV["GEMINI_API_KEY"]
-        },
-        options: { model: "gemini-1.5-flash", server_sent_events: true }
-      )
-
-      # 4. Upload and Call API
-      parts = [ { text: prompt } ]
+      # 3. Direct API Call using Net::HTTP
+      uri = URI("https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=#{ENV['GEMINI_API_KEY']}")
+      request = Net::HTTP::Post.new(uri, 'Content-Type' => 'application/json')
+      
+      api_parts = [ { "text" => prompt } ]
 
       files.first(3).each do |file|
         mime_type = file.content_type
         base64_image = Base64.strict_encode64(file.read)
-        parts << { inlineData: { mimeType: mime_type, data: base64_image } }
+        api_parts << { 
+          "inlineData" => { 
+            "mimeType" => mime_type, 
+            "data" => base64_image 
+          } 
+        }
       end
 
-      response = client.generate_content({
-        contents: [
-          { role: "user", parts: parts }
+      request.body = {
+        "contents" => [
+          { "role" => "user", "parts" => api_parts }
         ]
-      })
+      }.to_json
+
+      response = Net::HTTP.start(uri.hostname, uri.port, use_ssl: true) do |http|
+        http.request(request)
+      end
+
+      parsed_response = JSON.parse(response.body)
+      
+      if response.code.to_i != 200
+        raise "Gemini API Error: #{parsed_response.dig('error', 'message')}"
+      end
 
       # 5. Parse Response
-      raw_json = response.dig("candidates", 0, "content", "parts", 0, "text") || "[]"
+      raw_json = parsed_response.dig("candidates", 0, "content", "parts", 0, "text") || "[]"
 
       # Clean up potential markdown formatting
       clean_json = raw_json.gsub(/```json\n?/, "").gsub(/```/, "").strip
