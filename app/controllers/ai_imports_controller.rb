@@ -1,6 +1,6 @@
 class AiImportsController < ApplicationController
   before_action :authenticate_user!
-  before_action :check_premium!
+  before_action :check_ai_quota
 
   # POST /projects/:project_id/ai_imports/analyze
   # POST /ai_imports/analyze

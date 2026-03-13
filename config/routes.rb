@@ -1,4 +1,5 @@
 Rails.application.routes.draw do
+  get "pages/guide"
   get "announcements", to: "announcements#index", as: :announcements
   get "my_account",    to: "my_account#show",     as: :my_account
   # Auth

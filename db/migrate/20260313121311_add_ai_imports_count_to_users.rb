@@ -1,0 +1,5 @@
+class AddAiImportsCountToUsers < ActiveRecord::Migration[8.0]
+  def change
+    add_column :users, :ai_imports_count, :integer, default: 0
+  end
+end

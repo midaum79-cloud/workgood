@@ -1,6 +1,6 @@
 class SubscriptionsController < ApplicationController
   before_action :require_login
-  skip_before_action :verify_authenticity_token, only: [:webhook]
+  skip_before_action :verify_authenticity_token, only: [:webhook, :verify]
 
   def index
     @current_plan = current_user.subscription_plan
@@ -85,6 +85,11 @@ class SubscriptionsController < ApplicationController
       billing_started_at: nil
     )
     redirect_to subscription_path, notice: "구독이 해지되었습니다. 무료 플랜으로 전환됩니다."
+  end
+
+  def webhook
+    # PortOne webhook endpoint
+    render plain: "OK"
   end
 
   private

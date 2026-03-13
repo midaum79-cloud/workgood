@@ -63,8 +63,8 @@
           <div id="tabManualBtn" onclick="toggleInputMethod('manual')" style="flex:1; text-align:center; padding:12px; font-size:14px; font-weight:800; color:#111; background:white; border-radius:10px; box-shadow:0 1px 3px rgba(0,0,0,0.1); cursor:pointer;">
             직접 공정 작성
           </div>
-          <% if current_user.premium? %>
-            <div id="tabAiBtn" onclick="toggleInputMethod('ai')" style="flex:1; text-align:center; padding:12px; font-size:14px; font-weight:800; color:#6b7280; border-radius:10px; cursor:pointer;">
+          <% if current_user.can_use_ai_import? %>
+            <div id="tabAiBtn" onclick="toggleInputMethod('ai')" style="flex:1; text-align:center; padding:12px; font-size:14px; font-weight:800; color:#6b7280; border-radius:10px; cursor:pointer; position:relative;">
               <span style="background:linear-gradient(90deg, #6366f1, #8b5cf6); -webkit-background-clip:text; -webkit-text-fill-color:transparent;">✨ AI 일정표 캡처 등록</span>
             </div>
           <% else %>
@@ -80,12 +80,27 @@
         <%= form.hidden_field :ai_processes_json, id: "ai_processes_input" %>
         
         <div id="aiUploadState">
-          <label style="display:flex; flex-direction:column; align-items:center; justify-content:center; padding:32px 16px; border:2px dashed #c7d2fe; border-radius:16px; background:#e0e7ff; cursor:pointer;">
-            <span style="font-size:32px; margin-bottom:12px;">📸</span>
-            <span style="font-size:15px; font-weight:800; color:#4338ca; text-align:center;">일정표 사진 선택 (최대 3장)</span>
-            <span style="font-size:12px; font-weight:700; color:#6366f1; margin-top:6px;">화이트보드, 엑셀 캡처 가능</span>
-            <input type="file" id="aiFileInputNewProject" accept="image/*" multiple style="display:none;" onchange="handleAiUploadNew(event)">
-          </label>
+          <% if current_user.can_use_ai_import? %>
+            <label style="display:flex; flex-direction:column; align-items:center; justify-content:center; padding:32px 16px; border:2px dashed #c7d2fe; border-radius:16px; background:#e0e7ff; cursor:pointer; position:relative; overflow:hidden;">
+              <div style="position:absolute; top:0; left:0; width:100%; text-align:center; background:linear-gradient(90deg, #6366f1, #8b5cf6); color:white; font-size:11px; font-weight:800; padding:4px 0;">
+                <% if current_user.premium? %>
+                  PREMIUM 무제한 🚀
+                <% else %>
+                  스탠다드 체험 1~2회 제공 (남은 횟수: <%= current_user.ai_imports_remaining %>회)
+                <% end %>
+              </div>
+              <span style="font-size:32px; margin-bottom:12px; margin-top:16px;">📸</span>
+              <span style="font-size:15px; font-weight:800; color:#4338ca; text-align:center;">일정표 사진 선택 (최대 3장)</span>
+              <span style="font-size:12px; font-weight:700; color:#6366f1; margin-top:6px;">화이트보드, 엑셀 캡처 가능</span>
+              <input type="file" id="aiFileInputNewProject" accept="image/*" multiple style="display:none;" onchange="handleAiUploadNew(event)">
+            </label>
+          <% else %>
+            <a href="<%= subscription_path %>" style="display:flex; flex-direction:column; align-items:center; justify-content:center; padding:32px 16px; border:2px dashed #d1d5db; border-radius:16px; background:#f3f4f6; text-decoration:none; cursor:pointer;">
+              <span style="font-size:32px; margin-bottom:12px; filter:grayscale(100%); opacity:0.5;">📸</span>
+              <span style="font-size:15px; font-weight:800; color:#4b5563; text-align:center;">AI 일정 자동 등록 기능 한도 초과</span>
+              <span style="font-size:12px; font-weight:700; color:#6b7280; margin-top:6px;">이 기능을 더 사용하시려면 프리미엄으로 업그레이드하세요.</span>
+            </a>
+          <% end %>
         </div>
 
         <div id="aiLoadingState" style="display:none; padding:40px 16px; text-align:center; border:1px solid #e5e7eb; border-radius:16px; background:#fafafa;">

@@ -332,6 +332,10 @@ class ProjectsController < ApplicationController
               )
             end
           end
+          
+          # 스탠다드 유저 체험 횟수 차감 기능. 프리미엄은 예외.
+          current_user.increment!(:ai_imports_count) if current_user.standard_or_above? && !current_user.premium?
+
         rescue => e
           Rails.logger.error "AI Processes parsing error: #{e.message}"
         end

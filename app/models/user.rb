@@ -10,7 +10,7 @@ class User < ApplicationRecord
 
   before_save :downcase_email
 
-  PLAN_LIMITS  = { "free" => 1, "standard" => 3, "premium" => 10 }.freeze
+  PLAN_LIMITS  = { "free" => 1, "standard" => 3, "premium" => Float::INFINITY }.freeze
   PLAN_PRICES  = { "free" => 0, "standard" => 4_900, "premium" => 9_900 }.freeze
   PLAN_LABELS  = { "free" => "무료", "standard" => "스탠다드", "premium" => "프리미엄" }.freeze
 
@@ -58,8 +58,23 @@ class User < ApplicationRecord
     projects.count >= plan_limit
   end
 
+  def can_use_ai_import?
+    return true if premium?
+    standard_or_above? && (ai_imports_count || 0) < 2
+  end
+
+  def ai_imports_remaining
+    return "무제한" if premium?
+    return 0 if free?
+    [2 - (ai_imports_count || 0), 0].max
+  end
+
   def premium?
     subscription_plan == "premium"
+  end
+
+  def free?
+    subscription_plan == "free"
   end
 
   def standard_or_above?
