@@ -56,86 +56,136 @@
                style="margin-top:8px; width:100%; padding:14px 16px; border:1px solid #dcdfe4; border-radius:14px; font-size:16px; box-sizing:border-box;">
       </div>
 
+      <!-- 등록 방식 선택 -->
       <div>
-        <div style="font-size:14px; font-weight:800; color:#374151; margin-bottom:8px;">프로젝트 유형</div>
-        <%= form.select :project_type,
-            [["주거공간", "apartment"], ["상업공간", "commercial"]],
-            { selected: (@project.project_type.presence || "apartment") },
-            {
-              id: "project_type_select",
-              style: "width:100%; padding:14px 16px; border:1px solid #dcdfe4; border-radius:14px; font-size:16px; box-sizing:border-box; background:white;"
-            } %>
+        <div style="font-size:14px; font-weight:800; color:#374151; margin-bottom:8px;">공정 및 일정 입력 방식</div>
+        <div style="display:flex; background:#f3f4f6; border-radius:14px; padding:4px; margin-bottom:4px;">
+          <div id="tabManualBtn" onclick="toggleInputMethod('manual')" style="flex:1; text-align:center; padding:12px; font-size:14px; font-weight:800; color:#111; background:white; border-radius:10px; box-shadow:0 1px 3px rgba(0,0,0,0.1); cursor:pointer;">
+            직접 공정 작성
+          </div>
+          <% if current_user.premium? %>
+            <div id="tabAiBtn" onclick="toggleInputMethod('ai')" style="flex:1; text-align:center; padding:12px; font-size:14px; font-weight:800; color:#6b7280; border-radius:10px; cursor:pointer;">
+              <span style="background:linear-gradient(90deg, #6366f1, #8b5cf6); -webkit-background-clip:text; -webkit-text-fill-color:transparent;">✨ AI 일정표 캡처 등록</span>
+            </div>
+          <% else %>
+            <a href="<%= subscription_path %>" style="flex:1; text-align:center; padding:12px; font-size:14px; font-weight:800; color:#9ca3af; border-radius:10px; text-decoration:none;">
+              🔒 AI 일정표 캡처 등록
+            </a>
+          <% end %>
+        </div>
       </div>
 
-      <div>
-        <div style="font-size:14px; font-weight:800; color:#374151; margin-bottom:10px;">기본 공정 선택</div>
+      <!-- ================= AI 자동구역 ================= -->
+      <div id="methodAiArea" style="display:none; flex-direction:column; gap:16px;">
+        <%= form.hidden_field :ai_processes_json, id: "ai_processes_input" %>
+        
+        <div id="aiUploadState">
+          <label style="display:flex; flex-direction:column; align-items:center; justify-content:center; padding:32px 16px; border:2px dashed #c7d2fe; border-radius:16px; background:#e0e7ff; cursor:pointer;">
+            <span style="font-size:32px; margin-bottom:12px;">📸</span>
+            <span style="font-size:15px; font-weight:800; color:#4338ca; text-align:center;">일정표 창 사진 선택하기</span>
+            <span style="font-size:12px; font-weight:700; color:#6366f1; margin-top:6px;">화이트보드, 엑셀 캡처 가능</span>
+            <input type="file" id="aiFileInputNewProject" accept="image/*" style="display:none;" onchange="handleAiUploadNew(event)">
+          </label>
+        </div>
 
-        <div id="residential_process_box" style="background:#fafafa; border:1px solid #ececec; border-radius:14px; padding:14px;">
-          <div style="font-size:13px; font-weight:800; color:#6b7280; margin-bottom:12px;">주거공간 기본 공정</div>
-          <div style="display:flex; flex-wrap:wrap; gap:10px;">
-            <% residential_processes.each do |name| %>
-              <label style="cursor:pointer;">
-                <%= check_box_tag "project[selected_process_names][]", name, false, style: "display:none;", class: "process-checkbox residential-checkbox" %>
-                <span class="process-pill" style="display:inline-flex; align-items:center; justify-content:center; padding:10px 14px; border-radius:999px; background:white; color:#374151; font-size:14px; font-weight:800; border:1px solid #d1d5db;">
-                  <%= name %>
-                </span>
-              </label>
-            <% end %>
+        <div id="aiLoadingState" style="display:none; padding:40px 16px; text-align:center; border:1px solid #e5e7eb; border-radius:16px; background:#fafafa;">
+          <div style="font-size:32px; animation:spin 1s linear infinite; margin-bottom:16px; display:inline-block;">⏳</div>
+          <div style="font-size:15px; font-weight:900; color:#111827;">AI가 일정을 분석하고 있어요...</div>
+          <div style="font-size:13px; font-weight:700; color:#6b7280; margin-top:6px;">약 5~10초 소요됩니다</div>
+        </div>
+
+        <div id="aiResultState" style="display:none; background:#f9fafb; border:1px solid #dcdfe4; border-radius:16px; padding:16px;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+            <div style="font-size:14px; font-weight:800; color:#111827;">분석 결과 (<span id="aiResultCount">0</span>개)</div>
+            <button type="button" onclick="resetAiNew()" style="background:none; border:none; color:#dc2626; font-size:12px; font-weight:700; cursor:pointer;">다시 올리기</button>
+          </div>
+          <div id="aiResultDates" style="font-size:13px; font-weight:700; color:#6366f1; margin-bottom:12px;">기간: 알 수 없음</div>
+          
+          <div id="aiResultList" style="display:flex; flex-direction:column; gap:8px; max-height:200px; overflow-y:auto; padding-right:4px;">
+            <!-- JS 렌더링 -->
+          </div>
+          
+          <div style="font-size:12px; color:#6b7280; font-weight:700; margin-top:12px; line-height:1.5;">
+            * 저장 시 공정과 날짜가 자동으로 캘린더에 세팅됩니다. 상세한 수정은 나중에 캘린더에서 가능합니다.
           </div>
         </div>
+      </div>
 
-        <div id="commercial_process_box" style="display:none; background:#fafafa; border:1px solid #ececec; border-radius:14px; padding:14px;">
-          <div style="font-size:13px; font-weight:800; color:#6b7280; margin-bottom:12px;">상업공간 기본 공정</div>
-          <div style="display:flex; flex-wrap:wrap; gap:10px;">
-            <% commercial_processes.each do |name| %>
-              <label style="cursor:pointer;">
-                <%= check_box_tag "project[selected_process_names][]", name, false, style: "display:none;", class: "process-checkbox commercial-checkbox" %>
-                <span class="process-pill" style="display:inline-flex; align-items:center; justify-content:center; padding:10px 14px; border-radius:999px; background:white; color:#374151; font-size:14px; font-weight:800; border:1px solid #d1d5db;">
-                  <%= name %>
-                </span>
-              </label>
-            <% end %>
+      <!-- ================= 수동 입력구역 ================= -->
+      <div id="methodManualArea" style="display:flex; flex-direction:column; gap:16px;">
+        <div>
+          <div style="font-size:14px; font-weight:800; color:#374151; margin-bottom:8px;">프로젝트 유형</div>
+          <%= form.select :project_type,
+              [["주거공간", "apartment"], ["상업공간", "commercial"]],
+              { selected: (@project.project_type.presence || "apartment") },
+              {
+                id: "project_type_select",
+                style: "width:100%; padding:14px 16px; border:1px solid #dcdfe4; border-radius:14px; font-size:16px; box-sizing:border-box; background:white;"
+              } %>
+        </div>
+
+        <div>
+          <div style="font-size:14px; font-weight:800; color:#374151; margin-bottom:10px;">기본 공정 선택</div>
+          <div id="residential_process_box" style="background:#fafafa; border:1px solid #ececec; border-radius:14px; padding:14px;">
+            <div style="font-size:13px; font-weight:800; color:#6b7280; margin-bottom:12px;">주거공간 기본 공정</div>
+            <div style="display:flex; flex-wrap:wrap; gap:10px;">
+              <% residential_processes.each do |name| %>
+                <label style="cursor:pointer;">
+                  <%= check_box_tag "project[selected_process_names][]", name, false, style: "display:none;", class: "process-checkbox residential-checkbox" %>
+                  <span class="process-pill" style="display:inline-flex; align-items:center; justify-content:center; padding:10px 14px; border-radius:999px; background:white; color:#374151; font-size:14px; font-weight:800; border:1px solid #d1d5db;">
+                    <%= name %>
+                  </span>
+                </label>
+              <% end %>
+            </div>
           </div>
+
+          <div id="commercial_process_box" style="display:none; background:#fafafa; border:1px solid #ececec; border-radius:14px; padding:14px;">
+            <div style="font-size:13px; font-weight:800; color:#6b7280; margin-bottom:12px;">상업공간 기본 공정</div>
+            <div style="display:flex; flex-wrap:wrap; gap:10px;">
+              <% commercial_processes.each do |name| %>
+                <label style="cursor:pointer;">
+                  <%= check_box_tag "project[selected_process_names][]", name, false, style: "display:none;", class: "process-checkbox commercial-checkbox" %>
+                  <span class="process-pill" style="display:inline-flex; align-items:center; justify-content:center; padding:10px 14px; border-radius:999px; background:white; color:#374151; font-size:14px; font-weight:800; border:1px solid #d1d5db;">
+                    <%= name %>
+                  </span>
+                </label>
+              <% end %>
+            </div>
+          </div>
+
+          <div style="font-size:12px; color:#6b7280; font-weight:700; margin-top:10px; line-height:1.5;">필요한 공정만 눌러서 선택하세요.</div>
         </div>
 
-        <div style="font-size:12px; color:#6b7280; font-weight:700; margin-top:10px; line-height:1.5;">
-          필요한 공정만 눌러서 선택하세요.
+        <div>
+          <div style="font-size:14px; font-weight:800; color:#374151; margin-bottom:8px;">추가 공사명</div>
+          <div style="display:flex; gap:8px; align-items:center;">
+            <input type="text"
+                   id="custom_process_input"
+                   placeholder="예: 탄성코트"
+                   style="flex:1; min-width:0; padding:14px 16px; border:1px solid #dcdfe4; border-radius:14px; font-size:15px; box-sizing:border-box;">
+            <button type="button"
+                    id="add_custom_process_button"
+                    style="padding:14px 14px; border:none; border-radius:14px; background:#2563eb; color:white; font-size:14px; font-weight:800; white-space:nowrap; flex-shrink:0;">추가</button>
+          </div>
+          <div id="custom_process_chip_box" style="display:flex; flex-wrap:wrap; gap:10px; margin-top:12px;"></div>
+          <div style="font-size:12px; color:#6b7280; font-weight:700; margin-top:8px;">추가공정은 하나씩 입력 후 추가 버튼을 누르세요.</div>
         </div>
       </div>
 
-      <div>
-        <div style="font-size:14px; font-weight:800; color:#374151; margin-bottom:8px;">추가 공사명</div>
-
-        <div style="display:flex; gap:8px; align-items:center;">
-          <input type="text"
-                 id="custom_process_input"
-                 placeholder="예: 탄성코트"
-                 style="flex:1; min-width:0; padding:14px 16px; border:1px solid #dcdfe4; border-radius:14px; font-size:15px; box-sizing:border-box;">
-
-          <button type="button"
-                  id="add_custom_process_button"
-                  style="padding:14px 14px; border:none; border-radius:14px; background:#2563eb; color:white; font-size:14px; font-weight:800; white-space:nowrap; flex-shrink:0;">
-            추가
-          </button>
-        </div>
-
-        <div id="custom_process_chip_box" style="display:flex; flex-wrap:wrap; gap:10px; margin-top:12px;"></div>
-
-        <div style="font-size:12px; color:#6b7280; font-weight:700; margin-top:8px;">
-          추가공정은 하나씩 입력 후 추가 버튼을 누르세요.
-        </div>
-      </div>
-
-      <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+      <!-- 날짜 영역 (AI 든 수동이든 저장되어야 함) -->
+      <div id="dateAreaGroup" style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
         <div>
           <div style="font-size:14px; font-weight:800; color:#374151; margin-bottom:8px;">시작일</div>
           <%= form.date_field :start_date,
+              id: "new_project_start_date",
               style: "width:100%; padding:14px 16px; border:1px solid #dcdfe4; border-radius:14px; font-size:16px; box-sizing:border-box; background:white;" %>
         </div>
 
         <div>
           <div style="font-size:14px; font-weight:800; color:#374151; margin-bottom:8px;">종료일</div>
           <%= form.date_field :end_date,
+              id: "new_project_end_date",
               style: "width:100%; padding:14px 16px; border:1px solid #dcdfe4; border-radius:14px; font-size:16px; box-sizing:border-box; background:white;" %>
         </div>
       </div>
@@ -404,5 +454,156 @@
     });
     var selected = document.getElementById('color_btn_' + color);
     if (selected) selected.style.borderColor = '#111827';
+  }
+
+  // --- AI Input Methods ---
+  function toggleInputMethod(method) {
+    const manualArea = document.getElementById("methodManualArea");
+    const aiArea = document.getElementById("methodAiArea");
+    const tabManualBtn = document.getElementById("tabManualBtn");
+    const tabAiBtn = document.getElementById("tabAiBtn");
+    
+    if (method === 'manual') {
+      manualArea.style.display = 'flex';
+      aiArea.style.display = 'none';
+      
+      if (tabManualBtn) {
+        tabManualBtn.style.color = '#111';
+        tabManualBtn.style.background = 'white';
+        tabManualBtn.style.boxShadow = '0 1px 3px rgba(0,0,0,0.1)';
+      }
+      
+      if (tabAiBtn) {
+        tabAiBtn.style.color = '#6b7280';
+        tabAiBtn.style.background = 'transparent';
+        tabAiBtn.style.boxShadow = 'none';
+      }
+    } else {
+      manualArea.style.display = 'none';
+      aiArea.style.display = 'flex';
+      
+      if (tabAiBtn) {
+        tabAiBtn.style.color = '#111';
+        tabAiBtn.style.background = 'white';
+        tabAiBtn.style.boxShadow = '0 1px 3px rgba(0,0,0,0.1)';
+      }
+      
+      if (tabManualBtn) {
+        tabManualBtn.style.color = '#6b7280';
+        tabManualBtn.style.background = 'transparent';
+        tabManualBtn.style.boxShadow = 'none';
+      }
+    }
+  }
+
+  function handleAiUploadNew(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    document.getElementById("aiUploadState").style.display = "none";
+    document.getElementById("aiLoadingState").style.display = "block";
+    document.getElementById("aiResultState").style.display = "none";
+
+    const formData = new FormData();
+    formData.append("file", file);
+
+    fetch("/ai_imports/analyze", {
+      method: "POST",
+      headers: {
+        "X-CSRF-Token": document.querySelector('meta[name="csrf-token"]').content
+      },
+      body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+      document.getElementById("aiLoadingState").style.display = "none";
+
+      if (data.success) {
+        document.getElementById("aiResultState").style.display = "block";
+        renderAiPreviewNew(data.data);
+      } else {
+        alert(data.error || "분석 중 오류가 발생했습니다.");
+        resetAiNew();
+      }
+    })
+    .catch(error => {
+      console.error("Error:", error);
+      document.getElementById("aiLoadingState").style.display = "none";
+      alert("네트워크 오류가 발생했습니다.");
+      resetAiNew();
+    });
+  }
+
+  function resetAiNew() {
+    document.getElementById("aiFileInputNewProject").value = "";
+    document.getElementById("aiUploadState").style.display = "block";
+    document.getElementById("aiLoadingState").style.display = "none";
+    document.getElementById("aiResultState").style.display = "none";
+    document.getElementById("ai_processes_input").value = "";
+    
+    document.getElementById("new_project_start_date").value = "";
+    document.getElementById("new_project_end_date").value = "";
+  }
+
+  function renderAiPreviewNew(items) {
+    const listContainer = document.getElementById("aiResultList");
+    listContainer.innerHTML = "";
+    document.getElementById("aiResultCount").textContent = items.length;
+
+    document.getElementById("ai_processes_input").value = JSON.stringify(items);
+
+    let minDateStr = null;
+    let maxDateStr = null;
+
+    if (items.length === 0) {
+      listContainer.innerHTML = '<div style="padding:12px; text-align:center; color:#6b7280; font-size:13px;">일정을 찾지 못했습니다. 다시 시도해주세요.</div>';
+      return;
+    }
+
+    items.forEach((item) => {
+      if (item.date && item.date.match(/^\d{4}-\d{2}-\d{2}$/)) {
+        if (!minDateStr || item.date < minDateStr) minDateStr = item.date;
+        if (!maxDateStr || item.date > maxDateStr) maxDateStr = item.date;
+      }
+
+      const row = document.createElement("div");
+      row.style.display = "flex";
+      row.style.justifyContent = "space-between";
+      row.style.alignItems = "center";
+      row.style.padding = "10px 12px";
+      row.style.background = "white";
+      row.style.border = "1px solid #e5e7eb";
+      row.style.borderRadius = "10px";
+
+      const leftCol = document.createElement("div");
+      
+      const dateDiv = document.createElement("div");
+      dateDiv.style.fontSize = "12px";
+      dateDiv.style.fontWeight = "800";
+      dateDiv.style.color = "#6366f1";
+      dateDiv.textContent = item.date || "날짜 없음";
+      
+      const nameDiv = document.createElement("div");
+      nameDiv.style.fontSize = "14px";
+      nameDiv.style.fontWeight = "800";
+      nameDiv.style.color = "#111827";
+      nameDiv.style.marginTop = "2px";
+      nameDiv.textContent = item.raw_text;
+
+      leftCol.appendChild(dateDiv);
+      leftCol.appendChild(nameDiv);
+
+      row.appendChild(leftCol);
+      listContainer.appendChild(row);
+    });
+
+    if (minDateStr && maxDateStr) {
+      document.getElementById("aiResultDates").textContent = `기간: ${minDateStr} ~ ${maxDateStr}`;
+      
+      document.getElementById("new_project_start_date").value = minDateStr;
+      document.getElementById("new_project_end_date").value = maxDateStr;
+    } else {
+      document.getElementById("aiResultDates").textContent = `기간: 알 수 없음`;
+    }
   }
 </script>

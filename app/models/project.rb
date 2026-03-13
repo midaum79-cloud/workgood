@@ -3,7 +3,7 @@ class Project < ApplicationRecord
   has_many :work_processes, dependent: :destroy
   has_many :notifications, dependent: :destroy
 
-  attr_accessor :selected_process_names, :custom_process_names_text
+  attr_accessor :selected_process_names, :custom_process_names_text, :ai_processes_json
 
   after_create :create_selected_processes
 

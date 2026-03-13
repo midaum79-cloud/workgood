@@ -74,5 +74,11 @@ Rails.application.routes.draw do
     end
   end
 
+  resources :ai_imports, only: [] do
+    collection do
+      post :analyze
+    end
+  end
+
   root "projects#index"
 end

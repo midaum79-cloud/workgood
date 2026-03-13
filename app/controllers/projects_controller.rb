@@ -28,14 +28,14 @@ class ProjectsController < ApplicationController
     @today_work_processes = today_work_days
       .map(&:work_process)
       .uniq
-      .sort_by { |process| [process.position || 9999, process.id || 0] }
+      .sort_by { |process| [ process.position || 9999, process.id || 0 ] }
 
     tomorrow_work_days = work_day_scope.select { |wd| wd.work_date == Time.zone.tomorrow }
 
     @tomorrow_work_processes = tomorrow_work_days
       .map(&:work_process)
       .uniq
-      .sort_by { |process| [process.position || 9999, process.id || 0] }
+      .sort_by { |process| [ process.position || 9999, process.id || 0 ] }
 
     @ending_soon_processes = []
   end
@@ -81,7 +81,7 @@ class ProjectsController < ApplicationController
       calendar_start = base_date.beginning_of_week(:sunday)
       calendar_end = calendar_start + 13.days
       all_days = (calendar_start..calendar_end).to_a
-      @calendar_rows = [all_days.first(7), all_days.last(7)]
+      @calendar_rows = [ all_days.first(7), all_days.last(7) ]
     else
       month_first_day = Date.new(@calendar_year, @calendar_month, 1)
       month_last_day = Date.new(@calendar_year, @calendar_month, -1)
@@ -163,7 +163,7 @@ class ProjectsController < ApplicationController
       end
 
       @calendar_bars_by_row[row_index] = sorted_bars
-      @calendar_row_heights[row_index] = [lane_end_indexes.length, 1].max * 20
+      @calendar_row_heights[row_index] = [ lane_end_indexes.length, 1 ].max * 20
     end
 
     @calendar_projects = @calendar_bars_by_row.values.flatten.map { |bar| bar[:project] }.uniq
@@ -173,7 +173,7 @@ class ProjectsController < ApplicationController
     @selected_day_work_processes = selected_day_work_days
       .map(&:work_process)
       .uniq
-      .sort_by { |process| [process.position || 9999, process.id || 0] }
+      .sort_by { |process| [ process.position || 9999, process.id || 0 ] }
   end
 
   def show
@@ -193,11 +193,36 @@ class ProjectsController < ApplicationController
     @project.selected_process_names = params[:project][:selected_process_names]
     @project.custom_process_names_text = params[:project][:custom_process_names_text]
 
+    # If AI JSON is provided, ignore the manual selections to prevent duplicates
+    if params[:project][:ai_processes_json].present?
+      @project.selected_process_names = []
+      @project.custom_process_names_text = ""
+    end
+
     if detail_address_present?
-      @project.address = [@project.address, params[:detail_address]].reject(&:blank?).join(" ")
+      @project.address = [ @project.address, params[:detail_address] ].reject(&:blank?).join(" ")
     end
 
     if @project.save
+      if params[:project][:ai_processes_json].present?
+        begin
+          ai_items = JSON.parse(params[:project][:ai_processes_json])
+          ai_items.each_with_index do |item, idx|
+            wp = @project.work_processes.create!(
+              process_name: item["raw_text"],
+              position: idx
+            )
+            if item["date"].present?
+              WorkDay.create!(
+                work_process: wp,
+                work_date: item["date"]
+              )
+            end
+          end
+        rescue => e
+          Rails.logger.error "AI Processes parsing error: #{e.message}"
+        end
+      end
       redirect_to @project, notice: "현장이 등록되었습니다."
     else
       render :new, status: :unprocessable_entity
@@ -206,7 +231,7 @@ class ProjectsController < ApplicationController
 
   def update
     if detail_address_present?
-      merged_address = [params[:project][:address], params[:detail_address]].reject(&:blank?).join(" ")
+      merged_address = [ params[:project][:address], params[:detail_address] ].reject(&:blank?).join(" ")
       params[:project][:address] = merged_address
     end
 

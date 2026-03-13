@@ -3,37 +3,56 @@ class AiImportsController < ApplicationController
   before_action :check_premium!
 
   # POST /projects/:project_id/ai_imports/analyze
+  # POST /ai_imports/analyze
   def analyze
-    @project = current_user.projects.find(params[:project_id])
+    @project = current_user.projects.find_by(id: params[:project_id]) if params[:project_id].present?
 
     unless params[:file].present?
       return render json: { error: "업로드된 파일이 없습니다." }, status: :bad_request
     end
 
     begin
-      # 1. Get existing project work processes to map
-      existing_processes = @project.work_processes.select(:id, :process_name).map do |wp|
-        { id: wp.id, name: wp.process_name }
+      prompt = ""
+      if @project
+        # 1. Get existing project work processes to map
+        existing_processes = @project.work_processes.select(:id, :process_name).map do |wp|
+          { id: wp.id, name: wp.process_name }
+        end
+
+        # 2. Prepare Gemini Prompt
+        prompt = <<~PROMPT
+          첨부된 이미지는 인테리어 공정표(일정표)입니다.
+          이 이미지에서 각 진행 항목의 '날짜(Date)'와 '작업 내용(공정명, 내용)'을 추출해주세요.
+
+          조건 1: 연도가 명시되어 있지 않다면 올해(#{Date.current.year}년)로 간주합니다. 날짜 형식은 YYYY-MM-DD 로 통일해주세요.
+          조건 2: 추출한 '작업 내용(raw_text)'을 다음 제공된 '기존 현장 공정 리스트'와 비교하여, 의미가 일치하거나 가장 유사한 항목의 ID(matched_process_id)를 찾아주세요.#{' '}
+          만약 매칭되는 공정이 없다면 matched_process_id는 null로 비워두세요.
+
+          기존 현장 공정 리스트:
+          #{existing_processes.to_json}
+
+          결과는 반드시 다음과 같은 순수 JSON 배열 형식으로만 응답해야 합니다. 마크다운 백틱(```json)이나 다른 설명은 절대 추가하지 마세요.
+          [
+            { "date": "YYYY-MM-DD", "raw_text": "원문 공정명", "matched_process_id": 123 },
+            ...
+          ]
+        PROMPT
+      else
+        prompt = <<~PROMPT
+          첨부된 이미지는 인테리어 공정표(일정표)입니다.
+          이 이미지에서 각 진행 항목의 '날짜(Date)'와 '작업 내용(공정명, 내용)'을 추출해주세요.
+
+          조건 1: 연도가 명시되어 있지 않다면 올해(#{Date.current.year}년)로 간주합니다. 날짜 형식은 YYYY-MM-DD 로 통일해주세요.
+          조건 2: 원문 그대로의 텍스트(공정명)와 해당 날짜를 추출하세요.
+
+          결과는 반드시 다음과 같은 순수 JSON 배열 형식으로만 응답해야 합니다. 마크다운 백틱(```json)이나 다른 설명은 절대 추가하지 마세요.
+          [
+            { "date": "YYYY-MM-DD", "raw_text": "원문 공정명" },
+            ...
+          ]
+        PROMPT
       end
 
-      # 2. Prepare Gemini Prompt
-      prompt = <<~PROMPT
-        첨부된 이미지는 인테리어 공정표(일정표)입니다.
-        이 이미지에서 각 진행 항목의 '날짜(Date)'와 '작업 내용(공정명, 내용)'을 추출해주세요.
-
-        조건 1: 연도가 명시되어 있지 않다면 올해(#{Date.current.year}년)로 간주합니다. 날짜 형식은 YYYY-MM-DD 로 통일해주세요.
-        조건 2: 추출한 '작업 내용(raw_text)'을 다음 제공된 '기존 현장 공정 리스트'와 비교하여, 의미가 일치하거나 가장 유사한 항목의 ID(matched_process_id)를 찾아주세요.#{' '}
-        만약 매칭되는 공정이 없다면 matched_process_id는 null로 비워두세요.
-
-        기존 현장 공정 리스트:
-        #{existing_processes.to_json}
-
-        결과는 반드시 다음과 같은 순수 JSON 배열 형식으로만 응답해야 합니다. 마크다운 백틱(```json)이나 다른 설명은 절대 추가하지 마세요.
-        [
-          { "date": "YYYY-MM-DD", "raw_text": "원문 공정명", "matched_process_id": 123 },
-          ...
-        ]
-      PROMPT
 
       # 3. Initialize Gemini
       client = Gemini.new(
