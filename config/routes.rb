@@ -66,6 +66,12 @@ Rails.application.routes.draw do
       get :calendar
       get :manage
     end
+    resources :ai_imports, only: [] do
+      collection do
+        post :analyze
+        post :commit
+      end
+    end
   end
 
   root "projects#index"
