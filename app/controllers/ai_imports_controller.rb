@@ -93,7 +93,8 @@ class AiImportsController < ApplicationController
       raw_json = parsed_response.dig("candidates", 0, "content", "parts", 0, "text") || "[]"
 
       # Clean up potential markdown formatting
-      clean_json = raw_json.gsub(/```json\n?/, "").gsub(/```/, "").strip
+      clean_json = raw_json.sub(/\A```json\s*/, '').sub(/\s*```\z/, '').strip
+      
 
       parsed_data = JSON.parse(clean_json)
 
@@ -103,8 +104,8 @@ class AiImportsController < ApplicationController
       Rails.logger.error "JSON Parsing Error: #{e.message}\nRaw Text: #{raw_json}"
       render json: { error: "AI 응답을 해석하는 데 실패했습니다. 다시 시도해주세요." }, status: :unprocessable_entity
     rescue => e
-      Rails.logger.error "Gemini API Error: #{e.message}"
-      render json: { error: "AI 분석 중 오류가 발생했습니다: #{e.message}" }, status: :internal_server_error
+      Rails.logger.error "[AI_IMPORT_ERROR] #{e.class}: #{e.message}\n#{e.backtrace.join("\n")}"
+      render json: { error: "서버 응답 오류: #{e.message}" }, status: :internal_server_error
     end
   end
 
