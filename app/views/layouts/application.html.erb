@@ -65,7 +65,6 @@
 
       /* ========== Mobile App Shell ========== */
       .app-shell {
-        max-width: 430px;
         width: 100%;
         margin: 0 auto;
         min-height: 100vh;
@@ -82,6 +81,7 @@
           justify-content: center;
         }
         .app-shell {
+          max-width: 430px;
           box-shadow: 0 0 40px rgba(0,0,0,0.12);
           border-left: 1px solid #d1d5db;
           border-right: 1px solid #d1d5db;
@@ -119,10 +119,15 @@
       }
 
       .bottom-nav-inner {
-        max-width: 430px;
         width: 100%;
         display: grid;
         grid-template-columns: repeat(3, 1fr);
+      }
+
+      @media (min-width: 480px) {
+        .bottom-nav-inner {
+          max-width: 430px;
+        }
       }
 
       .bottom-nav-item {
