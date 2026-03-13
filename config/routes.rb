@@ -62,6 +62,9 @@ Rails.application.routes.draw do
     end
   end
   resources :projects do
+    member do
+      get :project_calendar, path: 'calendar'
+    end
     collection do
       get :calendar
       get :manage

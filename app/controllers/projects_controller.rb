@@ -1,7 +1,7 @@
 class ProjectsController < ApplicationController
   before_action :require_login
   before_action :require_plan_for_project!, only: %i[new create]
-  before_action :set_project, only: %i[show edit update destroy]
+  before_action :set_project, only: %i[show edit update destroy project_calendar]
 
   def index
     @selected_status = params[:status]
@@ -167,6 +167,118 @@ class ProjectsController < ApplicationController
     end
 
     @calendar_projects = @calendar_bars_by_row.values.flatten.map { |bar| bar[:project] }.uniq
+
+    selected_day_work_days = work_day_scope.select { |wd| wd.work_date == @selected_date }
+
+    @selected_day_work_processes = selected_day_work_days
+      .map(&:work_process)
+      .uniq
+      .sort_by { |process| [ process.position || 9999, process.id || 0 ] }
+  end
+
+  def project_calendar
+    @view_mode = "month"
+
+    base_date =
+      if params[:year].present? && params[:month].present?
+        Date.new(params[:year].to_i, params[:month].to_i, 1)
+      elsif Time.zone.today.present?
+        Time.zone.today
+      else
+        Time.zone.today
+      end
+
+    @calendar_year = base_date.year
+    @calendar_month = base_date.month
+
+    if @view_mode == "2weeks"
+      calendar_start = base_date.beginning_of_week(:sunday)
+      calendar_end = calendar_start + 13.days
+      all_days = (calendar_start..calendar_end).to_a
+      @calendar_rows = [ all_days.first(7), all_days.last(7) ]
+    else
+      month_first_day = Date.new(@calendar_year, @calendar_month, 1)
+      month_last_day = Date.new(@calendar_year, @calendar_month, -1)
+      calendar_start = month_first_day.beginning_of_week(:sunday)
+      calendar_end = month_last_day.end_of_week(:sunday)
+      all_days = (calendar_start..calendar_end).to_a
+      @calendar_rows = all_days.each_slice(7).to_a
+    end
+
+    @prev_month = base_date.prev_month
+    @next_month = base_date.next_month
+
+    available_days = @calendar_rows.flatten.compact
+
+    @selected_date =
+      if params[:selected_date].present?
+        begin
+          Date.parse(params[:selected_date])
+        rescue ArgumentError
+          available_days.first || Time.zone.today
+        end
+      elsif available_days.include?(Time.zone.today)
+        Time.zone.today
+      else
+        available_days.first || Time.zone.today
+      end
+
+    work_day_scope = WorkDay.includes(work_process: :project)
+                            .joins(:work_process)
+                            .where(work_processes: { project_id: @project.id })
+
+    @calendar_bars_by_row = {}
+    @calendar_row_heights = {}
+
+    @calendar_rows.each_with_index do |row_days, row_index|
+      row_start = row_days.first
+
+      raw_bars = work_day_scope.map do |work_day|
+        next unless row_days.include?(work_day.work_date)
+
+        start_index = (work_day.work_date - row_start).to_i
+
+        {
+          work_day: work_day,
+          work_process: work_day.work_process,
+          project: work_day.work_process.project,
+          start_index: start_index,
+          end_index: start_index,
+          span_days: 1
+        }
+      end.compact
+
+      sorted_bars = raw_bars.sort_by do |bar|
+        [
+          bar[:start_index],
+          bar[:work_process].position || 9999,
+          bar[:work_process].id || 0,
+          bar[:work_day].id || 0
+        ]
+      end
+
+      lane_end_indexes = []
+
+      sorted_bars.each do |bar|
+        assigned_lane = nil
+
+        lane_end_indexes.each_with_index do |lane_end_index, lane|
+          if bar[:start_index] > lane_end_index
+            assigned_lane = lane
+            break
+          end
+        end
+
+        assigned_lane ||= lane_end_indexes.length
+        lane_end_indexes[assigned_lane] = bar[:end_index]
+        bar[:lane] = assigned_lane
+      end
+
+      @calendar_bars_by_row[row_index] = sorted_bars
+      @calendar_row_heights[row_index] = [ lane_end_indexes.length, 1 ].max * 20
+    end
+
+    @calendar_projects = [ @project ]
 
     selected_day_work_days = work_day_scope.select { |wd| wd.work_date == @selected_date }
 

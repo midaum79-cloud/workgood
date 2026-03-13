@@ -1,0 +1,500 @@
+<div style="min-height:100dvh; background:#f5f5f5; padding:16px 16px 80px 16px; display:flex; flex-direction:column;">
+
+  <div style="background:white; padding:18px 20px 14px 20px; border-bottom:1px solid #ececec; position:sticky; top:0; z-index:30; margin:-16px -16px 16px -16px;">
+    <div style="display:flex; justify-content:space-between; align-items:center;">
+      <%= link_to "←", project_path(@project), style: "font-size:24px; color:#111; text-decoration:none; font-weight:800;" %>
+
+      <div style="display:flex; align-items:center;">
+        <span style="font-size:22px; font-weight:900; color:<%= @project.theme_color_hex %>;"><%= @project.project_name %> 일정표</span>
+      </div>
+
+      <%= link_to notifications_path, style: "position:relative; text-decoration:none;" do %>
+        <div style="font-size:24px;">🔔</div>
+        <% if @unread_notifications_count.to_i > 0 %>
+          <div style="
+            position:absolute;
+            top:-6px;
+            right:-8px;
+            min-width:18px;
+            height:18px;
+            padding:0 5px;
+            border-radius:999px;
+            background:#ef4444;
+            color:white;
+            font-size:11px;
+            font-weight:900;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            box-sizing:border-box;
+          ">
+            <%= @unread_notifications_count %>
+          </div>
+        <% end %>
+      <% end %>
+    </div>
+  </div>
+
+  <div style="background:white; border-radius:20px; padding:18px; box-shadow:0 2px 10px rgba(0,0,0,0.04); margin-bottom:0; flex:1; display:flex; flex-direction:column;">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
+      <div style="font-size:22px; font-weight:900; color:#111827;">인테리어 공정 일정</div>
+
+      <div style="display:flex; align-items:center; gap:12px;">
+        <%= link_to "◀",
+            project_calendar_project_path(@project,
+              view_mode: @view_mode,
+              year: @prev_month.year,
+              month: @prev_month.month,
+              selected_date: @selected_date
+            ),
+            style: "text-decoration:none; color:#374151; font-size:18px; font-weight:900;" %>
+
+        <div style="font-size:16px; font-weight:900; color:#6b7280; min-width:110px; text-align:center;">
+          <%= @calendar_year %>년 <%= @calendar_month %>월
+        </div>
+
+        <%= link_to "▶",
+            project_calendar_project_path(@project,
+              view_mode: @view_mode,
+              year: @next_month.year,
+              month: @next_month.month,
+              selected_date: @selected_date
+            ),
+            style: "text-decoration:none; color:#374151; font-size:18px; font-weight:900;" %>
+      </div>
+    </div>
+
+
+
+
+
+    <div style="border:1px solid #ececec; border-radius:18px; overflow:hidden; background:white; flex:1; display:flex; flex-direction:column;">
+      <div style="display:grid; grid-template-columns:repeat(7, 1fr); border-bottom:1px solid #ececec; background:#fafafa;">
+        <% ["일", "월", "화", "수", "목", "금", "토"].each do |weekday| %>
+          <% header_color = case weekday
+              when "일" then "#ef4444"
+              when "토" then "#3b82f6"
+              else "#6b7280"
+             end %>
+          <div style="padding:12px 0; text-align:center; font-size:14px; font-weight:800; color:<%= header_color %>;">
+            <%= weekday %>
+          </div>
+        <% end %>
+      </div>
+
+      <% @calendar_rows.each_with_index do |row_days, row_index| %>
+        <div style="flex:1; border-bottom:<%= row_index == @calendar_rows.length - 1 ? 'none' : '1px solid #ececec' %>; display:flex; flex-direction:column;">
+          <div style="display:grid; grid-template-columns:repeat(7, 1fr);">
+            <% row_days.each do |day| %>
+              <% is_current_month = (day.month == @calendar_month) %>
+              <% is_selected = (day == @selected_date) %>
+              
+              <% date_text_color = if !is_current_month
+                  '#9ca3af'
+                elsif day.sunday?
+                  '#ef4444'
+                elsif day.saturday?
+                  '#3b82f6'
+                else
+                  '#111827'
+                end %>
+
+              <%= link_to project_calendar_project_path(@project,
+                    view_mode: @view_mode,
+                    year: @calendar_year,
+                    month: @calendar_month,
+                    selected_date: day
+                  ),
+                  data: { date: day.to_s },
+                  class: "calendar-date-cell",
+                  style: "
+                    min-height:28px;
+                    text-decoration:none;
+                    border-right:1px solid #f3f4f6;
+                    padding:4px 0 2px 0;
+                    box-sizing:border-box;
+                    text-align:center;
+                    background:#{is_selected ? '#f6e8b0' : 'white'};
+                    color:#{date_text_color};
+                    font-size:16px;
+                    font-weight:900;
+                    display:flex;
+                    align-items:flex-start;
+                    justify-content:center;
+                    transition:background 0.15s;
+                  " do %>
+                <span><%= format('%02d', day.day) %></span>
+              <% end %>
+            <% end %>
+          </div>
+
+          <div style="position:relative; flex:1; min-height:<%= [@calendar_row_heights[row_index] || 20, 20].max %>px; margin:0 6px 6px 6px;">
+            <% (@calendar_bars_by_row[row_index] || []).each do |bar| %>
+              <% work_process = bar[:work_process] %>
+              <% left_percent = (bar[:start_index] * 100.0 / 7.0) %>
+              <% width_percent = (bar[:span_days] * 100.0 / 7.0) %>
+              <% top_offset = (bar[:lane] * 20) %>
+
+              <% bar_color = bar[:project].color.presence || 'gold' %>
+              <% text_color = bar[:project].theme_color_hex %>
+              
+              <%= link_to work_process_path(work_process),
+                  data: { work_day_id: bar[:work_day].id, process_name: work_process.process_name },
+                  class: "calendar-bar",
+                  style: "
+                    position:absolute;
+                    left:#{left_percent}%;
+                    width:calc(#{width_percent}% - 4px);
+                    top:#{top_offset}px;
+                    height:18px;
+                    color:#{text_color};
+                    text-decoration:none;
+                    display:flex;
+                    align-items:center;
+                    padding:0 4px;
+                    font-size:11px;
+                    font-weight:800;
+                    letter-spacing:-0.3px;
+                    overflow:hidden;
+                    white-space:nowrap;
+                    text-overflow:ellipsis;
+                    box-sizing:border-box;
+                    touch-action:none;
+                    background:#{text_color}1a;
+                    border:1px solid #{text_color}4d;
+                    border-radius:4px;
+                  " do %>
+                <span style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">
+                  <%= work_process.process_name %>
+                </span>
+              <% end %>
+            <% end %>
+          </div>
+        </div>
+      <% end %>
+    </div>
+
+
+  </div>
+</div>
+
+<!-- Bottom Sheet Overlay -->
+<div id="bsOverlay" onclick="closeBottomSheet()" style="
+  position:fixed; top:0; left:0; right:0; bottom:0;
+  background:rgba(0,0,0,0.5); z-index:500;
+  opacity:0; visibility:hidden;
+  transition:all 0.3s ease;
+"></div>
+
+<!-- Bottom Sheet -->
+<div id="bottomSheet" style="
+  position:fixed; left:0; right:0; bottom:0;
+  background:white; z-index:510;
+  border-radius:24px 24px 0 0;
+  box-shadow:0 -4px 30px rgba(0,0,0,0.15);
+  transform:translateY(100%);
+  transition:transform 0.35s cubic-bezier(0.4,0,0.2,1);
+  max-height:70vh; overflow-y:auto;
+  padding-bottom:env(safe-area-inset-bottom);
+">
+  <div style="display:flex; justify-content:center; padding:12px 0 4px 0;">
+    <div style="width:40px; height:4px; border-radius:99px; background:#d1d5db;"></div>
+  </div>
+
+  <div style="padding:8px 20px 14px 20px; display:flex; justify-content:space-between; align-items:center;">
+    <div>
+      <div id="bsTitle" style="font-size:20px; font-weight:900; color:#111827;">일정 추가</div>
+      <div id="bsSubtitle" style="font-size:13px; font-weight:700; color:#9ca3af; margin-top:2px;"></div>
+    </div>
+    <div onclick="closeBottomSheet()" style="font-size:22px; color:#9ca3af; cursor:pointer; padding:4px 8px;">✕</div>
+  </div>
+
+  <div id="bsStep1" style="padding:0 16px 20px 16px;">
+    <div style="font-size:14px; font-weight:800; color:#6b7280; margin-bottom:10px;">현장을 선택하세요</div>
+    <div id="bsProjectList" style="display:flex; flex-direction:column; gap:8px;"></div>
+  </div>
+
+  <div id="bsStep2" style="display:none; padding:0 16px 20px 16px;">
+    <button onclick="bsGoBack()" style="background:none; border:none; font-size:14px; font-weight:800; color:#2563eb; cursor:pointer; padding:0 0 12px 0; font-family:inherit;">← 현장 다시 선택</button>
+    <div style="font-size:14px; font-weight:800; color:#6b7280; margin-bottom:10px;">공정을 선택하세요</div>
+    <div id="bsProcessList" style="display:flex; flex-wrap:wrap; gap:8px;"></div>
+  </div>
+</div>
+
+
+
+<% all_projects_data = @projects.map { |p|
+  {
+    id: p.id,
+    name: p.project_name,
+    color: p.theme_color_hex,
+    processes: p.work_processes.sort_by { |wp| [wp.position || 9999, wp.id] }.map { |wp|
+      { id: wp.id, name: wp.process_name }
+    }
+  }
+} %>
+
+<script>
+var calendarProjects = <%= raw all_projects_data.to_json %>;
+var bsSelectedDate = null;
+var bsSelectedProjectId = null;
+
+function openBottomSheet(dateStr) {
+  bsSelectedDate = dateStr;
+  bsSelectedProjectId = null;
+
+  var parts = dateStr.split('-');
+  document.getElementById('bsSubtitle').textContent = parts[0] + '년 ' + parseInt(parts[1]) + '월 ' + parseInt(parts[2]) + '일';
+  document.getElementById('bsTitle').textContent = '일정 추가';
+
+  var list = document.getElementById('bsProjectList');
+  list.innerHTML = '';
+
+  if (calendarProjects.length === 0) {
+    list.innerHTML = '<div style="text-align:center; padding:20px; color:#9ca3af; font-size:14px; font-weight:700;">등록된 현장이 없습니다.</div>';
+  } else {
+    calendarProjects.forEach(function(project) {
+      var btn = document.createElement('button');
+      btn.type = 'button';
+      btn.onclick = function() { bsSelectProject(project.id); };
+      btn.style.cssText = 'display:flex; align-items:center; gap:12px; width:100%; padding:14px 16px; border:1.5px solid #e5e7eb; border-radius:16px; background:white; cursor:pointer; font-family:inherit; text-align:left; transition:all 0.15s;';
+
+      var dot = document.createElement('span');
+      dot.style.cssText = 'width:12px; height:12px; border-radius:50%; flex-shrink:0; background:' + project.color + ';';
+
+      var text = document.createElement('span');
+      text.textContent = project.name;
+      text.style.cssText = 'font-size:15px; font-weight:800; color:#111827;';
+
+      var arrow = document.createElement('span');
+      arrow.textContent = '→';
+      arrow.style.cssText = 'margin-left:auto; color:#d1d5db; font-size:16px;';
+
+      btn.appendChild(dot);
+      btn.appendChild(text);
+      btn.appendChild(arrow);
+      list.appendChild(btn);
+    });
+  }
+
+  document.getElementById('bsStep1').style.display = 'block';
+  document.getElementById('bsStep2').style.display = 'none';
+
+  document.getElementById('bsOverlay').style.opacity = '1';
+  document.getElementById('bsOverlay').style.visibility = 'visible';
+  document.getElementById('bottomSheet').style.transform = 'translateY(0)';
+  document.body.style.overflow = 'hidden';
+}
+
+function closeBottomSheet() {
+  document.getElementById('bsOverlay').style.opacity = '0';
+  document.getElementById('bsOverlay').style.visibility = 'hidden';
+  document.getElementById('bottomSheet').style.transform = 'translateY(100%)';
+  document.body.style.overflow = '';
+}
+
+function bsGoBack() {
+  document.getElementById('bsStep1').style.display = 'block';
+  document.getElementById('bsStep2').style.display = 'none';
+  document.getElementById('bsTitle').textContent = '일정 추가';
+}
+
+function bsSelectProject(projectId) {
+  bsSelectedProjectId = projectId;
+  var project = calendarProjects.find(function(p) { return p.id === projectId; });
+  if (!project) return;
+
+  document.getElementById('bsTitle').textContent = project.name;
+  document.getElementById('bsStep1').style.display = 'none';
+  document.getElementById('bsStep2').style.display = 'block';
+
+  var list = document.getElementById('bsProcessList');
+  list.innerHTML = '';
+
+  if (project.processes.length === 0) {
+    list.innerHTML = '<div style="text-align:center; padding:20px; color:#9ca3af; font-size:14px; font-weight:700; width:100%;">등록된 공정이 없습니다.</div>';
+    return;
+  }
+
+  project.processes.forEach(function(proc) {
+    var btn = document.createElement('button');
+    btn.type = 'button';
+    btn.onclick = function() { bsSaveProcess(proc.id); };
+    btn.style.cssText = 'padding:12px 18px; border:1.5px solid ' + project.color + '; border-radius:14px; background:white; color:' + project.color + '; font-size:14px; font-weight:800; cursor:pointer; font-family:inherit; transition:all 0.15s;';
+    btn.textContent = proc.name;
+    list.appendChild(btn);
+  });
+}
+
+function bsSaveProcess(workProcessId) {
+  if (!bsSelectedDate || !workProcessId) return;
+
+  var csrfToken = document.querySelector('meta[name="csrf-token"]').content;
+
+  fetch('/work_days/toggle', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-CSRF-Token': csrfToken
+    },
+    body: JSON.stringify({
+      work_process_id: workProcessId,
+      work_date: bsSelectedDate
+    })
+  })
+  .then(function(res) { return res.json(); })
+  .then(function(data) {
+    if (data.success) {
+      closeBottomSheet();
+      window.location.reload();
+    } else {
+      alert(data.error || '저장에 실패했습니다.');
+    }
+  })
+  .catch(function() {
+    alert('네트워크 오류가 발생했습니다.');
+  });
+}
+
+
+
+// ========== Date Cell Click & Drag-and-Drop ==========
+document.addEventListener('DOMContentLoaded', function() {
+  // Date cell click → open bottom sheet
+  document.querySelectorAll('.calendar-date-cell').forEach(function(cell) {
+    cell.addEventListener('click', function(e) {
+      e.preventDefault();
+      var dateStr = cell.dataset.date;
+      if (dateStr) openBottomSheet(dateStr);
+    });
+  });
+
+  // Drag & Drop
+  var dragState = null;
+  var longPressTimer = null;
+  var ghostEl = null;
+  var LONG_PRESS_MS = 300;
+
+  document.querySelectorAll('.calendar-bar').forEach(function(bar) {
+    bar.addEventListener('contextmenu', function(e) { e.preventDefault(); });
+  });
+
+  document.addEventListener('touchstart', function(e) {
+    var bar = e.target.closest('.calendar-bar');
+    if (!bar) return;
+
+    var touch = e.touches[0];
+    var startX = touch.clientX;
+    var startY = touch.clientY;
+
+    longPressTimer = setTimeout(function() {
+      if (navigator.vibrate) navigator.vibrate(30);
+
+      dragState = {
+        workDayId: bar.dataset.workDayId,
+        processName: bar.dataset.processName,
+        originBar: bar
+      };
+
+      ghostEl = document.createElement('div');
+      ghostEl.textContent = dragState.processName;
+      ghostEl.style.cssText = 'position:fixed;z-index:9999;padding:6px 14px;border-radius:12px;background:#2563eb;color:white;font-size:13px;font-weight:900;pointer-events:none;opacity:0.92;box-shadow:0 4px 16px rgba(0,0,0,0.25);white-space:nowrap;transform:translate(-50%,-120%);';
+      ghostEl.style.left = startX + 'px';
+      ghostEl.style.top = startY + 'px';
+      document.body.appendChild(ghostEl);
+
+      bar.style.opacity = '0.3';
+    }, LONG_PRESS_MS);
+  }, { passive: true });
+
+  document.addEventListener('touchmove', function(e) {
+    if (!dragState) {
+      if (longPressTimer) { clearTimeout(longPressTimer); longPressTimer = null; }
+      return;
+    }
+
+    e.preventDefault();
+
+    var touch = e.touches[0];
+    if (ghostEl) {
+      ghostEl.style.left = touch.clientX + 'px';
+      ghostEl.style.top = touch.clientY + 'px';
+    }
+
+    document.querySelectorAll('.calendar-date-cell').forEach(function(cell) {
+      cell.style.outline = '';
+      cell.style.outlineOffset = '';
+    });
+
+    var target = document.elementFromPoint(touch.clientX, touch.clientY);
+    var dateCell = target ? target.closest('.calendar-date-cell') : null;
+    if (dateCell) {
+      dateCell.style.outline = '2px solid #2563eb';
+      dateCell.style.outlineOffset = '-2px';
+    }
+  }, { passive: false });
+
+  document.addEventListener('touchend', function(e) {
+    clearTimeout(longPressTimer);
+    longPressTimer = null;
+
+    if (!dragState) return;
+
+    var touch = e.changedTouches[0];
+    var target = document.elementFromPoint(touch.clientX, touch.clientY);
+    var dateCell = target ? target.closest('.calendar-date-cell') : null;
+
+    document.querySelectorAll('.calendar-date-cell').forEach(function(cell) {
+      cell.style.outline = '';
+      cell.style.outlineOffset = '';
+    });
+
+    if (ghostEl) { ghostEl.remove(); ghostEl = null; }
+    if (dragState.originBar) dragState.originBar.style.opacity = '1';
+
+    if (dateCell && dateCell.dataset.date) {
+      var newDate = dateCell.dataset.date;
+      var csrfToken = document.querySelector('meta[name="csrf-token"]').content;
+
+      fetch('/work_days/move', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRF-Token': csrfToken
+        },
+        body: JSON.stringify({
+          work_day_id: dragState.workDayId,
+          new_date: newDate
+        })
+      })
+      .then(function(res) { return res.json(); })
+      .then(function(data) {
+        if (data.success) {
+          window.location.reload();
+        } else {
+          alert(data.error || '이동에 실패했습니다.');
+        }
+      })
+      .catch(function() {
+        alert('네트워크 오류가 발생했습니다.');
+      });
+    }
+
+    dragState = null;
+  }, { passive: true });
+
+  document.addEventListener('touchcancel', function() {
+    clearTimeout(longPressTimer);
+    longPressTimer = null;
+
+    if (ghostEl) { ghostEl.remove(); ghostEl = null; }
+    if (dragState && dragState.originBar) dragState.originBar.style.opacity = '1';
+    dragState = null;
+
+    document.querySelectorAll('.calendar-date-cell').forEach(function(cell) {
+      cell.style.outline = '';
+      cell.style.outlineOffset = '';
+    });
+  }, { passive: true });
+});
+</script>
