@@ -279,6 +279,7 @@ class ProjectsController < ApplicationController
     end
 
     @calendar_projects = [ @project ]
+    @projects = [ @project ] # Required for bottom sheet selection
 
     selected_day_work_days = work_day_scope.select { |wd| wd.work_date == @selected_date }
 
