@@ -521,7 +521,52 @@
     }
   }
 
-  function handleAiUploadNew(event) {
+  function resizeImageFile(file, maxWidth = 1600) {
+    return new Promise((resolve) => {
+      if (!file.type.match(/image.*/)) {
+        resolve(file);
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.onload = function (e) {
+        const img = new Image();
+        img.onload = function () {
+          let width = img.width;
+          let height = img.height;
+
+          if (width > maxWidth) {
+            height = Math.round((height * maxWidth) / width);
+            width = maxWidth;
+          }
+
+          const canvas = document.createElement("canvas");
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext("2d");
+          ctx.drawImage(img, 0, 0, width, height);
+
+          canvas.toBlob((blob) => {
+            if (!blob) {
+              resolve(file);
+              return;
+            }
+            const resizedFile = new File([blob], file.name, {
+              type: "image/jpeg",
+              lastModified: Date.now()
+            });
+            resolve(resizedFile);
+          }, "image/jpeg", 0.85);
+        };
+        img.onerror = () => resolve(file);
+        img.src = e.target.result;
+      };
+      reader.onerror = () => resolve(file);
+      reader.readAsDataURL(file);
+    });
+  }
+
+  async function handleAiUploadNew(event) {
     const files = event.target.files;
     if (!files || files.length === 0) return;
 
@@ -535,20 +580,35 @@
     document.getElementById("aiLoadingState").style.display = "block";
     document.getElementById("aiResultState").style.display = "none";
 
-    const formData = new FormData();
-    for (let i = 0; i < files.length; i++) {
-      formData.append("files[]", files[i]);
-    }
+    try {
+      const resizePromises = [];
+      for (let i = 0; i < files.length; i++) {
+        resizePromises.push(resizeImageFile(files[i]));
+      }
+      const resizedFiles = await Promise.all(resizePromises);
 
-    fetch("/ai_imports/analyze", {
+      const formData = new FormData();
+      for (let i = 0; i < resizedFiles.length; i++) {
+        formData.append("files[]", resizedFiles[i]);
+      }
+
+      const response = await fetch("/ai_imports/analyze", {
       method: "POST",
       headers: {
         "X-CSRF-Token": document.querySelector('meta[name="csrf-token"]').content
       },
       body: formData
-    })
-    .then(response => response.json())
-    .then(data => {
+      });
+
+      if (!response.ok) {
+        let errJson = null;
+        try {
+          errJson = await response.json();
+        } catch(e) {}
+        throw new Error(errJson?.error || "분석 중 오류가 발생했습니다. (서버 응답 오류)");
+      }
+
+      const data = await response.json();
       document.getElementById("aiLoadingState").style.display = "none";
 
       if (data.success) {
@@ -558,13 +618,12 @@
         alert(data.error || "분석 중 오류가 발생했습니다.");
         resetAiNew();
       }
-    })
-    .catch(error => {
-      console.error("Error:", error);
+    } catch (error) {
+      console.error("AI Upload Error:", error);
       document.getElementById("aiLoadingState").style.display = "none";
-      alert("네트워크 오류가 발생했습니다.");
+      alert(error.message || "네트워크 오류가 발생했습니다.");
       resetAiNew();
-    });
+    }
   }
 
   function resetAiNew() {
