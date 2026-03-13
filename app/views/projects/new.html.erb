@@ -279,9 +279,24 @@
   <% end %>
 </div>
 
+<!-- iOS/Android compatible popup layer -->
+<div id="daum_postcode_layer" style="display:none;position:fixed;overflow:hidden;z-index:9999;-webkit-overflow-scrolling:touch;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);">
+  <div style="position:absolute;top:50%;left:50%;transform:translate(-50%, -50%);width:90%;max-width:500px;background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 10px 25px rgba(0,0,0,0.2);">
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:14px 18px;background:#f9fafb;border-bottom:1px solid #e5e7eb;">
+      <span style="font-weight:800; color:#111;">주소 검색</span>
+      <button type="button" onclick="closeDaumPostcode()" style="background:none;border:none;font-size:26px;line-height:1;cursor:pointer;color:#6b7280;padding:0;margin:0;">&times;</button>
+    </div>
+    <div id="daum_postcode_wrap" style="width:100%;height:450px;max-height:70vh;"></div>
+  </div>
+</div>
+
 <script src="//t1.kakaocdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
 
 <script>
+  function closeDaumPostcode() {
+    document.getElementById('daum_postcode_layer').style.display = 'none';
+  }
+
   document.addEventListener("DOMContentLoaded", function () {
     const projectTypeSelect = document.getElementById("project_type_select");
     const residentialBox = document.getElementById("residential_process_box");
@@ -345,6 +360,10 @@
 
     if (addressSearchButton) {
       addressSearchButton.addEventListener("click", function () {
+        var layer = document.getElementById('daum_postcode_layer');
+        var wrap = document.getElementById('daum_postcode_wrap');
+        layer.style.display = 'block';
+
         new daum.Postcode({
           oncomplete: function(data) {
             let addr = "";
@@ -370,8 +389,14 @@
 
             addressField.value = addr + extraAddr;
             detailAddressField.focus();
-          }
-        }).open();
+            closeDaumPostcode();
+          },
+          onresize: function(size) {
+            wrap.style.height = size.height+'px';
+          },
+          width: '100%',
+          height: '100%'
+        }).embed(wrap);
       });
     }
 
