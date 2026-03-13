@@ -82,9 +82,9 @@
         <div id="aiUploadState">
           <label style="display:flex; flex-direction:column; align-items:center; justify-content:center; padding:32px 16px; border:2px dashed #c7d2fe; border-radius:16px; background:#e0e7ff; cursor:pointer;">
             <span style="font-size:32px; margin-bottom:12px;">📸</span>
-            <span style="font-size:15px; font-weight:800; color:#4338ca; text-align:center;">일정표 창 사진 선택하기</span>
+            <span style="font-size:15px; font-weight:800; color:#4338ca; text-align:center;">일정표 사진 선택 (최대 3장)</span>
             <span style="font-size:12px; font-weight:700; color:#6366f1; margin-top:6px;">화이트보드, 엑셀 캡처 가능</span>
-            <input type="file" id="aiFileInputNewProject" accept="image/*" style="display:none;" onchange="handleAiUploadNew(event)">
+            <input type="file" id="aiFileInputNewProject" accept="image/*" multiple style="display:none;" onchange="handleAiUploadNew(event)">
           </label>
         </div>
 
@@ -497,15 +497,23 @@
   }
 
   function handleAiUploadNew(event) {
-    const file = event.target.files[0];
-    if (!file) return;
+    const files = event.target.files;
+    if (!files || files.length === 0) return;
+
+    if (files.length > 3) {
+      alert("최대 3장까지만 업로드 비전 분석이 가능합니다.");
+      event.target.value = "";
+      return;
+    }
 
     document.getElementById("aiUploadState").style.display = "none";
     document.getElementById("aiLoadingState").style.display = "block";
     document.getElementById("aiResultState").style.display = "none";
 
     const formData = new FormData();
-    formData.append("file", file);
+    for (let i = 0; i < files.length; i++) {
+      formData.append("files[]", files[i]);
+    }
 
     fetch("/ai_imports/analyze", {
       method: "POST",

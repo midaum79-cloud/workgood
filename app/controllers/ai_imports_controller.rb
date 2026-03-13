@@ -5,9 +5,11 @@ class AiImportsController < ApplicationController
   # POST /projects/:project_id/ai_imports/analyze
   # POST /ai_imports/analyze
   def analyze
+    require "base64"
     @project = current_user.projects.find_by(id: params[:project_id]) if params[:project_id].present?
 
-    unless params[:file].present?
+    files = params[:files] || (params[:file].present? ? [ params[:file] ] : [])
+    if files.empty?
       return render json: { error: "업로드된 파일이 없습니다." }, status: :bad_request
     end
 
@@ -21,8 +23,8 @@ class AiImportsController < ApplicationController
 
         # 2. Prepare Gemini Prompt
         prompt = <<~PROMPT
-          첨부된 이미지는 인테리어 공정표(일정표)입니다.
-          이 이미지에서 각 진행 항목의 '날짜(Date)'와 '작업 내용(공정명, 내용)'을 추출해주세요.
+          첨부된 이미지들은 인테리어 공정표(일정표)입니다. 다수의 이미지일 경우 연결된 하나의 표라고 생각하고 분석해주세요.
+          이 이미지들에서 각 진행 항목의 '날짜(Date)'와 '작업 내용(공정명, 내용)'을 추출해주세요.
 
           조건 1: 연도가 명시되어 있지 않다면 올해(#{Date.current.year}년)로 간주합니다. 날짜 형식은 YYYY-MM-DD 로 통일해주세요.
           조건 2: 추출한 '작업 내용(raw_text)'을 다음 제공된 '기존 현장 공정 리스트'와 비교하여, 의미가 일치하거나 가장 유사한 항목의 ID(matched_process_id)를 찾아주세요.#{' '}
@@ -39,8 +41,8 @@ class AiImportsController < ApplicationController
         PROMPT
       else
         prompt = <<~PROMPT
-          첨부된 이미지는 인테리어 공정표(일정표)입니다.
-          이 이미지에서 각 진행 항목의 '날짜(Date)'와 '작업 내용(공정명, 내용)'을 추출해주세요.
+          첨부된 이미지들은 인테리어 공정표(일정표)입니다. 다수의 이미지일 경우 연결된 하나의 표라고 생각하고 분석해주세요.
+          이 이미지들에서 각 진행 항목의 '날짜(Date)'와 '작업 내용(공정명, 내용)'을 추출해주세요.
 
           조건 1: 연도가 명시되어 있지 않다면 올해(#{Date.current.year}년)로 간주합니다. 날짜 형식은 YYYY-MM-DD 로 통일해주세요.
           조건 2: 원문 그대로의 텍스트(공정명)와 해당 날짜를 추출하세요.
@@ -64,17 +66,17 @@ class AiImportsController < ApplicationController
       )
 
       # 4. Upload and Call API
-      file = params[:file]
-      mime_type = file.content_type
-      base64_image = Base64.strict_encode64(file.read)
+      parts = [ { text: prompt } ]
+
+      files.first(3).each do |file|
+        mime_type = file.content_type
+        base64_image = Base64.strict_encode64(file.read)
+        parts << { inlineData: { mimeType: mime_type, data: base64_image } }
+      end
 
       response = client.generate_content({
         contents: [
-          { role: "user", parts: [
-              { text: prompt },
-              { inlineData: { mimeType: mime_type, data: base64_image } }
-            ]
-          }
+          { role: "user", parts: parts }
         ]
       })
 
