@@ -136,6 +136,8 @@
                     month: @calendar_month,
                     selected_date: day
                   ),
+                  data: { date: day.to_s },
+                  class: "calendar-date-cell",
                   style: "
                     min-height:28px;
                     text-decoration:none;
@@ -150,6 +152,7 @@
                     display:flex;
                     align-items:flex-start;
                     justify-content:center;
+                    transition:background 0.15s;
                   " do %>
                 <span><%= format('%02d', day.day) %></span>
               <% end %>
@@ -167,6 +170,8 @@
               <% text_color = bar[:project].theme_color_hex %>
               
               <%= link_to work_process_path(work_process),
+                  data: { work_day_id: bar[:work_day].id, process_name: work_process.process_name },
+                  class: "calendar-bar",
                   style: "
                     position:absolute;
                     left:#{left_percent}%;
@@ -185,6 +190,7 @@
                     white-space:nowrap;
                     text-overflow:ellipsis;
                     box-sizing:border-box;
+                    touch-action:none;
                   " do %>
                 <span style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">
                   <%= work_process.process_name %>
@@ -199,3 +205,159 @@
 
   </div>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  let dragState = null;
+  let longPressTimer = null;
+  let ghostEl = null;
+  const LONG_PRESS_MS = 300;
+
+  // Prevent context menu on long press
+  document.querySelectorAll('.calendar-bar').forEach(function(bar) {
+    bar.addEventListener('contextmenu', function(e) { e.preventDefault(); });
+  });
+
+  // Touch Start — begin long-press timer
+  document.addEventListener('touchstart', function(e) {
+    var bar = e.target.closest('.calendar-bar');
+    if (!bar) return;
+
+    var touch = e.touches[0];
+    var startX = touch.clientX;
+    var startY = touch.clientY;
+
+    longPressTimer = setTimeout(function() {
+      // Vibrate if supported
+      if (navigator.vibrate) navigator.vibrate(30);
+
+      dragState = {
+        workDayId: bar.dataset.workDayId,
+        processName: bar.dataset.processName,
+        originBar: bar
+      };
+
+      // Create ghost element
+      ghostEl = document.createElement('div');
+      ghostEl.textContent = dragState.processName;
+      ghostEl.style.cssText = 'position:fixed;z-index:9999;padding:6px 14px;border-radius:12px;background:#2563eb;color:white;font-size:13px;font-weight:900;pointer-events:none;opacity:0.92;box-shadow:0 4px 16px rgba(0,0,0,0.25);white-space:nowrap;transform:translate(-50%,-120%);';
+      ghostEl.style.left = startX + 'px';
+      ghostEl.style.top = startY + 'px';
+      document.body.appendChild(ghostEl);
+
+      // Dim origin bar
+      bar.style.opacity = '0.3';
+    }, LONG_PRESS_MS);
+  }, { passive: true });
+
+  // Touch Move — move ghost and highlight target
+  document.addEventListener('touchmove', function(e) {
+    if (!dragState) {
+      // If finger moved before long-press, cancel
+      if (longPressTimer) {
+        clearTimeout(longPressTimer);
+        longPressTimer = null;
+      }
+      return;
+    }
+
+    e.preventDefault();
+
+    var touch = e.touches[0];
+    if (ghostEl) {
+      ghostEl.style.left = touch.clientX + 'px';
+      ghostEl.style.top = touch.clientY + 'px';
+    }
+
+    // Highlight date cell under finger
+    document.querySelectorAll('.calendar-date-cell').forEach(function(cell) {
+      cell.style.outline = '';
+      cell.style.outlineOffset = '';
+    });
+
+    var target = document.elementFromPoint(touch.clientX, touch.clientY);
+    var dateCell = target ? target.closest('.calendar-date-cell') : null;
+    if (dateCell) {
+      dateCell.style.outline = '2px solid #2563eb';
+      dateCell.style.outlineOffset = '-2px';
+    }
+  }, { passive: false });
+
+  // Touch End — drop
+  document.addEventListener('touchend', function(e) {
+    clearTimeout(longPressTimer);
+    longPressTimer = null;
+
+    if (!dragState) return;
+
+    // Find target date cell
+    var touch = e.changedTouches[0];
+    var target = document.elementFromPoint(touch.clientX, touch.clientY);
+    var dateCell = target ? target.closest('.calendar-date-cell') : null;
+
+    // Clean up highlights
+    document.querySelectorAll('.calendar-date-cell').forEach(function(cell) {
+      cell.style.outline = '';
+      cell.style.outlineOffset = '';
+    });
+
+    // Remove ghost
+    if (ghostEl) {
+      ghostEl.remove();
+      ghostEl = null;
+    }
+
+    // Restore origin bar opacity
+    if (dragState.originBar) {
+      dragState.originBar.style.opacity = '1';
+    }
+
+    if (dateCell && dateCell.dataset.date) {
+      var newDate = dateCell.dataset.date;
+      var csrfToken = document.querySelector('meta[name="csrf-token"]').content;
+
+      fetch('/work_days/move', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRF-Token': csrfToken
+        },
+        body: JSON.stringify({
+          work_day_id: dragState.workDayId,
+          new_date: newDate
+        })
+      })
+      .then(function(res) { return res.json(); })
+      .then(function(data) {
+        if (data.success) {
+          window.location.reload();
+        } else {
+          alert(data.error || '이동에 실패했습니다.');
+        }
+      })
+      .catch(function() {
+        alert('네트워크 오류가 발생했습니다.');
+      });
+    }
+
+    dragState = null;
+  }, { passive: true });
+
+  // Touch Cancel — cleanup
+  document.addEventListener('touchcancel', function() {
+    clearTimeout(longPressTimer);
+    longPressTimer = null;
+
+    if (ghostEl) { ghostEl.remove(); ghostEl = null; }
+    if (dragState && dragState.originBar) {
+      dragState.originBar.style.opacity = '1';
+    }
+    dragState = null;
+
+    document.querySelectorAll('.calendar-date-cell').forEach(function(cell) {
+      cell.style.outline = '';
+      cell.style.outlineOffset = '';
+    });
+  }, { passive: true });
+});
+</script>

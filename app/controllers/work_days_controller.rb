@@ -24,4 +24,25 @@ class WorkDaysController < ApplicationController
       error: "잘못된 날짜입니다."
     }, status: :unprocessable_entity
   end
+
+  def move
+    work_day = WorkDay.find(params[:work_day_id])
+    new_date = Date.parse(params[:new_date])
+
+    work_day.update!(work_date: new_date)
+
+    # Recalculate parent work_process start/end dates
+    work_process = work_day.work_process
+    all_dates = work_process.work_days.order(:work_date).pluck(:work_date)
+    work_process.update_columns(
+      start_date: all_dates.first,
+      end_date: all_dates.last
+    )
+
+    render json: { success: true, new_date: new_date }
+  rescue ActiveRecord::RecordNotFound
+    render json: { success: false, error: "작업일을 찾을 수 없습니다." }, status: :not_found
+  rescue ArgumentError
+    render json: { success: false, error: "잘못된 날짜입니다." }, status: :unprocessable_entity
+  end
 end

@@ -43,6 +43,7 @@ Rails.application.routes.draw do
   resources :work_days do
     collection do
       post :toggle
+      post :move
     end
   end
 
