@@ -47,6 +47,12 @@ Rails.application.routes.draw do
     end
   end
 
+  resources :web_push_subscriptions, only: [:create] do
+    collection do
+      delete :destroy # Use endpoint as param
+    end
+  end
+
   resources :work_processes
   resources :vendors
   resources :process_templates, only: [:index, :create, :destroy] do

@@ -104,16 +104,16 @@
           <div style="padding:16px 18px; border-bottom:1px solid #f9fafb;">
             <div style="display:flex; justify-content:space-between; align-items:center;">
               <div>
-                <div style="font-size:14px; font-weight:800; color:#111827;">내일 공정 알림</div>
+                <div style="font-size:14px; font-weight:800; color:#111827;">내일 공정 알림 (웹 푸시)</div>
                 <div style="font-size:12px; color:#9ca3af; margin-top:2px;">설정 시간에 내일 현장 일정을 알려드려요</div>
               </div>
               <label style="position:relative; display:inline-block; width:50px; height:28px; cursor:pointer;">
                 <%= f.check_box :evening_alert_enabled, name: "user[evening_alert_enabled]",
                     checked: current_user.evening_alert_enabled,
-                    style: "opacity:0; width:0; height:0; position:absolute;",
-                    onchange: "this.closest('form').submit()" %>
-                <span id="toggleTrack" style="position:absolute; top:0; left:0; right:0; bottom:0; background:<%= current_user.evening_alert_enabled ? '#2563eb' : '#d1d5db' %>; border-radius:999px; transition:background 0.2s;"></span>
-                <span style="position:absolute; top:3px; left:<%= current_user.evening_alert_enabled ? '25px' : '3px' %>; width:22px; height:22px; background:white; border-radius:50%; transition:left 0.2s; box-shadow:0 1px 4px rgba(0,0,0,0.2);"></span>
+                    id: "push_toggle_checkbox",
+                    style: "opacity:0; width:0; height:0; position:absolute;" %>
+                <span id="pushToggleTrack" style="position:absolute; top:0; left:0; right:0; bottom:0; background:<%= current_user.evening_alert_enabled ? '#2563eb' : '#d1d5db' %>; border-radius:999px; transition:background 0.2s;"></span>
+                <span id="pushToggleThumb" style="position:absolute; top:3px; left:<%= current_user.evening_alert_enabled ? '25px' : '3px' %>; width:22px; height:22px; background:white; border-radius:50%; transition:left 0.2s; box-shadow:0 1px 4px rgba(0,0,0,0.2);"></span>
               </label>
             </div>
           </div>
@@ -134,7 +134,7 @@
                 <% end %>
               </div>
               <div style="margin-top:12px; padding:12px; background:#eff6ff; border-radius:12px;">
-                <div style="font-size:13px; font-weight:700; color:#1d4ed8; margin-bottom:4px;">📨 알림 예시</div>
+                <div style="font-size:13px; font-weight:700; color:#1d4ed8; margin-bottom:4px;">📨 웹 푸시 알림 예시</div>
                 <div style="font-size:12px; color:#374151; line-height:1.7;">
                   <strong>내일 현장 안내</strong><br>
                   · 목공 — 퇴계주공 604동<br>
@@ -143,6 +143,82 @@
               </div>
             </div>
           <% end %>
+
+          <script>
+            document.addEventListener('DOMContentLoaded', function() {
+              var checkbox = document.getElementById('push_toggle_checkbox');
+              var form = checkbox.closest('form');
+              var track = document.getElementById('pushToggleTrack');
+              var thumb = document.getElementById('pushToggleThumb');
+              var vapidPublicKey = new Uint8Array([<%= Base64.urlsafe_decode64(ENV['VAPID_PUBLIC_KEY'] || '').bytes.join(',') %>]);
+
+              checkbox.addEventListener('change', async function(e) {
+                var isEnabled = this.checked;
+                // Animate toggle
+                track.style.background = isEnabled ? '#2563eb' : '#d1d5db';
+                thumb.style.left = isEnabled ? '25px' : '3px';
+
+                if (isEnabled) {
+                  // Request Permission & Subscribe
+                  if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
+                    alert('이 브라우저는 푸시 알림을 지원하지 않습니다.');
+                    checkbox.checked = false;
+                    form.submit();
+                    return;
+                  }
+
+                  try {
+                    const permission = await Notification.requestPermission();
+                    if (permission !== 'granted') {
+                      alert('알림 권한이 허용되지 않았습니다.');
+                      checkbox.checked = false;
+                      form.submit();
+                      return;
+                    }
+
+                    const registration = await navigator.serviceWorker.ready;
+                    let subscription = await registration.pushManager.getSubscription();
+                    if (!subscription) {
+                      subscription = await registration.pushManager.subscribe({
+                        userVisibleOnly: true,
+                        applicationServerKey: vapidPublicKey
+                      });
+                    }
+
+                    // Send subscription to backend
+                    const p256dh = btoa(String.fromCharCode.apply(null, new Uint8Array(subscription.getKey('p256dh'))));
+                    const auth = btoa(String.fromCharCode.apply(null, new Uint8Array(subscription.getKey('auth'))));
+
+                    await fetch('/web_push_subscriptions', {
+                      method: 'POST',
+                      headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').content
+                      },
+                      body: JSON.stringify({
+                        subscription: {
+                          endpoint: subscription.endpoint,
+                          keys: { p256dh: p256dh, auth: auth }
+                        }
+                      })
+                    });
+
+                    // Finally submit form
+                    form.submit();
+
+                  } catch (error) {
+                    console.error('Push subscription failed:', error);
+                    alert('푸시 알림 설정 중 오류가 발생했습니다.');
+                    checkbox.checked = false;
+                    form.submit();
+                  }
+                } else {
+                  // Unsubscribe logic could be added here, but for now just submit the user profile toggle
+                  form.submit();
+                }
+              });
+            });
+          </script>
         <% end %>
       <% else %>
         <div style="padding:18px; text-align:center;">

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_03_12_143217) do
+ActiveRecord::Schema[8.1].define(version: 2026_03_13_103409) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -195,6 +195,16 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_12_143217) do
     t.datetime "updated_at", null: false
   end
 
+  create_table "web_push_subscriptions", force: :cascade do |t|
+    t.string "auth"
+    t.datetime "created_at", null: false
+    t.string "endpoint"
+    t.string "p256dh"
+    t.datetime "updated_at", null: false
+    t.bigint "user_id", null: false
+    t.index ["user_id"], name: "index_web_push_subscriptions_on_user_id"
+  end
+
   create_table "work_days", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
@@ -231,6 +241,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_12_143217) do
   add_foreign_key "site_photos", "sites"
   add_foreign_key "sites", "companies"
   add_foreign_key "subscription_payments", "users"
+  add_foreign_key "web_push_subscriptions", "users"
   add_foreign_key "work_days", "work_processes"
   add_foreign_key "work_processes", "projects"
 end
