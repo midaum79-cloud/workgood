@@ -60,9 +60,9 @@ class ProjectsController < ApplicationController
     @projects =
       case @selected_status
       when "진행중", "예정", "완료"
-        current_user.projects.where(status: @selected_status).order(created_at: :desc)
+        current_user.projects.includes(:work_processes).where(status: @selected_status).order(created_at: :desc)
       else
-        current_user.projects.order(created_at: :desc)
+        current_user.projects.includes(:work_processes).order(created_at: :desc)
       end
 
     base_date =

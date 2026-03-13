@@ -206,19 +206,203 @@
   </div>
 </div>
 
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-  let dragState = null;
-  let longPressTimer = null;
-  let ghostEl = null;
-  const LONG_PRESS_MS = 300;
+<!-- Bottom Sheet Overlay -->
+<div id="bsOverlay" onclick="closeBottomSheet()" style="
+  position:fixed; top:0; left:0; right:0; bottom:0;
+  background:rgba(0,0,0,0.5); z-index:500;
+  opacity:0; visibility:hidden;
+  transition:all 0.3s ease;
+"></div>
 
-  // Prevent context menu on long press
+<!-- Bottom Sheet -->
+<div id="bottomSheet" style="
+  position:fixed; left:0; right:0; bottom:0;
+  background:white; z-index:510;
+  border-radius:24px 24px 0 0;
+  box-shadow:0 -4px 30px rgba(0,0,0,0.15);
+  transform:translateY(100%);
+  transition:transform 0.35s cubic-bezier(0.4,0,0.2,1);
+  max-height:70vh; overflow-y:auto;
+  padding-bottom:env(safe-area-inset-bottom);
+">
+  <div style="display:flex; justify-content:center; padding:12px 0 4px 0;">
+    <div style="width:40px; height:4px; border-radius:99px; background:#d1d5db;"></div>
+  </div>
+
+  <div style="padding:8px 20px 14px 20px; display:flex; justify-content:space-between; align-items:center;">
+    <div>
+      <div id="bsTitle" style="font-size:20px; font-weight:900; color:#111827;">일정 추가</div>
+      <div id="bsSubtitle" style="font-size:13px; font-weight:700; color:#9ca3af; margin-top:2px;"></div>
+    </div>
+    <div onclick="closeBottomSheet()" style="font-size:22px; color:#9ca3af; cursor:pointer; padding:4px 8px;">✕</div>
+  </div>
+
+  <div id="bsStep1" style="padding:0 16px 20px 16px;">
+    <div style="font-size:14px; font-weight:800; color:#6b7280; margin-bottom:10px;">현장을 선택하세요</div>
+    <div id="bsProjectList" style="display:flex; flex-direction:column; gap:8px;"></div>
+  </div>
+
+  <div id="bsStep2" style="display:none; padding:0 16px 20px 16px;">
+    <button onclick="bsGoBack()" style="background:none; border:none; font-size:14px; font-weight:800; color:#2563eb; cursor:pointer; padding:0 0 12px 0; font-family:inherit;">← 현장 다시 선택</button>
+    <div style="font-size:14px; font-weight:800; color:#6b7280; margin-bottom:10px;">공정을 선택하세요</div>
+    <div id="bsProcessList" style="display:flex; flex-wrap:wrap; gap:8px;"></div>
+  </div>
+</div>
+
+<% all_projects_data = @projects.map { |p|
+  {
+    id: p.id,
+    name: p.project_name,
+    color: p.theme_color_hex,
+    processes: p.work_processes.sort_by { |wp| [wp.position || 9999, wp.id] }.map { |wp|
+      { id: wp.id, name: wp.process_name }
+    }
+  }
+} %>
+
+<script>
+var calendarProjects = <%= raw all_projects_data.to_json %>;
+var bsSelectedDate = null;
+var bsSelectedProjectId = null;
+
+function openBottomSheet(dateStr) {
+  bsSelectedDate = dateStr;
+  bsSelectedProjectId = null;
+
+  var parts = dateStr.split('-');
+  document.getElementById('bsSubtitle').textContent = parts[0] + '년 ' + parseInt(parts[1]) + '월 ' + parseInt(parts[2]) + '일';
+  document.getElementById('bsTitle').textContent = '일정 추가';
+
+  var list = document.getElementById('bsProjectList');
+  list.innerHTML = '';
+
+  if (calendarProjects.length === 0) {
+    list.innerHTML = '<div style="text-align:center; padding:20px; color:#9ca3af; font-size:14px; font-weight:700;">등록된 현장이 없습니다.</div>';
+  } else {
+    calendarProjects.forEach(function(project) {
+      var btn = document.createElement('button');
+      btn.type = 'button';
+      btn.onclick = function() { bsSelectProject(project.id); };
+      btn.style.cssText = 'display:flex; align-items:center; gap:12px; width:100%; padding:14px 16px; border:1.5px solid #e5e7eb; border-radius:16px; background:white; cursor:pointer; font-family:inherit; text-align:left; transition:all 0.15s;';
+
+      var dot = document.createElement('span');
+      dot.style.cssText = 'width:12px; height:12px; border-radius:50%; flex-shrink:0; background:' + project.color + ';';
+
+      var text = document.createElement('span');
+      text.textContent = project.name;
+      text.style.cssText = 'font-size:15px; font-weight:800; color:#111827;';
+
+      var arrow = document.createElement('span');
+      arrow.textContent = '→';
+      arrow.style.cssText = 'margin-left:auto; color:#d1d5db; font-size:16px;';
+
+      btn.appendChild(dot);
+      btn.appendChild(text);
+      btn.appendChild(arrow);
+      list.appendChild(btn);
+    });
+  }
+
+  document.getElementById('bsStep1').style.display = 'block';
+  document.getElementById('bsStep2').style.display = 'none';
+
+  document.getElementById('bsOverlay').style.opacity = '1';
+  document.getElementById('bsOverlay').style.visibility = 'visible';
+  document.getElementById('bottomSheet').style.transform = 'translateY(0)';
+  document.body.style.overflow = 'hidden';
+}
+
+function closeBottomSheet() {
+  document.getElementById('bsOverlay').style.opacity = '0';
+  document.getElementById('bsOverlay').style.visibility = 'hidden';
+  document.getElementById('bottomSheet').style.transform = 'translateY(100%)';
+  document.body.style.overflow = '';
+}
+
+function bsGoBack() {
+  document.getElementById('bsStep1').style.display = 'block';
+  document.getElementById('bsStep2').style.display = 'none';
+  document.getElementById('bsTitle').textContent = '일정 추가';
+}
+
+function bsSelectProject(projectId) {
+  bsSelectedProjectId = projectId;
+  var project = calendarProjects.find(function(p) { return p.id === projectId; });
+  if (!project) return;
+
+  document.getElementById('bsTitle').textContent = project.name;
+  document.getElementById('bsStep1').style.display = 'none';
+  document.getElementById('bsStep2').style.display = 'block';
+
+  var list = document.getElementById('bsProcessList');
+  list.innerHTML = '';
+
+  if (project.processes.length === 0) {
+    list.innerHTML = '<div style="text-align:center; padding:20px; color:#9ca3af; font-size:14px; font-weight:700; width:100%;">등록된 공정이 없습니다.</div>';
+    return;
+  }
+
+  project.processes.forEach(function(proc) {
+    var btn = document.createElement('button');
+    btn.type = 'button';
+    btn.onclick = function() { bsSaveProcess(proc.id); };
+    btn.style.cssText = 'padding:12px 18px; border:1.5px solid ' + project.color + '; border-radius:14px; background:white; color:' + project.color + '; font-size:14px; font-weight:800; cursor:pointer; font-family:inherit; transition:all 0.15s;';
+    btn.textContent = proc.name;
+    list.appendChild(btn);
+  });
+}
+
+function bsSaveProcess(workProcessId) {
+  if (!bsSelectedDate || !workProcessId) return;
+
+  var csrfToken = document.querySelector('meta[name="csrf-token"]').content;
+
+  fetch('/work_days/toggle', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-CSRF-Token': csrfToken
+    },
+    body: JSON.stringify({
+      work_process_id: workProcessId,
+      work_date: bsSelectedDate
+    })
+  })
+  .then(function(res) { return res.json(); })
+  .then(function(data) {
+    if (data.success) {
+      closeBottomSheet();
+      window.location.reload();
+    } else {
+      alert(data.error || '저장에 실패했습니다.');
+    }
+  })
+  .catch(function() {
+    alert('네트워크 오류가 발생했습니다.');
+  });
+}
+
+// ========== Date Cell Click & Drag-and-Drop ==========
+document.addEventListener('DOMContentLoaded', function() {
+  // Date cell click → open bottom sheet
+  document.querySelectorAll('.calendar-date-cell').forEach(function(cell) {
+    cell.addEventListener('click', function(e) {
+      e.preventDefault();
+      var dateStr = cell.dataset.date;
+      if (dateStr) openBottomSheet(dateStr);
+    });
+  });
+
+  // Drag & Drop
+  var dragState = null;
+  var longPressTimer = null;
+  var ghostEl = null;
+  var LONG_PRESS_MS = 300;
+
   document.querySelectorAll('.calendar-bar').forEach(function(bar) {
     bar.addEventListener('contextmenu', function(e) { e.preventDefault(); });
   });
 
-  // Touch Start — begin long-press timer
   document.addEventListener('touchstart', function(e) {
     var bar = e.target.closest('.calendar-bar');
     if (!bar) return;
@@ -228,7 +412,6 @@ document.addEventListener('DOMContentLoaded', function() {
     var startY = touch.clientY;
 
     longPressTimer = setTimeout(function() {
-      // Vibrate if supported
       if (navigator.vibrate) navigator.vibrate(30);
 
       dragState = {
@@ -237,7 +420,6 @@ document.addEventListener('DOMContentLoaded', function() {
         originBar: bar
       };
 
-      // Create ghost element
       ghostEl = document.createElement('div');
       ghostEl.textContent = dragState.processName;
       ghostEl.style.cssText = 'position:fixed;z-index:9999;padding:6px 14px;border-radius:12px;background:#2563eb;color:white;font-size:13px;font-weight:900;pointer-events:none;opacity:0.92;box-shadow:0 4px 16px rgba(0,0,0,0.25);white-space:nowrap;transform:translate(-50%,-120%);';
@@ -245,19 +427,13 @@ document.addEventListener('DOMContentLoaded', function() {
       ghostEl.style.top = startY + 'px';
       document.body.appendChild(ghostEl);
 
-      // Dim origin bar
       bar.style.opacity = '0.3';
     }, LONG_PRESS_MS);
   }, { passive: true });
 
-  // Touch Move — move ghost and highlight target
   document.addEventListener('touchmove', function(e) {
     if (!dragState) {
-      // If finger moved before long-press, cancel
-      if (longPressTimer) {
-        clearTimeout(longPressTimer);
-        longPressTimer = null;
-      }
+      if (longPressTimer) { clearTimeout(longPressTimer); longPressTimer = null; }
       return;
     }
 
@@ -269,7 +445,6 @@ document.addEventListener('DOMContentLoaded', function() {
       ghostEl.style.top = touch.clientY + 'px';
     }
 
-    // Highlight date cell under finger
     document.querySelectorAll('.calendar-date-cell').forEach(function(cell) {
       cell.style.outline = '';
       cell.style.outlineOffset = '';
@@ -283,34 +458,23 @@ document.addEventListener('DOMContentLoaded', function() {
     }
   }, { passive: false });
 
-  // Touch End — drop
   document.addEventListener('touchend', function(e) {
     clearTimeout(longPressTimer);
     longPressTimer = null;
 
     if (!dragState) return;
 
-    // Find target date cell
     var touch = e.changedTouches[0];
     var target = document.elementFromPoint(touch.clientX, touch.clientY);
     var dateCell = target ? target.closest('.calendar-date-cell') : null;
 
-    // Clean up highlights
     document.querySelectorAll('.calendar-date-cell').forEach(function(cell) {
       cell.style.outline = '';
       cell.style.outlineOffset = '';
     });
 
-    // Remove ghost
-    if (ghostEl) {
-      ghostEl.remove();
-      ghostEl = null;
-    }
-
-    // Restore origin bar opacity
-    if (dragState.originBar) {
-      dragState.originBar.style.opacity = '1';
-    }
+    if (ghostEl) { ghostEl.remove(); ghostEl = null; }
+    if (dragState.originBar) dragState.originBar.style.opacity = '1';
 
     if (dateCell && dateCell.dataset.date) {
       var newDate = dateCell.dataset.date;
@@ -343,15 +507,12 @@ document.addEventListener('DOMContentLoaded', function() {
     dragState = null;
   }, { passive: true });
 
-  // Touch Cancel — cleanup
   document.addEventListener('touchcancel', function() {
     clearTimeout(longPressTimer);
     longPressTimer = null;
 
     if (ghostEl) { ghostEl.remove(); ghostEl = null; }
-    if (dragState && dragState.originBar) {
-      dragState.originBar.style.opacity = '1';
-    }
+    if (dragState && dragState.originBar) dragState.originBar.style.opacity = '1';
     dragState = null;
 
     document.querySelectorAll('.calendar-date-cell').forEach(function(cell) {
