@@ -61,6 +61,8 @@
       <span style="font-size:20px;">📅</span> 현장 공정표
     <% end %>
 
+    <%= link_to "현장 수정", edit_project_path(@project), style: "display:flex; justify-content:center; align-items:center; gap:8px; padding:14px 16px; background:#2563eb; color:white; text-decoration:none; border-radius:18px; font-size:16px; font-weight:900; box-shadow:0 2px 8px rgba(37,99,235,0.3);" %>
+
     <div style="background:white; border-radius:20px; padding:18px; box-shadow:0 2px 10px rgba(0,0,0,0.04);">
       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
         <div style="font-size:18px; font-weight:900;">프로젝트 진행률</div>
@@ -244,8 +246,6 @@
     </div>
 
     <div style="display:flex; flex-direction:column; gap:10px;">
-      <%= link_to "현장 수정", edit_project_path(@project), style: "display:block; text-align:center; padding:16px; background:#2563eb; color:white; text-decoration:none; border-radius:14px; font-size:18px; font-weight:900;" %>
-
       <%= button_to "현장 삭제", @project, method: :delete, data: { turbo_confirm: "정말로 이 현장을 삭제하시겠습니까? 모든 공정 데이터가 함께 삭제됩니다." }, style: "width:100%; padding:16px; background:#dc2626; color:white; border:none; border-radius:14px; font-size:18px; font-weight:900; cursor:pointer;" %>
     </div>
 
