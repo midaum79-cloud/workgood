@@ -59,15 +59,21 @@
       <!-- 날짜 영역 (주소 아래) -->
       <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
         <div>
-          <div style="font-size:14px; font-weight:800; color:#374151; margin-bottom:8px;">시작일</div>
+          <div style="font-size:14px; font-weight:800; color:#374151; margin-bottom:8px;">시작일 <span style="color:#dc2626;">*</span></div>
           <%= form.date_field :start_date,
               id: "new_project_start_date",
+              required: true,
+              oninvalid: "this.setCustomValidity('\uacf5\uc0ac \uc2dc\uc791\uc77c\uc744 \uc785\ub825\ud574 \uc8fc\uc138\uc694.')",
+              oninput: "this.setCustomValidity('')",
               style: "width:100%; padding:14px 16px; border:1px solid #dcdfe4; border-radius:14px; font-size:16px; box-sizing:border-box; background:white;" %>
         </div>
         <div>
-          <div style="font-size:14px; font-weight:800; color:#374151; margin-bottom:8px;">종료일</div>
+          <div style="font-size:14px; font-weight:800; color:#374151; margin-bottom:8px;">종료일 <span style="color:#dc2626;">*</span></div>
           <%= form.date_field :end_date,
               id: "new_project_end_date",
+              required: true,
+              oninvalid: "this.setCustomValidity('\uacf5\uc0ac \uc885\ub8cc\uc77c\uc744 \uc785\ub825\ud574 \uc8fc\uc138\uc694.')",
+              oninput: "this.setCustomValidity('')",
               style: "width:100%; padding:14px 16px; border:1px solid #dcdfe4; border-radius:14px; font-size:16px; box-sizing:border-box; background:white;" %>
         </div>
       </div>
