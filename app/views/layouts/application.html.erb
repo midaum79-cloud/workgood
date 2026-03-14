@@ -295,6 +295,48 @@
   </head>
 
   <body>
+    <!-- ===== SPLASH SCREEN ===== -->
+    <div id="app-splash" style="
+      position:fixed; inset:0; z-index:9999;
+      background:#ffffff;
+      display:flex; flex-direction:column;
+      align-items:center; justify-content:center;
+      transition:opacity 0.4s ease;
+    ">
+      <img src="/icon-512.png" alt="일머리" style="
+        width:30vw; max-width:160px; min-width:80px;
+        border-radius:22%;
+        box-shadow:0 8px 30px rgba(0,0,0,0.12);
+      ">
+      <div style="
+        margin-top:20px; font-size:22px; font-weight:900;
+        color:#111827; letter-spacing:-0.5px;
+        font-family: 'Pretendard', -apple-system, sans-serif;
+      ">일머리</div>
+      <div style="
+        margin-top:6px; font-size:13px; font-weight:600;
+        color:#9ca3af;
+        font-family: 'Pretendard', -apple-system, sans-serif;
+      ">인테리어 공정관리</div>
+    </div>
+    <script>
+      (function() {
+        var splash = document.getElementById('app-splash');
+        // Show splash only once per session
+        if (sessionStorage.getItem('splashShown')) {
+          splash.style.display = 'none';
+          return;
+        }
+        sessionStorage.setItem('splashShown', '1');
+        // Fade out after 1.2s
+        setTimeout(function() {
+          splash.style.opacity = '0';
+          setTimeout(function() { splash.style.display = 'none'; }, 420);
+        }, 1200);
+      })();
+    </script>
+    <!-- ===== END SPLASH SCREEN ===== -->
+
     <div class="app-shell">
       <div class="app-content<%= ' no-nav' unless logged_in? %>">
         <%= yield %>
