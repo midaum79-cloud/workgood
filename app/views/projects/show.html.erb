@@ -111,7 +111,7 @@
       </div>
 
       <% if ordered_processes.any? %>
-        <div style="overflow-x:auto; padding-bottom:4px;">
+        <div id="process-track" style="overflow-x:auto; padding-bottom:4px; scroll-behavior:smooth;">
           <div style="display:flex; align-items:flex-start; min-width:max-content;">
 
             <% ordered_processes.each_with_index do |process, index| %>
@@ -119,7 +119,7 @@
                 <div style="display:flex; flex-direction:column; align-items:center; min-width:84px;">
                   <% done_or_current = current_index.present? && index <= current_index %>
 
-                  <div style="
+                  <div id="<%= current_index == index ? 'current-process-dot' : '' %>" style="
                     width:24px;
                     height:24px;
                     border-radius:999px;
@@ -130,6 +130,7 @@
                     font-weight:900;
                     color:white;
                     background:<%= done_or_current ? '#f4c430' : '#d1d5db' %>;
+                    <%= current_index == index ? 'box-shadow:0 0 0 4px rgba(244,196,48,0.35);' : '' %>
                   ">
                     <%= index + 1 %>
                   </div>
@@ -158,6 +159,25 @@
 
           </div>
         </div>
+
+        <% if current_index.present? %>
+        <script>
+          document.addEventListener('DOMContentLoaded', function() {
+            var track = document.getElementById('process-track');
+            var dot   = document.getElementById('current-process-dot');
+            if (track && dot) {
+              // Delay slightly so layout is settled
+              setTimeout(function() {
+                var trackRect = track.getBoundingClientRect();
+                var dotRect   = dot.getBoundingClientRect();
+                var scrollLeft = track.scrollLeft + (dotRect.left - trackRect.left) - (trackRect.width / 2) + (dotRect.width / 2);
+                track.scrollTo({ left: scrollLeft, behavior: 'smooth' });
+              }, 300);
+            }
+          });
+        </script>
+        <% end %>
+
       <% else %>
         <div style="padding:16px; background:#fafafa; border-radius:14px; color:#888; text-align:center;">
           아직 등록된 공정이 없습니다.
