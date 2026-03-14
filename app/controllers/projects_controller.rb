@@ -45,12 +45,13 @@ class ProjectsController < ApplicationController
     @selected_status = params[:status]
     @unread_notifications_count = Notification.where(status: "unread").count
 
+    all_projects = current_user.projects.order(created_at: :desc)
+
     @projects =
-      case @selected_status
-      when "진행중", "예정", "완료"
-        current_user.projects.where(status: @selected_status).order(created_at: :desc)
+      if %w[진행중 예정 완료].include?(@selected_status)
+        all_projects.select { |p| p.effective_status == @selected_status }
       else
-        current_user.projects.order(created_at: :desc)
+        all_projects
       end
   end
 
