@@ -82,26 +82,6 @@
       </div>
 
       <div>
-        <div style="font-size:14px; font-weight:800; color:#374151; margin-bottom:8px;">상태</div>
-        <%= form.select :status,
-            [["예정", "예정"], ["진행중", "진행중"], ["완료", "완료"]],
-            { selected: (@project.status.presence || "예정") },
-            {
-              style: "width:100%; padding:14px 16px; border:1px solid #dcdfe4; border-radius:14px; font-size:16px; box-sizing:border-box; background:white;"
-            } %>
-      </div>
-
-      <div>
-        <div style="font-size:14px; font-weight:800; color:#374151; margin-bottom:8px;">색상</div>
-        <%= form.select :color,
-            [["파랑", "blue"], ["초록", "green"], ["주황", "orange"], ["빨강", "red"], ["보라", "purple"], ["골드", "gold"]],
-            {},
-            {
-              style: "width:100%; padding:14px 16px; border:1px solid #dcdfe4; border-radius:14px; font-size:16px; box-sizing:border-box; background:white;"
-            } %>
-      </div>
-
-      <div>
         <div style="font-size:14px; font-weight:800; color:#374151; margin-bottom:8px;">메모</div>
         <%= form.text_area :memo,
             rows: 4,
