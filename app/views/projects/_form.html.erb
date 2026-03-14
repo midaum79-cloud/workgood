@@ -28,14 +28,22 @@
           <%= form.text_field :address, style: "width:100%; padding:12px; border:1px solid #d1d5db; border-radius:10px;" %>
         </div>
 
-        <div>
-          <%= form.label :common_entrance_password, "🏢 공동출입구 비밀번호", style: "display:block; margin-bottom:8px; font-weight:700; color:#111827;" %>
-          <%= form.text_field :common_entrance_password, placeholder: "예: *1234*", style: "width:100%; padding:12px; border:1px solid #d1d5db; border-radius:10px;" %>
-        </div>
-
-        <div>
-          <%= form.label :private_entrance_password, "🚪 호실 현관 비밀번호", style: "display:block; margin-bottom:8px; font-weight:700; color:#111827;" %>
-          <%= form.text_field :private_entrance_password, placeholder: "예: 1234*", style: "width:100%; padding:12px; border:1px solid #d1d5db; border-radius:10px;" %>
+        <div style="grid-column: 1 / -1;">
+          <label style="display:block; margin-bottom:8px; font-weight:700; color:#111827;">출입구 비밀번호</label>
+          <div style="display:flex; flex-direction:column; gap:8px;">
+            <div style="position:relative;">
+              <span style="position:absolute; left:14px; top:50%; transform:translateY(-50%); font-size:16px;">🏢</span>
+              <%= form.text_field :common_entrance_password,
+                  placeholder: "공동출입구 비밀번호 (예: *1234*)",
+                  style: "width:100%; padding:14px 16px 14px 40px; border:1px solid #d1d5db; border-radius:10px; font-size:15px; box-sizing:border-box; background:#f9fafb;" %>
+            </div>
+            <div style="position:relative;">
+              <span style="position:absolute; left:14px; top:50%; transform:translateY(-50%); font-size:16px;">🚪</span>
+              <%= form.text_field :private_entrance_password,
+                  placeholder: "호실 현관 비밀번호 (예: 1234*)",
+                  style: "width:100%; padding:14px 16px 14px 40px; border:1px solid #d1d5db; border-radius:10px; font-size:15px; box-sizing:border-box; background:#f9fafb;" %>
+            </div>
+          </div>
         </div>
 
         <div>
