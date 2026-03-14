@@ -116,6 +116,8 @@ class AiImportsController < ApplicationController
 
     success_count = 0
 
+    affected_ids = []
+
     ActiveRecord::Base.transaction do
       items.each do |item|
         # Only process items that have a matched process AND a valid date
@@ -127,9 +129,17 @@ class AiImportsController < ApplicationController
               work_process: work_process,
               work_date: item[:date]
             )
+            affected_ids << work_process.id
             success_count += 1
           end
         end
+      end
+
+      # Sync start_date / end_date for all affected work_processes
+      affected_ids.uniq.each do |wp_id|
+        wp = WorkProcess.find(wp_id)
+        dates = wp.work_days.order(:work_date).pluck(:work_date)
+        wp.update_columns(start_date: dates.first, end_date: dates.last) if dates.any?
       end
     end
 
