@@ -215,7 +215,12 @@
               <div><strong>합계</strong> : <%= number_with_delimiter((work_process.material_cost || 0) + (work_process.labor_cost || 0)) %>원</div>
             </div>
 
-            <%= link_to "공정 상세", work_process, style: "display:block; text-align:center; padding:12px 14px; background:#2563eb; color:white; text-decoration:none; border-radius:12px; font-size:16px; font-weight:800;" %>
+            <div style="display:flex; gap:8px;">
+              <%= link_to "공정 상세", work_process, style: "flex:1; display:block; text-align:center; padding:12px 14px; background:#2563eb; color:white; text-decoration:none; border-radius:12px; font-size:15px; font-weight:800;" %>
+              <%= button_to "🗑️ 삭제", work_process_path(work_process), method: :delete,
+                    data: { turbo_confirm: "\"#{work_process.process_name}\" 공정을 삭제하시겠습니까?" },
+                    style: "padding:12px 14px; background:#fee2e2; color:#dc2626; border:none; border-radius:12px; font-size:15px; font-weight:800; cursor:pointer; white-space:nowrap;" %>
+            </div>
           </div>
         <% end %>
       </div>
