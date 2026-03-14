@@ -9,6 +9,12 @@ Rails.application.routes.draw do
   get  "signup", to: "registrations#new",     as: :signup
   post "signup", to: "registrations#create"
 
+  # Password reset
+  get  "password_resets/new",        to: "password_resets#new",    as: :new_password_reset
+  post "password_resets",            to: "password_resets#create", as: :password_resets
+  get  "password_resets/:token/edit", to: "password_resets#edit",  as: :edit_password_reset
+  patch "password_resets/:token",    to: "password_resets#update", as: :password_reset
+
   # OmniAuth (Google)
   get  "/auth/google_oauth2/callback", to: "omniauth_callbacks#google_oauth2"
   post "/auth/google_oauth2/callback", to: "omniauth_callbacks#google_oauth2"
