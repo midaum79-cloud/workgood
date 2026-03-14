@@ -1,7 +1,9 @@
 class ProcessTemplatesController < ApplicationController
   def index
-    @templates = ProcessTemplate.ordered
-    @new_template = ProcessTemplate.new
+    @residential_templates = ProcessTemplate.residential
+    @commercial_templates  = ProcessTemplate.commercial
+    @templates             = ProcessTemplate.ordered # fallback for create errors
+    @new_template          = ProcessTemplate.new
   end
 
   def create
