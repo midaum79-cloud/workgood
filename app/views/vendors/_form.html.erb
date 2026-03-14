@@ -23,14 +23,15 @@
         <%# 업체명 %>
         <div>
           <label style="font-size:13px; font-weight:800; color:#374151; display:block; margin-bottom:6px;">업체명 *</label>
-          <%= f.text_field :name, placeholder: "업체 이름",
+          <%= f.text_field :name, placeholder: "예: 타일 홍타일 김대리",
               style: "width:100%; height:48px; border:1.5px solid #e5e7eb; border-radius:12px; padding:0 14px; font-size:15px; font-weight:700; font-family:inherit; box-sizing:border-box;" %>
+          <div style="font-size:11px; color:#9ca3af; margin-top:4px; font-weight:600;">업종을 앞에 붙이면 검색에 유리합니다 (예: 타일 홍타일 김대리)</div>
         </div>
 
         <%# 담당자명 %>
         <div>
           <label style="font-size:13px; font-weight:800; color:#374151; display:block; margin-bottom:6px;">담당자명</label>
-          <%= f.text_field :contact_name, placeholder: "담당자 이름",
+          <%= f.text_field :contact_name, placeholder: "담당자 이름 (예: 김부장)",
               style: "width:100%; height:48px; border:1.5px solid #e5e7eb; border-radius:12px; padding:0 14px; font-size:15px; font-weight:700; font-family:inherit; box-sizing:border-box;" %>
         </div>
 
@@ -41,29 +42,10 @@
               style: "width:100%; height:48px; border:1.5px solid #e5e7eb; border-radius:12px; padding:0 14px; font-size:15px; font-weight:700; font-family:inherit; box-sizing:border-box;" %>
         </div>
 
-        <%# 전문분야 %>
-        <div>
-          <label style="font-size:13px; font-weight:800; color:#374151; display:block; margin-bottom:8px;">전문분야</label>
-          <div style="display:flex; flex-wrap:wrap; gap:8px; margin-bottom:8px;">
-            <% Vendor::SPECIALTIES.each do |spec| %>
-              <label style="cursor:pointer;">
-                <%= f.radio_button :specialty, spec, id: "spec_#{spec}", style: "display:none;" %>
-                <span class="spec-btn" data-value="<%= spec %>"
-                  style="display:inline-block; padding:8px 14px; border-radius:999px; font-size:13px; font-weight:800; border:1.5px solid #e5e7eb; color:#6b7280; background:white; cursor:pointer; transition:all 0.15s;">
-                  <%= spec %>
-                </span>
-              </label>
-            <% end %>
-          </div>
-          <%= f.text_field :specialty, id: "specialty_custom",
-              placeholder: "또는 직접 입력",
-              style: "width:100%; height:44px; border:1.5px solid #e5e7eb; border-radius:12px; padding:0 14px; font-size:14px; font-family:inherit; box-sizing:border-box;" %>
-        </div>
-
         <%# 메모 %>
         <div>
           <label style="font-size:13px; font-weight:800; color:#374151; display:block; margin-bottom:6px;">메모</label>
-          <%= f.text_area :memo, placeholder: "간단한 메모 (예: 결제 조건, 특이사항)",
+          <%= f.text_area :memo, placeholder: "전문분야, 결제 조건, 특이사항 등",
               rows: 3,
               style: "width:100%; border:1.5px solid #e5e7eb; border-radius:12px; padding:12px 14px; font-size:14px; font-weight:600; font-family:inherit; box-sizing:border-box; resize:none; line-height:1.6;" %>
         </div>
@@ -88,35 +70,3 @@
     <% end %>
   </div>
 </div>
-
-<script>
-  document.addEventListener('DOMContentLoaded', function() {
-    const customInput = document.getElementById('specialty_custom');
-    const btns = document.querySelectorAll('.spec-btn');
-    let currentValue = customInput.value;
-
-    function updateButtons() {
-      btns.forEach(btn => {
-        const isActive = btn.dataset.value === currentValue;
-        btn.style.background = isActive ? '#111827' : 'white';
-        btn.style.color = isActive ? 'white' : '#6b7280';
-        btn.style.borderColor = isActive ? '#111827' : '#e5e7eb';
-      });
-    }
-
-    btns.forEach(btn => {
-      btn.addEventListener('click', function() {
-        currentValue = this.dataset.value;
-        customInput.value = currentValue;
-        updateButtons();
-      });
-    });
-
-    customInput.addEventListener('input', function() {
-      currentValue = this.value;
-      updateButtons();
-    });
-
-    updateButtons();
-  });
-</script>

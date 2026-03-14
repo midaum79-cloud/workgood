@@ -44,9 +44,34 @@
 
       <div style="margin-bottom:14px;">
         <label style="display:block; font-size:14px; font-weight:800; margin-bottom:8px;">업체명</label>
-        <%= f.text_field :vendor_name,
-          placeholder: "업체명을 등록해주세요",
-          style: "width:100%; height:50px; border:1px solid #dcdcdc; border-radius:14px; padding:0 14px; font-size:16px;" %>
+        <div style="position:relative;">
+          <%= f.text_field :vendor_name,
+            id: "vendor_name_input",
+            placeholder: "업체명 또는 담당자 검색 (가나다 순)",
+            autocomplete: "off",
+            style: "width:100%; height:50px; border:1px solid #dcdcdc; border-radius:14px; padding:0 14px; font-size:16px; box-sizing:border-box;" %>
+          <div id="vendor-dropdown" style="display:none; position:absolute; top:54px; left:0; right:0; background:white; border:1.5px solid #e5e7eb; border-radius:14px; max-height:220px; overflow-y:auto; z-index:100; box-shadow:0 4px 16px rgba(0,0,0,0.12);">
+            <% vendors_sorted = Vendor.order(:name) %>
+            <% vendors_sorted.each do |v| %>
+              <% label = [v.name, v.contact_name.presence].compact.join(" ") %>
+              <div class="vendor-option"
+                data-name="<%= label %>"
+                data-phone="<%= v.phone %>"
+                style="padding:12px 16px; font-size:15px; font-weight:700; color:#111827; cursor:pointer; border-bottom:1px solid #f3f4f6; display:flex; justify-content:space-between; align-items:center;">
+                <span><%= label %></span>
+                <% if v.phone.present? %>
+                  <a href="tel:<%= v.phone %>" onclick="event.stopPropagation();"
+                     style="font-size:20px; text-decoration:none; padding-left:10px;" title="<%= v.phone %>">📞</a>
+                <% end %>
+              </div>
+            <% end %>
+          </div>
+        </div>
+        <div id="vendor-phone-row" style="display:none; margin-top:8px;">
+          <a id="vendor-phone-link" href="#" style="display:inline-flex; align-items:center; gap:6px; font-size:14px; font-weight:800; color:#2563eb; text-decoration:none; padding:8px 14px; background:#eff6ff; border-radius:12px;">
+            📞 <span id="vendor-phone-text"></span>
+          </a>
+        </div>
       </div>
 
 
@@ -230,4 +255,45 @@
     updateHiddenInputs();
     renderCalendar();
   });
+
+  // ===== Vendor autocomplete =====
+  (function() {
+    var input    = document.getElementById('vendor_name_input');
+    var dropdown = document.getElementById('vendor-dropdown');
+    var phoneRow = document.getElementById('vendor-phone-row');
+    var phoneLink= document.getElementById('vendor-phone-link');
+    var phoneTxt = document.getElementById('vendor-phone-text');
+    if (!input) return;
+    var allOptions = Array.from(dropdown.querySelectorAll('.vendor-option'));
+    function filterOptions(query) {
+      var q = query.trim().toLowerCase();
+      var any = false;
+      allOptions.forEach(function(opt) {
+        var match = !q || opt.dataset.name.toLowerCase().includes(q);
+        opt.style.display = match ? '' : 'none';
+        if (match) any = true;
+      });
+      dropdown.style.display = any ? 'block' : 'none';
+    }
+    function selectVendor(name, phone) {
+      input.value = name;
+      dropdown.style.display = 'none';
+      if (phone) { phoneTxt.textContent = phone; phoneLink.href = 'tel:' + phone; phoneRow.style.display = 'block'; }
+      else { phoneRow.style.display = 'none'; }
+    }
+    input.addEventListener('focus', function() { filterOptions(this.value); });
+    input.addEventListener('input',  function() { filterOptions(this.value); });
+    allOptions.forEach(function(opt) {
+      opt.addEventListener('click', function() { selectVendor(this.dataset.name, this.dataset.phone); });
+      opt.addEventListener('mouseenter', function() { this.style.background = '#f3f4f6'; });
+      opt.addEventListener('mouseleave', function() { this.style.background = ''; });
+    });
+    document.addEventListener('click', function(e) {
+      if (!input.contains(e.target) && !dropdown.contains(e.target)) dropdown.style.display = 'none';
+    });
+    if (input.value) {
+      var m = allOptions.find(function(o) { return o.dataset.name === input.value; });
+      if (m && m.dataset.phone) { phoneTxt.textContent = m.dataset.phone; phoneLink.href = 'tel:' + m.dataset.phone; phoneRow.style.display = 'block'; }
+    }
+  })();
 </script>
