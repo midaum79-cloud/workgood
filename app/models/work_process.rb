@@ -44,6 +44,19 @@ class WorkProcess < ApplicationRecord
       start_date: dates.first,
       end_date: dates.last
     )
+
+    sync_project_start_date!
+  end
+
+  private
+
+  def sync_project_start_date!
+    earliest_date = project.work_processes.where.not(start_date: nil).minimum(:start_date)
+    return unless earliest_date
+
+    if project.start_date.nil? || earliest_date < project.start_date
+      project.update(start_date: earliest_date)
+    end
   end
 
   private
