@@ -1,6 +1,7 @@
 class User < ApplicationRecord
   has_secure_password validations: false
-  validates :password, length: { minimum: 8 }, if: -> { password.present? }
+  validates :password, length: { minimum: 8 }, confirmation: true, if: -> { password.present? }
+  validates :password_confirmation, presence: true, if: -> { password.present? }
 
   has_many :projects, dependent: :nullify
   has_many :subscription_payments, dependent: :destroy
@@ -23,7 +24,11 @@ class User < ApplicationRecord
       user.subscription_plan ||= "standard"
       user.subscription_expires_at ||= 1.month.from_now
       # OAuth users get a random secure password they never need to use
-      user.password = SecureRandom.hex(24) unless user.persisted?
+      unless user.persisted?
+        generated_password = SecureRandom.hex(24)
+        user.password = generated_password
+        user.password_confirmation = generated_password
+      end
       user.save!
     end
   rescue => e

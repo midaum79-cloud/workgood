@@ -29,7 +29,10 @@ class AppSettingsController < ApplicationController
       return redirect_to app_settings_path
     end
 
-    current_user.update!(password: params[:new_password])
+    current_user.update!(
+      password: params[:new_password],
+      password_confirmation: params[:new_password_confirmation]
+    )
     redirect_to app_settings_path, notice: "비밀번호가 변경되었습니다."
   end
 
