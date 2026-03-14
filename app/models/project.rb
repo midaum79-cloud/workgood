@@ -20,6 +20,27 @@ class Project < ApplicationRecord
     end
   end
 
+  # Date-aware project status: computed from start_date / end_date
+  def effective_status(today = Date.current)
+    return self[:status].presence || "예정" if start_date.blank?
+
+    s = start_date.to_date
+    e = (end_date || start_date).to_date
+
+    if today < s
+      "예정"
+    elsif today > e
+      "완료"
+    else
+      "진행중"
+    end
+  end
+
+  # Override status to always return the date-computed version
+  def status
+    effective_status(Date.current)
+  end
+
   def total_work_processes_count
     work_processes.count
   end
