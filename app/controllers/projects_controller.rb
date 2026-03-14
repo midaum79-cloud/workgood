@@ -316,6 +316,14 @@ class ProjectsController < ApplicationController
       @project.address = [ @project.address, params[:detail_address] ].reject(&:blank?).join(" ")
     end
 
+    # Auto-assign a unique color based on the number of existing projects (cycles through 10 colors)
+    color_palette = %w[blue orange green red purple pink sky yellow teal indigo]
+    project_count = current_user.projects.count
+    @project.color = color_palette[project_count % color_palette.size]
+
+    # Default status to '예정'
+    @project.status ||= "예정"
+
     if @project.save
       if params[:project][:ai_processes_json].present?
         begin

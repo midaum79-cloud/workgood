@@ -56,6 +56,22 @@
                style="margin-top:8px; width:100%; padding:14px 16px; border:1px solid #dcdfe4; border-radius:14px; font-size:16px; box-sizing:border-box;">
       </div>
 
+      <!-- 날짜 영역 (주소 아래) -->
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+        <div>
+          <div style="font-size:14px; font-weight:800; color:#374151; margin-bottom:8px;">시작일</div>
+          <%= form.date_field :start_date,
+              id: "new_project_start_date",
+              style: "width:100%; padding:14px 16px; border:1px solid #dcdfe4; border-radius:14px; font-size:16px; box-sizing:border-box; background:white;" %>
+        </div>
+        <div>
+          <div style="font-size:14px; font-weight:800; color:#374151; margin-bottom:8px;">종료일</div>
+          <%= form.date_field :end_date,
+              id: "new_project_end_date",
+              style: "width:100%; padding:14px 16px; border:1px solid #dcdfe4; border-radius:14px; font-size:16px; box-sizing:border-box; background:white;" %>
+        </div>
+      </div>
+
       <!-- 등록 방식 선택 -->
       <div>
         <div style="font-size:14px; font-weight:800; color:#374151; margin-bottom:8px;">공정 및 일정 입력 방식</div>
@@ -188,90 +204,9 @@
         </div>
       </div>
 
-      <!-- 날짜 영역 (AI 든 수동이든 저장되어야 함) -->
-      <div id="dateAreaGroup" style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
-        <div>
-          <div style="font-size:14px; font-weight:800; color:#374151; margin-bottom:8px;">시작일</div>
-          <%= form.date_field :start_date,
-              id: "new_project_start_date",
-              style: "width:100%; padding:14px 16px; border:1px solid #dcdfe4; border-radius:14px; font-size:16px; box-sizing:border-box; background:white;" %>
-        </div>
 
-        <div>
-          <div style="font-size:14px; font-weight:800; color:#374151; margin-bottom:8px;">종료일</div>
-          <%= form.date_field :end_date,
-              id: "new_project_end_date",
-              style: "width:100%; padding:14px 16px; border:1px solid #dcdfe4; border-radius:14px; font-size:16px; box-sizing:border-box; background:white;" %>
-        </div>
-      </div>
 
-      <div>
-        <div style="font-size:14px; font-weight:800; color:#374151; margin-bottom:8px;">상태</div>
-        <%= form.select :status,
-            [["예정", "예정"], ["진행중", "진행중"], ["완료", "완료"]],
-            { selected: (@project.status.presence || "예정") },
-            {
-              style: "width:100%; padding:14px 16px; border:1px solid #dcdfe4; border-radius:14px; font-size:16px; box-sizing:border-box; background:white;"
-            } %>
-      </div>
 
-      <div>
-        <div style="font-size:14px; font-weight:800; color:#374151; margin-bottom:10px;">현장 색상</div>
-        <%
-          all_colors = [
-            { name: "파랑", value: "blue", hex: "#2563eb" },
-            { name: "주황", value: "orange", hex: "#f97316" },
-            { name: "초록", value: "green", hex: "#16a34a" },
-            { name: "빨강", value: "red", hex: "#dc2626" },
-            { name: "보라", value: "purple", hex: "#7c3aed" },
-            { name: "핑크", value: "pink", hex: "#ec4899" },
-            { name: "하늘", value: "sky", hex: "#0ea5e9" },
-            { name: "노랑", value: "yellow", hex: "#eab308" },
-            { name: "청록", value: "teal", hex: "#14b8a6" },
-            { name: "남색", value: "indigo", hex: "#4f46e5" }
-          ]
-          plan = current_user.subscription_plan
-          unlocked_count = case plan
-                           when "premium" then 10
-                           when "standard" then 3
-                           else 1
-                           end
-          selected_color = @project.color.presence || "blue"
-        %>
-        <%= form.hidden_field :color, id: "project_color_input", value: selected_color %>
-        <div style="display:flex; flex-wrap:wrap; gap:10px;">
-          <% all_colors.each_with_index do |c, i| %>
-            <% locked = i >= unlocked_count %>
-            <div onclick="<%= locked ? '' : "selectColor('#{c[:value]}')" %>"
-                 id="color_btn_<%= c[:value] %>"
-                 style="
-                   width:44px; height:44px; border-radius:50%;
-                   background:<%= c[:hex] %>;
-                   display:flex; align-items:center; justify-content:center;
-                   cursor:<%= locked ? 'not-allowed' : 'pointer' %>;
-                   border:3px solid <%= selected_color == c[:value] ? '#111827' : 'transparent' %>;
-                   opacity:<%= locked ? '0.35' : '1' %>;
-                   position:relative;
-                   transition: border-color 0.15s;
-                 "
-                 <% if locked %>
-                   title="<%= plan == 'free' ? '스탠다드' : '프리미엄' %> 플랜에서 사용 가능"
-                 <% end %>
-            >
-              <% if locked %>
-                <span style="font-size:14px;">🔒</span>
-              <% end %>
-            </div>
-          <% end %>
-        </div>
-        <% if unlocked_count < 10 %>
-          <div style="margin-top:8px; font-size:12px; color:#9ca3af; font-weight:600;">
-            <a href="<%= subscription_path %>" style="color:#2563eb; text-decoration:none; font-weight:800;">
-              🔓 요금제 업그레이드로 더 많은 색상 사용
-            </a>
-          </div>
-        <% end %>
-      </div>
 
       <div>
         <div style="font-size:14px; font-weight:800; color:#374151; margin-bottom:8px;">메모</div>
