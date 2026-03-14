@@ -304,6 +304,13 @@
       .bottom-nav-item {
         min-height: 44px;
       }
+
+      /* Hide custom splash screen when running as standalone PWA to prevent double splash */
+      @media (display-mode: standalone) {
+        #app-splash {
+          display: none !important;
+        }
+      }
     </style>
   </head>
 
