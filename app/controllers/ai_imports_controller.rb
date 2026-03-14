@@ -1,5 +1,5 @@
 class AiImportsController < ApplicationController
-  before_action :authenticate_user!
+  before_action :require_login
   before_action :check_ai_quota
 
   # POST /projects/:project_id/ai_imports/analyze
@@ -139,6 +139,12 @@ class AiImportsController < ApplicationController
   end
 
   private
+
+  def check_ai_quota
+    unless current_user.can_use_ai_import?
+      render json: { error: "AI 일정표 등록 기능 한도를 초과했습니다. 프리미엄 업그레이드가 필요합니다." }, status: :forbidden
+    end
+  end
 
   def check_premium!
     unless current_user.premium?

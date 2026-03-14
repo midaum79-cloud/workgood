@@ -1,0 +1,67 @@
+<%= turbo_frame_tag "work_process_costs_#{work_process.id}" do %>
+  <%
+    budget = work_process.budget || 0
+    mat_cost = work_process.material_cost || 0
+    lab_cost = work_process.labor_cost || 0
+    total_cost = mat_cost + lab_cost
+    margin = budget - total_cost
+    margin_color = margin >= 0 ? "#1d4ed8" : "#dc2626"
+    margin_bg = margin >= 0 ? "#eff6ff" : "#fef2f2"
+    margin_border = margin >= 0 ? "#bfdbfe" : "#fecaca"
+  %>
+  <%= form_with model: work_process, data: { turbo_frame: "work_process_costs_#{work_process.id}" }, id: "costs-form" do |form| %>
+    <div style="display:flex; flex-direction:column; gap:12px;">
+      
+      <div style="background:#f3f4f6; border-radius:14px; padding:12px 14px; display:flex; justify-content:space-between; align-items:center;">
+        <div style="font-size:13px; font-weight:800; color:#374151; white-space:nowrap;">💰 견적비(예산)</div>
+        <div style="display:flex; align-items:center;">
+          <%= form.number_field :budget, 
+                value: budget, 
+                placeholder: "0", 
+                onblur: "this.form.requestSubmit();",
+                style: "background:transparent; border:none; text-align:right; font-size:15px; font-weight:800; color:#4b5563; outline:none; width:100px;" %>
+          <div style="font-size:15px; font-weight:800; color:#4b5563; margin-left:4px;">원 ✏️</div>
+        </div>
+      </div>
+
+      <div style="background:#f3f4f6; border-radius:14px; padding:12px 14px; display:flex; justify-content:space-between; align-items:center;">
+        <div style="font-size:13px; font-weight:800; color:#374151;">자재비</div>
+        <div style="display:flex; align-items:center;">
+          <%= form.number_field :material_cost, 
+                value: mat_cost, 
+                placeholder: "0", 
+                onblur: "this.form.requestSubmit();",
+                style: "background:transparent; border:none; text-align:right; font-size:15px; font-weight:800; color:#4b5563; outline:none; width:100px;" %>
+          <div style="font-size:15px; font-weight:800; color:#4b5563; margin-left:4px;">원 ✏️</div>
+        </div>
+      </div>
+
+      <div style="background:#f3f4f6; border-radius:14px; padding:12px 14px; display:flex; justify-content:space-between; align-items:center;">
+        <div style="font-size:13px; font-weight:800; color:#374151;">인건비</div>
+        <div style="display:flex; align-items:center;">
+          <%= form.number_field :labor_cost, 
+                value: lab_cost, 
+                placeholder: "0", 
+                onblur: "this.form.requestSubmit();",
+                style: "background:transparent; border:none; text-align:right; font-size:15px; font-weight:800; color:#4b5563; outline:none; width:100px;" %>
+          <div style="font-size:15px; font-weight:800; color:#4b5563; margin-left:4px;">원 ✏️</div>
+        </div>
+      </div>
+
+      <div style="background:#e5e7eb; border-radius:14px; padding:12px 14px; display:flex; justify-content:space-between; align-items:center;">
+        <div style="font-size:13px; font-weight:800; color:#4b5563;">지출 합계 (자재+인건)</div>
+        <div style="font-size:15px; font-weight:900; color:#111827;">
+          <%= number_with_delimiter(total_cost) %>원
+        </div>
+      </div>
+
+      <div style="background:<%= margin_bg %>; border:2px solid <%= margin_border %>; border-radius:14px; padding:14px; display:flex; justify-content:space-between; align-items:center; margin-top:4px;">
+        <div style="font-size:14px; font-weight:900; color:<%= margin_color %>;">정산 차액</div>
+        <div style="font-size:20px; font-weight:900; color:<%= margin_color %>;">
+          <%= margin > 0 ? "+" : "" %><%= number_with_delimiter(margin) %>원
+        </div>
+      </div>
+
+    </div>
+  <% end %>
+<% end %>

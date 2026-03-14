@@ -27,12 +27,22 @@ class WorkProcessesController < ApplicationController
   end
 
   def update
-    if @work_process.update(work_process_params)
-      selected_dates = params.dig(:work_process, :selected_dates)
-      @work_process.sync_work_days!(Array(selected_dates).reject(&:blank?)) if selected_dates.present?
-      redirect_to work_process_path(@work_process, year: params[:year], month: params[:month]), notice: "공정이 수정되었습니다."
-    else
-      render :edit, status: :unprocessable_entity
+    respond_to do |format|
+      if @work_process.update(work_process_params)
+        selected_dates = params.dig(:work_process, :selected_dates)
+        @work_process.sync_work_days!(Array(selected_dates).reject(&:blank?)) if selected_dates.present?
+        
+        format.turbo_stream do
+          render turbo_stream: turbo_stream.replace(
+            "work_process_costs_#{@work_process.id}",
+            partial: "work_processes/costs",
+            locals: { work_process: @work_process }
+          )
+        end
+        format.html { redirect_to work_process_path(@work_process, year: params[:year], month: params[:month]), notice: "공정이 수정되었습니다." }
+      else
+        format.html { render :edit, status: :unprocessable_entity }
+      end
     end
   end
 
@@ -60,6 +70,7 @@ class WorkProcessesController < ApplicationController
       :end_date,
       :material_cost,
       :labor_cost,
+      :budget,
       :memo
     )
   end

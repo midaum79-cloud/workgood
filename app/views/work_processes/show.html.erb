@@ -80,26 +80,9 @@
     </div>
 
     <div style="background:white; border-radius:20px; padding:18px; box-shadow:0 2px 10px rgba(0,0,0,0.04);">
-      <div style="font-size:20px; font-weight:900; margin-bottom:16px;">비용 정보</div>
+      <div style="font-size:20px; font-weight:900; margin-bottom:16px;">정산 정보</div>
 
-      <div style="display:flex; flex-direction:column; gap:12px;">
-        <div style="background:#f3f4f6; border-radius:14px; padding:12px 14px;">
-          <div style="font-size:13px; font-weight:800; color:#374151;">자재비</div>
-          <div style="font-size:15px; font-weight:800; color:#4b5563;"><%= number_with_delimiter(@work_process.material_cost || 0) %>원</div>
-        </div>
-
-        <div style="background:#f3f4f6; border-radius:14px; padding:12px 14px;">
-          <div style="font-size:13px; font-weight:800; color:#374151;">인건비</div>
-          <div style="font-size:15px; font-weight:800; color:#4b5563;"><%= number_with_delimiter(@work_process.labor_cost || 0) %>원</div>
-        </div>
-
-        <div style="background:#dbeafe; border-radius:14px; padding:12px 14px;">
-          <div style="font-size:13px; font-weight:800; color:#374151;">합계</div>
-          <div style="font-size:18px; font-weight:900; color:#111827;">
-            <%= number_with_delimiter((@work_process.material_cost || 0) + (@work_process.labor_cost || 0)) %>원
-          </div>
-        </div>
-      </div>
+      <%= render "work_processes/costs", work_process: @work_process %>
     </div>
 
     <div style="display:flex; flex-direction:column; gap:10px;">
