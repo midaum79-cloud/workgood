@@ -195,7 +195,11 @@
                 </div>
 
                 <div style="font-size:14px; color:#6b7280; font-weight:600;">
-                  <%= work_process.start_date %> ~ <%= work_process.end_date %>
+                  <% if work_process.start_date.present? || work_process.end_date.present? %>
+                    <%= work_process.start_date&.strftime("%Y.%m.%d") || "?" %> ~ <%= work_process.end_date&.strftime("%Y.%m.%d") || "?" %>
+                  <% else %>
+                    <span style="color:#d1d5db;">일정 미지정</span>
+                  <% end %>
                 </div>
               </div>
 

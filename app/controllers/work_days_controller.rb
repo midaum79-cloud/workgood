@@ -13,6 +13,13 @@ class WorkDaysController < ApplicationController
       selected = true
     end
 
+    # Sync start_date / end_date on the parent work_process
+    all_dates = work_process.work_days.order(:work_date).pluck(:work_date)
+    work_process.update_columns(
+      start_date: all_dates.first,
+      end_date:   all_dates.last
+    )
+
     render json: {
       success: true,
       selected: selected,
