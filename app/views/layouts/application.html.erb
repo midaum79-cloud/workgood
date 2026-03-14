@@ -29,13 +29,13 @@
       }
 
       html {
-        height: 100%;
+        min-height: 100%;
       }
 
       body {
         margin: 0;
         padding: 0;
-        height: 100%;
+        min-height: 100%;
         background: #e8eaed;
         color: #111827;
         font-family: "Pretendard", -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Noto Sans KR", "Malgun Gothic", sans-serif;
@@ -43,6 +43,13 @@
         -moz-osx-font-smoothing: grayscale;
         overflow-x: hidden;
         -webkit-text-size-adjust: 100%;
+      }
+
+      /* Force 16px input fonts on mobile to prevent Safari auto-zoom which breaks layouts */
+      @media screen and (max-width: 768px) {
+        input, select, textarea {
+          font-size: 16px !important;
+        }
       }
 
       a, button {
