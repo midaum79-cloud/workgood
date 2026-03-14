@@ -125,7 +125,9 @@ class Project < ApplicationRecord
                                .reject(&:blank?)
 
     final_names = (selected_names + custom_names).uniq
-    final_names = default_process_names if final_names.empty?
+
+    # 아무 공정도 선택하지 않았으면 생성 안 함 (AI 등록의 경우도 해당)
+    return if final_names.empty?
 
     final_names.each_with_index do |name, index|
       work_processes.create(
