@@ -20,36 +20,58 @@
       </div>
     <% end %>
 
+    <%# 초성 검색 %>
+    <div style="background:white; border-radius:16px; padding:14px 16px; margin-bottom:16px; box-shadow:0 2px 8px rgba(0,0,0,0.04);">
+      <input id="vendor-search"
+             type="text"
+             placeholder="🔍 업체명, 담당자, 전화번호 검색..."
+             oninput="filterVendors(this.value)"
+             style="width:100%; height:46px; border:1.5px solid #e5e7eb; border-radius:12px; padding:0 14px; font-size:15px; font-weight:600; font-family:inherit; box-sizing:border-box; outline:none;">
+      <%# 초성 버튼 %>
+      <div id="chosung-row" style="display:flex; flex-wrap:wrap; gap:6px; margin-top:10px;">
+        <% %w[ㄱ ㄴ ㄷ ㄹ ㅁ ㅂ ㅅ ㅇ ㅈ ㅊ ㅋ ㅌ ㅍ ㅎ 전체].each do |ch| %>
+          <button type="button"
+            class="chosung-btn"
+            data-cho="<%= ch %>"
+            onclick="clickChosung(this)"
+            style="padding:6px 12px; border-radius:999px; border:1.5px solid #e5e7eb; background:white; color:#374151; font-size:13px; font-weight:800; cursor:pointer;">
+            <%= ch %>
+          </button>
+        <% end %>
+      </div>
+    </div>
+
     <%# Stats bar %>
-    <div style="background:white; border-radius:16px; padding:16px; margin-bottom:16px; box-shadow:0 2px 8px rgba(0,0,0,0.04); display:flex; gap:16px; justify-content:space-around; text-align:center;">
+    <div style="background:white; border-radius:16px; padding:14px 16px; margin-bottom:16px; box-shadow:0 2px 8px rgba(0,0,0,0.04); display:flex; gap:16px; justify-content:space-around; text-align:center;">
       <div>
         <div style="font-size:22px; font-weight:900; color:#111827;"><%= @vendors.count %></div>
         <div style="font-size:12px; font-weight:700; color:#9ca3af;">전체 업체</div>
       </div>
       <div style="width:1px; background:#f3f4f6;"></div>
       <div>
-        <div style="font-size:22px; font-weight:900; color:#2563eb;"><%= @vendors.where.not(specialty: [nil, ""]).count %></div>
-        <div style="font-size:12px; font-weight:700; color:#9ca3af;">전문분야 등록</div>
+        <div style="font-size:22px; font-weight:900; color:#16a34a;"><%= @vendors.where.not(phone: [nil, ""]).count %></div>
+        <div style="font-size:12px; font-weight:700; color:#9ca3af;">연락처 등록</div>
       </div>
       <div style="width:1px; background:#f3f4f6;"></div>
       <div>
-        <div style="font-size:22px; font-weight:900; color:#16a34a;"><%= @vendors.where.not(phone: [nil, ""]).count %></div>
-        <div style="font-size:12px; font-weight:700; color:#9ca3af;">연락처 등록</div>
+        <div style="font-size:22px; font-weight:900; color:#2563eb;"><%= @vendors.where.not(contact_name: [nil, ""]).count %></div>
+        <div style="font-size:12px; font-weight:700; color:#9ca3af;">담당자 등록</div>
       </div>
     </div>
 
     <%# Vendor list %>
     <% if @vendors.any? %>
-      <div style="display:flex; flex-direction:column; gap:12px;">
+      <div id="vendor-list" style="display:flex; flex-direction:column; gap:10px;">
         <% @vendors.each do |vendor| %>
-          <div style="background:white; border-radius:16px; padding:16px; box-shadow:0 2px 8px rgba(0,0,0,0.04);">
-            <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:10px;">
-              <div>
-                <div style="font-size:17px; font-weight:900; color:#111827; margin-bottom:4px;"><%= vendor.name %></div>
-                <% if vendor.specialty.present? %>
-                  <span style="font-size:12px; font-weight:800; color:#2563eb; background:#dbeafe; padding:3px 9px; border-radius:999px;"><%= vendor.specialty %></span>
-                <% end %>
-              </div>
+          <div class="vendor-card"
+               data-name="<%= vendor.name %>"
+               data-contact="<%= vendor.contact_name %>"
+               data-phone="<%= vendor.phone %>"
+               style="background:white; border-radius:16px; padding:16px; box-shadow:0 2px 8px rgba(0,0,0,0.04);">
+
+            <%# Title row %>
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:<%= (vendor.contact_name.present? || vendor.phone.present? || vendor.memo.present?) ? '10px' : '0' %>;">
+              <div style="font-size:17px; font-weight:900; color:#111827;"><%= vendor.name %></div>
               <div style="display:flex; gap:8px;">
                 <%= link_to edit_vendor_path(vendor),
                     style: "padding:8px 12px; background:#f3f4f6; color:#374151; border-radius:10px; font-size:13px; font-weight:800; text-decoration:none;" do %>
@@ -58,21 +80,37 @@
               </div>
             </div>
 
+            <%# Contact + phone in ONE line %>
             <% if vendor.contact_name.present? || vendor.phone.present? %>
-              <div style="display:flex; flex-direction:column; gap:6px; margin-top:10px; padding-top:10px; border-top:1px solid #f3f4f6;">
-                <% if vendor.contact_name.present? %>
-                  <div style="font-size:13px; font-weight:700; color:#6b7280;">👤 담당자: <%= vendor.contact_name %></div>
-                <% end %>
+              <div style="display:flex; align-items:center; gap:10px; padding-top:10px; border-top:1px solid #f3f4f6;">
                 <% if vendor.phone.present? %>
-                  <a href="tel:<%= vendor.phone %>" style="font-size:13px; font-weight:700; color:#2563eb; text-decoration:none;">📞 <%= vendor.phone %></a>
+                  <a href="tel:<%= vendor.phone %>"
+                     style="display:inline-flex; align-items:center; justify-content:center; width:38px; height:38px; background:#dcfce7; border-radius:999px; font-size:20px; text-decoration:none; flex-shrink:0;"
+                     title="<%= vendor.phone %>">📞</a>
+                <% else %>
+                  <div style="width:38px; height:38px; background:#f3f4f6; border-radius:999px; display:flex; align-items:center; justify-content:center; font-size:18px; flex-shrink:0; color:#d1d5db;">📞</div>
                 <% end %>
-                <% if vendor.memo.present? %>
-                  <div style="font-size:13px; font-weight:600; color:#9ca3af; margin-top:4px;"><%= vendor.memo %></div>
-                <% end %>
+                <div style="flex:1; min-width:0;">
+                  <div style="font-size:14px; font-weight:800; color:#111827;">
+                    <%= vendor.contact_name.presence || "담당자 미등록" %>
+                    <% if vendor.phone.present? %>
+                      <span style="font-size:13px; font-weight:700; color:#6b7280; margin-left:6px;"><%= vendor.phone %></span>
+                    <% end %>
+                  </div>
+                </div>
               </div>
+            <% end %>
+
+            <% if vendor.memo.present? %>
+              <div style="font-size:13px; font-weight:600; color:#9ca3af; margin-top:8px;"><%= vendor.memo %></div>
             <% end %>
           </div>
         <% end %>
+      </div>
+
+      <div id="vendor-empty" style="display:none; text-align:center; padding:40px 20px; color:#9ca3af;">
+        <div style="font-size:40px; margin-bottom:10px;">🔍</div>
+        <div style="font-size:16px; font-weight:800;">검색 결과가 없습니다</div>
       </div>
     <% else %>
       <div style="text-align:center; padding:60px 20px; color:#9ca3af;">
@@ -86,3 +124,71 @@
 
   </div>
 </div>
+
+<script>
+// 한글 초성 추출
+var CHO = ['ㄱ','ㄲ','ㄴ','ㄷ','ㄸ','ㄹ','ㅁ','ㅂ','ㅃ','ㅅ','ㅆ','ㅇ','ㅈ','ㅉ','ㅊ','ㅋ','ㅌ','ㅍ','ㅎ'];
+function getChosung(str) {
+  return (str || '').split('').map(function(ch) {
+    var code = ch.charCodeAt(0) - 0xAC00;
+    if (code < 0 || code > 11171) return ch;
+    return CHO[Math.floor(code / 28 / 21)];
+  }).join('');
+}
+
+var activeChosung = null;
+
+function clickChosung(btn) {
+  var cho = btn.dataset.cho;
+  document.querySelectorAll('.chosung-btn').forEach(function(b) {
+    b.style.background = 'white';
+    b.style.color = '#374151';
+    b.style.borderColor = '#e5e7eb';
+  });
+  if (cho === '전체') {
+    activeChosung = null;
+    document.getElementById('vendor-search').value = '';
+  } else {
+    activeChosung = cho;
+    btn.style.background = '#111827';
+    btn.style.color = 'white';
+    btn.style.borderColor = '#111827';
+    document.getElementById('vendor-search').value = '';
+  }
+  applyFilter('');
+}
+
+function filterVendors(query) {
+  activeChosung = null;
+  document.querySelectorAll('.chosung-btn').forEach(function(b) {
+    b.style.background = 'white';
+    b.style.color = '#374151';
+    b.style.borderColor = '#e5e7eb';
+  });
+  applyFilter(query);
+}
+
+function applyFilter(query) {
+  var cards = document.querySelectorAll('.vendor-card');
+  var q = query.trim().toLowerCase();
+  var anyVisible = false;
+  cards.forEach(function(card) {
+    var name    = (card.dataset.name    || '').toLowerCase();
+    var contact = (card.dataset.contact || '').toLowerCase();
+    var phone   = (card.dataset.phone   || '');
+    var nameCs  = getChosung(card.dataset.name);
+    var match;
+    if (activeChosung) {
+      match = nameCs.startsWith(activeChosung);
+    } else if (q) {
+      match = name.includes(q) || contact.includes(q) || phone.includes(q) || getChosung(card.dataset.name).includes(q);
+    } else {
+      match = true;
+    }
+    card.style.display = match ? '' : 'none';
+    if (match) anyVisible = true;
+  });
+  var emptyEl = document.getElementById('vendor-empty');
+  if (emptyEl) emptyEl.style.display = anyVisible ? 'none' : 'block';
+}
+</script>
