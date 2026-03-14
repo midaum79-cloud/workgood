@@ -78,7 +78,11 @@ class WorkProcessesController < ApplicationController
       :material_cost,
       :labor_cost,
       :budget,
-      :memo
+      :memo,
+      :vendor_input_method,
+      :new_vendor_name,
+      :new_vendor_contact_name,
+      :new_vendor_phone
     )
   end
 
@@ -91,9 +95,26 @@ class WorkProcessesController < ApplicationController
   end
 
   def create_or_find_vendor
-    vendor_name = params.dig(:work_process, :vendor_name)&.strip
-    if vendor_name.present? && !Vendor.exists?(name: vendor_name)
-      Vendor.create(name: vendor_name)
+    wp_params = params[:work_process]
+    return unless wp_params
+
+    # Handle the "new vendor" mode
+    if wp_params[:vendor_input_method] == "new"
+      new_name = wp_params[:new_vendor_name]&.strip
+      
+      if new_name.present?
+        # Create or update vendor if it doesn't exist
+        vendor = Vendor.find_by(name: new_name)
+        unless vendor
+          vendor = Vendor.create!(
+            name: new_name,
+            contact_name: wp_params[:new_vendor_contact_name]&.strip,
+            phone: wp_params[:new_vendor_phone]&.strip
+          )
+        end
+        # Map the freshly created/found vendor to the normal vendor_name property
+        wp_params[:vendor_name] = new_name
+      end
     end
   end
 end

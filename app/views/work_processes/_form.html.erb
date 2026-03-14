@@ -48,33 +48,51 @@
       </div>
 
       <div style="margin-bottom:14px;">
-        <label style="display:block; font-size:14px; font-weight:800; margin-bottom:10px;">업체명</label>
+        <label style="display:block; font-size:14px; font-weight:800; margin-bottom:10px;">업체명 선택 및 등록</label>
 
-        <div style="position:relative;">
-          <input type="text"
-            id="vendor_name_input"
-            list="vendor_list"
-            value="<%= work_process.vendor_name %>"
-            oninput="updateVendorPhone()"
-            placeholder="업체를 선택하거나 직접 입력하세요"
-            style="width:100%; height:50px; border:1px solid #dcdcdc; border-radius:14px; padding:0 14px; font-size:16px; box-sizing:border-box;">
-            
-          <datalist id="vendor_list">
-            <% Vendor.order(:name).each do |v| %>
-              <% label = [v.name, v.contact_name.presence].compact.join(" ") %>
-              <option value="<%= v.name %>" data-phone="<%= v.phone %>"><%= label %></option>
-            <% end %>
-          </datalist>
+        <!-- Tabs -->
+        <div style="display:flex; background:#f3f4f6; border-radius:14px; padding:4px; margin-bottom:12px;">
+          <input type="hidden" name="work_process[vendor_input_method]" id="vendor_input_method" value="existing">
           
-          <div style="position:absolute; right:16px; top:50%; transform:translateY(-50%); pointer-events:none; font-size:14px; color:#9ca3af;">▼</div>
+          <div id="tabExistingVendor" onclick="toggleVendorTab('existing')" style="flex:1; text-align:center; padding:12px; font-size:14px; font-weight:800; color:#111; background:white; border-radius:10px; box-shadow:0 1px 3px rgba(0,0,0,0.1); cursor:pointer;">
+            기존 업체 선택
+          </div>
+          <div id="tabNewVendor" onclick="toggleVendorTab('new')" style="flex:1; text-align:center; padding:12px; font-size:14px; font-weight:800; color:#6b7280; background:transparent; border-radius:10px; cursor:pointer;">
+            새로운 업체 등록
+          </div>
         </div>
-        
-        <%= f.hidden_field :vendor_name, id: "vendor_name_hidden" %>
 
-        <div id="vendor-phone-row" style="display:none; margin-top:8px;">
-          <a id="vendor-phone-link" href="#" style="display:inline-flex; align-items:center; gap:6px; font-size:14px; font-weight:800; color:#2563eb; text-decoration:none; padding:8px 14px; background:#eff6ff; border-radius:12px;">
-            📞 <span id="vendor-phone-text"></span>
-          </a>
+        <!-- Existing Vendor Area -->
+        <div id="areaExistingVendor" style="display:block;">
+          <div style="position:relative;">
+            <%= f.select :vendor_name,
+                options_for_select(Vendor.order(:name).map { |v| ["#{v.name} #{v.contact_name}".strip, v.name, { 'data-phone': v.phone }] }, work_process.vendor_name),
+                { prompt: "업체를 선택하세요" },
+                { id: "vendor_select_input", onchange: "updateExistingVendorPhone()", style: "width:100%; height:50px; border:1px solid #dcdcdc; border-radius:14px; padding:0 14px; font-size:16px; box-sizing:border-box; background:white; appearance:none;" } %>
+            <div style="position:absolute; right:16px; top:50%; transform:translateY(-50%); pointer-events:none; font-size:14px; color:#9ca3af;">▼</div>
+          </div>
+          
+          <div id="existing-vendor-phone-row" style="display:none; margin-top:8px;">
+            <a id="existing-vendor-phone-link" href="#" style="display:inline-flex; align-items:center; gap:6px; font-size:14px; font-weight:800; color:#2563eb; text-decoration:none; padding:8px 14px; background:#eff6ff; border-radius:12px;">
+              📞 <span id="existing-vendor-phone-text"></span>
+            </a>
+          </div>
+        </div>
+
+        <!-- New Vendor Area -->
+        <div id="areaNewVendor" style="display:none; flex-direction:column; gap:12px; padding:16px; background:#f9fafb; border:1px solid #e5e7eb; border-radius:14px;">
+          <div>
+            <label style="display:block; font-size:13px; font-weight:800; color:#4b5563; margin-bottom:6px;">업체명 <span style="color:#dc2626;">*</span></label>
+            <%= f.text_field :new_vendor_name, id: "new_vendor_name", placeholder: "등록할 업체명을 입력하세요", style: "width:100%; height:46px; border:1px solid #dcdcdc; border-radius:10px; padding:0 14px; font-size:15px; box-sizing:border-box;" %>
+          </div>
+          <div>
+            <label style="display:block; font-size:13px; font-weight:800; color:#4b5563; margin-bottom:6px;">담당자</label>
+            <%= f.text_field :new_vendor_contact_name, id: "new_vendor_contact_name", placeholder: "예: 홍길동 반장", style: "width:100%; height:46px; border:1px solid #dcdcdc; border-radius:10px; padding:0 14px; font-size:15px; box-sizing:border-box;" %>
+          </div>
+          <div>
+            <label style="display:block; font-size:13px; font-weight:800; color:#4b5563; margin-bottom:6px;">연락처</label>
+            <%= f.text_field :new_vendor_phone, id: "new_vendor_phone", placeholder: "예: 010-1234-5678", style: "width:100%; height:46px; border:1px solid #dcdcdc; border-radius:10px; padding:0 14px; font-size:15px; box-sizing:border-box;" %>
+          </div>
         </div>
       </div>
 
@@ -285,27 +303,59 @@
   });
 
   // ===== Vendor Selection Logic =====
-  function updateVendorPhone() {
-    const input = document.getElementById('vendor_name_input');
-    const hiddenEl = document.getElementById('vendor_name_hidden');
-    const options = document.getElementById('vendor_list').options;
+  function toggleVendorTab(method) {
+    const hiddenMethod = document.getElementById("vendor_input_method");
+    const tabExisting = document.getElementById("tabExistingVendor");
+    const tabNew = document.getElementById("tabNewVendor");
+    const areaExisting = document.getElementById("areaExistingVendor");
+    const areaNew = document.getElementById("areaNewVendor");
     
-    const phoneRow = document.getElementById('vendor-phone-row');
-    const phoneLink = document.getElementById('vendor-phone-link');
-    const phoneTxt = document.getElementById('vendor-phone-text');
+    hiddenMethod.value = method;
     
-    if (!input || !hiddenEl) return;
-    
-    // Sync the hidden field with the main input value
-    hiddenEl.value = input.value;
-    
-    let phone = '';
-    for (let i = 0; i < options.length; i++) {
-      if (options[i].value === input.value) {
-        phone = options[i].dataset.phone;
-        break;
-      }
+    if (method === 'existing') {
+      areaExisting.style.display = 'block';
+      areaNew.style.display = 'none';
+      
+      tabExisting.style.color = '#111';
+      tabExisting.style.background = 'white';
+      tabExisting.style.boxShadow = '0 1px 3px rgba(0,0,0,0.1)';
+      
+      tabNew.style.color = '#6b7280';
+      tabNew.style.background = 'transparent';
+      tabNew.style.boxShadow = 'none';
+      
+      // Clear new inputs just in case
+      document.getElementById("new_vendor_name").value = "";
+      document.getElementById("new_vendor_contact_name").value = "";
+      document.getElementById("new_vendor_phone").value = "";
+    } else {
+      areaExisting.style.display = 'none';
+      areaNew.style.display = 'flex';
+      
+      tabNew.style.color = '#111';
+      tabNew.style.background = 'white';
+      tabNew.style.boxShadow = '0 1px 3px rgba(0,0,0,0.1)';
+      
+      tabExisting.style.color = '#6b7280';
+      tabExisting.style.background = 'transparent';
+      tabExisting.style.boxShadow = 'none';
+      
+      // Clear existing selection
+      document.getElementById("vendor_select_input").value = "";
+      updateExistingVendorPhone();
     }
+  }
+
+  function updateExistingVendorPhone() {
+    const select = document.getElementById('vendor_select_input');
+    const phoneRow = document.getElementById('existing-vendor-phone-row');
+    const phoneLink = document.getElementById('existing-vendor-phone-link');
+    const phoneTxt = document.getElementById('existing-vendor-phone-text');
+    
+    if (!select || !phoneRow) return;
+    
+    const selectedOption = select.options[select.selectedIndex];
+    const phone = selectedOption ? selectedOption.getAttribute('data-phone') : '';
     
     if (phone) {
       phoneTxt.textContent = phone;
@@ -316,6 +366,10 @@
     }
   }
   
-  document.addEventListener("DOMContentLoaded", updateVendorPhone);
-  document.addEventListener("turbo:load", updateVendorPhone);
+  document.addEventListener("DOMContentLoaded", function() {
+    updateExistingVendorPhone();
+  });
+  document.addEventListener("turbo:load", function() {
+    updateExistingVendorPhone();
+  });
 </script>
