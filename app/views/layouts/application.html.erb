@@ -97,6 +97,13 @@
         -webkit-overflow-scrolling: touch;
       }
 
+      /* ========== Sticky header safe area ========== */
+      /* Applied automatically by JS below to all sticky top-0 headers */
+      .safe-sticky-header {
+        padding-top: max(env(safe-area-inset-top), 14px) !important;
+        top: 0 !important;
+      }
+
       /* No bottom padding when nav is hidden (login page) */
       .app-content.no-nav {
         padding-bottom: 0;
@@ -336,6 +343,22 @@
       })();
     </script>
     <!-- ===== END SPLASH SCREEN ===== -->
+
+    <!-- ===== SAFE AREA: auto-fix sticky headers ===== -->
+    <script>
+      document.addEventListener('DOMContentLoaded', function() {
+        // Find all elements that are position:sticky and at top:0
+        document.querySelectorAll('[style]').forEach(function(el) {
+          var s = el.getAttribute('style') || '';
+          var isSticky = s.includes('position:sticky') || s.includes('position: sticky');
+          var isTop0   = s.includes('top:0') || s.includes('top: 0');
+          if (isSticky && isTop0) {
+            el.classList.add('safe-sticky-header');
+          }
+        });
+      });
+    </script>
+    <!-- ===== END SAFE AREA ===== -->
 
     <div class="app-shell">
       <div class="app-content<%= ' no-nav' unless logged_in? %>">
