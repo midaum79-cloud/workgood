@@ -99,6 +99,15 @@
     </div>
 
     <div style="background:white; border-radius:20px; padding:18px; box-shadow:0 2px 10px rgba(0,0,0,0.04); margin-bottom:16px;">
+      <div style="font-size:17px; font-weight:900; margin-bottom:14px;">공정 내용</div>
+      <div>
+        <%= f.text_area :description,
+          placeholder: "이 공정에 대한 상세 작업 내용이나 현장 지시사항을 입력하세요",
+          style: "width:100%; height:100px; border:1px solid #dcdcdc; border-radius:14px; padding:14px; font-size:16px; box-sizing:border-box; resize:none;" %>
+      </div>
+    </div>
+
+    <div style="background:white; border-radius:20px; padding:18px; box-shadow:0 2px 10px rgba(0,0,0,0.04); margin-bottom:16px;">
       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
         <div style="font-size:17px; font-weight:900;">작업 날짜 선택</div>
         <div style="display:flex; align-items:center; gap:10px;">

@@ -54,10 +54,31 @@
           <div style="font-size:15px; font-weight:800; color:#4b5563;"><%= @work_process.process_name %></div>
         </div>
 
+        <% vendor = Vendor.find_by(name: @work_process.vendor_name) %>
         <div style="background:#f3f4f6; border-radius:14px; padding:12px 14px;">
-          <div style="font-size:13px; font-weight:800; color:#374151;">업체명</div>
-          <div style="font-size:15px; font-weight:800; color:#4b5563;"><%= @work_process.vendor_name.presence || "미입력" %></div>
+          <div style="font-size:13px; font-weight:800; color:#374151; margin-bottom:4px;">업체 정보</div>
+          <div style="font-size:16px; font-weight:900; color:#111827; margin-bottom:6px;"><%= @work_process.vendor_name.presence || "미입력" %></div>
+          <% if vendor.present? %>
+            <div style="display:flex; justify-content:space-between; align-items:center; background:white; padding:10px 12px; border-radius:10px; border:1px solid #e5e7eb;">
+              <div>
+                <div style="font-size:13px; font-weight:800; color:#4b5563;"><%= vendor.contact_name.presence || "담당자 미상" %></div>
+                <div style="font-size:14px; font-weight:800; color:#2563eb; margin-top:2px;"><%= vendor.phone.presence || "연락처 없음" %></div>
+              </div>
+              <% if vendor.phone.present? %>
+                <a href="tel:<%= vendor.phone.gsub(/[^0-9]/, '') %>" style="display:flex; align-items:center; justify-content:center; width:36px; height:36px; background:#eff6ff; border-radius:50%; text-decoration:none;">
+                  <span style="font-size:16px;">📞</span>
+                </a>
+              <% end %>
+            </div>
+          <% end %>
         </div>
+
+        <% if @work_process.description.present? %>
+          <div style="background:#fefce8; border-radius:14px; padding:12px 14px;">
+            <div style="font-size:13px; font-weight:800; color:#854d0e; margin-bottom:6px;">공정 내용</div>
+            <div style="font-size:15px; font-weight:700; color:#422006; line-height:1.5; white-space:pre-wrap;"><%= @work_process.description %></div>
+          </div>
+        <% end %>
       </div>
     </div>
 
