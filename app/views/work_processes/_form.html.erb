@@ -1,5 +1,10 @@
-<% preset_processes = ProcessTemplate.ordered.map(&:name) %>
-<% preset_processes = ProcessTemplate::DEFAULT_NAMES if preset_processes.empty? %>
+<% 
+  residential = ["철거", "확장", "샤시", "목공", "전기", "에어컨", "타일", "도기", "필름", "도배", "바닥", "돔천장", "탄성코트", "가구", "조명", "청소"]
+  commercial = ["철거", "설비", "경량", "목공", "전기", "냉난방", "유리공사", "금속공사", "자동문", "페인트", "도배", "바닥", "가구", "간판", "사인", "조명", "청소"]
+  
+  target_project = work_process.project || (params[:project_id].present? ? Project.find_by(id: params[:project_id]) : nil)
+  preset_processes = target_project&.project_type == "commercial" ? commercial : residential
+%>
 
 <div style="padding:16px;">
   <%= form_with(model: work_process, local: true) do |f| %>
@@ -43,37 +48,35 @@
       </div>
 
       <div style="margin-bottom:14px;">
-        <label style="display:block; font-size:14px; font-weight:800; margin-bottom:8px;">업체명</label>
+        <label style="display:block; font-size:14px; font-weight:800; margin-bottom:10px;">업체명</label>
+
         <div style="position:relative;">
-          <%= f.text_field :vendor_name,
-            id: "vendor_name_input",
-            placeholder: "업체명 또는 담당자 검색 (가나다 순)",
-            autocomplete: "off",
-            style: "width:100%; height:50px; border:1px solid #dcdcdc; border-radius:14px; padding:0 14px; font-size:16px; box-sizing:border-box;" %>
-          <div id="vendor-dropdown" style="display:none; position:absolute; top:54px; left:0; right:0; background:white; border:1.5px solid #e5e7eb; border-radius:14px; max-height:220px; overflow-y:auto; z-index:100; box-shadow:0 4px 16px rgba(0,0,0,0.12);">
-            <% vendors_sorted = Vendor.order(:name) %>
-            <% vendors_sorted.each do |v| %>
+          <input type="text"
+            id="vendor_name_input"
+            list="vendor_list"
+            value="<%= work_process.vendor_name %>"
+            oninput="updateVendorPhone()"
+            placeholder="업체를 선택하거나 직접 입력하세요"
+            style="width:100%; height:50px; border:1px solid #dcdcdc; border-radius:14px; padding:0 14px; font-size:16px; box-sizing:border-box;">
+            
+          <datalist id="vendor_list">
+            <% Vendor.order(:name).each do |v| %>
               <% label = [v.name, v.contact_name.presence].compact.join(" ") %>
-              <div class="vendor-option"
-                data-name="<%= label %>"
-                data-phone="<%= v.phone %>"
-                style="padding:12px 16px; font-size:15px; font-weight:700; color:#111827; cursor:pointer; border-bottom:1px solid #f3f4f6; display:flex; justify-content:space-between; align-items:center;">
-                <span><%= label %></span>
-                <% if v.phone.present? %>
-                  <a href="tel:<%= v.phone %>" onclick="event.stopPropagation();"
-                     style="font-size:20px; text-decoration:none; padding-left:10px;" title="<%= v.phone %>">📞</a>
-                <% end %>
-              </div>
+              <option value="<%= v.name %>" data-phone="<%= v.phone %>"><%= label %></option>
             <% end %>
-          </div>
+          </datalist>
+          
+          <div style="position:absolute; right:16px; top:50%; transform:translateY(-50%); pointer-events:none; font-size:14px; color:#9ca3af;">▼</div>
         </div>
+        
+        <%= f.hidden_field :vendor_name, id: "vendor_name_hidden" %>
+
         <div id="vendor-phone-row" style="display:none; margin-top:8px;">
           <a id="vendor-phone-link" href="#" style="display:inline-flex; align-items:center; gap:6px; font-size:14px; font-weight:800; color:#2563eb; text-decoration:none; padding:8px 14px; background:#eff6ff; border-radius:12px;">
             📞 <span id="vendor-phone-text"></span>
           </a>
         </div>
       </div>
-
 
     </div>
 
@@ -106,7 +109,17 @@
     </div>
 
     <div style="background:white; border-radius:20px; padding:18px; box-shadow:0 2px 10px rgba(0,0,0,0.04); margin-bottom:16px;">
-      <div style="font-size:17px; font-weight:900; margin-bottom:14px;">비용 정보</div>
+      <div style="font-size:17px; font-weight:900; margin-bottom:14px;">정산 정보</div>
+
+      <div style="margin-bottom:14px;">
+        <label style="display:block; font-size:14px; font-weight:800; margin-bottom:8px;">견적비 (예산)</label>
+        <%= f.number_field :budget,
+          id: "budget_input",
+          placeholder: "예: 1000000",
+          value: (work_process.budget || 0),
+          oninput: "updateTotalCost()",
+          style: "width:100%; height:50px; border:1px solid #dcdcdc; border-radius:14px; padding:0 14px; font-size:16px;" %>
+      </div>
 
       <div style="margin-bottom:14px;">
         <label style="display:block; font-size:14px; font-weight:800; margin-bottom:8px;">자재비</label>
@@ -129,8 +142,14 @@
       </div>
 
       <div style="background:#eef6ff; border-radius:14px; padding:14px 16px;">
-        <div style="font-size:13px; color:#6b7280; font-weight:700; margin-bottom:4px;">예상 합계</div>
-        <div id="total_cost_text" style="font-size:22px; font-weight:900; color:#111827;">0원</div>
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+          <div style="font-size:13px; color:#6b7280; font-weight:700;">지출 합계 (자재+인건)</div>
+          <div id="total_cost_text" style="font-size:18px; font-weight:900; color:#111827;">0원</div>
+        </div>
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-top:8px;">
+          <div style="font-size:13px; color:#6b7280; font-weight:700;">정산 차액 (예산 - 지출)</div>
+          <div id="margin_cost_text" style="font-size:18px; font-weight:900; color:#1d4ed8;">0원</div>
+        </div>
       </div>
     </div>
 
@@ -233,14 +252,23 @@
   }
 
   function updateTotalCost() {
+    const budget = parseInt(document.getElementById("budget_input")?.value || 0, 10);
     const material = parseInt(document.getElementById("material_cost_input")?.value || 0, 10);
     const labor = parseInt(document.getElementById("labor_cost_input")?.value || 0, 10);
     const total = material + labor;
+    const margin = budget - total;
 
     const formatter = new Intl.NumberFormat("ko-KR");
     const totalText = document.getElementById("total_cost_text");
+    const marginText = document.getElementById("margin_cost_text");
+    
     if (totalText) {
       totalText.textContent = formatter.format(total) + "원";
+    }
+    
+    if (marginText) {
+      marginText.textContent = (margin > 0 ? "+" : "") + formatter.format(margin) + "원";
+      marginText.style.color = margin >= 0 ? "#1d4ed8" : "#dc2626";
     }
   }
 
@@ -256,44 +284,38 @@
     renderCalendar();
   });
 
-  // ===== Vendor autocomplete =====
-  (function() {
-    var input    = document.getElementById('vendor_name_input');
-    var dropdown = document.getElementById('vendor-dropdown');
-    var phoneRow = document.getElementById('vendor-phone-row');
-    var phoneLink= document.getElementById('vendor-phone-link');
-    var phoneTxt = document.getElementById('vendor-phone-text');
-    if (!input) return;
-    var allOptions = Array.from(dropdown.querySelectorAll('.vendor-option'));
-    function filterOptions(query) {
-      var q = query.trim().toLowerCase();
-      var any = false;
-      allOptions.forEach(function(opt) {
-        var match = !q || opt.dataset.name.toLowerCase().includes(q);
-        opt.style.display = match ? '' : 'none';
-        if (match) any = true;
-      });
-      dropdown.style.display = any ? 'block' : 'none';
+  // ===== Vendor Selection Logic =====
+  function updateVendorPhone() {
+    const input = document.getElementById('vendor_name_input');
+    const hiddenEl = document.getElementById('vendor_name_hidden');
+    const options = document.getElementById('vendor_list').options;
+    
+    const phoneRow = document.getElementById('vendor-phone-row');
+    const phoneLink = document.getElementById('vendor-phone-link');
+    const phoneTxt = document.getElementById('vendor-phone-text');
+    
+    if (!input || !hiddenEl) return;
+    
+    // Sync the hidden field with the main input value
+    hiddenEl.value = input.value;
+    
+    let phone = '';
+    for (let i = 0; i < options.length; i++) {
+      if (options[i].value === input.value) {
+        phone = options[i].dataset.phone;
+        break;
+      }
     }
-    function selectVendor(name, phone) {
-      input.value = name;
-      dropdown.style.display = 'none';
-      if (phone) { phoneTxt.textContent = phone; phoneLink.href = 'tel:' + phone; phoneRow.style.display = 'block'; }
-      else { phoneRow.style.display = 'none'; }
+    
+    if (phone) {
+      phoneTxt.textContent = phone;
+      phoneLink.href = 'tel:' + phone;
+      phoneRow.style.display = 'block';
+    } else {
+      phoneRow.style.display = 'none';
     }
-    input.addEventListener('focus', function() { filterOptions(this.value); });
-    input.addEventListener('input',  function() { filterOptions(this.value); });
-    allOptions.forEach(function(opt) {
-      opt.addEventListener('click', function() { selectVendor(this.dataset.name, this.dataset.phone); });
-      opt.addEventListener('mouseenter', function() { this.style.background = '#f3f4f6'; });
-      opt.addEventListener('mouseleave', function() { this.style.background = ''; });
-    });
-    document.addEventListener('click', function(e) {
-      if (!input.contains(e.target) && !dropdown.contains(e.target)) dropdown.style.display = 'none';
-    });
-    if (input.value) {
-      var m = allOptions.find(function(o) { return o.dataset.name === input.value; });
-      if (m && m.dataset.phone) { phoneTxt.textContent = m.dataset.phone; phoneLink.href = 'tel:' + m.dataset.phone; phoneRow.style.display = 'block'; }
-    }
-  })();
+  }
+  
+  document.addEventListener("DOMContentLoaded", updateVendorPhone);
+  document.addEventListener("turbo:load", updateVendorPhone);
 </script>

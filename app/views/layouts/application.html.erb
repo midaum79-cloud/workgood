@@ -90,7 +90,6 @@
 
       /* Main content area with safe area padding */
       .app-content {
-        padding-top: env(safe-area-inset-top);
         padding-bottom: calc(64px + env(safe-area-inset-bottom));
         min-height: 100vh;
         min-height: 100dvh;
@@ -346,17 +345,20 @@
 
     <!-- ===== SAFE AREA: auto-fix sticky headers ===== -->
     <script>
-      document.addEventListener('DOMContentLoaded', function() {
+      function applySafeStickyHeader() {
         // Find all elements that are position:sticky and at top:0
         document.querySelectorAll('[style]').forEach(function(el) {
           var s = el.getAttribute('style') || '';
           var isSticky = s.includes('position:sticky') || s.includes('position: sticky');
           var isTop0   = s.includes('top:0') || s.includes('top: 0');
-          if (isSticky && isTop0) {
+          if (isSticky && isTop0 && !el.classList.contains('safe-sticky-header')) {
             el.classList.add('safe-sticky-header');
           }
         });
-      });
+      }
+      document.addEventListener('DOMContentLoaded', applySafeStickyHeader);
+      document.addEventListener('turbo:load', applySafeStickyHeader);
+      document.addEventListener('turbo:render', applySafeStickyHeader);
     </script>
     <!-- ===== END SAFE AREA ===== -->
 

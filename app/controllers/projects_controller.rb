@@ -389,6 +389,8 @@ class ProjectsController < ApplicationController
       :project_name,
       :client_name,
       :address,
+      :common_entrance_password,
+      :private_entrance_password,
       :start_date,
       :end_date,
       :status,

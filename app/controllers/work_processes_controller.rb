@@ -1,5 +1,6 @@
 class WorkProcessesController < ApplicationController
   before_action :set_work_process, only: %i[show edit update destroy]
+  before_action :create_or_find_vendor, only: %i[create update]
 
   def show
   end
@@ -87,5 +88,12 @@ class WorkProcessesController < ApplicationController
 
     max_position = work_process.project.work_processes.maximum(:position) || 0
     work_process.position = max_position + 1
+  end
+
+  def create_or_find_vendor
+    vendor_name = params.dig(:work_process, :vendor_name)&.strip
+    if vendor_name.present? && !Vendor.exists?(name: vendor_name)
+      Vendor.create(name: vendor_name)
+    end
   end
 end

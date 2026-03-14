@@ -54,6 +54,19 @@
                name="detail_address"
                placeholder="상세주소 입력"
                style="margin-top:8px; width:100%; padding:14px 16px; border:1px solid #dcdfe4; border-radius:14px; font-size:16px; box-sizing:border-box;">
+               
+        <div style="display:flex; gap:12px; margin-top:8px;">
+          <div style="flex:1;">
+            <%= form.text_field :common_entrance_password,
+                placeholder: "공동출입구 비밀번호",
+                style: "width:100%; padding:14px 16px; border:1px solid #dcdfe4; border-radius:14px; font-size:16px; box-sizing:border-box;" %>
+          </div>
+          <div style="flex:1;">
+            <%= form.text_field :private_entrance_password,
+                placeholder: "현관 비밀번호",
+                style: "width:100%; padding:14px 16px; border:1px solid #dcdfe4; border-radius:14px; font-size:16px; box-sizing:border-box;" %>
+          </div>
+        </div>
       </div>
 
       <!-- 날짜 영역 (주소 아래) -->
