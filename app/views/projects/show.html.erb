@@ -88,12 +88,12 @@
       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
         <div style="font-size:18px; font-weight:900;">🏗️ 공사 진행률</div>
         <div style="font-size:22px; font-weight:900; color:#111827;">
-          <%= progress_percentage %>%
+          <span id="animated-progress-number" data-target="<%= progress_percentage %>">0</span>%
         </div>
       </div>
 
       <div style="height:12px; background:#e5e7eb; border-radius:999px; overflow:hidden; margin-bottom:16px;">
-        <div style="height:12px; width:<%= progress_percentage %>%; background:#f4c430; border-radius:999px;"></div>
+        <div id="animated-progress-bar" style="height:12px; width:0%; background:#f4c430; border-radius:999px; transition: width 1s cubic-bezier(0.4, 0, 0.2, 1);"></div>
       </div>
 
       <div style="display:grid; grid-template-columns:repeat(4, 1fr); gap:10px;">
@@ -233,6 +233,50 @@
           });
         </script>
         <% end %>
+
+        <script>
+          function initAnimateProgressBar() {
+            const numberEl = document.getElementById('animated-progress-number');
+            const barEl = document.getElementById('animated-progress-bar');
+            
+            if (numberEl && barEl) {
+              const targetNum = parseInt(numberEl.getAttribute('data-target') || "0", 10);
+              
+              // Reset state for turbo re-visits
+              numberEl.textContent = "0";
+              barEl.style.transition = "none";
+              barEl.style.width = "0%";
+               
+              // Animate Bar slowly expanding
+              setTimeout(() => {
+                barEl.style.transition = "width 1s cubic-bezier(0.4, 0, 0.2, 1)";
+                barEl.style.width = targetNum + '%';
+              }, 50);
+
+              // Animate Number counting up
+              let currentNum = 0;
+              const duration = 1000; // 1 second total animation time
+              const interval = 20; // 50 updates per second
+              const step = Math.max(1, Math.floor(targetNum / (duration / interval)));
+              
+              if (targetNum > 0) {
+                const timer = setInterval(() => {
+                  currentNum += step;
+                  if (currentNum >= targetNum) {
+                    currentNum = targetNum;
+                    clearInterval(timer);
+                  }
+                  numberEl.textContent = currentNum;
+                }, interval);
+              } else {
+                numberEl.textContent = 0;
+              }
+            }
+          }
+
+          document.addEventListener('DOMContentLoaded', initAnimateProgressBar);
+          document.addEventListener('turbo:load', initAnimateProgressBar);
+        </script>
 
       <% else %>
         <div style="padding:16px; background:#fafafa; border-radius:14px; color:#888; text-align:center;">
