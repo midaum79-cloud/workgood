@@ -55,16 +55,18 @@
                placeholder="상세주소 입력"
                style="margin-top:8px; width:100%; padding:14px 16px; border:1px solid #dcdfe4; border-radius:14px; font-size:16px; box-sizing:border-box;">
                
-        <div style="display:flex; gap:12px; margin-top:8px;">
-          <div style="flex:1;">
+        <div style="display:flex; flex-direction:column; gap:8px; margin-top:12px;">
+          <div style="position:relative;">
+            <span style="position:absolute; left:14px; top:50%; transform:translateY(-50%); font-size:16px;">🏢</span>
             <%= form.text_field :common_entrance_password,
                 placeholder: "공동출입구 비밀번호",
-                style: "width:100%; padding:14px 16px; border:1px solid #dcdfe4; border-radius:14px; font-size:16px; box-sizing:border-box;" %>
+                style: "width:100%; padding:14px 16px 14px 40px; border:1px solid #dcdfe4; border-radius:14px; font-size:15px; box-sizing:border-box; background:#f9fafb;" %>
           </div>
-          <div style="flex:1;">
+          <div style="position:relative;">
+            <span style="position:absolute; left:14px; top:50%; transform:translateY(-50%); font-size:16px;">🚪</span>
             <%= form.text_field :private_entrance_password,
-                placeholder: "현관 비밀번호",
-                style: "width:100%; padding:14px 16px; border:1px solid #dcdfe4; border-radius:14px; font-size:16px; box-sizing:border-box;" %>
+                placeholder: "호실 현관 비밀번호",
+                style: "width:100%; padding:14px 16px 14px 40px; border:1px solid #dcdfe4; border-radius:14px; font-size:15px; box-sizing:border-box; background:#f9fafb;" %>
           </div>
         </div>
       </div>
