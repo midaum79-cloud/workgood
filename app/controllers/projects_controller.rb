@@ -7,7 +7,9 @@ class ProjectsController < ApplicationController
     @selected_status = params[:status]
     @view_mode = params[:view_mode].presence || "month"
 
-    all_projects = current_user.projects.order(created_at: :desc)
+    all_projects = current_user.projects
+                               .includes(work_processes: :work_days)
+                               .order(created_at: :desc)
 
     @projects =
       if %w[진행중 예정 완료].include?(@selected_status)
@@ -45,7 +47,9 @@ class ProjectsController < ApplicationController
     @selected_status = params[:status]
     @unread_notifications_count = Notification.where(status: "unread").count
 
-    all_projects = current_user.projects.order(created_at: :desc)
+    all_projects = current_user.projects
+                               .includes(work_processes: :work_days)
+                               .order(created_at: :desc)
 
     @projects =
       if %w[진행중 예정 완료].include?(@selected_status)
