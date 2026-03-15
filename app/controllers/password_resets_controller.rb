@@ -15,7 +15,11 @@ class PasswordResetsController < ApplicationController
         password_reset_token: token,
         password_reset_sent_at: Time.current
       )
-      UserMailer.password_reset(@user).deliver_now
+      begin
+        UserMailer.password_reset(@user).deliver_now
+      rescue => e
+        Rails.logger.error "[PasswordReset] 메일 발송 실패: #{e.class}: #{e.message}"
+      end
     end
     # Always show the same message to prevent email enumeration
     redirect_to login_path, notice: "비밀번호 재설정 이메일을 발송했습니다. 받은 편지함을 확인해 주세요."
