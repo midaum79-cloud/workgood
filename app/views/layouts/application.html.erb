@@ -413,11 +413,17 @@
           <span>홈</span>
         <% end %>
 
+        <% project_show_match = current_path.match(/\A\/projects\/(\d+)\z/) %>
         <% if current_path == '/projects/calendar' %>
           <div class="bottom-nav-item" onclick="document.getElementById('ongoing-processes-modal').style.display='flex'" style="cursor:pointer;">
             <span class="bottom-nav-icon">➕</span>
             <span>공정 추가</span>
           </div>
+        <% elsif project_show_match %>
+          <%= link_to new_work_process_path(project_id: project_show_match[1]), class: "bottom-nav-item" do %>
+            <span class="bottom-nav-icon">➕</span>
+            <span>공정 추가</span>
+          <% end %>
         <% else %>
           <%= link_to new_project_path, class: "bottom-nav-item #{current_path == '/projects/new' ? 'active' : ''}" do %>
             <span class="bottom-nav-icon">➕</span>
