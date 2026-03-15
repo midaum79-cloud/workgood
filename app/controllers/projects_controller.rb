@@ -292,6 +292,7 @@ class ProjectsController < ApplicationController
   end
 
   def show
+    @project = @project.class.includes(work_processes: :work_days).find(@project.id)
     @work_processes = @project.ordered_work_processes
   end
 

@@ -8,18 +8,32 @@ class WorkProcess < ApplicationRecord
   after_create :create_start_notification_if_date_present
 
   def effective_status(reference_date = Date.current)
-    return self[:status].presence || "예정" if start_date.blank?
-
-    start_on = start_date.to_date
-    end_on = (end_date || start_date).to_date
     target_day = reference_date.to_date
 
-    if target_day < start_on
-      "예정"
-    elsif target_day > end_on
-      "완료"
+    # Prefer work_days for accurate date calculation
+    dates = work_days.order(:work_date).pluck(:work_date)
+    if dates.any?
+      start_on = dates.first.to_date
+      end_on   = dates.last.to_date
+      if target_day < start_on
+        "예정"
+      elsif target_day > end_on
+        "완료"
+      else
+        "진행중"
+      end
+    elsif start_date.present?
+      start_on = start_date.to_date
+      end_on   = (end_date || start_date).to_date
+      if target_day < start_on
+        "예정"
+      elsif target_day > end_on
+        "완료"
+      else
+        "진행중"
+      end
     else
-      "진행중"
+      self[:status].presence || "예정"
     end
   end
 
