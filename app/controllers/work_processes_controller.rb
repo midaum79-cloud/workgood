@@ -38,7 +38,7 @@ class WorkProcessesController < ApplicationController
           Rails.logger.error "[WorkProcess#update sync_work_days!] #{sync_err.class}: #{sync_err.message}"
         end
       end
-      redirect_to work_process_path(@work_process), notice: "공정이 수정되었습니다. (#{@work_process.reload.process_name})"
+      redirect_to work_process_path(@work_process), notice: "공정이 수정되었습니다."
     else
       render :edit, status: :unprocessable_entity
     end

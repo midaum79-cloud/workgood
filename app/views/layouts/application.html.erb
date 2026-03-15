@@ -384,6 +384,20 @@
 
     <div class="app-shell">
       <div class="app-content<%= ' no-nav' unless logged_in? %>">
+        <% if flash[:notice] %>
+          <div id="flash-notice" style="position:fixed; top:env(safe-area-inset-top, 0); left:50%; transform:translateX(-50%); z-index:9999; max-width:430px; width:100%; padding:0 16px; box-sizing:border-box; pointer-events:none;">
+            <div style="background:#22c55e; color:white; padding:14px 18px; border-radius:14px; font-size:15px; font-weight:800; margin-top:8px; box-shadow:0 4px 16px rgba(0,0,0,0.15); pointer-events:auto;" onclick="this.parentElement.remove()">
+              <%= flash[:notice] %>
+            </div>
+          </div>
+        <% end %>
+        <% if flash[:alert] %>
+          <div id="flash-alert" style="position:fixed; top:env(safe-area-inset-top, 0); left:50%; transform:translateX(-50%); z-index:9999; max-width:430px; width:100%; padding:0 16px; box-sizing:border-box; pointer-events:none;">
+            <div style="background:#ef4444; color:white; padding:14px 18px; border-radius:14px; font-size:15px; font-weight:800; margin-top:8px; box-shadow:0 4px 16px rgba(0,0,0,0.15); pointer-events:auto;" onclick="this.parentElement.remove()">
+              <%= flash[:alert] %>
+            </div>
+          </div>
+        <% end %>
         <%= yield %>
       </div>
     </div>
