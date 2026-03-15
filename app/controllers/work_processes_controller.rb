@@ -37,16 +37,7 @@ class WorkProcessesController < ApplicationController
         date_range.each { |d| @work_process.work_days.find_or_create_by!(work_date: d) }
       end
 
-      respond_to do |format|
-        format.turbo_stream do
-          render turbo_stream: turbo_stream.replace(
-            "work_process_costs_#{@work_process.id}",
-            partial: "work_processes/costs",
-            locals: { work_process: @work_process }
-          )
-        end
-        format.html { redirect_to work_process_path(@work_process, year: params[:year], month: params[:month]), notice: "공정이 수정되었습니다." }
-      end
+      redirect_to work_process_path(@work_process), notice: "공정이 수정되었습니다."
     else
       render :edit, status: :unprocessable_entity
     end
