@@ -346,7 +346,15 @@ function bsSelectProject(projectId) {
     return;
   }
 
-  project.processes.forEach(function(proc) {
+  // Deduplicate by name (keep first occurrence of each name)
+  var seenNames = {};
+  var uniqueProcesses = project.processes.filter(function(proc) {
+    if (seenNames[proc.name]) return false;
+    seenNames[proc.name] = true;
+    return true;
+  });
+
+  uniqueProcesses.forEach(function(proc) {
     var btn = document.createElement('button');
     btn.type = 'button';
     btn.onclick = function() { bsSaveProcess(proc.id); };

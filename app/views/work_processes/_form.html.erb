@@ -202,14 +202,17 @@
 </div>
 
 <script>
-  let selectedDates = new Set(<%= raw @work_process.work_days.map { |wd| "'#{wd.work_date}'" }.join(',') %>);
+  // Use JSON array so Set receives proper date strings like ['2026-03-10','2026-03-11']
+  let selectedDates = new Set(<%= raw @work_process.work_days.map { |wd| wd.work_date.to_s }.to_json %>);
   // Open the calendar on the month of the first scheduled date, so existing selections are visible
   let currentViewDate = (function() {
     if (selectedDates.size > 0) {
       const sorted = Array.from(selectedDates).sort();
-      const first = sorted[0];
-      const d = new Date(first + 'T00:00:00');
-      return new Date(d.getFullYear(), d.getMonth(), 1);
+      const first = sorted[0]; // e.g. '2026-03-10'
+      const parts = first.split('-');
+      if (parts.length === 3) {
+        return new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, 1);
+      }
     }
     return new Date();
   })();
