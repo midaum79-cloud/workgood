@@ -387,19 +387,31 @@
     <div class="app-shell">
       <div class="app-content<%= ' no-nav' unless logged_in? %>">
         <% if flash[:notice] %>
-          <div id="flash-notice" style="position:fixed; top:env(safe-area-inset-top, 0); left:50%; transform:translateX(-50%); z-index:9999; max-width:430px; width:100%; padding:0 16px; box-sizing:border-box; pointer-events:none;">
+          <div id="flash-notice" class="flash-toast" style="position:fixed; top:env(safe-area-inset-top, 0); left:50%; transform:translateX(-50%); z-index:9999; max-width:430px; width:100%; padding:0 16px; box-sizing:border-box; pointer-events:none; animation:flashIn 0.3s ease-out;">
             <div style="background:#22c55e; color:white; padding:14px 18px; border-radius:14px; font-size:15px; font-weight:800; margin-top:8px; box-shadow:0 4px 16px rgba(0,0,0,0.15); pointer-events:auto;" onclick="this.parentElement.remove()">
               <%= flash[:notice] %>
             </div>
           </div>
         <% end %>
         <% if flash[:alert] %>
-          <div id="flash-alert" style="position:fixed; top:env(safe-area-inset-top, 0); left:50%; transform:translateX(-50%); z-index:9999; max-width:430px; width:100%; padding:0 16px; box-sizing:border-box; pointer-events:none;">
+          <div id="flash-alert" class="flash-toast" style="position:fixed; top:env(safe-area-inset-top, 0); left:50%; transform:translateX(-50%); z-index:9999; max-width:430px; width:100%; padding:0 16px; box-sizing:border-box; pointer-events:none; animation:flashIn 0.3s ease-out;">
             <div style="background:#ef4444; color:white; padding:14px 18px; border-radius:14px; font-size:15px; font-weight:800; margin-top:8px; box-shadow:0 4px 16px rgba(0,0,0,0.15); pointer-events:auto;" onclick="this.parentElement.remove()">
               <%= flash[:alert] %>
             </div>
           </div>
         <% end %>
+        <style>
+          @keyframes flashIn { from { opacity:0; transform:translateX(-50%) translateY(-20px); } to { opacity:1; transform:translateX(-50%) translateY(0); } }
+          @keyframes flashOut { from { opacity:1; transform:translateX(-50%) translateY(0); } to { opacity:0; transform:translateX(-50%) translateY(-20px); } }
+        </style>
+        <script>
+          document.querySelectorAll('.flash-toast').forEach(function(el) {
+            setTimeout(function() {
+              el.style.animation = 'flashOut 0.3s ease-in forwards';
+              setTimeout(function() { el.remove(); }, 300);
+            }, 2000);
+          });
+        </script>
         <%= yield %>
       </div>
     </div>
