@@ -39,6 +39,7 @@ Rails.application.routes.draw do
   # Legal
   get "terms",   to: "legal#terms",   as: :terms
   get "privacy", to: "legal#privacy", as: :privacy
+  get "guide",   to: "legal#guide",   as: :guide
 
   # Notifications
   resources :notifications do

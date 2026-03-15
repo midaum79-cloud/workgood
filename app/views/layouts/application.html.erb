@@ -573,6 +573,9 @@
         <div class="drawer-divider"></div>
 
         <!-- 고객지원 -->
+        <%= link_to guide_path, class: "drawer-item", onclick: "closeDrawer()" do %>
+          <span class="drawer-item-icon">📖</span> 일머리 사용설명서
+        <% end %>
         <%= link_to announcements_path, class: "drawer-item", onclick: "closeDrawer()" do %>
           <span class="drawer-item-icon">📢</span> 공지사항 / 문의
         <% end %>
