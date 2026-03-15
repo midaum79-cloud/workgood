@@ -55,7 +55,7 @@ class WorkProcess < ApplicationRecord
     return unless earliest_date
 
     if project.start_date.nil? || earliest_date < project.start_date
-      project.update(start_date: earliest_date)
+      project.update_columns(start_date: earliest_date)
     end
   end
 
