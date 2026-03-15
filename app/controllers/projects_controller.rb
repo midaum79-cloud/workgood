@@ -66,9 +66,9 @@ class ProjectsController < ApplicationController
     @projects =
       case @selected_status
       when "진행중", "예정", "완료"
-        current_user.projects.includes(:work_processes).where(status: @selected_status).order(created_at: :desc)
+        current_user.projects.includes(:work_processes).where(status: @selected_status).order(created_at: :asc)
       else
-        current_user.projects.includes(:work_processes).order(created_at: :desc)
+        current_user.projects.includes(:work_processes).order(created_at: :asc)
       end
 
     base_date =
@@ -144,6 +144,7 @@ class ProjectsController < ApplicationController
 
       sorted_bars = raw_bars.sort_by do |bar|
         [
+          bar[:project].created_at,
           bar[:start_index],
           bar[:work_process].position || 9999,
           bar[:work_process].id || 0,
@@ -179,7 +180,7 @@ class ProjectsController < ApplicationController
     @selected_day_work_processes = selected_day_work_days
       .map(&:work_process)
       .uniq
-      .sort_by { |process| [ process.position || 9999, process.id || 0 ] }
+      .sort_by { |process| [ process.project.created_at, process.position || 9999, process.id || 0 ] }
   end
 
   def project_calendar
