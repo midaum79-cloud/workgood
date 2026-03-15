@@ -66,13 +66,13 @@ class User < ApplicationRecord
 
   def can_use_ai_import?
     return true if premium?
-    standard_or_above? && (ai_imports_count || 0) < 2
+    standard_or_above? && (ai_imports_count || 0) < 3
   end
 
   def ai_imports_remaining
     return "무제한" if premium?
     return 0 if free?
-    [2 - (ai_imports_count || 0), 0].max
+    [3 - (ai_imports_count || 0), 0].max
   end
 
   def premium?
