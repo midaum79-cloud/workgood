@@ -67,7 +67,9 @@ class PasswordResetsController < ApplicationController
   private
 
   def load_user_from_token
+    Rails.logger.info "[PasswordReset] Looking up token: '#{params[:token]}'"
     @user = User.find_by(password_reset_token: params[:token])
+    Rails.logger.info "[PasswordReset] User found: #{@user&.email || 'NONE'}"
     unless @user
       redirect_to new_password_reset_path, alert: "잘못된 링크입니다. 다시 시도해 주세요."
     end
