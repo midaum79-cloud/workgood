@@ -20,6 +20,14 @@ class WorkDaysController < ApplicationController
       end_date:   all_dates.last
     )
 
+    # Also sync project start date if earliest process date changed
+    if all_dates.any?
+      earliest = work_process.project.work_processes.where.not(start_date: nil).minimum(:start_date)
+      if earliest && (work_process.project.start_date.nil? || earliest < work_process.project.start_date)
+        work_process.project.update_columns(start_date: earliest)
+      end
+    end
+
     render json: {
       success: true,
       selected: selected,

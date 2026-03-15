@@ -319,8 +319,10 @@
                 </div>
 
                 <div style="font-size:14px; color:#6b7280; font-weight:600;">
-                  <% if work_process.start_date.present? || work_process.end_date.present? %>
-                    <%= work_process.start_date&.strftime("%Y.%m.%d") || "?" %> ~ <%= work_process.end_date&.strftime("%Y.%m.%d") || "?" %>
+                  <% work_dates = work_process.work_days.order(:work_date).pluck(:work_date) %>
+                  <% if work_dates.any? %>
+                    <%= work_dates.first.strftime("%Y.%m.%d") %> ~ <%= work_dates.last.strftime("%Y.%m.%d") %>
+                    <span style="color:#9ca3af; font-size:12px;">(<%= work_dates.size %>일)</span>
                   <% else %>
                     <span style="color:#d1d5db;">일정 미지정</span>
                   <% end %>
