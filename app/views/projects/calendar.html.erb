@@ -419,6 +419,7 @@ document.addEventListener('DOMContentLoaded', function() {
   var longPressTimer = null;
   var ghostEl = null;
   var lastHighlightedCell = null;
+  var touchedBar = null;
   var LONG_PRESS_MS = 300;
 
   document.querySelectorAll('.calendar-bar').forEach(function(bar) {
@@ -430,6 +431,7 @@ document.addEventListener('DOMContentLoaded', function() {
     if (!bar) return;
 
     e.preventDefault();
+    touchedBar = bar;
 
     var touch = e.touches[0];
     var startX = touch.clientX;
@@ -519,7 +521,14 @@ document.addEventListener('DOMContentLoaded', function() {
     clearTimeout(longPressTimer);
     longPressTimer = null;
 
-    if (!dragState) return;
+    // Short tap (no drag started) → navigate to process detail
+    if (!dragState) {
+      if (touchedBar && touchedBar.dataset.href) {
+        window.location.href = touchedBar.dataset.href;
+      }
+      touchedBar = null;
+      return;
+    }
 
     if (ghostEl) { ghostEl.remove(); ghostEl = null; }
 
@@ -567,6 +576,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     dragState = null;
     lastHighlightedCell = null;
+    touchedBar = null;
     setTimeout(function() { window._dragOccurred = false; }, 100);
   }, { passive: true });
 
