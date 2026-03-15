@@ -79,6 +79,7 @@ Rails.application.routes.draw do
     collection do
       get :calendar
       get :manage
+      get :archive
     end
     resources :ai_imports, only: [] do
       collection do

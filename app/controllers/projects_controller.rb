@@ -59,6 +59,25 @@ class ProjectsController < ApplicationController
       end
   end
 
+  def archive
+    all_projects = current_user.projects
+      .includes(work_processes: :work_days)
+      .where.not(end_date: nil)
+      .where("end_date < ?", Date.current)
+      .order(created_at: :asc)
+
+    # Group by year then month (based on end_date)
+    @grouped = all_projects.group_by { |p| p.end_date.year }
+      .sort_by { |year, _| -year } # newest year first
+      .map do |year, projects_in_year|
+        months = projects_in_year.group_by { |p| p.end_date.month }
+          .sort_by { |month, _| month } # month ascending
+        [year, months]
+      end
+
+    @selected_year = params[:year]&.to_i || @grouped.first&.first || Date.current.year
+  end
+
   def calendar
     @selected_status = params[:status]
     @view_mode = "month"
