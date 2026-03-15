@@ -168,6 +168,9 @@
                     text-overflow:ellipsis;
                     box-sizing:border-box;
                     touch-action:none;
+                    -webkit-touch-callout:none;
+                    -webkit-user-select:none;
+                    user-select:none;
                     background:#{text_color}1a;
                     border:1px solid #{text_color}4d;
                     border-radius:4px;
@@ -464,6 +467,8 @@ document.addEventListener('DOMContentLoaded', function() {
     var bar = e.target.closest('.calendar-bar');
     if (!bar) return;
 
+    e.preventDefault();
+
     var touch = e.touches[0];
     var startX = touch.clientX;
     var startY = touch.clientY;
@@ -486,7 +491,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
       bar.style.opacity = '0.3';
     }, LONG_PRESS_MS);
-  }, { passive: true });
+  }, { passive: false });
 
   document.addEventListener('touchmove', function(e) {
     if (!dragState) {
