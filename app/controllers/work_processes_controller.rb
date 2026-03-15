@@ -47,6 +47,25 @@ class WorkProcessesController < ApplicationController
     redirect_to edit_work_process_path(@work_process), alert: "저장 오류: #{e.message}"
   end
 
+  # POST /work_processes/quick_create (JSON)
+  def quick_create
+    project = current_user.projects.find(params[:project_id])
+    max_pos = project.work_processes.maximum(:position) || 0
+
+    wp = project.work_processes.create!(
+      process_name: params[:process_name],
+      position: max_pos + 1
+    )
+
+    if params[:work_date].present?
+      wp.work_days.find_or_create_by!(work_date: params[:work_date])
+    end
+
+    render json: { success: true, work_process_id: wp.id }
+  rescue => e
+    render json: { success: false, error: e.message }, status: :unprocessable_entity
+  end
+
   def destroy
     project = @work_process.project
     @work_process.destroy

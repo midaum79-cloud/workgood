@@ -60,7 +60,11 @@ Rails.application.routes.draw do
     end
   end
 
-  resources :work_processes
+  resources :work_processes do
+    collection do
+      post :quick_create
+    end
+  end
   resources :vendors
   resources :process_templates, only: [:index, :create, :destroy] do
     member do
