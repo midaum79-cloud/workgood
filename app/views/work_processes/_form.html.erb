@@ -203,7 +203,16 @@
 
 <script>
   let selectedDates = new Set(<%= raw @work_process.work_days.map { |wd| "'#{wd.work_date}'" }.join(',') %>);
-  let currentViewDate = new Date();
+  // Open the calendar on the month of the first scheduled date, so existing selections are visible
+  let currentViewDate = (function() {
+    if (selectedDates.size > 0) {
+      const sorted = Array.from(selectedDates).sort();
+      const first = sorted[0];
+      const d = new Date(first + 'T00:00:00');
+      return new Date(d.getFullYear(), d.getMonth(), 1);
+    }
+    return new Date();
+  })();
 
   function renderCalendar() {
     const year = currentViewDate.getFullYear();
