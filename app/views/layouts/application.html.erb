@@ -395,8 +395,8 @@
 
         <% if current_path == '/projects/calendar' %>
           <div class="bottom-nav-item" onclick="document.getElementById('ongoing-processes-modal').style.display='flex'" style="cursor:pointer;">
-            <span class="bottom-nav-icon">📋</span>
-            <span>진행 공정</span>
+            <span class="bottom-nav-icon">➕</span>
+            <span>공정 추가</span>
           </div>
         <% else %>
           <%= link_to new_project_path, class: "bottom-nav-item #{current_path == '/projects/new' ? 'active' : ''}" do %>

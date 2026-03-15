@@ -528,12 +528,9 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 </script>
 
-<!-- Ongoing Processes Modal -->
+<!-- Add Process Modal -->
 <%
-  today = Time.zone.today
-  ongoing_processes = current_user.projects.includes(:work_processes).flat_map(&:work_processes).select do |wp|
-    wp.effective_status(today) == "진행중"
-  end
+  add_process_projects = current_user.projects.select { |p| p.effective_status != "완료" }
 %>
 
 <!-- Overlay -->
@@ -559,35 +556,34 @@ document.addEventListener('DOMContentLoaded', function() {
   ">
     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
       <div>
-        <div style="font-size:20px; font-weight:900; color:#111827;">진행 중인 공정</div>
-        <div style="font-size:13px; font-weight:700; color:#9ca3af; margin-top:2px;">오늘(현재) 진행되고 있는 현장의 작업 목록입니다.</div>
+        <div style="font-size:20px; font-weight:900; color:#111827;">공정 추가</div>
+        <div style="font-size:13px; font-weight:700; color:#9ca3af; margin-top:2px;">공정을 추가할 현장을 선택하세요.</div>
       </div>
       <div onclick="document.getElementById('ongoing-processes-modal').style.display='none'; document.getElementById('ongoing-processes-overlay').style.display='none';" style="font-size:24px; color:#9ca3af; cursor:pointer; padding:4px;">✕</div>
     </div>
 
-    <% if ongoing_processes.any? %>
+    <% if add_process_projects.any? %>
       <div style="display:flex; flex-direction:column; gap:10px;">
-        <% ongoing_processes.sort_by { |wp| wp.start_date || Time.zone.today }.each do |wp| %>
-          <%= link_to project_calendar_project_path(wp.project), style: "display:block; text-decoration:none; background:#f9fafb; border:1px solid #f3f4f6; border-radius:16px; padding:16px; transition:background 0.15s;" do %>
-            <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:8px;">
-              <div style="font-size:16px; font-weight:900; color:#111827;"><%= wp.process_name %></div>
-              <div style="font-size:12px; font-weight:800; color:white; background:#2563eb; padding:4px 8px; border-radius:999px;">진행중</div>
+        <% add_process_projects.each do |project| %>
+          <%= link_to new_work_process_path(project_id: project.id), style: "display:flex; align-items:center; justify-content:space-between; text-decoration:none; background:#f9fafb; border:1px solid #f3f4f6; border-radius:16px; padding:16px; transition:background 0.15s;" do %>
+            <div>
+              <div style="display:flex; align-items:center; gap:8px; margin-bottom:4px;">
+                <span style="display:inline-block; width:10px; height:10px; border-radius:50%; background:<%= project.theme_color_hex %>;"></span>
+                <div style="font-size:16px; font-weight:900; color:#111827;"><%= project.project_name %></div>
+              </div>
+              <div style="font-size:12px; font-weight:700; color:#9ca3af;">
+                <%= project.client_name %> &middot; <%= project.effective_status %>
+              </div>
             </div>
-            <div style="font-size:13px; font-weight:800; color:#4b5563; margin-bottom:4px;">
-              <span style="display:inline-block; width:8px; height:8px; border-radius:50%; background:<%= wp.project.theme_color_hex %>; margin-right:4px;"></span>
-              <%= wp.project.project_name %>
-            </div>
-            <div style="font-size:12px; font-weight:700; color:#6b7280;">
-              📅 <%= wp.start_date&.strftime('%y.%m.%d') %> ~ <%= wp.end_date&.strftime('%y.%m.%d') %>
-            </div>
+            <div style="font-size:18px; color:#d1d5db; font-weight:900;">→</div>
           <% end %>
         <% end %>
       </div>
     <% else %>
       <div style="text-align:center; padding:40px 20px; color:#9ca3af;">
-        <div style="font-size:40px; margin-bottom:12px;">🏖️</div>
-        <div style="font-size:15px; font-weight:800; color:#4b5563; margin-bottom:4px;">현재 진행 중인 공정이 없습니다.</div>
-        <div style="font-size:13px; font-weight:600;">새로운 공정을 추가하거나 일정을 확인해보세요.</div>
+        <div style="font-size:40px; margin-bottom:12px;">🏗️</div>
+        <div style="font-size:15px; font-weight:800; color:#4b5563; margin-bottom:4px;">등록된 현장이 없습니다.</div>
+        <div style="font-size:13px; font-weight:600;">먼저 현장을 추가한 후 공정을 등록해보세요.</div>
       </div>
     <% end %>
   </div>
