@@ -526,3 +526,68 @@ document.addEventListener('DOMContentLoaded', function() {
   }, { passive: true });
 });
 </script>
+
+<!-- Ongoing Processes Modal -->
+<%
+  today = Time.zone.today
+  ongoing_processes = current_user.projects.includes(:work_processes).flat_map(&:work_processes).select do |wp|
+    wp.effective_status(today) == "진행중"
+  end
+%>
+
+<!-- Overlay -->
+<div id="ongoing-processes-overlay" onclick="document.getElementById('ongoing-processes-modal').style.display='none'; document.getElementById('ongoing-processes-overlay').style.display='none';" style="
+  display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:100;
+"></div>
+
+<!-- Modal Bottom Sheet -->
+<div id="ongoing-processes-modal" style="
+  display:none;
+  position:fixed; inset:0; z-index:110;
+  align-items:flex-end; justify-content:center;
+  pointer-events:none;
+">
+  <div style="
+    width:100%; max-width:430px; background:white;
+    border-radius:24px 24px 0 0;
+    padding:20px; box-sizing:border-box;
+    pointer-events:auto;
+    box-shadow:0 -4px 30px rgba(0,0,0,0.15);
+    max-height:80dvh; overflow-y:auto;
+    padding-bottom:calc(20px + env(safe-area-inset-bottom));
+  ">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+      <div>
+        <div style="font-size:20px; font-weight:900; color:#111827;">진행 중인 공정</div>
+        <div style="font-size:13px; font-weight:700; color:#9ca3af; margin-top:2px;">오늘(현재) 진행되고 있는 현장의 작업 목록입니다.</div>
+      </div>
+      <div onclick="document.getElementById('ongoing-processes-modal').style.display='none'; document.getElementById('ongoing-processes-overlay').style.display='none';" style="font-size:24px; color:#9ca3af; cursor:pointer; padding:4px;">✕</div>
+    </div>
+
+    <% if ongoing_processes.any? %>
+      <div style="display:flex; flex-direction:column; gap:10px;">
+        <% ongoing_processes.sort_by { |wp| wp.start_date || Time.zone.today }.each do |wp| %>
+          <%= link_to project_calendar_project_path(wp.project), style: "display:block; text-decoration:none; background:#f9fafb; border:1px solid #f3f4f6; border-radius:16px; padding:16px; transition:background 0.15s;" do %>
+            <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:8px;">
+              <div style="font-size:16px; font-weight:900; color:#111827;"><%= wp.process_name %></div>
+              <div style="font-size:12px; font-weight:800; color:white; background:#2563eb; padding:4px 8px; border-radius:999px;">진행중</div>
+            </div>
+            <div style="font-size:13px; font-weight:800; color:#4b5563; margin-bottom:4px;">
+              <span style="display:inline-block; width:8px; height:8px; border-radius:50%; background:<%= wp.project.theme_color_hex %>; margin-right:4px;"></span>
+              <%= wp.project.project_name %>
+            </div>
+            <div style="font-size:12px; font-weight:700; color:#6b7280;">
+              📅 <%= wp.start_date&.strftime('%y.%m.%d') %> ~ <%= wp.end_date&.strftime('%y.%m.%d') %>
+            </div>
+          <% end %>
+        <% end %>
+      </div>
+    <% else %>
+      <div style="text-align:center; padding:40px 20px; color:#9ca3af;">
+        <div style="font-size:40px; margin-bottom:12px;">🏖️</div>
+        <div style="font-size:15px; font-weight:800; color:#4b5563; margin-bottom:4px;">현재 진행 중인 공정이 없습니다.</div>
+        <div style="font-size:13px; font-weight:600;">새로운 공정을 추가하거나 일정을 확인해보세요.</div>
+      </div>
+    <% end %>
+  </div>
+</div>

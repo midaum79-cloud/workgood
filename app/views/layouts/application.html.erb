@@ -393,9 +393,16 @@
           <span>홈</span>
         <% end %>
 
-        <%= link_to new_project_path, class: "bottom-nav-item #{current_path == '/projects/new' ? 'active' : ''}" do %>
-          <span class="bottom-nav-icon">➕</span>
-          <span>현장추가</span>
+        <% if current_path == '/projects/calendar' %>
+          <div class="bottom-nav-item" onclick="document.getElementById('ongoing-processes-modal').style.display='flex'" style="cursor:pointer;">
+            <span class="bottom-nav-icon">📋</span>
+            <span>진행 공정</span>
+          </div>
+        <% else %>
+          <%= link_to new_project_path, class: "bottom-nav-item #{current_path == '/projects/new' ? 'active' : ''}" do %>
+            <span class="bottom-nav-icon">➕</span>
+            <span>현장추가</span>
+          <% end %>
         <% end %>
 
         <%= link_to calendar_projects_path, class: "bottom-nav-item #{current_path == '/projects/calendar' ? 'active' : ''}" do %>
