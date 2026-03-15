@@ -30,6 +30,8 @@
 
       html {
         min-height: 100%;
+        overscroll-behavior: none;
+        overscroll-behavior-y: none;
       }
 
       body {
@@ -42,7 +44,11 @@
         -webkit-font-smoothing: antialiased;
         -moz-osx-font-smoothing: grayscale;
         overflow-x: hidden;
+        overscroll-behavior: none;
+        overscroll-behavior-y: none;
+        -webkit-overflow-scrolling: auto;
         -webkit-text-size-adjust: 100%;
+        touch-action: manipulation;
       }
 
       /* Force 16px input fonts on mobile to prevent Safari auto-zoom which breaks layouts */
