@@ -146,9 +146,10 @@
               <% bar_color = bar[:project].color.presence || 'gold' %>
               <% text_color = bar[:project].theme_color_hex %>
               
-              <%= link_to work_process_path(work_process),
-                  data: { work_day_id: bar[:work_day].id, process_name: work_process.process_name },
+              <%= content_tag :div,
+                  data: { work_day_id: bar[:work_day].id, process_name: work_process.process_name, href: work_process_path(work_process) },
                   class: "calendar-bar",
+                  onclick: "if(!window._dragOccurred){window.location.href='#{work_process_path(work_process)}'}",
                   style: "
                     position:absolute;
                     left:#{left_percent}%;
@@ -156,7 +157,7 @@
                     top:#{top_offset}px;
                     height:18px;
                     color:#{text_color};
-                    text-decoration:none;
+                    cursor:pointer;
                     display:flex;
                     align-items:center;
                     padding:0 2px;
@@ -477,6 +478,8 @@ document.addEventListener('DOMContentLoaded', function() {
     longPressTimer = setTimeout(function() {
       if (navigator.vibrate) navigator.vibrate(30);
 
+      window._dragOccurred = true;
+
       dragState = {
         workDayId: bar.dataset.workDayId,
         processName: bar.dataset.processName,
@@ -581,6 +584,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     dragState = null;
     lastHighlightedCell = null;
+    setTimeout(function() { window._dragOccurred = false; }, 100);
   }, { passive: true });
 
   document.addEventListener('touchcancel', function() {
