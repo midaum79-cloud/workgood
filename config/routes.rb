@@ -30,7 +30,7 @@ Rails.application.routes.draw do
   # Subscription
   get   "subscription",        to: "subscriptions#index",  as: :subscription
   patch "subscription",        to: "subscriptions#update"
-  post  "subscription/verify", to: "subscriptions#verify", as: :verify_subscription
+  get   "subscription/verify", to: "subscriptions#verify", as: :verify_subscription
   delete "subscription",       to: "subscriptions#cancel", as: :cancel_subscription
 
   # Widget Settings

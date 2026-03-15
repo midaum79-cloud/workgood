@@ -1,6 +1,6 @@
 class SubscriptionsController < ApplicationController
   before_action :require_login
-  skip_before_action :verify_authenticity_token, only: [:webhook, :verify]
+  skip_before_action :verify_authenticity_token, only: [:verify]
 
   def index
     @current_plan = current_user.subscription_plan
@@ -32,48 +32,53 @@ class SubscriptionsController < ApplicationController
     redirect_to subscription_path, alert: "결제가 필요합니다."
   end
 
-  # PortOne 결제 검증 (프론트에서 결제 완료 후 호출)
+  # 토스페이먼츠 결제 검증 (프론트에서 결제 완료 후 호출)
   def verify
-    payment_id = params[:paymentId]   # PortOne에서 반환한 결제 ID
-    plan       = params[:plan]
+    payment_key = params[:paymentKey]
+    order_id    = params[:orderId]
+    amount      = params[:amount].to_i
+    plan        = params[:plan]
 
     unless %w[standard premium].include?(plan)
-      render json: { success: false, message: "잘못된 플랜" }, status: :bad_request and return
+      redirect_to subscription_path, alert: "잘못된 플랜입니다." and return
     end
 
     expected_amount = User::PLAN_PRICES[plan]
 
-    # PortOne V2 API로 결제 검증
-    verification = verify_portone_payment(payment_id)
+    unless amount == expected_amount
+      redirect_to subscription_path, alert: "결제 금액이 일치하지 않습니다." and return
+    end
 
-    if verification && verification["status"] == "PAID" && verification["amount"]["total"] == expected_amount
+    # 토스페이먼츠 결제 승인 API 호출
+    confirmation = confirm_toss_payment(payment_key, order_id, amount)
+
+    if confirmation && confirmation["status"] == "DONE"
       # 결제 성공 → 플랜 업그레이드
-      payment = current_user.subscription_payments.create!(
+      current_user.subscription_payments.create!(
         plan: plan,
         amount: expected_amount,
         status: "paid",
-        merchant_uid: verification["merchantId"] || payment_id,
-        imp_uid: payment_id,
-        billing_key: params[:billingKey],
+        merchant_uid: order_id,
+        imp_uid: payment_key,
         paid_at: Time.current,
         expires_at: 1.month.from_now
       )
 
       current_user.update!(
         subscription_plan: plan,
-        billing_key: params[:billingKey],
-        customer_uid: "customer_#{current_user.id}",
         billing_started_at: Time.current,
         subscription_expires_at: 1.month.from_now
       )
 
-      render json: { success: true, message: "#{User::PLAN_LABELS[plan]} 플랜으로 업그레이드 되었습니다!" }
+      redirect_to subscription_path, notice: "🎉 #{User::PLAN_LABELS[plan]} 플랜으로 업그레이드 되었습니다!"
     else
-      render json: { success: false, message: "결제 검증 실패. 고객센터에 문의해주세요." }, status: :unprocessable_entity
+      error_msg = confirmation&.dig("message") || "결제 승인 실패"
+      Rails.logger.error "[TossPayments] Confirm failed: #{confirmation}"
+      redirect_to subscription_path, alert: "결제 실패: #{error_msg}"
     end
   rescue => e
-    Rails.logger.error "[Payment] Verify error: #{e.message}"
-    render json: { success: false, message: "결제 처리 중 오류가 발생했습니다." }, status: :internal_server_error
+    Rails.logger.error "[TossPayments] Verify error: #{e.class}: #{e.message}"
+    redirect_to subscription_path, alert: "결제 처리 중 오류가 발생했습니다."
   end
 
   # 구독 해지
@@ -87,30 +92,34 @@ class SubscriptionsController < ApplicationController
     redirect_to subscription_path, notice: "구독이 해지되었습니다. 무료 플랜으로 전환됩니다."
   end
 
-  def webhook
-    # PortOne webhook endpoint
-    render plain: "OK"
-  end
-
   private
 
-  def verify_portone_payment(payment_id)
-    api_secret = ENV["PORTONE_API_SECRET"]
-    return nil unless api_secret.present?
+  # 토스페이먼츠 결제 승인 API
+  def confirm_toss_payment(payment_key, order_id, amount)
+    secret_key = ENV["TOSS_SECRET_KEY"]
+    return nil unless secret_key.present?
 
-    response = HTTParty.get(
-      "https://api.portone.io/payments/#{payment_id}",
+    # Base64 인코딩된 시크릿 키 (Basic Auth)
+    encoded_key = Base64.strict_encode64("#{secret_key}:")
+
+    response = HTTParty.post(
+      "https://api.tosspayments.com/v1/payments/confirm",
       headers: {
-        "Authorization" => "PortOne #{api_secret}",
+        "Authorization" => "Basic #{encoded_key}",
         "Content-Type" => "application/json"
-      }
+      },
+      body: {
+        paymentKey: payment_key,
+        orderId: order_id,
+        amount: amount
+      }.to_json
     )
 
     if response.success?
       response.parsed_response
     else
-      Rails.logger.error "[PortOne] Verify failed: #{response.code} - #{response.body}"
-      nil
+      Rails.logger.error "[TossPayments] Confirm API error: #{response.code} - #{response.body}"
+      response.parsed_response
     end
   end
 end
