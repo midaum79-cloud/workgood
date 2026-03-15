@@ -497,6 +497,40 @@ document.addEventListener('DOMContentLoaded', function() {
     }, LONG_PRESS_MS);
   }, { passive: false });
 
+  // Helper: find date cell nearest to given coordinates
+  function findNearestDateCell(x, y) {
+    var cells = document.querySelectorAll('.calendar-date-cell');
+    var best = null;
+    var bestDist = Infinity;
+    cells.forEach(function(cell) {
+      var rect = cell.getBoundingClientRect();
+      // Check if x is within the column
+      if (x >= rect.left && x <= rect.right) {
+        // Check vertical distance
+        var cy = rect.top + rect.height / 2;
+        var dist = Math.abs(y - cy);
+        if (dist < bestDist) {
+          bestDist = dist;
+          best = cell;
+        }
+      }
+    });
+    // Fallback: find closest cell by x and y if no column match
+    if (!best) {
+      cells.forEach(function(cell) {
+        var rect = cell.getBoundingClientRect();
+        var cx = rect.left + rect.width / 2;
+        var cy = rect.top + rect.height / 2;
+        var dist = Math.sqrt(Math.pow(x - cx, 2) + Math.pow(y - cy, 2));
+        if (dist < bestDist) {
+          bestDist = dist;
+          best = cell;
+        }
+      });
+    }
+    return best;
+  }
+
   document.addEventListener('touchmove', function(e) {
     if (!dragState) {
       if (longPressTimer) { clearTimeout(longPressTimer); longPressTimer = null; }
@@ -516,12 +550,8 @@ document.addEventListener('DOMContentLoaded', function() {
       cell.style.outlineOffset = '';
     });
 
-    // Hide ghost temporarily so elementFromPoint sees through it
-    if (ghostEl) ghostEl.style.display = 'none';
-    var target = document.elementFromPoint(touch.clientX, touch.clientY);
-    if (ghostEl) ghostEl.style.display = '';
-
-    var dateCell = target ? target.closest('.calendar-date-cell') : null;
+    // Find the nearest date cell using coordinates
+    var dateCell = findNearestDateCell(touch.clientX, touch.clientY);
     if (dateCell) {
       dateCell.style.outline = '2px solid #2563eb';
       dateCell.style.outlineOffset = '-2px';
@@ -535,12 +565,11 @@ document.addEventListener('DOMContentLoaded', function() {
 
     if (!dragState) return;
 
-    // Remove ghost FIRST so elementFromPoint works
+    // Remove ghost
     if (ghostEl) { ghostEl.remove(); ghostEl = null; }
 
     var touch = e.changedTouches[0];
-    var target = document.elementFromPoint(touch.clientX, touch.clientY);
-    var dateCell = target ? target.closest('.calendar-date-cell') : null;
+    var dateCell = findNearestDateCell(touch.clientX, touch.clientY);
 
     // Fallback: use last cell highlighted during drag
     if (!dateCell && lastHighlightedCell) {
