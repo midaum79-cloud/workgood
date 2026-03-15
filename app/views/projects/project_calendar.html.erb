@@ -457,6 +457,7 @@ document.addEventListener('DOMContentLoaded', function() {
   var dragState = null;
   var longPressTimer = null;
   var ghostEl = null;
+  var lastHighlightedCell = null;
   var LONG_PRESS_MS = 300;
 
   document.querySelectorAll('.calendar-bar').forEach(function(bar) {
@@ -512,11 +513,16 @@ document.addEventListener('DOMContentLoaded', function() {
       cell.style.outlineOffset = '';
     });
 
+    // Hide ghost temporarily so elementFromPoint sees through it
+    if (ghostEl) ghostEl.style.display = 'none';
     var target = document.elementFromPoint(touch.clientX, touch.clientY);
+    if (ghostEl) ghostEl.style.display = '';
+
     var dateCell = target ? target.closest('.calendar-date-cell') : null;
     if (dateCell) {
       dateCell.style.outline = '2px solid #2563eb';
       dateCell.style.outlineOffset = '-2px';
+      lastHighlightedCell = dateCell;
     }
   }, { passive: false });
 
@@ -526,16 +532,23 @@ document.addEventListener('DOMContentLoaded', function() {
 
     if (!dragState) return;
 
+    // Remove ghost FIRST so elementFromPoint works
+    if (ghostEl) { ghostEl.remove(); ghostEl = null; }
+
     var touch = e.changedTouches[0];
     var target = document.elementFromPoint(touch.clientX, touch.clientY);
     var dateCell = target ? target.closest('.calendar-date-cell') : null;
+
+    // Fallback: use last cell highlighted during drag
+    if (!dateCell && lastHighlightedCell) {
+      dateCell = lastHighlightedCell;
+    }
 
     document.querySelectorAll('.calendar-date-cell').forEach(function(cell) {
       cell.style.outline = '';
       cell.style.outlineOffset = '';
     });
 
-    if (ghostEl) { ghostEl.remove(); ghostEl = null; }
     if (dragState.originBar) dragState.originBar.style.opacity = '1';
 
     if (dateCell && dateCell.dataset.date) {
@@ -567,6 +580,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     dragState = null;
+    lastHighlightedCell = null;
   }, { passive: true });
 
   document.addEventListener('touchcancel', function() {
