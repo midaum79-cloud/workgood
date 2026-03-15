@@ -22,7 +22,11 @@
 
   <%= link_to "📅 현장 공정표 보기",
       project_calendar_project_path(@work_process.project),
-      style: "display:block; width:100%; text-align:center; padding:14px; background:#eff6ff; color:#2563eb; border:1.5px solid #bfdbfe; border-radius:14px; font-size:16px; font-weight:800; text-decoration:none; box-sizing:border-box; margin-bottom:16px;" %>
+      style: "display:block; width:100%; text-align:center; padding:14px; background:#eff6ff; color:#2563eb; border:1.5px solid #bfdbfe; border-radius:14px; font-size:16px; font-weight:800; text-decoration:none; box-sizing:border-box; margin-bottom:8px;" %>
+
+  <%= link_to "📆 전체 캘린더 보기",
+      calendar_projects_path,
+      style: "display:block; width:100%; text-align:center; padding:14px; background:#f0fdf4; color:#16a34a; border:1.5px solid #bbf7d0; border-radius:14px; font-size:16px; font-weight:800; text-decoration:none; box-sizing:border-box; margin-bottom:16px;" %>
 
   <div style="display:flex; flex-direction:column; gap:16px;">
 
