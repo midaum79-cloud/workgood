@@ -29,17 +29,22 @@ class WorkProcessesController < ApplicationController
 
   def update
     if @work_process.update(work_process_params)
+      # Sync dates separately — even if this fails, the main update already succeeded
       selected_dates = params.dig(:work_process, :selected_dates)
       if selected_dates.present?
-        @work_process.sync_work_days!(Array(selected_dates).reject(&:blank?))
+        begin
+          @work_process.sync_work_days!(Array(selected_dates).reject(&:blank?))
+        rescue => sync_err
+          Rails.logger.error "[WorkProcess#update sync_work_days!] #{sync_err.class}: #{sync_err.message}"
+        end
       end
-      redirect_to work_process_path(@work_process), notice: "공정이 수정되었습니다."
+      redirect_to work_process_path(@work_process), notice: "공정이 수정되었습니다. (#{@work_process.reload.process_name})"
     else
       render :edit, status: :unprocessable_entity
     end
   rescue => e
     Rails.logger.error "[WorkProcess#update] #{e.class}: #{e.message}\n#{e.backtrace.first(5).join("\n")}"
-    redirect_to edit_work_process_path(@work_process), alert: "저장 중 오류가 발생했습니다: #{e.message}"
+    redirect_to edit_work_process_path(@work_process), alert: "저장 오류: #{e.message}"
   end
 
   def destroy
