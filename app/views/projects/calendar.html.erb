@@ -170,9 +170,10 @@
               <% bar_color = bar[:project].color.presence || 'gold' %>
               <% text_color = bar[:project].theme_color_hex %>
               
-              <%= link_to work_process_path(work_process),
-                  data: { work_day_id: bar[:work_day].id, process_name: work_process.process_name },
+              <%= content_tag :div,
+                  data: { work_day_id: bar[:work_day].id, process_name: work_process.process_name, href: work_process_path(work_process) },
                   class: "calendar-bar",
+                  onclick: "if(!window._dragOccurred){window.location.href='#{work_process_path(work_process)}'}",
                   style: "
                     position:absolute;
                     left:#{left_percent}%;
@@ -180,7 +181,7 @@
                     top:#{top_offset}px;
                     height:18px;
                     color:#{text_color};
-                    text-decoration:none;
+                    cursor:pointer;
                     display:flex;
                     align-items:center;
                     padding:0 2px;
@@ -192,6 +193,12 @@
                     text-overflow:ellipsis;
                     box-sizing:border-box;
                     touch-action:none;
+                    -webkit-touch-callout:none;
+                    -webkit-user-select:none;
+                    user-select:none;
+                    background:#{text_color}1a;
+                    border:1px solid #{text_color}4d;
+                    border-radius:4px;
                   " do %>
                 <span style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">
                   <%= work_process.process_name %>
@@ -411,6 +418,7 @@ document.addEventListener('DOMContentLoaded', function() {
   var dragState = null;
   var longPressTimer = null;
   var ghostEl = null;
+  var lastHighlightedCell = null;
   var LONG_PRESS_MS = 300;
 
   document.querySelectorAll('.calendar-bar').forEach(function(bar) {
@@ -421,12 +429,16 @@ document.addEventListener('DOMContentLoaded', function() {
     var bar = e.target.closest('.calendar-bar');
     if (!bar) return;
 
+    e.preventDefault();
+
     var touch = e.touches[0];
     var startX = touch.clientX;
     var startY = touch.clientY;
 
     longPressTimer = setTimeout(function() {
       if (navigator.vibrate) navigator.vibrate(30);
+
+      window._dragOccurred = true;
 
       dragState = {
         workDayId: bar.dataset.workDayId,
@@ -443,7 +455,38 @@ document.addEventListener('DOMContentLoaded', function() {
 
       bar.style.opacity = '0.3';
     }, LONG_PRESS_MS);
-  }, { passive: true });
+  }, { passive: false });
+
+  // Helper: find date cell nearest to given coordinates
+  function findNearestDateCell(x, y) {
+    var cells = document.querySelectorAll('.calendar-date-cell');
+    var best = null;
+    var bestDist = Infinity;
+    cells.forEach(function(cell) {
+      var rect = cell.getBoundingClientRect();
+      if (x >= rect.left && x <= rect.right) {
+        var cy = rect.top + rect.height / 2;
+        var dist = Math.abs(y - cy);
+        if (dist < bestDist) {
+          bestDist = dist;
+          best = cell;
+        }
+      }
+    });
+    if (!best) {
+      cells.forEach(function(cell) {
+        var rect = cell.getBoundingClientRect();
+        var cx = rect.left + rect.width / 2;
+        var cy = rect.top + rect.height / 2;
+        var dist = Math.sqrt(Math.pow(x - cx, 2) + Math.pow(y - cy, 2));
+        if (dist < bestDist) {
+          bestDist = dist;
+          best = cell;
+        }
+      });
+    }
+    return best;
+  }
 
   document.addEventListener('touchmove', function(e) {
     if (!dragState) {
@@ -464,11 +507,11 @@ document.addEventListener('DOMContentLoaded', function() {
       cell.style.outlineOffset = '';
     });
 
-    var target = document.elementFromPoint(touch.clientX, touch.clientY);
-    var dateCell = target ? target.closest('.calendar-date-cell') : null;
+    var dateCell = findNearestDateCell(touch.clientX, touch.clientY);
     if (dateCell) {
       dateCell.style.outline = '2px solid #2563eb';
       dateCell.style.outlineOffset = '-2px';
+      lastHighlightedCell = dateCell;
     }
   }, { passive: false });
 
@@ -478,16 +521,20 @@ document.addEventListener('DOMContentLoaded', function() {
 
     if (!dragState) return;
 
+    if (ghostEl) { ghostEl.remove(); ghostEl = null; }
+
     var touch = e.changedTouches[0];
-    var target = document.elementFromPoint(touch.clientX, touch.clientY);
-    var dateCell = target ? target.closest('.calendar-date-cell') : null;
+    var dateCell = findNearestDateCell(touch.clientX, touch.clientY);
+
+    if (!dateCell && lastHighlightedCell) {
+      dateCell = lastHighlightedCell;
+    }
 
     document.querySelectorAll('.calendar-date-cell').forEach(function(cell) {
       cell.style.outline = '';
       cell.style.outlineOffset = '';
     });
 
-    if (ghostEl) { ghostEl.remove(); ghostEl = null; }
     if (dragState.originBar) dragState.originBar.style.opacity = '1';
 
     if (dateCell && dateCell.dataset.date) {
@@ -519,6 +566,8 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     dragState = null;
+    lastHighlightedCell = null;
+    setTimeout(function() { window._dragOccurred = false; }, 100);
   }, { passive: true });
 
   document.addEventListener('touchcancel', function() {
@@ -528,6 +577,8 @@ document.addEventListener('DOMContentLoaded', function() {
     if (ghostEl) { ghostEl.remove(); ghostEl = null; }
     if (dragState && dragState.originBar) dragState.originBar.style.opacity = '1';
     dragState = null;
+    lastHighlightedCell = null;
+    window._dragOccurred = false;
 
     document.querySelectorAll('.calendar-date-cell').forEach(function(cell) {
       cell.style.outline = '';
