@@ -257,9 +257,10 @@
     id: p.id,
     name: p.project_name,
     color: p.theme_color_hex,
-    processes: p.work_processes.sort_by { |wp| [wp.position || 9999, wp.id] }.map { |wp|
-      { id: wp.id, name: wp.process_name }
-    }
+    processes: p.work_processes
+      .sort_by { |wp| [wp.position || 9999, wp.id] }
+      .group_by(&:process_name)
+      .map { |name, wps| { id: wps.first.id, name: name } }
   }
 } %>
 
