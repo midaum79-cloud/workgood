@@ -1,4 +1,5 @@
 class PasswordResetsController < ApplicationController
+  layout false
   before_action :load_user_from_token, only: %i[edit update]
 
   # GET /password_resets/new
