@@ -28,17 +28,16 @@ class WorkProcessesController < ApplicationController
   end
 
   def update
-    respond_to do |format|
-      if @work_process.update(work_process_params)
-        selected_dates = params.dig(:work_process, :selected_dates)
-        if selected_dates.present?
-          @work_process.sync_work_days!(Array(selected_dates).reject(&:blank?))
-        elsif @work_process.start_date.present? && @work_process.work_days.empty?
-          # Auto-fill work_days from start_date..end_date range for calendar display
-          date_range = (@work_process.start_date.to_date..(@work_process.end_date || @work_process.start_date).to_date).to_a
-          date_range.each { |d| @work_process.work_days.find_or_create_by!(work_date: d) }
-        end
+    if @work_process.update(work_process_params)
+      selected_dates = params.dig(:work_process, :selected_dates)
+      if selected_dates.present?
+        @work_process.sync_work_days!(Array(selected_dates).reject(&:blank?))
+      elsif @work_process.start_date.present? && @work_process.work_days.empty?
+        date_range = (@work_process.start_date.to_date..(@work_process.end_date || @work_process.start_date).to_date).to_a
+        date_range.each { |d| @work_process.work_days.find_or_create_by!(work_date: d) }
+      end
 
+      respond_to do |format|
         format.turbo_stream do
           render turbo_stream: turbo_stream.replace(
             "work_process_costs_#{@work_process.id}",
@@ -47,9 +46,9 @@ class WorkProcessesController < ApplicationController
           )
         end
         format.html { redirect_to work_process_path(@work_process, year: params[:year], month: params[:month]), notice: "공정이 수정되었습니다." }
-      else
-        format.html { render :edit, status: :unprocessable_entity }
       end
+    else
+      render :edit, status: :unprocessable_entity
     end
   end
 
