@@ -71,15 +71,16 @@
     <% if @calendar_projects.any? %>
       <div style="display:flex; flex-wrap:wrap; gap:6px; margin-bottom:14px; align-items:center;">
         <% @calendar_projects.each do |project| %>
-          <div style="
+          <%= link_to project_calendar_project_path(project), style: "
             display:inline-flex;
             align-items:center;
             gap:5px;
             padding:5px 12px;
             border-radius:999px;
-            border:1.5px solid <%= project.theme_color_hex %>;
+            border:1.5px solid #{project.theme_color_hex};
             background:white;
-          ">
+            text-decoration:none;
+          " do %>
             <span style="
               width:8px; height:8px;
               border-radius:50%;
@@ -93,7 +94,7 @@
               font-weight:800;
               white-space:nowrap;
             "><%= project.project_name %></span>
-          </div>
+          <% end %>
         <% end %>
       </div>
     <% end %>
