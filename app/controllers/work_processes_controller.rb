@@ -32,15 +32,14 @@ class WorkProcessesController < ApplicationController
       selected_dates = params.dig(:work_process, :selected_dates)
       if selected_dates.present?
         @work_process.sync_work_days!(Array(selected_dates).reject(&:blank?))
-      elsif @work_process.start_date.present? && @work_process.work_days.empty?
-        date_range = (@work_process.start_date.to_date..(@work_process.end_date || @work_process.start_date).to_date).to_a
-        date_range.each { |d| @work_process.work_days.find_or_create_by!(work_date: d) }
       end
-
       redirect_to work_process_path(@work_process), notice: "공정이 수정되었습니다."
     else
       render :edit, status: :unprocessable_entity
     end
+  rescue => e
+    Rails.logger.error "[WorkProcess#update] #{e.class}: #{e.message}\n#{e.backtrace.first(5).join("\n")}"
+    redirect_to edit_work_process_path(@work_process), alert: "저장 중 오류가 발생했습니다: #{e.message}"
   end
 
   def destroy
