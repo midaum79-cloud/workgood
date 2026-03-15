@@ -17,3 +17,6 @@ services:
         generateValue: true
       - key: DATABASE_URL
         sync: false
+    customDomains:
+      - name: workhead.co.kr
+      - name: www.workhead.co.kr
