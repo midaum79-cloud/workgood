@@ -73,11 +73,7 @@ class WorkProcessesController < ApplicationController
       :labor_cost,
       :budget,
       :memo,
-      :description,
-      :vendor_input_method,
-      :new_vendor_name,
-      :new_vendor_contact_name,
-      :new_vendor_phone
+      :description
     )
   end
 
