@@ -23,7 +23,7 @@
       <div style="font-size:12px; font-weight:700; color:rgba(255,255,255,0.6); margin-bottom:6px;">현재 요금제</div>
       <div style="font-size:26px; font-weight:900; margin-bottom:6px;"><%= current_user.plan_label %> 플랜</div>
       <div style="font-size:14px; color:rgba(255,255,255,0.7);">
-        프로젝트 <%= @project_count %>개 사용 중 /
+        공사현장 <%= @project_count %>개 사용 중 /
         <%= @plan_limit == Float::INFINITY ? "무제한" : "최대 #{@plan_limit}개" %>
       </div>
 
