@@ -252,8 +252,18 @@
 
   <div id="bsStep2" style="display:none; padding:0 16px 20px 16px;">
     <button onclick="bsGoBack()" style="background:none; border:none; font-size:14px; font-weight:800; color:#2563eb; cursor:pointer; padding:0 0 12px 0; font-family:inherit;">← 현장 다시 선택</button>
-    <div style="font-size:14px; font-weight:800; color:#6b7280; margin-bottom:10px;">공정을 선택하세요</div>
-    <div id="bsProcessList" style="display:flex; flex-wrap:wrap; gap:8px;"></div>
+    <div style="font-size:14px; font-weight:800; color:#6b7280; margin-bottom:10px;">📋 기존 공정에 날짜 추가</div>
+    <div id="bsProcessList" style="display:flex; flex-wrap:wrap; gap:8px; margin-bottom:20px;"></div>
+
+    <div style="font-size:14px; font-weight:800; color:#6b7280; margin-bottom:10px;">⚡ 기본 공정 빠른 추가</div>
+    <div id="bsPresetList" style="display:flex; flex-wrap:wrap; gap:8px; margin-bottom:20px;"></div>
+
+    <div style="font-size:14px; font-weight:800; color:#6b7280; margin-bottom:10px;">✏️ 추가 공정 직접 입력</div>
+    <div style="display:flex; gap:8px;">
+      <input type="text" id="bsCustomProcessName" placeholder="공정명을 입력하세요"
+        style="flex:1; height:46px; border:1px solid #dcdcdc; border-radius:12px; padding:0 14px; font-size:15px; font-weight:700; box-sizing:border-box;">
+      <button type="button" onclick="bsQuickCreateCustom()" style="padding:0 18px; height:46px; border:none; border-radius:12px; background:#374151; color:white; font-size:15px; font-weight:900; cursor:pointer; white-space:nowrap;">추가</button>
+    </div>
   </div>
 </div>
 
@@ -275,6 +285,8 @@
 var calendarProjects = <%= raw all_projects_data.to_json %>;
 var bsSelectedDate = null;
 var bsSelectedProjectId = null;
+var presetResidential = ["철거", "확장", "샤시", "목공", "전기", "에어컨", "타일", "도기", "필름", "도배", "바닥", "돔천장", "탄성코트", "가구", "조명", "청소"];
+var presetCommercial = ["철거", "설비", "경량", "목공", "전기", "냉난방", "유리공사", "금속공사", "자동문", "페인트", "도배", "바닥", "가구", "간판", "사인", "조명", "청소"];
 
 function openBottomSheet(dateStr) {
   bsSelectedDate = dateStr;
@@ -289,6 +301,10 @@ function openBottomSheet(dateStr) {
 
   if (calendarProjects.length === 0) {
     list.innerHTML = '<div style="text-align:center; padding:20px; color:#9ca3af; font-size:14px; font-weight:700;">등록된 현장이 없습니다.</div>';
+  } else if (calendarProjects.length === 1) {
+    // 현장이 1개면 바로 공정 선택으로
+    document.getElementById('bsStep1').style.display = 'none';
+    bsSelectProject(calendarProjects[0].id);
   } else {
     calendarProjects.forEach(function(project) {
       var btn = document.createElement('button');
@@ -314,8 +330,8 @@ function openBottomSheet(dateStr) {
     });
   }
 
-  document.getElementById('bsStep1').style.display = 'block';
-  document.getElementById('bsStep2').style.display = 'none';
+  document.getElementById('bsStep1').style.display = (calendarProjects.length === 1) ? 'none' : 'block';
+  document.getElementById('bsStep2').style.display = (calendarProjects.length === 1) ? 'block' : 'none';
 
   document.getElementById('bsOverlay').style.opacity = '1';
   document.getElementById('bsOverlay').style.visibility = 'visible';
@@ -345,30 +361,85 @@ function bsSelectProject(projectId) {
   document.getElementById('bsStep1').style.display = 'none';
   document.getElementById('bsStep2').style.display = 'block';
 
+  // 1. Existing processes
   var list = document.getElementById('bsProcessList');
   list.innerHTML = '';
 
   if (project.processes.length === 0) {
-    list.innerHTML = '<div style="text-align:center; padding:20px; color:#9ca3af; font-size:14px; font-weight:700; width:100%;">등록된 공정이 없습니다.</div>';
-    return;
+    list.innerHTML = '<div style="color:#9ca3af; font-size:13px; font-weight:700; width:100%;">등록된 공정이 없습니다.</div>';
+  } else {
+    var seenNames = {};
+    var uniqueProcesses = project.processes.filter(function(proc) {
+      if (seenNames[proc.name]) return false;
+      seenNames[proc.name] = true;
+      return true;
+    });
+
+    uniqueProcesses.forEach(function(proc) {
+      var btn = document.createElement('button');
+      btn.type = 'button';
+      btn.onclick = function() { bsSaveProcess(proc.id); };
+      btn.style.cssText = 'padding:10px 16px; border:1.5px solid ' + project.color + '; border-radius:14px; background:white; color:' + project.color + '; font-size:14px; font-weight:800; cursor:pointer; font-family:inherit;';
+      btn.textContent = proc.name;
+      list.appendChild(btn);
+    });
   }
 
-  // Deduplicate by name (keep first occurrence of each name)
-  var seenNames = {};
-  var uniqueProcesses = project.processes.filter(function(proc) {
-    if (seenNames[proc.name]) return false;
-    seenNames[proc.name] = true;
-    return true;
-  });
+  // 2. Preset process buttons
+  var existingNames = project.processes.map(function(p) { return p.name; });
+  var presetProcesses = presetResidential; // default to residential
+  var presetList = document.getElementById('bsPresetList');
+  presetList.innerHTML = '';
 
-  uniqueProcesses.forEach(function(proc) {
+  presetProcesses.forEach(function(name) {
+    if (existingNames.indexOf(name) >= 0) return;
     var btn = document.createElement('button');
     btn.type = 'button';
-    btn.onclick = function() { bsSaveProcess(proc.id); };
-    btn.style.cssText = 'padding:12px 18px; border:1.5px solid ' + project.color + '; border-radius:14px; background:white; color:' + project.color + '; font-size:14px; font-weight:800; cursor:pointer; font-family:inherit; transition:all 0.15s;';
-    btn.textContent = proc.name;
-    list.appendChild(btn);
+    btn.onclick = function() { bsQuickCreate(name); };
+    btn.style.cssText = 'padding:10px 14px; border:none; border-radius:12px; background:#eef2f7; color:#111827; font-size:13px; font-weight:800; cursor:pointer; font-family:inherit;';
+    btn.textContent = name;
+    presetList.appendChild(btn);
   });
+
+  if (presetList.children.length === 0) {
+    presetList.innerHTML = '<div style="color:#9ca3af; font-size:13px; font-weight:700;">모든 기본 공정이 이미 등록되어 있습니다.</div>';
+  }
+
+  // 3. Clear custom input
+  var customInput = document.getElementById('bsCustomProcessName');
+  if (customInput) customInput.value = '';
+}
+
+function bsQuickCreate(processName) {
+  if (!bsSelectedDate || !bsSelectedProjectId || !processName) return;
+  var csrfToken = document.querySelector('meta[name="csrf-token"]').content;
+
+  fetch('/work_processes/quick_create', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': csrfToken },
+    body: JSON.stringify({
+      project_id: bsSelectedProjectId,
+      process_name: processName,
+      work_date: bsSelectedDate
+    })
+  })
+  .then(function(res) { return res.json(); })
+  .then(function(data) {
+    if (data.success) {
+      closeBottomSheet();
+      window.location.reload();
+    } else {
+      alert(data.error || '공정 추가에 실패했습니다.');
+    }
+  })
+  .catch(function() { alert('네트워크 오류가 발생했습니다.'); });
+}
+
+function bsQuickCreateCustom() {
+  var input = document.getElementById('bsCustomProcessName');
+  var name = (input.value || '').trim();
+  if (!name) { alert('공정명을 입력해주세요.'); return; }
+  bsQuickCreate(name);
 }
 
 function bsSaveProcess(workProcessId) {
