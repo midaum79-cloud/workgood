@@ -413,7 +413,7 @@
           <span>홈</span>
         <% end %>
 
-        <% project_show_match = current_path.match(/\A\/projects\/(\d+)\z/) %>
+        <% project_show_match = current_path.match(/\A\/projects\/(\d+)(\/calendar)?\z/) %>
         <% if current_path == '/projects/calendar' %>
           <div class="bottom-nav-item" onclick="document.getElementById('ongoing-processes-modal').style.display='flex'" style="cursor:pointer;">
             <span class="bottom-nav-icon">➕</span>
