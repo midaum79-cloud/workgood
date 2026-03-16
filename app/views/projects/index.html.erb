@@ -211,25 +211,6 @@
 
 
   <div style="display:flex; gap:10px; margin-bottom:18px;">
-    <%= link_to "전체",
-        projects_path(
-          view_mode: @view_mode,
-          year: @calendar_year,
-          month: @calendar_month,
-          selected_date: @selected_date
-        ),
-        style: "
-          flex:1;
-          text-align:center;
-          padding:12px 0;
-          border-radius:14px;
-          text-decoration:none;
-          font-size:15px;
-          font-weight:800;
-          background:#{@selected_status.blank? ? '#111827' : '#f3f4f6'};
-          color:#{@selected_status.blank? ? 'white' : '#374151'};
-        " %>
-
     <% ["진행중", "예정", "완료"].each do |status| %>
       <%= link_to status,
           projects_path(
@@ -251,6 +232,26 @@
             color:#{@selected_status == status ? 'white' : '#374151'};
           " %>
     <% end %>
+
+    <%= link_to "전체",
+        projects_path(
+          status: "all",
+          view_mode: @view_mode,
+          year: @calendar_year,
+          month: @calendar_month,
+          selected_date: @selected_date
+        ),
+        style: "
+          flex:1;
+          text-align:center;
+          padding:12px 0;
+          border-radius:14px;
+          text-decoration:none;
+          font-size:15px;
+          font-weight:800;
+          background:#{@selected_status == 'all' ? '#111827' : '#f3f4f6'};
+          color:#{@selected_status == 'all' ? 'white' : '#374151'};
+        " %>
   </div>
 
 

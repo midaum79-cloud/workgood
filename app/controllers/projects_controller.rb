@@ -4,7 +4,7 @@ class ProjectsController < ApplicationController
   before_action :set_project, only: %i[show edit update destroy project_calendar]
 
   def index
-    @selected_status = params[:status]
+    @selected_status = params[:status].presence || '진행중'
     @view_mode = params[:view_mode].presence || "month"
 
     all_projects = current_user.projects
@@ -12,7 +12,9 @@ class ProjectsController < ApplicationController
                                .order(created_at: :desc)
 
     @projects =
-      if %w[진행중 예정 완료].include?(@selected_status)
+      if @selected_status == 'all'
+        all_projects
+      elsif %w[진행중 예정 완료].include?(@selected_status)
         all_projects.select { |p| p.effective_status == @selected_status }
       else
         all_projects
