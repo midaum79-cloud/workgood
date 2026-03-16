@@ -26,51 +26,78 @@
       </div>
     </div>
 
-    <%# Memo form %>
-    <%= form_tag update_daily_memo_path, method: :post do %>
+    <%= form_tag update_daily_memo_path, method: :post, id: "memoForm" do %>
       <%= hidden_field_tag :memo_date, @memo_date %>
-      <div style="background:white; border-radius:16px; padding:16px; box-shadow:0 2px 10px rgba(0,0,0,0.04);">
+
+      <%# VIEW MODE - 읽기 전용 %>
+      <div id="memoViewMode" style="background:white; border-radius:16px; padding:16px; box-shadow:0 2px 10px rgba(0,0,0,0.04);">
         <div style="font-size:15px; font-weight:900; color:#111827; margin-bottom:10px;">💡 메모 내용</div>
+        <% if @memo.content.present? %>
+          <div style="font-size:15px; font-weight:700; color:#374151; line-height:1.8; white-space:pre-wrap; padding:14px; background:#fafafa; border-radius:14px; border:1.5px solid #e5e7eb; min-height:100px;"><%= @memo.content %></div>
+        <% else %>
+          <div style="padding:40px 14px; text-align:center; color:#9ca3af; font-size:14px; font-weight:700; background:#fafafa; border-radius:14px; border:1.5px dashed #d1d5db;">
+            아직 작성된 메모가 없습니다.<br>아래 '수정' 버튼을 눌러 작성하세요.
+          </div>
+        <% end %>
+      </div>
+
+      <%# EDIT MODE - 수정 모드 %>
+      <div id="memoEditMode" style="display:none; background:white; border-radius:16px; padding:16px; box-shadow:0 2px 10px rgba(0,0,0,0.04);">
+        <div style="font-size:15px; font-weight:900; color:#111827; margin-bottom:10px;">✏️ 메모 수정</div>
         <textarea name="content" id="memoContent"
           placeholder="준비물, 할 일, 체크리스트 등을 자유롭게 작성하세요...&#10;&#10;예시:&#10;✅ 압착기 1구 2구&#10;□ 레벨기, 자, 싸인펜&#10;□ 마스킹, 투명테이프&#10;□ 대차, 사다리"
-          style="width:100%; min-height:250px; padding:14px; border:1.5px solid #e5e7eb; border-radius:14px; font-size:15px; font-weight:700; font-family:inherit; resize:vertical; box-sizing:border-box; background:#fafafa; line-height:1.7; outline:none;"
+          style="width:100%; min-height:250px; padding:14px; border:1.5px solid <%= @is_today ? '#fde68a' : '#bfdbfe' %>; border-radius:14px; font-size:15px; font-weight:700; font-family:inherit; resize:vertical; box-sizing:border-box; background:#fffdf7; line-height:1.7; outline:none;"
         ><%= @memo.content %></textarea>
       </div>
 
-      <%# Fixed bottom save bar %>
-      <div id="memoBottomBar" style="position:fixed; bottom:0; left:0; right:0; background:white; border-top:1px solid #ececec; padding:12px 16px; z-index:30; max-width:430px; margin:0 auto; display:flex; gap:10px;">
-        <%= link_to "← 홈으로", root_path,
-            style: "flex:1; display:block; text-align:center; padding:14px; background:#f3f4f6; color:#374151; border-radius:12px; font-size:15px; font-weight:800; text-decoration:none;" %>
-        <button type="submit"
-          style="flex:2; padding:14px; background:<%= @is_today ? '#f59e0b' : '#3b82f6' %>; color:white; border:none; border-radius:12px; font-size:16px; font-weight:900; cursor:pointer; font-family:inherit;">
-          저장하기
-        </button>
-      </div>
-    <% end %>
+    <%# Bottom bar - VIEW mode %>
+    <div id="bottomBarView" style="position:fixed; bottom:0; left:0; right:0; background:white; border-top:1px solid #ececec; padding:12px 16px; z-index:30; max-width:430px; margin:0 auto; display:flex; gap:10px;">
+      <%= link_to "← 홈으로", root_path,
+          style: "flex:1; display:block; text-align:center; padding:14px; background:#f3f4f6; color:#374151; border-radius:12px; font-size:15px; font-weight:800; text-decoration:none;" %>
+      <button type="button" onclick="enterEditMode()"
+        style="flex:2; padding:14px; background:<%= @is_today ? '#f59e0b' : '#3b82f6' %>; color:white; border:none; border-radius:12px; font-size:16px; font-weight:900; cursor:pointer; font-family:inherit;">
+        ✏️ 수정
+      </button>
+    </div>
 
+    <%# Bottom bar - EDIT mode %>
+    <div id="bottomBarEdit" style="display:none; position:fixed; bottom:0; left:0; right:0; background:white; border-top:1px solid #ececec; padding:12px 16px; z-index:30; max-width:430px; margin:0 auto; display:none; gap:10px;">
+      <button type="button" onclick="cancelEdit()"
+        style="flex:1; padding:14px; background:#f3f4f6; color:#374151; border:none; border-radius:12px; font-size:15px; font-weight:800; cursor:pointer; font-family:inherit;">
+        취소
+      </button>
+      <button type="submit"
+        style="flex:2; padding:14px; background:<%= @is_today ? '#16a34a' : '#16a34a' %>; color:white; border:none; border-radius:12px; font-size:16px; font-weight:900; cursor:pointer; font-family:inherit;">
+        ✅ 저장 완료
+      </button>
+    </div>
+
+    <% end %>
   </div>
 </div>
 
 <script>
-(function() {
-  var bottomBar = document.getElementById('memoBottomBar');
-  var textarea = document.getElementById('memoContent');
+function enterEditMode() {
+  document.getElementById('memoViewMode').style.display = 'none';
+  document.getElementById('memoEditMode').style.display = 'block';
+  document.getElementById('bottomBarView').style.display = 'none';
+  document.getElementById('bottomBarEdit').style.display = 'flex';
+  var ta = document.getElementById('memoContent');
+  ta.focus();
+  ta.setSelectionRange(ta.value.length, ta.value.length);
+}
+function cancelEdit() {
+  document.getElementById('memoViewMode').style.display = 'block';
+  document.getElementById('memoEditMode').style.display = 'none';
+  document.getElementById('bottomBarView').style.display = 'flex';
+  document.getElementById('bottomBarEdit').style.display = 'none';
+}
 
-  // Reposition bottom bar when virtual keyboard opens/closes
-  if (window.visualViewport) {
-    function adjustForKeyboard() {
-      var offset = window.innerHeight - window.visualViewport.height;
-      bottomBar.style.bottom = offset + 'px';
-    }
-    window.visualViewport.addEventListener('resize', adjustForKeyboard);
-    window.visualViewport.addEventListener('scroll', adjustForKeyboard);
-  }
-
-  // Prevent browser from scrolling page past header on focus
-  textarea.addEventListener('focus', function() {
-    setTimeout(function() {
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    }, 350);
+// Reposition bottom bars above keyboard
+if (window.visualViewport) {
+  window.visualViewport.addEventListener('resize', function() {
+    var offset = window.innerHeight - window.visualViewport.height;
+    document.getElementById('bottomBarEdit').style.bottom = offset + 'px';
   });
-})();
+}
 </script>
