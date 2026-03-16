@@ -90,50 +90,6 @@
   })();
   </script>
 
-  <script>
-  function toggleMemo(type) {
-    var box = document.getElementById(type === 'today' ? 'todayMemoBox' : 'tomorrowMemoBox');
-    box.style.display = box.style.display === 'none' ? 'block' : 'none';
-    if (box.style.display === 'block') {
-      box.querySelector('textarea').focus();
-    }
-  }
-
-  function saveMemo(type) {
-    var isToday = type === 'today';
-    var text = document.getElementById(isToday ? 'todayMemoText' : 'tomorrowMemoText').value;
-    var btn = document.getElementById(isToday ? 'todayMemoSaveBtn' : 'tomorrowMemoSaveBtn');
-    var today = new Date();
-    var memoDate;
-    if (isToday) {
-      memoDate = today.getFullYear() + '-' + String(today.getMonth()+1).padStart(2,'0') + '-' + String(today.getDate()).padStart(2,'0');
-    } else {
-      var tmr = new Date(today); tmr.setDate(tmr.getDate()+1);
-      memoDate = tmr.getFullYear() + '-' + String(tmr.getMonth()+1).padStart(2,'0') + '-' + String(tmr.getDate()).padStart(2,'0');
-    }
-    btn.textContent = '저장 중...';
-    btn.disabled = true;
-    fetch('<%= update_daily_memo_path %>', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
-        'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').content
-      },
-      body: 'memo_date=' + memoDate + '&content=' + encodeURIComponent(text)
-    }).then(function(r) { return r.json(); })
-    .then(function(data) {
-      btn.textContent = '✅ 저장됨!';
-      setTimeout(function() {
-        btn.textContent = '저장';
-        btn.disabled = false;
-      }, 1500);
-    }).catch(function() {
-      btn.textContent = '저장 실패';
-      btn.disabled = false;
-    });
-  }
-  </script>
-
   <div style="background:white; border-radius:20px; padding:18px; box-shadow:0 2px 10px rgba(0,0,0,0.04); margin-bottom:18px;">
     <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:12px;">
       <div>
@@ -156,18 +112,17 @@
           " %>
     </div>
 
-    <!-- 오늘 메모 버튼 -->
-    <button type="button" onclick="toggleMemo('today')" style="width:100%; padding:12px; background:#fffbeb; border:1.5px dashed #f59e0b; border-radius:12px; font-size:14px; font-weight:800; color:#b45309; cursor:pointer; margin-bottom:12px; display:flex; align-items:center; justify-content:center; gap:6px;">
-      📝 오늘 메모 <span style="font-size:12px; font-weight:700; color:#d97706;"><%= @today_memo&.content.present? ? '✅' : '(터치하여 작성)' %></span>
-    </button>
-    <div id="todayMemoBox" style="display:<%= @today_memo&.content.present? ? 'block' : 'none' %>; margin-bottom:12px;">
-      <textarea id="todayMemoText" placeholder="오늘 준비물, 할 일 등을 메모하세요..."
-        style="width:100%; min-height:100px; padding:12px; border:1.5px solid #e5e7eb; border-radius:12px; font-size:14px; font-weight:700; font-family:inherit; resize:vertical; box-sizing:border-box; background:#fffdf7;"><%= @today_memo&.content %></textarea>
-      <button type="button" onclick="saveMemo('today')" id="todayMemoSaveBtn"
-        style="margin-top:8px; width:100%; padding:10px; background:#f59e0b; color:white; border:none; border-radius:10px; font-size:14px; font-weight:800; cursor:pointer;">
-        저장
-      </button>
-    </div>
+    <!-- 오늘 메모 링크 -->
+    <%= link_to daily_memo_path(memo_date: Time.zone.today),
+        style: "display:flex; align-items:center; gap:10px; width:100%; padding:12px 14px; background:#fffbeb; border:1.5px solid #fde68a; border-radius:12px; text-decoration:none; margin-bottom:12px; box-sizing:border-box;" do %>
+      <span style="font-size:20px;">📝</span>
+      <span style="flex:1; font-size:14px; font-weight:800; color:#b45309;">오늘 메모</span>
+      <% if @today_memo&.content.present? %>
+        <span style="font-size:12px; font-weight:700; color:#16a34a;">✅ 작성됨</span>
+      <% else %>
+        <span style="font-size:12px; font-weight:700; color:#d97706;">터치하여 작성 →</span>
+      <% end %>
+    <% end %>
 
     <% if @today_work_processes.any? %>
       <div style="display:flex; flex-direction:column; gap:10px;">
@@ -216,18 +171,17 @@
           " %>
     </div>
 
-    <!-- 내일 메모 버튼 -->
-    <button type="button" onclick="toggleMemo('tomorrow')" style="width:100%; padding:12px; background:#eff6ff; border:1.5px dashed #3b82f6; border-radius:12px; font-size:14px; font-weight:800; color:#1d4ed8; cursor:pointer; margin-bottom:12px; display:flex; align-items:center; justify-content:center; gap:6px;">
-      📝 내일 메모 <span style="font-size:12px; font-weight:700; color:#2563eb;"><%= @tomorrow_memo&.content.present? ? '✅' : '(터치하여 작성)' %></span>
-    </button>
-    <div id="tomorrowMemoBox" style="display:<%= @tomorrow_memo&.content.present? ? 'block' : 'none' %>; margin-bottom:12px;">
-      <textarea id="tomorrowMemoText" placeholder="내일 준비물, 할 일 등을 메모하세요..."
-        style="width:100%; min-height:100px; padding:12px; border:1.5px solid #e5e7eb; border-radius:12px; font-size:14px; font-weight:700; font-family:inherit; resize:vertical; box-sizing:border-box; background:#f0f5ff;"><%= @tomorrow_memo&.content %></textarea>
-      <button type="button" onclick="saveMemo('tomorrow')" id="tomorrowMemoSaveBtn"
-        style="margin-top:8px; width:100%; padding:10px; background:#3b82f6; color:white; border:none; border-radius:10px; font-size:14px; font-weight:800; cursor:pointer;">
-        저장
-      </button>
-    </div>
+    <!-- 내일 메모 링크 -->
+    <%= link_to daily_memo_path(memo_date: Time.zone.tomorrow),
+        style: "display:flex; align-items:center; gap:10px; width:100%; padding:12px 14px; background:#eff6ff; border:1.5px solid #bfdbfe; border-radius:12px; text-decoration:none; margin-bottom:12px; box-sizing:border-box;" do %>
+      <span style="font-size:20px;">📋</span>
+      <span style="flex:1; font-size:14px; font-weight:800; color:#1d4ed8;">내일 메모</span>
+      <% if @tomorrow_memo&.content.present? %>
+        <span style="font-size:12px; font-weight:700; color:#16a34a;">✅ 작성됨</span>
+      <% else %>
+        <span style="font-size:12px; font-weight:700; color:#2563eb;">터치하여 작성 →</span>
+      <% end %>
+    <% end %>
 
     <% if @tomorrow_work_processes.any? %>
       <div style="display:flex; flex-direction:column; gap:10px;">
