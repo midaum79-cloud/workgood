@@ -35,6 +35,61 @@
     </div>
   </div>
 
+  <!-- Live Clock Widget -->
+  <div style="background:linear-gradient(135deg, #1e293b 0%, #334155 100%); border-radius:20px; padding:20px 22px; margin-bottom:16px; position:relative; overflow:hidden;">
+    <div style="position:absolute; top:-30px; right:-30px; width:100px; height:100px; border-radius:50%; background:rgba(255,255,255,0.04);"></div>
+    <div style="position:absolute; bottom:-20px; left:-20px; width:70px; height:70px; border-radius:50%; background:rgba(255,255,255,0.03);"></div>
+
+    <div style="display:flex; justify-content:space-between; align-items:center;">
+      <div>
+        <div id="clockDate" style="font-size:15px; font-weight:800; color:rgba(255,255,255,0.6); margin-bottom:4px; letter-spacing:0.5px;"></div>
+        <div style="display:flex; align-items:center; gap:8px;">
+          <div id="clockTime" style="font-size:36px; font-weight:900; color:white; font-variant-numeric:tabular-nums; letter-spacing:-1px;"></div>
+          <div id="clockSeconds" style="font-size:18px; font-weight:800; color:#60a5fa; font-variant-numeric:tabular-nums; min-width:28px;"></div>
+        </div>
+      </div>
+      <div style="text-align:right;">
+        <div id="clockDay" style="font-size:22px; font-weight:900; color:#60a5fa;"></div>
+        <div style="display:flex; align-items:center; gap:6px; justify-content:flex-end; margin-top:4px;">
+          <div id="clockPulse" style="width:8px; height:8px; border-radius:50%; background:#34d399;"></div>
+          <div style="font-size:12px; font-weight:700; color:rgba(255,255,255,0.5);">오늘도 화이팅!</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+  (function() {
+    var days = ['일요일', '월요일', '화요일', '수요일', '목요일', '금요일', '토요일'];
+    function pad(n) { return n < 10 ? '0' + n : n; }
+    function tick() {
+      var now = new Date();
+      var m = now.getMonth() + 1;
+      var d = now.getDate();
+      var h = now.getHours();
+      var mi = now.getMinutes();
+      var s = now.getSeconds();
+      var dayName = days[now.getDay()];
+      var ampm = h < 12 ? '오전' : '오후';
+      var h12 = h % 12 || 12;
+
+      var dateEl = document.getElementById('clockDate');
+      var timeEl = document.getElementById('clockTime');
+      var secEl = document.getElementById('clockSeconds');
+      var dayEl = document.getElementById('clockDay');
+      var pulseEl = document.getElementById('clockPulse');
+
+      if (dateEl) dateEl.textContent = now.getFullYear() + '년 ' + m + '월 ' + d + '일';
+      if (timeEl) timeEl.textContent = ampm + ' ' + h12 + ':' + pad(mi);
+      if (secEl) secEl.textContent = ':' + pad(s);
+      if (dayEl) dayEl.textContent = dayName;
+      if (pulseEl) pulseEl.style.opacity = s % 2 === 0 ? '1' : '0.3';
+    }
+    tick();
+    setInterval(tick, 1000);
+  })();
+  </script>
+
   <div style="background:white; border-radius:20px; padding:18px; box-shadow:0 2px 10px rgba(0,0,0,0.04); margin-bottom:18px;">
     <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:12px;">
       <div>
