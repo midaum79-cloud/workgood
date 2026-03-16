@@ -9,6 +9,7 @@ class WorkProcess < ApplicationRecord
 
   def effective_status(reference_date = Date.current)
     target_day = reference_date.to_date
+    now = Time.zone.now
 
     # Prefer work_days for accurate date calculation
     dates = work_days.order(:work_date).pluck(:work_date)
@@ -19,6 +20,8 @@ class WorkProcess < ApplicationRecord
         "예정"
       elsif target_day > end_on
         "완료"
+      elsif target_day == end_on && now.hour >= 18
+        "완료"
       else
         "진행중"
       end
@@ -28,6 +31,8 @@ class WorkProcess < ApplicationRecord
       if target_day < start_on
         "예정"
       elsif target_day > end_on
+        "완료"
+      elsif target_day == end_on && now.hour >= 18
         "완료"
       else
         "진행중"
