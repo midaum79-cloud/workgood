@@ -525,7 +525,7 @@
         <% end %>
 
         <!-- 사용 방법 안내 -->
-        <%= link_to pages_guide_path, class: "drawer-item", onclick: "closeDrawer()", style: "background:#eff6ff;" do %>
+        <%= link_to guide_path, class: "drawer-item", onclick: "closeDrawer()", style: "background:#eff6ff;" do %>
           <span class="drawer-item-icon">📘</span> 일머리 사용 설명서 <span style="margin-left:auto; font-size:10px; font-weight:800; background:#dbeafe; color:#1d4ed8; padding:2px 8px; border-radius:999px;">NEW</span>
         <% end %>
 
@@ -573,9 +573,6 @@
         <div class="drawer-divider"></div>
 
         <!-- 고객지원 -->
-        <%= link_to guide_path, class: "drawer-item", onclick: "closeDrawer()" do %>
-          <span class="drawer-item-icon">📖</span> 일머리 사용설명서
-        <% end %>
         <%= link_to announcements_path, class: "drawer-item", onclick: "closeDrawer()" do %>
           <span class="drawer-item-icon">📢</span> 공지사항 / 문의
         <% end %>
