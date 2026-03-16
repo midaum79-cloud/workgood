@@ -1,6 +1,6 @@
 class ProcessTemplatesController < ApplicationController
   def index
-    ProcessTemplate.seed_defaults! if ProcessTemplate.count == 0
+    ProcessTemplate.seed_defaults! unless ProcessTemplate.where(is_default: true).exists?
     @residential_templates = ProcessTemplate.residential
     @commercial_templates  = ProcessTemplate.commercial
     @templates             = ProcessTemplate.ordered
