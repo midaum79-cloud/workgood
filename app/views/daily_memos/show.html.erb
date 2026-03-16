@@ -100,4 +100,9 @@ if (window.visualViewport) {
     document.getElementById('bottomBarEdit').style.bottom = offset + 'px';
   });
 }
+
+// Auto-enter edit mode if memo is empty
+<% unless @memo.content.present? %>
+  enterEditMode();
+<% end %>
 </script>
