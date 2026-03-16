@@ -460,7 +460,10 @@ document.addEventListener('DOMContentLoaded', function() {
   var ghostEl = null;
   var lastHighlightedCell = null;
   var touchedBar = null;
+  var touchStartX = 0;
+  var touchStartY = 0;
   var LONG_PRESS_MS = 300;
+  var MOVE_THRESHOLD = 10;
 
   document.querySelectorAll('.calendar-bar').forEach(function(bar) {
     bar.addEventListener('contextmenu', function(e) { e.preventDefault(); });
@@ -476,6 +479,8 @@ document.addEventListener('DOMContentLoaded', function() {
     var touch = e.touches[0];
     var startX = touch.clientX;
     var startY = touch.clientY;
+    touchStartX = startX;
+    touchStartY = startY;
 
     longPressTimer = setTimeout(function() {
       if (navigator.vibrate) navigator.vibrate(30);
@@ -535,7 +540,16 @@ document.addEventListener('DOMContentLoaded', function() {
 
   document.addEventListener('touchmove', function(e) {
     if (!dragState) {
-      if (longPressTimer) { clearTimeout(longPressTimer); longPressTimer = null; }
+      // Only cancel long press if moved more than threshold (Android fires micro-movements)
+      if (longPressTimer) {
+        var touch = e.touches[0];
+        var dx = touch.clientX - touchStartX;
+        var dy = touch.clientY - touchStartY;
+        if (Math.sqrt(dx*dx + dy*dy) > MOVE_THRESHOLD) {
+          clearTimeout(longPressTimer);
+          longPressTimer = null;
+        }
+      }
       return;
     }
 
