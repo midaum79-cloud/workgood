@@ -55,6 +55,7 @@
               month: @prev_month.month,
               selected_date: @selected_date
             ),
+            id: "prevMonthLink",
             style: "text-decoration:none; color:#374151; font-size:18px; font-weight:900;" %>
 
         <div style="font-size:16px; font-weight:900; color:#6b7280; min-width:110px; text-align:center;">
@@ -68,6 +69,7 @@
               month: @next_month.month,
               selected_date: @selected_date
             ),
+            id: "nextMonthLink",
             style: "text-decoration:none; color:#374151; font-size:18px; font-weight:900;" %>
       </div>
     </div>
@@ -654,4 +656,31 @@ document.addEventListener('DOMContentLoaded', function() {
     });
   }, { passive: true });
 });
+</script>
+
+<script>
+// Swipe gesture for month navigation
+(function() {
+  var swipeStartX = 0, swipeStartY = 0;
+
+  document.addEventListener('touchstart', function(e) {
+    if (e.target.closest('.calendar-bar')) return;
+    swipeStartX = e.touches[0].clientX;
+    swipeStartY = e.touches[0].clientY;
+  }, { passive: true });
+
+  document.addEventListener('touchend', function(e) {
+    if (e.target.closest('.calendar-bar')) return;
+    var dx = e.changedTouches[0].clientX - swipeStartX;
+    var dy = e.changedTouches[0].clientY - swipeStartY;
+    if (Math.abs(dx) < 50 || Math.abs(dy) > Math.abs(dx)) return;
+    if (dx < 0) {
+      var next = document.getElementById('nextMonthLink');
+      if (next) next.click();
+    } else {
+      var prev = document.getElementById('prevMonthLink');
+      if (prev) prev.click();
+    }
+  }, { passive: true });
+})();
 </script>
