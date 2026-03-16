@@ -43,6 +43,9 @@ class ProjectsController < ApplicationController
       .sort_by { |process| [ process.position || 9999, process.id || 0 ] }
 
     @ending_soon_processes = []
+
+    @today_memo = current_user.daily_memos.find_by(memo_date: Time.zone.today)
+    @tomorrow_memo = current_user.daily_memos.find_by(memo_date: Time.zone.tomorrow)
   end
 
   def manage

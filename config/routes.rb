@@ -1,5 +1,6 @@
 Rails.application.routes.draw do
   get "pages/guide"
+  post "daily_memos/update", to: "daily_memos#update", as: :update_daily_memo
   get "announcements", to: "announcements#index", as: :announcements
   get "my_account",    to: "my_account#show",     as: :my_account
   # Auth
