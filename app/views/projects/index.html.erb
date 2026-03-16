@@ -200,86 +200,34 @@
 
 
 
-  <div style="display:flex; flex-direction:column; gap:14px;">
+  <div style="display:flex; flex-direction:column; gap:10px;">
     <% @projects.each do |project| %>
+      <% status_bg = case project.status
+          when '완료' then '#dcfce7'
+          when '진행중' then '#fef3c7'
+          else '#dbeafe'
+          end %>
+      <% status_color = case project.status
+          when '완료' then '#166534'
+          when '진행중' then '#92400e'
+          else '#2563eb'
+          end %>
 
-      <div style="background:white; border-radius:20px; padding:18px; box-shadow:0 2px 10px rgba(0,0,0,0.04);">
-
-        <%# Title + Status %>
-        <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:12px;">
-          <div style="font-size:20px; font-weight:900; color:<%= project.theme_color_hex %>; line-height:1.2; flex:1; padding-right:10px;">
-            <%= project.project_name %>
+      <%= link_to project_path(project), style: "text-decoration:none; color:inherit;" do %>
+        <div style="background:white; border-radius:16px; padding:14px 16px; box-shadow:0 1px 6px rgba(0,0,0,0.04); display:flex; align-items:center; justify-content:space-between; border-left:4px solid <%= project.theme_color_hex %>;">
+          <div style="display:flex; align-items:center; gap:10px; flex:1; min-width:0;">
+            <div style="font-size:16px; font-weight:900; color:#111827; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
+              <%= project.project_name %>
+            </div>
+            <div style="padding:4px 10px; border-radius:999px; font-size:11px; font-weight:800; background:<%= status_bg %>; color:<%= status_color %>; white-space:nowrap; flex-shrink:0;">
+              <%= project.status.presence || '예정' %>
+            </div>
           </div>
-
-          <% status_bg = case project.status
-            when '완료' then '#dcfce7'
-            when '진행중' then '#fef3c7'
-            else '#dbeafe'
-            end %>
-          <% status_color = case project.status
-            when '완료' then '#166534'
-            when '진행중' then '#92400e'
-            else '#2563eb'
-            end %>
-          <div style="
-            padding:6px 12px;
-            border-radius:999px;
-            font-size:13px;
-            font-weight:800;
-            background:<%= status_bg %>;
-            color:<%= status_color %>;
-            white-space:nowrap;
-            flex-shrink:0;
-          ">
-            <%= project.status.presence || '예정' %>
+          <div style="font-size:13px; font-weight:800; color:<%= project.theme_color_hex %>; white-space:nowrap; flex-shrink:0; margin-left:8px;">
+            상세보기 →
           </div>
         </div>
-
-        <%# Date %>
-        <div style="background:#f3f4f6; border-radius:12px; padding:10px 14px; font-size:14px; font-weight:800; color:#4b5563; margin-bottom:8px;">
-          📅 <%= project.start_date || "시작일 미정" %> ~ <%= project.end_date || "종료일 미정" %>
-        </div>
-
-        <%# Address %>
-        <% if project.address.present? %>
-          <div style="background:#f3f4f6; border-radius:12px; padding:10px 14px; font-size:13px; font-weight:700; color:#6b7280; margin-bottom:12px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
-            📍 <%= project.address %>
-          </div>
-        <% else %>
-          <div style="margin-bottom:12px;"></div>
-        <% end %>
-
-        <%# Progress Bar %>
-        <div style="margin-bottom:14px;">
-          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
-            <div style="font-size:13px; font-weight:800; color:#6b7280;">진행률</div>
-            <div style="font-size:13px; font-weight:900; color:#111827;"><%= project.progress_percentage %>%</div>
-          </div>
-          <div style="width:100%; height:8px; background:#e5e7eb; border-radius:999px; overflow:hidden;">
-            <div style="width:<%= project.progress_percentage %>%; height:100%; background:#e1c04b; border-radius:999px;"></div>
-          </div>
-        </div>
-
-        <%# 공사상세보기 Banner %>
-        <%= link_to project_path(project),
-            style: "
-              display:block;
-              width:100%;
-              padding:12px 0;
-              border-radius:14px;
-              text-align:center;
-              text-decoration:none;
-              font-size:15px;
-              font-weight:900;
-              color:#{project.theme_color_hex};
-              background:white;
-              border:1.5px solid #{project.theme_color_hex};
-              box-sizing:border-box;
-            " do %>
-          공사 상세보기 →
-        <% end %>
-
-      </div>
+      <% end %>
 
     <% end %>
   </div>
