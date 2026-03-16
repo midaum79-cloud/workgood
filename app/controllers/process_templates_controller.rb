@@ -1,8 +1,9 @@
 class ProcessTemplatesController < ApplicationController
   def index
+    ProcessTemplate.seed_defaults! if ProcessTemplate.count == 0
     @residential_templates = ProcessTemplate.residential
     @commercial_templates  = ProcessTemplate.commercial
-    @templates             = ProcessTemplate.ordered # fallback for create errors
+    @templates             = ProcessTemplate.ordered
     @new_template          = ProcessTemplate.new
   end
 
@@ -52,6 +53,6 @@ class ProcessTemplatesController < ApplicationController
   private
 
   def template_params
-    params.require(:process_template).permit(:name)
+    params.require(:process_template).permit(:name, :project_type)
   end
 end

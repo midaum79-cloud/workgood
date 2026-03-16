@@ -4,7 +4,7 @@
   <div style="background:white; padding:18px 20px 14px 20px; border-bottom:1px solid #ececec; position:sticky; top:0; z-index:30; margin-bottom:16px;">
     <div style="display:flex; justify-content:space-between; align-items:center;">
       <div style="font-size:24px; color:#111827; font-weight:900; cursor:pointer;" onclick="openDrawer()">☰</div>
-      <div style="font-size:20px; font-weight:900;">공정 템플릿 관리</div>
+      <div style="font-size:20px; font-weight:900;">공정 용어 관리</div>
       <div style="width:40px;"></div>
     </div>
   </div>
@@ -20,14 +20,14 @@
 
     <%# Description Card %>
     <div style="background:white; border-radius:16px; padding:16px; margin-bottom:20px; box-shadow:0 2px 8px rgba(0,0,0,0.04);">
-      <div style="font-size:15px; font-weight:900; color:#111827; margin-bottom:6px;">📋 공정 템플릿이란?</div>
+      <div style="font-size:15px; font-weight:900; color:#111827; margin-bottom:6px;">📋 공정 용어란?</div>
       <div style="font-size:13px; font-weight:600; color:#6b7280; line-height:1.6;">
-        현장추가 시 빠른 선택 버튼에 표시되는 공정 이름 기본 목록입니다.<br>
-        주거공간과 상업공간을 각각 관리할 수 있습니다.
+        현장추가 시 빠른 선택 버튼에 표시되는 공정 이름 목록입니다.<br>
+        주거공간과 상업공간을 각각 관리하고, 새 용어를 추가할 수 있습니다.
       </div>
     </div>
 
-    <%# === 주거공간 템플릿 === %>
+    <%# === 주거공간 === %>
     <div style="background:white; border-radius:16px; overflow:hidden; box-shadow:0 2px 8px rgba(0,0,0,0.04); margin-bottom:20px;">
       <div style="padding:14px 16px; border-bottom:1px solid #f3f4f6; background:#eff6ff; display:flex; justify-content:space-between; align-items:center;">
         <div style="font-size:15px; font-weight:900; color:#2563eb;">🏠 주거공간 공정 (<%= @residential_templates.count %>개)</div>
@@ -48,7 +48,7 @@
               <%= button_to "삭제",
                   process_template_path(template),
                   method: :delete,
-                  data: { confirm: "\"#{template.name}\" 템플릿을 삭제할까요?" },
+                  data: { confirm: "\"#{template.name}\" 용어를 삭제할까요?" },
                   style: "padding:6px 10px; background:#fee2e2; color:#dc2626; border:none; border-radius:10px; font-size:12px; font-weight:800; cursor:pointer;" %>
             <% end %>
           </div>
@@ -56,9 +56,20 @@
       <% else %>
         <div style="padding:24px; text-align:center; color:#9ca3af; font-size:14px;">등록된 주거공간 공정이 없습니다.</div>
       <% end %>
+
+      <%# 주거공간 용어 추가 %>
+      <div style="padding:12px 16px; border-top:1px solid #f3f4f6; background:#f9fafb;">
+        <%= form_with model: ProcessTemplate.new, url: process_templates_path, method: :post, local: true, style: "display:flex; gap:8px;" do |f| %>
+          <%= f.hidden_field :project_type, value: "residential" %>
+          <%= f.text_field :name, placeholder: "새 공정 용어 입력",
+              style: "flex:1; padding:10px 12px; border:1.5px solid #d1d5db; border-radius:10px; font-size:14px; font-weight:700; font-family:inherit; outline:none; box-sizing:border-box;",
+              required: true %>
+          <button type="submit" style="padding:10px 16px; background:#2563eb; color:white; border:none; border-radius:10px; font-size:14px; font-weight:800; cursor:pointer; white-space:nowrap;">+ 추가</button>
+        <% end %>
+      </div>
     </div>
 
-    <%# === 상업공간 템플릿 === %>
+    <%# === 상업공간 === %>
     <div style="background:white; border-radius:16px; overflow:hidden; box-shadow:0 2px 8px rgba(0,0,0,0.04); margin-bottom:20px;">
       <div style="padding:14px 16px; border-bottom:1px solid #f3f4f6; background:#fff7ed; display:flex; justify-content:space-between; align-items:center;">
         <div style="font-size:15px; font-weight:900; color:#ea580c;">🏢 상업공간 공정 (<%= @commercial_templates.count %>개)</div>
@@ -79,7 +90,7 @@
               <%= button_to "삭제",
                   process_template_path(template),
                   method: :delete,
-                  data: { confirm: "\"#{template.name}\" 템플릿을 삭제할까요?" },
+                  data: { confirm: "\"#{template.name}\" 용어를 삭제할까요?" },
                   style: "padding:6px 10px; background:#fee2e2; color:#dc2626; border:none; border-radius:10px; font-size:12px; font-weight:800; cursor:pointer;" %>
             <% end %>
           </div>
@@ -87,6 +98,17 @@
       <% else %>
         <div style="padding:24px; text-align:center; color:#9ca3af; font-size:14px;">등록된 상업공간 공정이 없습니다.</div>
       <% end %>
+
+      <%# 상업공간 용어 추가 %>
+      <div style="padding:12px 16px; border-top:1px solid #f3f4f6; background:#f9fafb;">
+        <%= form_with model: ProcessTemplate.new, url: process_templates_path, method: :post, local: true, style: "display:flex; gap:8px;" do |f| %>
+          <%= f.hidden_field :project_type, value: "commercial" %>
+          <%= f.text_field :name, placeholder: "새 공정 용어 입력",
+              style: "flex:1; padding:10px 12px; border:1.5px solid #d1d5db; border-radius:10px; font-size:14px; font-weight:700; font-family:inherit; outline:none; box-sizing:border-box;",
+              required: true %>
+          <button type="submit" style="padding:10px 16px; background:#ea580c; color:white; border:none; border-radius:10px; font-size:14px; font-weight:800; cursor:pointer; white-space:nowrap;">+ 추가</button>
+        <% end %>
+      </div>
     </div>
 
   </div>
