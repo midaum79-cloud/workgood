@@ -26,69 +26,70 @@
       </div>
     </div>
 
-    <%= form_tag update_daily_memo_path, method: :post, id: "memoForm" do %>
-      <%= hidden_field_tag :memo_date, @memo_date %>
-
-      <%# VIEW MODE - checklist %>
-      <div id="memoViewMode" style="background:white; border-radius:16px; padding:16px; box-shadow:0 2px 10px rgba(0,0,0,0.04);">
-        <div style="font-size:15px; font-weight:900; color:#111827; margin-bottom:10px;">📋 체크리스트</div>
-        <% if @memo.content.present? %>
-          <div id="checklistArea" style="display:flex; flex-direction:column; gap:2px;">
-            <% @memo.content.to_s.split("\n").each_with_index do |line, idx| %>
-              <% next if line.strip.empty? %>
-              <% checked = line.strip.start_with?("[x]", "[X]") %>
-              <% clean_text = line.strip.sub(/^\[(x|X| )\]\s*/, '') %>
-              <div onclick="toggleCheck(this, <%= idx %>)" style="display:flex; align-items:flex-start; gap:10px; padding:10px 12px; border-radius:10px; cursor:pointer; background:<%= checked ? '#f0fdf4' : '#fafafa' %>; border:1px solid <%= checked ? '#bbf7d0' : '#e5e7eb' %>;">
-                <div style="width:22px; height:22px; min-width:22px; border-radius:6px; border:2px solid <%= checked ? '#16a34a' : '#d1d5db' %>; background:<%= checked ? '#16a34a' : 'white' %>; display:flex; align-items:center; justify-content:center; margin-top:1px;">
-                  <% if checked %>
-                    <span style="color:white; font-size:13px; font-weight:900;">✓</span>
-                  <% end %>
-                </div>
-                <span style="font-size:15px; font-weight:700; color:<%= checked ? '#9ca3af' : '#374151' %>; line-height:1.6; <%= 'text-decoration:line-through;' if checked %>"><%= clean_text %></span>
+    <%# VIEW MODE - checklist %>
+    <div id="memoViewMode" style="background:white; border-radius:16px; padding:16px; box-shadow:0 2px 10px rgba(0,0,0,0.04);">
+      <div style="font-size:15px; font-weight:900; color:#111827; margin-bottom:10px;">📋 체크리스트</div>
+      <% if @memo.content.present? %>
+        <div id="checklistArea" style="display:flex; flex-direction:column; gap:2px;">
+          <% @memo.content.to_s.split("\n").each_with_index do |line, idx| %>
+            <% next if line.strip.empty? %>
+            <% checked = line.strip.start_with?("[x]", "[X]") %>
+            <% clean_text = line.strip.sub(/^\[(x|X| )\]\s*/, '') %>
+            <div onclick="toggleCheck(this, <%= idx %>)" style="display:flex; align-items:flex-start; gap:10px; padding:10px 12px; border-radius:10px; cursor:pointer; background:<%= checked ? '#f0fdf4' : '#fafafa' %>; border:1px solid <%= checked ? '#bbf7d0' : '#e5e7eb' %>;">
+              <div style="width:22px; height:22px; min-width:22px; border-radius:6px; border:2px solid <%= checked ? '#16a34a' : '#d1d5db' %>; background:<%= checked ? '#16a34a' : 'white' %>; display:flex; align-items:center; justify-content:center; margin-top:1px;">
+                <% if checked %>
+                  <span style="color:white; font-size:13px; font-weight:900;">✓</span>
+                <% end %>
               </div>
-            <% end %>
-          </div>
-        <% else %>
-          <div style="padding:40px 14px; text-align:center; color:#9ca3af; font-size:14px; font-weight:700; background:#fafafa; border-radius:14px; border:1.5px dashed #d1d5db;">
-            아직 작성된 메모가 없습니다.
-          </div>
-        <% end %>
-      </div>
-
-      <%# EDIT MODE %>
-      <div id="memoEditMode" style="display:none; background:white; border-radius:16px; padding:16px; box-shadow:0 2px 10px rgba(0,0,0,0.04);">
-        <div style="font-size:15px; font-weight:900; color:#111827; margin-bottom:4px;">✏️ 메모 수정</div>
-        <div style="font-size:12px; font-weight:600; color:#9ca3af; margin-bottom:10px;">한 줄에 하나씩 작성하면 체크리스트로 표시됩니다</div>
-        <textarea name="content" id="memoContent"
-          placeholder="한 줄에 하나씩 작성하세요"
-          style="width:100%; min-height:250px; padding:14px; border:1.5px solid <%= @is_today ? '#fde68a' : '#bfdbfe' %>; border-radius:14px; font-size:15px; font-weight:700; font-family:inherit; resize:vertical; box-sizing:border-box; background:#fffdf7; line-height:1.7; outline:none;"
-        ><%= @memo.content %></textarea>
-      </div>
-
-    <%# Bottom bar - VIEW mode %>
-    <div id="bottomBarView" style="position:fixed; bottom:0; left:0; right:0; background:white; border-top:1px solid #ececec; padding:12px 16px; z-index:30; max-width:430px; margin:0 auto; display:flex; gap:10px;">
-      <%= link_to "← 홈으로", root_path,
-          style: "flex:1; display:block; text-align:center; padding:14px; background:#f3f4f6; color:#374151; border-radius:12px; font-size:15px; font-weight:800; text-decoration:none;" %>
-      <button type="button" onclick="enterEditMode()"
-        style="flex:2; padding:14px; background:<%= @is_today ? '#f59e0b' : '#3b82f6' %>; color:white; border:none; border-radius:12px; font-size:16px; font-weight:900; cursor:pointer; font-family:inherit;">
-        ✏️ 수정
-      </button>
+              <span style="font-size:15px; font-weight:700; color:<%= checked ? '#9ca3af' : '#374151' %>; line-height:1.6; <%= 'text-decoration:line-through;' if checked %>"><%= clean_text %></span>
+            </div>
+          <% end %>
+        </div>
+      <% else %>
+        <div style="padding:40px 14px; text-align:center; color:#9ca3af; font-size:14px; font-weight:700; background:#fafafa; border-radius:14px; border:1.5px dashed #d1d5db;">
+          아직 작성된 메모가 없습니다.
+        </div>
+      <% end %>
     </div>
 
-    <%# Bottom bar - EDIT mode %>
-    <div id="bottomBarEdit" style="display:none; position:fixed; bottom:0; left:0; right:0; background:white; border-top:1px solid #ececec; padding:12px 16px; z-index:30; max-width:430px; margin:0 auto; gap:10px;">
-      <button type="button" onclick="cancelEdit()"
-        style="flex:1; padding:14px; background:#f3f4f6; color:#374151; border:none; border-radius:12px; font-size:15px; font-weight:800; cursor:pointer; font-family:inherit;">
-        취소
-      </button>
-      <button type="submit"
-        style="flex:2; padding:14px; background:#16a34a; color:white; border:none; border-radius:12px; font-size:16px; font-weight:900; cursor:pointer; font-family:inherit;">
-        ✅ 저장 완료
-      </button>
+    <%# EDIT MODE - form %>
+    <div id="memoEditMode" style="display:none;">
+      <%= form_tag update_daily_memo_path, method: :post, id: "memoForm" do %>
+        <%= hidden_field_tag :memo_date, @memo_date %>
+        <div style="background:white; border-radius:16px; padding:16px; box-shadow:0 2px 10px rgba(0,0,0,0.04);">
+          <div style="font-size:15px; font-weight:900; color:#111827; margin-bottom:4px;">✏️ 메모 수정</div>
+          <div style="font-size:12px; font-weight:600; color:#9ca3af; margin-bottom:10px;">한 줄에 하나씩 작성하면 체크리스트로 표시됩니다</div>
+          <textarea name="content" id="memoContent"
+            placeholder="한 줄에 하나씩 작성하세요"
+            style="width:100%; min-height:250px; padding:14px; border:1.5px solid <%= @is_today ? '#fde68a' : '#bfdbfe' %>; border-radius:14px; font-size:15px; font-weight:700; font-family:inherit; resize:vertical; box-sizing:border-box; background:#fffdf7; line-height:1.7; outline:none;"
+          ><%= @memo.content %></textarea>
+        </div>
+      <% end %>
     </div>
 
-    <% end %>
   </div>
+</div>
+
+<%# Bottom bar - VIEW mode (outside main container) %>
+<div id="bottomBarView" style="position:fixed; bottom:0; left:0; right:0; background:white; border-top:1px solid #ececec; padding:12px 16px; z-index:50; max-width:430px; margin:0 auto; display:flex; gap:10px;">
+  <%= link_to "← 홈으로", root_path,
+      style: "flex:1; display:block; text-align:center; padding:14px; background:#f3f4f6; color:#374151; border-radius:12px; font-size:15px; font-weight:800; text-decoration:none;" %>
+  <button type="button" onclick="enterEditMode()"
+    style="flex:2; padding:14px; background:<%= @is_today ? '#f59e0b' : '#3b82f6' %>; color:white; border:none; border-radius:12px; font-size:16px; font-weight:900; cursor:pointer; font-family:inherit;">
+    ✏️ 수정
+  </button>
+</div>
+
+<%# Bottom bar - EDIT mode (outside main container) %>
+<div id="bottomBarEdit" style="position:fixed; bottom:0; left:0; right:0; background:white; border-top:1px solid #ececec; padding:12px 16px; z-index:50; max-width:430px; margin:0 auto; display:none; gap:10px;">
+  <button type="button" onclick="cancelEdit()"
+    style="flex:1; padding:14px; background:#f3f4f6; color:#374151; border:none; border-radius:12px; font-size:15px; font-weight:800; cursor:pointer; font-family:inherit;">
+    취소
+  </button>
+  <button type="button" onclick="document.getElementById('memoForm').submit()"
+    style="flex:2; padding:14px; background:#16a34a; color:white; border:none; border-radius:12px; font-size:16px; font-weight:900; cursor:pointer; font-family:inherit;">
+    ✅ 저장 완료
+  </button>
 </div>
 
 <script>
@@ -117,9 +118,8 @@ function toggleCheck(el, lineIdx) {
   if (/^\[(x|X)\]/.test(line)) {
     memoLines[lineIdx] = '[ ] ' + stripped;
   } else {
-    memoLines[lineIdx] = '[x] ' + stripped.replace(/^□\s*/, '');
+    memoLines[lineIdx] = '[x] ' + stripped;
   }
-  // Save via AJAX
   var newContent = memoLines.join("\n");
   fetch('<%= update_daily_memo_path %>', {
     method: 'POST',
@@ -129,7 +129,6 @@ function toggleCheck(el, lineIdx) {
     },
     body: 'memo_date=<%= @memo_date %>&content=' + encodeURIComponent(newContent)
   });
-  // Update UI immediately
   var checked = /^\[(x|X)\]/.test(memoLines[lineIdx]);
   var textSpan = el.querySelector('span:last-child');
   var checkBox = el.querySelector('div');
@@ -140,11 +139,9 @@ function toggleCheck(el, lineIdx) {
   checkBox.innerHTML = checked ? '<span style="color:white; font-size:13px; font-weight:900;">✓</span>' : '';
   textSpan.style.color = checked ? '#9ca3af' : '#374151';
   textSpan.style.textDecoration = checked ? 'line-through' : 'none';
-  // Also update textarea for consistency
   document.getElementById('memoContent').value = newContent;
 }
 
-// Reposition bottom bars above keyboard
 if (window.visualViewport) {
   window.visualViewport.addEventListener('resize', function() {
     var offset = window.innerHeight - window.visualViewport.height;
@@ -152,7 +149,6 @@ if (window.visualViewport) {
   });
 }
 
-// Auto-enter edit mode if memo is empty
 <% unless @memo.content.present? %>
   enterEditMode();
 <% end %>
