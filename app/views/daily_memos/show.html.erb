@@ -1,7 +1,7 @@
 <div style="max-width:430px; margin:0 auto; min-height:100vh; background:#f5f5f5;">
 
-  <%# Header %>
-  <div style="background:white; padding:18px 20px 14px 20px; border-bottom:1px solid #ececec; position:sticky; top:0; z-index:20; margin:-0px 0 16px 0;">
+  <%# Header - fixed position %>
+  <div style="background:white; padding:18px 20px 14px 20px; border-bottom:1px solid #ececec; position:fixed; top:0; left:0; right:0; z-index:40; max-width:430px; margin:0 auto;">
     <div style="display:flex; justify-content:space-between; align-items:center;">
       <%= link_to "←", root_path, style: "font-size:24px; color:#111; text-decoration:none; font-weight:800;" %>
       <div style="font-size:20px; font-weight:900;"><%= @is_today ? '오늘' : '내일' %> 메모</div>
@@ -9,7 +9,7 @@
     </div>
   </div>
 
-  <div style="padding:0 16px 120px 16px;">
+  <div style="padding:64px 16px 120px 16px;">
 
     <% if notice %>
       <div style="background:#dcfce7; color:#166534; border-radius:14px; padding:12px 16px; margin-bottom:16px; font-size:14px; font-weight:700;">
@@ -33,12 +33,12 @@
         <div style="font-size:15px; font-weight:900; color:#111827; margin-bottom:10px;">💡 메모 내용</div>
         <textarea name="content" id="memoContent"
           placeholder="준비물, 할 일, 체크리스트 등을 자유롭게 작성하세요...&#10;&#10;예시:&#10;✅ 압착기 1구 2구&#10;□ 레벨기, 자, 싸인펜&#10;□ 마스킹, 투명테이프&#10;□ 대차, 사다리"
-          style="width:100%; min-height:300px; padding:14px; border:1.5px solid #e5e7eb; border-radius:14px; font-size:15px; font-weight:700; font-family:inherit; resize:vertical; box-sizing:border-box; background:#fafafa; line-height:1.7; outline:none;"
+          style="width:100%; min-height:250px; padding:14px; border:1.5px solid #e5e7eb; border-radius:14px; font-size:15px; font-weight:700; font-family:inherit; resize:vertical; box-sizing:border-box; background:#fafafa; line-height:1.7; outline:none;"
         ><%= @memo.content %></textarea>
       </div>
 
       <%# Fixed bottom save bar %>
-      <div style="position:fixed; bottom:0; left:0; right:0; background:white; border-top:1px solid #ececec; padding:12px 16px; z-index:30; max-width:430px; margin:0 auto; display:flex; gap:10px;">
+      <div id="memoBottomBar" style="position:fixed; bottom:0; left:0; right:0; background:white; border-top:1px solid #ececec; padding:12px 16px; z-index:30; max-width:430px; margin:0 auto; display:flex; gap:10px;">
         <%= link_to "← 홈으로", root_path,
             style: "flex:1; display:block; text-align:center; padding:14px; background:#f3f4f6; color:#374151; border-radius:12px; font-size:15px; font-weight:800; text-decoration:none;" %>
         <button type="submit"
@@ -50,3 +50,27 @@
 
   </div>
 </div>
+
+<script>
+(function() {
+  var bottomBar = document.getElementById('memoBottomBar');
+  var textarea = document.getElementById('memoContent');
+
+  // Reposition bottom bar when virtual keyboard opens/closes
+  if (window.visualViewport) {
+    function adjustForKeyboard() {
+      var offset = window.innerHeight - window.visualViewport.height;
+      bottomBar.style.bottom = offset + 'px';
+    }
+    window.visualViewport.addEventListener('resize', adjustForKeyboard);
+    window.visualViewport.addEventListener('scroll', adjustForKeyboard);
+  }
+
+  // Prevent browser from scrolling page past header on focus
+  textarea.addEventListener('focus', function() {
+    setTimeout(function() {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }, 350);
+  });
+})();
+</script>
