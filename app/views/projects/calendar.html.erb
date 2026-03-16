@@ -241,7 +241,7 @@
 
   <div style="padding:8px 20px 14px 20px; display:flex; justify-content:space-between; align-items:center;">
     <div>
-      <div id="bsTitle" style="font-size:20px; font-weight:900; color:#111827;">일정 추가</div>
+      <div id="bsTitle" style="font-size:20px; font-weight:900; color:#111827;">공정 추가</div>
       <div id="bsSubtitle" style="font-size:13px; font-weight:700; color:#9ca3af; margin-top:2px;"></div>
     </div>
     <div onclick="closeBottomSheet()" style="font-size:22px; color:#9ca3af; cursor:pointer; padding:4px 8px;">✕</div>
@@ -296,7 +296,7 @@ function openBottomSheet(dateStr) {
 
   var parts = dateStr.split('-');
   document.getElementById('bsSubtitle').textContent = parts[0] + '년 ' + parseInt(parts[1]) + '월 ' + parseInt(parts[2]) + '일';
-  document.getElementById('bsTitle').textContent = '일정 추가';
+  document.getElementById('bsTitle').textContent = '공정 추가';
 
   var list = document.getElementById('bsProjectList');
   list.innerHTML = '';
@@ -351,7 +351,7 @@ function closeBottomSheet() {
 function bsGoBack() {
   document.getElementById('bsStep1').style.display = 'block';
   document.getElementById('bsStep2').style.display = 'none';
-  document.getElementById('bsTitle').textContent = '일정 추가';
+  document.getElementById('bsTitle').textContent = '공정 추가';
 }
 
 function bsSelectProject(projectId) {
