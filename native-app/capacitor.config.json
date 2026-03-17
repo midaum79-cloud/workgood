@@ -1,0 +1,22 @@
+{
+  "appId": "com.ilmeori.app",
+  "appName": "일머리",
+  "webDir": "www",
+  "server": {
+    "url": "https://ilmeori.onrender.com",
+    "cleartext": false
+  },
+  "plugins": {
+    "SplashScreen": {
+      "launchShowDuration": 2000,
+      "backgroundColor": "#0a0f1e",
+      "showSpinner": false
+    }
+  },
+  "ios": {
+    "scheme": "일머리"
+  },
+  "android": {
+    "allowMixedContent": false
+  }
+}

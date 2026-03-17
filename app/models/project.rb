@@ -46,21 +46,15 @@ class Project < ApplicationRecord
   end
 
   def completed_work_processes_count
-    work_processes.count do |process|
-      process.effective_status(Date.current) == "완료"
-    end
+    ordered_work_processes.count { |p| p.effective_status(Date.current) == "완료" }
   end
 
   def in_progress_work_processes_count
-    work_processes.count do |process|
-      process.effective_status(Date.current) == "진행중"
-    end
+    ordered_work_processes.count { |p| p.effective_status(Date.current) == "진행중" }
   end
 
   def scheduled_work_processes_count
-    work_processes.count do |process|
-      process.effective_status(Date.current) == "예정"
-    end
+    ordered_work_processes.count { |p| p.effective_status(Date.current) == "예정" }
   end
 
   def progress_percentage
