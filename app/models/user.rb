@@ -39,14 +39,13 @@ class User < ApplicationRecord
   end
 
   def subscription_plan
-    "premium" # 테스트를 위해 임시로 모든 사용자를 프리미엄으로 취급
-    # plan = self[:subscription_plan].presence || "free"
-    # # 체험 만료 체크: 유료 플랜 + 만료일 지남 + 결제(빌링키) 없음 → 무료로 다운그레이드
-    # if plan != "free" && subscription_expires_at.present? && subscription_expires_at < Time.current && billing_key.blank?
-    #   update_columns(subscription_plan: "free")
-    #   return "free"
-    # end
-    # plan
+    plan = self[:subscription_plan].presence || "free"
+    # 체험 만료 체크: 유료 플랜 + 만료일 지남 + 결제(빌링키) 없음 → 무료로 다운그레이드
+    if plan != "free" && subscription_expires_at.present? && subscription_expires_at < Time.current && billing_key.blank?
+      update_columns(subscription_plan: "free")
+      return "free"
+    end
+    plan
   end
 
   def trial?
