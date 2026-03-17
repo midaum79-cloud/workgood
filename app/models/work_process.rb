@@ -8,6 +8,10 @@ class WorkProcess < ApplicationRecord
   after_create :create_start_notification_if_date_present
 
   def effective_status(reference_date = Date.current)
+    # 수동으로 '완료' 처리된 경우 날짜 계산보다 우선
+    stored = self[:status]
+    return "완료" if stored == "완료"
+
     target_day = reference_date.to_date
     now = Time.zone.now
 
@@ -38,7 +42,7 @@ class WorkProcess < ApplicationRecord
         "진행중"
       end
     else
-      self[:status].presence || "예정"
+      stored.presence || "예정"
     end
   end
 
