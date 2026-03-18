@@ -64,6 +64,55 @@ class PasswordResetsController < ApplicationController
     redirect_to root_path, notice: "비밀번호가 변경되었습니다. 자동으로 로그인되었습니다."
   end
 
+  # GET /password_resets/phone
+  def phone
+  end
+
+  # POST /password_resets/phone_reset
+  def phone_reset
+    email = params[:email].to_s.strip.downcase
+    phone = params[:phone].to_s.strip.gsub(/[^0-9]/, '')
+    password = params[:password]
+    password_confirmation = params[:password_confirmation]
+
+    @user = User.find_by(email: email)
+
+    unless @user
+      flash.now[:alert] = "등록되지 않은 이메일입니다."
+      render :phone, status: :unprocessable_entity
+      return
+    end
+
+    stored_phone = @user.phone.to_s.gsub(/[^0-9]/, '')
+    unless stored_phone.present? && stored_phone == phone
+      flash.now[:alert] = "이메일과 전화번호가 일치하지 않습니다."
+      render :phone, status: :unprocessable_entity
+      return
+    end
+
+    if password.blank?
+      flash.now[:alert] = "새 비밀번호를 입력해주세요."
+      render :phone, status: :unprocessable_entity
+      return
+    end
+
+    if password != password_confirmation
+      flash.now[:alert] = "비밀번호가 일치하지 않습니다."
+      render :phone, status: :unprocessable_entity
+      return
+    end
+
+    if password.length < 8
+      flash.now[:alert] = "비밀번호는 8자 이상이어야 합니다."
+      render :phone, status: :unprocessable_entity
+      return
+    end
+
+    @user.update!(password: password, password_confirmation: password_confirmation)
+    session[:user_id] = @user.id
+    redirect_to root_path, notice: "비밀번호가 변경되었습니다. 자동으로 로그인되었습니다."
+  end
+
   private
 
   def load_user_from_token

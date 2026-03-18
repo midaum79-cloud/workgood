@@ -16,6 +16,8 @@ Rails.application.routes.draw do
   post "password_resets",            to: "password_resets#create", as: :password_resets
   get  "password_resets/:token/edit", to: "password_resets#edit",  as: :edit_password_reset
   patch "password_resets/:token",    to: "password_resets#update", as: :password_reset
+  get  "password_resets/phone",       to: "password_resets#phone",  as: :phone_password_reset
+  post "password_resets/phone_reset", to: "password_resets#phone_reset", as: :phone_password_reset_action
 
   # OmniAuth (Google)
   get  "/auth/google_oauth2/callback", to: "omniauth_callbacks#google_oauth2"
