@@ -10,7 +10,7 @@ class PasswordResetsController < ApplicationController
   def create
     @user = User.find_by(email: params[:email].to_s.strip.downcase)
     if @user
-      token = SecureRandom.urlsafe_base64(32)
+      token = SecureRandom.hex(32)
       @user.update!(
         password_reset_token: token,
         password_reset_sent_at: Time.current
