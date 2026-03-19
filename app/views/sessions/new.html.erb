@@ -109,17 +109,17 @@
         console.log('[일머리] Google login clicked, oauthUrl:', oauthUrl);
 
         try {
-          if (window.Capacitor.Plugins && window.Capacitor.Plugins.Browser && window.Capacitor.Plugins.Browser.open) {
+          if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.Browser && window.Capacitor.Plugins.Browser.open) {
             console.log('[일머리] Using Capacitor Browser plugin');
             window.Capacitor.Plugins.Browser.open({ url: oauthUrl });
           } else {
-            // Fallback: window.open으로 외부 브라우저 열기
-            console.log('[일머리] Browser plugin not available, using window.open fallback');
-            window.open(oauthUrl, '_blank');
+            // Capacitor Browser가 없으면 직접 이동 (Chrome Custom Tabs 또는 외부 브라우저)
+            console.log('[일머리] Browser plugin not available, using location.href');
+            window.location.href = oauthUrl;
           }
         } catch(err) {
           console.error('[일머리] Google login error:', err);
-          window.open(oauthUrl, '_blank');
+          window.location.href = oauthUrl;
         }
       });
     }
