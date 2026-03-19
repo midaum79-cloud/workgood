@@ -83,7 +83,11 @@
   var ua = navigator.userAgent || navigator.vendor || '';
 
   // Capacitor 앱 감지 (Android/iOS 네이티브 앱)
+  // 원격 URL 로딩 시 Capacitor bridge가 늦게 주입될 수 있으므로 다중 감지
   var isCapacitor = !!(window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform());
+  // Android WebView 감지 (Capacitor bridge가 없어도)
+  var isAndroidWebView = /wv/.test(ua) || (/Android/.test(ua) && /Version\//.test(ua));
+  console.log('[일머리] isCapacitor:', isCapacitor, 'isAndroidWebView:', isAndroidWebView, 'UA:', ua);
 
   // 주요 인앱 브라우저 감지 (네이버, 카카오, 인스타, 페이스북, 라인, 다음 등)
   var inAppPatterns = [
@@ -94,16 +98,28 @@
   ];
   var isInApp = new RegExp(inAppPatterns.join('|'), 'i').test(ua);
 
-  // ── Capacitor 앱: Google 로그인을 Chrome Custom Tabs로 열기 ──
-  if (isCapacitor) {
+  // ── Google 로그인: Capacitor 앱 또는 Android WebView에서 외부 브라우저로 열기 ──
+  if (isCapacitor || isAndroidWebView) {
     var googleBtn = document.getElementById('google-login-btn');
     if (googleBtn) {
       googleBtn.addEventListener('click', function(e) {
         e.preventDefault();
         // origin 파라미터에 source=app을 포함하여 서버에서 앱 요청 판별
         var oauthUrl = window.location.origin + '/auth/google_oauth2?origin=' + encodeURIComponent(window.location.origin + '?source=app');
-        if (window.Capacitor.Plugins && window.Capacitor.Plugins.Browser) {
-          window.Capacitor.Plugins.Browser.open({ url: oauthUrl });
+        console.log('[일머리] Google login clicked, oauthUrl:', oauthUrl);
+
+        try {
+          if (window.Capacitor.Plugins && window.Capacitor.Plugins.Browser && window.Capacitor.Plugins.Browser.open) {
+            console.log('[일머리] Using Capacitor Browser plugin');
+            window.Capacitor.Plugins.Browser.open({ url: oauthUrl });
+          } else {
+            // Fallback: window.open으로 외부 브라우저 열기
+            console.log('[일머리] Browser plugin not available, using window.open fallback');
+            window.open(oauthUrl, '_blank');
+          }
+        } catch(err) {
+          console.error('[일머리] Google login error:', err);
+          window.open(oauthUrl, '_blank');
         }
       });
     }
@@ -127,7 +143,7 @@
   }
 
   // ── 일반 인앱 브라우저(네이버, 카카오 등): 기존 로직 ──
-  if (isInApp && !isCapacitor) {
+  if (isInApp && !isCapacitor && !isAndroidWebView) {
     var googleBtn2 = document.getElementById('google-login-btn');
     if (googleBtn2) googleBtn2.style.display = 'none';
 
