@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>로그인 완료</title>
+  <style>
+    body {
+      margin: 0; padding: 0;
+      background: #0a0f1e;
+      display: flex; align-items: center; justify-content: center;
+      min-height: 100vh;
+      font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+      color: white;
+    }
+    .container { text-align: center; padding: 24px; }
+    .spinner {
+      width: 40px; height: 40px;
+      border: 3px solid rgba(255,255,255,0.15);
+      border-top: 3px solid #2563eb;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin: 0 auto 20px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    h2 { font-size: 18px; margin-bottom: 8px; }
+    p { font-size: 14px; color: rgba(255,255,255,0.5); }
+    .btn {
+      display: inline-block; margin-top: 20px;
+      padding: 12px 24px; background: #2563eb;
+      color: white; border-radius: 12px;
+      text-decoration: none; font-weight: 700; font-size: 14px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="spinner"></div>
+    <h2>✅ Google 로그인 성공!</h2>
+    <p>앱으로 돌아가는 중...</p>
+    <a class="btn" href="<%= @deep_link %>" id="return-btn" style="display:none;">앱으로 돌아가기</a>
+  </div>
+  <script>
+    // 즉시 딥링크로 앱 복귀 시도
+    window.location.href = '<%= @deep_link %>';
+
+    // 2초 후에도 남아있으면 수동 버튼 표시
+    setTimeout(function() {
+      document.getElementById('return-btn').style.display = 'inline-block';
+    }, 2000);
+  </script>
+</body>
+</html>
