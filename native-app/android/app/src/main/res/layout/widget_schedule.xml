@@ -1,0 +1,160 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/widget_root"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="12dp"
+    android:background="@drawable/widget_background">
+
+    <!-- Header: 날짜 -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:paddingBottom="8dp">
+
+        <TextView
+            android:id="@+id/widget_date"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="📅 3월 19일 (목)"
+            android:textColor="#FFFFFF"
+            android:textSize="15sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/widget_app_name"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="일머리"
+            android:textColor="#9CA3AF"
+            android:textSize="11sp" />
+    </LinearLayout>
+
+    <!-- 오늘 일정 섹션 -->
+    <TextView
+        android:id="@+id/widget_today_label"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="오늘의 일정"
+        android:textColor="#93C5FD"
+        android:textSize="12sp"
+        android:textStyle="bold"
+        android:paddingBottom="4dp" />
+
+    <TextView
+        android:id="@+id/widget_today_item1"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text=""
+        android:textColor="#E5E7EB"
+        android:textSize="13sp"
+        android:paddingStart="4dp"
+        android:paddingTop="2dp"
+        android:paddingBottom="2dp"
+        android:visibility="gone" />
+
+    <TextView
+        android:id="@+id/widget_today_item2"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text=""
+        android:textColor="#E5E7EB"
+        android:textSize="13sp"
+        android:paddingStart="4dp"
+        android:paddingTop="2dp"
+        android:paddingBottom="2dp"
+        android:visibility="gone" />
+
+    <TextView
+        android:id="@+id/widget_today_item3"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text=""
+        android:textColor="#E5E7EB"
+        android:textSize="13sp"
+        android:paddingStart="4dp"
+        android:paddingTop="2dp"
+        android:paddingBottom="2dp"
+        android:visibility="gone" />
+
+    <TextView
+        android:id="@+id/widget_today_empty"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="오늘 일정이 없습니다"
+        android:textColor="#6B7280"
+        android:textSize="12sp"
+        android:paddingStart="4dp"
+        android:paddingTop="2dp"
+        android:paddingBottom="4dp" />
+
+    <!-- 구분선 -->
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="#374151"
+        android:layout_marginTop="6dp"
+        android:layout_marginBottom="6dp" />
+
+    <!-- 내일 일정 섹션 -->
+    <TextView
+        android:id="@+id/widget_tomorrow_label"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="📋 내일"
+        android:textColor="#A5B4FC"
+        android:textSize="12sp"
+        android:textStyle="bold"
+        android:paddingBottom="4dp" />
+
+    <TextView
+        android:id="@+id/widget_tomorrow_item1"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text=""
+        android:textColor="#D1D5DB"
+        android:textSize="13sp"
+        android:paddingStart="4dp"
+        android:paddingTop="2dp"
+        android:paddingBottom="2dp"
+        android:visibility="gone" />
+
+    <TextView
+        android:id="@+id/widget_tomorrow_item2"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text=""
+        android:textColor="#D1D5DB"
+        android:textSize="13sp"
+        android:paddingStart="4dp"
+        android:paddingTop="2dp"
+        android:paddingBottom="2dp"
+        android:visibility="gone" />
+
+    <TextView
+        android:id="@+id/widget_tomorrow_item3"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text=""
+        android:textColor="#D1D5DB"
+        android:textSize="13sp"
+        android:paddingStart="4dp"
+        android:paddingTop="2dp"
+        android:paddingBottom="2dp"
+        android:visibility="gone" />
+
+    <TextView
+        android:id="@+id/widget_tomorrow_empty"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="내일 일정이 없습니다"
+        android:textColor="#6B7280"
+        android:textSize="12sp"
+        android:paddingStart="4dp"
+        android:paddingTop="2dp" />
+
+</LinearLayout>

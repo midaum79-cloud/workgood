@@ -101,5 +101,11 @@ Rails.application.routes.draw do
     end
   end
 
+  # Widget API
+  namespace :api do
+    post "widget/token", to: "widget#token"
+    get "widget/schedule", to: "widget#schedule"
+  end
+
   root "projects#index"
 end
