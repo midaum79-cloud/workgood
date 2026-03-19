@@ -44,6 +44,18 @@
                 android:resource="@xml/schedule_widget_info" />
         </receiver>
 
+        <!-- 홈 화면 위젯: 전체 캘린더 -->
+        <receiver
+            android:name=".CalendarWidgetProvider"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/calendar_widget_info" />
+        </receiver>
+
         <provider
             android:name="androidx.core.content.FileProvider"
             android:authorities="${applicationId}.fileprovider"

@@ -105,6 +105,7 @@ Rails.application.routes.draw do
   namespace :api do
     post "widget/token", to: "widget#token"
     get "widget/schedule", to: "widget#schedule"
+    get "widget/calendar", to: "widget#calendar"
   end
 
   root "projects#index"

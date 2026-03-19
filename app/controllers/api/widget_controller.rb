@@ -25,6 +25,66 @@ class Api::WidgetController < ApplicationController
     render json: { token: token }
   end
 
+  # GET /api/widget/calendar
+  # 전체 캘린더 위젯용 월간 데이터
+  def calendar
+    token = request.headers["Authorization"]&.sub(/^Bearer /, "")
+    user = authenticate_widget_token(token)
+
+    unless user
+      render json: { error: "Unauthorized" }, status: :unauthorized
+      return
+    end
+
+    today = Time.zone.today
+    year = (params[:year] || today.year).to_i
+    month = (params[:month] || today.month).to_i
+
+    month_first = Date.new(year, month, 1)
+    month_last = Date.new(year, month, -1)
+    cal_start = month_first.beginning_of_week(:sunday)
+    cal_end = month_last.end_of_week(:sunday)
+    # 항상 6주(42일) 보장
+    cal_end = cal_start + 41.days if (cal_end - cal_start).to_i < 41
+
+    projects = user.projects.includes(work_processes: :work_days)
+    work_days_map = {}
+
+    projects.each do |project|
+      project.work_processes.each do |wp|
+        wp.work_days.each do |wd|
+          next unless wd.work_date >= cal_start && wd.work_date <= cal_end
+          key = wd.work_date.to_s
+          work_days_map[key] ||= []
+          work_days_map[key] << {
+            process: wp.process_name,
+            color: project.theme_color_hex
+          }
+        end
+      end
+    end
+
+    # 중복 제거
+    work_days_map.each { |k, v| work_days_map[k] = v.uniq }
+
+    days = (cal_start..cal_end).map do |d|
+      {
+        date: d.to_s,
+        day: d.day,
+        current_month: d.month == month,
+        today: d == today,
+        items: work_days_map[d.to_s] || []
+      }
+    end
+
+    render json: {
+      year: year,
+      month: month,
+      today: today.to_s,
+      days: days
+    }
+  end
+
   # GET /api/widget/schedule
   # 위젯에서 토큰으로 호출 → 오늘/내일 일정 반환
   def schedule
