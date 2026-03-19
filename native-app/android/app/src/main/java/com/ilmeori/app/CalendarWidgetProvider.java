@@ -7,12 +7,6 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.graphics.Bitmap;
-import android.graphics.Canvas;
-import android.graphics.Color;
-import android.graphics.Paint;
-import android.graphics.RectF;
-import android.graphics.Typeface;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
@@ -27,6 +21,9 @@ import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Locale;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -35,19 +32,13 @@ public class CalendarWidgetProvider extends AppWidgetProvider {
     private static final String TAG = "일머리Calendar";
     private static final String API_URL = "https://ilmeori.onrender.com/api/widget/calendar";
     private static final String PREFS_NAME = "ilmeori_widget";
+    private static final String CAL_PREFS = "ilmeori_calendar_widget";
     private static final String KEY_TOKEN = "widget_token";
 
-    // 캘린더 색상
-    private static final int BG_COLOR = 0xF01E293B;        // 다크 배경 (반투명)
-    private static final int HEADER_COLOR = 0xFFFFFFFF;     // 헤더 텍스트 (흰색)
-    private static final int WEEKDAY_COLOR = 0xFF9CA3AF;    // 요일 텍스트
-    private static final int DAY_COLOR = 0xFFE5E7EB;        // 이번달 날짜
-    private static final int OTHER_MONTH_COLOR = 0xFF4B5563; // 다른달 날짜
-    private static final int TODAY_BG = 0xFF2563EB;          // 오늘 배경
-    private static final int SUNDAY_COLOR = 0xFFEF4444;      // 일요일
-    private static final int SATURDAY_COLOR = 0xFF60A5FA;    // 토요일
-    private static final int DIVIDER_COLOR = 0xFF374151;     // 구분선
-    private static final int APP_NAME_COLOR = 0xFF6B7280;    // 앱 이름
+    public static final String ACTION_PREV_MONTH = "com.ilmeori.app.PREV_MONTH";
+    public static final String ACTION_NEXT_MONTH = "com.ilmeori.app.NEXT_MONTH";
+    public static final String ACTION_TODAY = "com.ilmeori.app.TODAY";
+    public static final String ACTION_DATE_CLICK = "com.ilmeori.app.DATE_CLICK";
 
     @Override
     public void onUpdate(Context context, AppWidgetManager appWidgetManager, int[] appWidgetIds) {
@@ -61,243 +52,140 @@ public class CalendarWidgetProvider extends AppWidgetProvider {
         updateWidget(context, appWidgetManager, appWidgetId);
     }
 
+    @Override
+    public void onReceive(Context context, Intent intent) {
+        super.onReceive(context, intent);
+        String action = intent.getAction();
+        if (action == null) return;
+
+        SharedPreferences cal = context.getSharedPreferences(CAL_PREFS, Context.MODE_PRIVATE);
+
+        switch (action) {
+            case ACTION_PREV_MONTH: {
+                int year = cal.getInt("display_year", Calendar.getInstance().get(Calendar.YEAR));
+                int month = cal.getInt("display_month", Calendar.getInstance().get(Calendar.MONTH) + 1);
+                month--;
+                if (month < 1) { month = 12; year--; }
+                cal.edit().putInt("display_year", year).putInt("display_month", month).apply();
+                refreshAllWidgets(context);
+                break;
+            }
+            case ACTION_NEXT_MONTH: {
+                int year = cal.getInt("display_year", Calendar.getInstance().get(Calendar.YEAR));
+                int month = cal.getInt("display_month", Calendar.getInstance().get(Calendar.MONTH) + 1);
+                month++;
+                if (month > 12) { month = 1; year++; }
+                cal.edit().putInt("display_year", year).putInt("display_month", month).apply();
+                refreshAllWidgets(context);
+                break;
+            }
+            case ACTION_TODAY: {
+                Calendar now = Calendar.getInstance();
+                cal.edit()
+                    .putInt("display_year", now.get(Calendar.YEAR))
+                    .putInt("display_month", now.get(Calendar.MONTH) + 1)
+                    .apply();
+                refreshAllWidgets(context);
+                break;
+            }
+            case ACTION_DATE_CLICK: {
+                String date = intent.getStringExtra("selected_date");
+                if (date != null) {
+                    // 앱의 캘린더 페이지를 해당 날짜로 열기
+                    Intent appIntent = new Intent(Intent.ACTION_VIEW);
+                    appIntent.setData(Uri.parse("https://ilmeori.onrender.com/projects/calendar?selected_date=" + date));
+                    appIntent.setClassName(context.getPackageName(), "com.ilmeori.app.MainActivity");
+                    appIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                    context.startActivity(appIntent);
+                }
+                break;
+            }
+        }
+    }
+
+    private void refreshAllWidgets(Context context) {
+        AppWidgetManager mgr = AppWidgetManager.getInstance(context);
+        int[] ids = mgr.getAppWidgetIds(new ComponentName(context, CalendarWidgetProvider.class));
+        for (int id : ids) {
+            updateWidget(context, mgr, id);
+        }
+    }
+
     private void updateWidget(Context context, AppWidgetManager appWidgetManager, int widgetId) {
-        // 위젯 크기 가져오기
-        Bundle options = appWidgetManager.getAppWidgetOptions(widgetId);
-        int widthDp = options.getInt(AppWidgetManager.OPTION_APPWIDGET_MIN_WIDTH, 320);
-        int heightDp = options.getInt(AppWidgetManager.OPTION_APPWIDGET_MAX_HEIGHT, 320);
-
-        float density = context.getResources().getDisplayMetrics().density;
-        int widthPx = (int)(widthDp * density);
-        int heightPx = (int)(heightDp * density);
-
-        // 최소 크기 보장
-        widthPx = Math.max(widthPx, (int)(300 * density));
-        heightPx = Math.max(heightPx, (int)(300 * density));
+        SharedPreferences cal = context.getSharedPreferences(CAL_PREFS, Context.MODE_PRIVATE);
+        Calendar now = Calendar.getInstance();
+        int displayYear = cal.getInt("display_year", now.get(Calendar.YEAR));
+        int displayMonth = cal.getInt("display_month", now.get(Calendar.MONTH) + 1);
 
         RemoteViews views = new RemoteViews(context.getPackageName(), R.layout.widget_calendar);
 
-        // 클릭 시 앱의 캘린더 페이지 열기
-        Intent launchIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://ilmeori.onrender.com/projects/calendar"));
-        launchIntent.setPackage(context.getPackageName());
-        launchIntent.setClassName(context.getPackageName(), "com.ilmeori.app.MainActivity");
-        launchIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
-        PendingIntent pendingIntent = PendingIntent.getActivity(
-            context, 1, launchIntent, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE
-        );
-        views.setOnClickPendingIntent(R.id.calendar_widget_root, pendingIntent);
+        // 헤더: 월 표시
+        views.setTextViewText(R.id.calendar_month_text, displayMonth + "월");
 
-        // 로딩 표시 (임시 빈 비트맵)
-        Bitmap loadingBmp = createLoadingBitmap(widthPx, heightPx, density);
-        views.setImageViewBitmap(R.id.calendar_image, loadingBmp);
+        // 오늘 버튼 텍스트
+        views.setTextViewText(R.id.btn_today, String.valueOf(now.get(Calendar.DAY_OF_MONTH)));
+
+        // 이전/다음 월 버튼
+        views.setOnClickPendingIntent(R.id.btn_prev_month, getBroadcastPI(context, ACTION_PREV_MONTH, 10));
+        views.setOnClickPendingIntent(R.id.btn_next_month, getBroadcastPI(context, ACTION_NEXT_MONTH, 11));
+        views.setOnClickPendingIntent(R.id.btn_today, getBroadcastPI(context, ACTION_TODAY, 12));
+
+        // + 버튼: 앱의 캘린더 페이지 열기
+        Intent addIntent = new Intent(Intent.ACTION_VIEW);
+        addIntent.setData(Uri.parse("https://ilmeori.onrender.com/projects/calendar"));
+        addIntent.setClassName(context.getPackageName(), "com.ilmeori.app.MainActivity");
+        addIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        PendingIntent addPI = PendingIntent.getActivity(context, 13, addIntent,
+            PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
+        views.setOnClickPendingIntent(R.id.btn_add_process, addPI);
+
+        // GridView 어댑터 설정
+        Intent serviceIntent = new Intent(context, CalendarWidgetService.class);
+        serviceIntent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, widgetId);
+        serviceIntent.setData(Uri.parse(serviceIntent.toUri(Intent.URI_INTENT_SCHEME)));
+        views.setRemoteAdapter(R.id.calendar_grid, serviceIntent);
+
+        // 날짜 클릭 PendingIntent 템플릿
+        Intent dateClickIntent = new Intent(context, CalendarWidgetProvider.class);
+        dateClickIntent.setAction(ACTION_DATE_CLICK);
+        PendingIntent dateClickPI = PendingIntent.getBroadcast(context, 20, dateClickIntent,
+            PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_MUTABLE);
+        views.setPendingIntentTemplate(R.id.calendar_grid, dateClickPI);
+
         appWidgetManager.updateAppWidget(widgetId, views);
 
-        // 백그라운드에서 데이터 로드 & 캘린더 그리기
-        final int w = widthPx, h = heightPx;
+        // 백그라운드에서 API 데이터 가져오기
         ExecutorService executor = Executors.newSingleThreadExecutor();
         Handler handler = new Handler(Looper.getMainLooper());
 
         executor.execute(() -> {
             try {
                 String token = getWidgetToken(context);
-                String jsonStr = fetchCalendar(token);
+                String jsonStr = fetchCalendar(token, displayYear, displayMonth);
 
-                handler.post(() -> {
-                    try {
-                        Bitmap bitmap;
-                        if (jsonStr != null) {
-                            JSONObject json = new JSONObject(jsonStr);
-                            bitmap = drawCalendar(json, w, h, density);
-                        } else {
-                            bitmap = createLoginRequiredBitmap(w, h, density);
-                        }
-                        views.setImageViewBitmap(R.id.calendar_image, bitmap);
-                        appWidgetManager.updateAppWidget(widgetId, views);
-                    } catch (Exception e) {
-                        Log.e(TAG, "Render error", e);
-                    }
-                });
+                if (jsonStr != null) {
+                    JSONObject json = new JSONObject(jsonStr);
+                    JSONArray days = json.getJSONArray("days");
+
+                    // SharedPreferences에 캘린더 데이터 저장 (Service가 읽음)
+                    cal.edit().putString("calendar_data", days.toString()).apply();
+
+                    handler.post(() -> {
+                        // GridView 데이터 새로고침
+                        appWidgetManager.notifyAppWidgetViewDataChanged(widgetId, R.id.calendar_grid);
+                    });
+                }
             } catch (Exception e) {
                 Log.e(TAG, "Fetch error", e);
             }
         });
     }
 
-    private Bitmap drawCalendar(JSONObject json, int width, int height, float density) throws Exception {
-        Bitmap bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
-        Canvas canvas = new Canvas(bitmap);
-
-        int year = json.getInt("year");
-        int month = json.getInt("month");
-        JSONArray days = json.getJSONArray("days");
-
-        float pad = 16 * density;
-        float left = pad;
-        float top = pad;
-        float right = width - pad;
-        float bottom = height - pad;
-        float contentW = right - left;
-        float contentH = bottom - top;
-
-        // 배경 (둥근 모서리)
-        Paint bgPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-        bgPaint.setColor(BG_COLOR);
-        RectF bgRect = new RectF(0, 0, width, height);
-        canvas.drawRoundRect(bgRect, 20 * density, 20 * density, bgPaint);
-
-        // === 헤더: 년월 + 앱이름 ===
-        float headerH = 32 * density;
-        Paint headerPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-        headerPaint.setColor(HEADER_COLOR);
-        headerPaint.setTextSize(18 * density);
-        headerPaint.setTypeface(Typeface.DEFAULT_BOLD);
-        String headerText = year + "년 " + month + "월";
-        canvas.drawText(headerText, left + 4 * density, top + 22 * density, headerPaint);
-
-        // 앱이름 (오른쪽)
-        Paint appPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-        appPaint.setColor(APP_NAME_COLOR);
-        appPaint.setTextSize(11 * density);
-        appPaint.setTextAlign(Paint.Align.RIGHT);
-        canvas.drawText("일머리 ▸", right - 4 * density, top + 20 * density, appPaint);
-
-        float gridTop = top + headerH + 4 * density;
-
-        // === 요일 헤더 ===
-        String[] weekdays = {"일", "월", "화", "수", "목", "금", "토"};
-        float cellW = contentW / 7f;
-        float weekdayH = 18 * density;
-
-        Paint weekdayPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-        weekdayPaint.setTextSize(11 * density);
-        weekdayPaint.setTypeface(Typeface.DEFAULT_BOLD);
-        weekdayPaint.setTextAlign(Paint.Align.CENTER);
-
-        for (int i = 0; i < 7; i++) {
-            if (i == 0) weekdayPaint.setColor(SUNDAY_COLOR);
-            else if (i == 6) weekdayPaint.setColor(SATURDAY_COLOR);
-            else weekdayPaint.setColor(WEEKDAY_COLOR);
-
-            float cx = left + cellW * i + cellW / 2f;
-            canvas.drawText(weekdays[i], cx, gridTop + 14 * density, weekdayPaint);
-        }
-
-        // 구분선
-        Paint linePaint = new Paint();
-        linePaint.setColor(DIVIDER_COLOR);
-        linePaint.setStrokeWidth(1);
-        float lineY = gridTop + weekdayH + 2 * density;
-        canvas.drawLine(left, lineY, right, lineY, linePaint);
-
-        // === 날짜 그리드 (6주) ===
-        float dateGridTop = lineY + 4 * density;
-        float remainH = bottom - dateGridTop - 8 * density;
-        float cellH = remainH / 6f;
-
-        Paint datePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-        datePaint.setTextSize(13 * density);
-        datePaint.setTypeface(Typeface.DEFAULT_BOLD);
-        datePaint.setTextAlign(Paint.Align.CENTER);
-
-        Paint todayBgPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-        todayBgPaint.setColor(TODAY_BG);
-
-        Paint dotPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-
-        int totalDays = Math.min(days.length(), 42);
-
-        for (int i = 0; i < totalDays; i++) {
-            JSONObject day = days.getJSONObject(i);
-            int row = i / 7;
-            int col = i % 7;
-
-            float cx = left + cellW * col + cellW / 2f;
-            float cy = dateGridTop + cellH * row;
-
-            int dayNum = day.getInt("day");
-            boolean isCurrentMonth = day.getBoolean("current_month");
-            boolean isToday = day.getBoolean("today");
-            JSONArray items = day.optJSONArray("items");
-
-            // 오늘 배경 원
-            if (isToday) {
-                canvas.drawCircle(cx, cy + 11 * density, 12 * density, todayBgPaint);
-                datePaint.setColor(Color.WHITE);
-            } else if (!isCurrentMonth) {
-                datePaint.setColor(OTHER_MONTH_COLOR);
-            } else if (col == 0) {
-                datePaint.setColor(SUNDAY_COLOR);
-            } else if (col == 6) {
-                datePaint.setColor(SATURDAY_COLOR);
-            } else {
-                datePaint.setColor(DAY_COLOR);
-            }
-
-            // 날짜 숫자
-            String dayText = String.valueOf(dayNum);
-            canvas.drawText(dayText, cx, cy + 16 * density, datePaint);
-
-            // 공정 색상 도트 (최대 3개)
-            if (items != null && items.length() > 0) {
-                int dotCount = Math.min(items.length(), 3);
-                float dotR = 2.5f * density;
-                float dotY = cy + 24 * density;
-                float totalDotW = dotCount * dotR * 2 + (dotCount - 1) * 2 * density;
-                float dotStartX = cx - totalDotW / 2f + dotR;
-
-                for (int d = 0; d < dotCount; d++) {
-                    JSONObject item = items.getJSONObject(d);
-                    String colorStr = item.getString("color");
-                    try {
-                        dotPaint.setColor(Color.parseColor(colorStr));
-                    } catch (Exception e) {
-                        dotPaint.setColor(0xFF2563EB);
-                    }
-                    float dotX = dotStartX + d * (dotR * 2 + 2 * density);
-                    canvas.drawCircle(dotX, dotY, dotR, dotPaint);
-                }
-            }
-        }
-
-        return bitmap;
-    }
-
-    private Bitmap createLoadingBitmap(int width, int height, float density) {
-        Bitmap bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
-        Canvas canvas = new Canvas(bitmap);
-
-        Paint bgPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-        bgPaint.setColor(BG_COLOR);
-        canvas.drawRoundRect(new RectF(0, 0, width, height), 20 * density, 20 * density, bgPaint);
-
-        Paint textPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-        textPaint.setColor(WEEKDAY_COLOR);
-        textPaint.setTextSize(14 * density);
-        textPaint.setTextAlign(Paint.Align.CENTER);
-        canvas.drawText("📅 캘린더 로딩 중...", width / 2f, height / 2f, textPaint);
-
-        return bitmap;
-    }
-
-    private Bitmap createLoginRequiredBitmap(int width, int height, float density) {
-        Bitmap bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
-        Canvas canvas = new Canvas(bitmap);
-
-        Paint bgPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-        bgPaint.setColor(BG_COLOR);
-        canvas.drawRoundRect(new RectF(0, 0, width, height), 20 * density, 20 * density, bgPaint);
-
-        Paint textPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-        textPaint.setColor(WEEKDAY_COLOR);
-        textPaint.setTextSize(14 * density);
-        textPaint.setTextAlign(Paint.Align.CENTER);
-        canvas.drawText("앱에서 로그인해주세요", width / 2f, height / 2f - 10 * density, textPaint);
-
-        textPaint.setTextSize(12 * density);
-        textPaint.setColor(APP_NAME_COLOR);
-        canvas.drawText("일머리", width / 2f, height / 2f + 14 * density, textPaint);
-
-        return bitmap;
+    private PendingIntent getBroadcastPI(Context context, String action, int requestCode) {
+        Intent intent = new Intent(context, CalendarWidgetProvider.class);
+        intent.setAction(action);
+        return PendingIntent.getBroadcast(context, requestCode, intent,
+            PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
     }
 
     private String getWidgetToken(Context context) {
@@ -305,11 +193,11 @@ public class CalendarWidgetProvider extends AppWidgetProvider {
         return prefs.getString(KEY_TOKEN, null);
     }
 
-    private String fetchCalendar(String token) {
+    private String fetchCalendar(String token, int year, int month) {
         if (token == null || token.isEmpty()) return null;
 
         try {
-            URL url = new URL(API_URL);
+            URL url = new URL(API_URL + "?year=" + year + "&month=" + month);
             HttpURLConnection conn = (HttpURLConnection) url.openConnection();
             conn.setRequestMethod("GET");
             conn.setRequestProperty("Authorization", "Bearer " + token);
