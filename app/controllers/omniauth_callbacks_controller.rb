@@ -15,6 +15,13 @@ class OmniauthCallbacksController < ApplicationController
         token = SecureRandom.hex(32)
         Rails.cache.write("app_login_token:#{token}", user.id, expires_in: 60.seconds)
         @deep_link = "ilmeori://auth/callback?token=#{token}"
+
+        # nonce가 있으면 저장 (iOS 폴링용)
+        nonce = origin.match(/nonce=([^&]+)/)&.captures&.first
+        if nonce
+          Rails.cache.write("app_login_nonce:#{nonce}", token, expires_in: 120.seconds)
+        end
+
         render "omniauth_callbacks/app_redirect", layout: false
       else
         session[:user_id] = user.id
@@ -36,6 +43,17 @@ class OmniauthCallbacksController < ApplicationController
       redirect_to root_path
     else
       redirect_to login_path, alert: "로그인 토큰이 만료되었습니다. 다시 시도해주세요."
+    end
+  end
+
+  # iOS 폴링: nonce로 토큰 조회
+  def check_login
+    nonce = params[:nonce]
+    token = Rails.cache.read("app_login_nonce:#{nonce}")
+    if token
+      render json: { token: token }
+    else
+      render json: { token: nil }
     end
   end
 

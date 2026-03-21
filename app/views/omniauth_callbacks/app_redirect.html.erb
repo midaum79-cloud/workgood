@@ -50,24 +50,25 @@
     var isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
 
     if (isIOS) {
-      // iOS: SFSafariViewController에서 커스텀 스키마가 차단됨
-      // 방법 1: iframe으로 딥링크 시도
+      // iOS: WebView가 폴링으로 토큰을 받아서 자동 처리함
+      // SFSafariViewController 안에서는 이동하지 않음 (쿠키 비공유 문제)
+      // 딥링크도 시도 (혹시 작동하면 더 빠름)
       var iframe = document.createElement('iframe');
       iframe.style.display = 'none';
       iframe.src = deepLink;
       document.body.appendChild(iframe);
 
-      // 방법 2: 1.5초 후에도 앱으로 못 돌아가면 웹 폴백 URL로 이동
+      // 메시지 업데이트: 자동 처리됨을 안내
       setTimeout(function() {
-        // 직접 웹 세션 생성으로 폴백
-        window.location.href = webFallback;
-      }, 1500);
+        document.querySelector('p').textContent = '잠시만 기다려주세요...';
+      }, 2000);
 
-      // 3초 후에도 남아있으면 수동 버튼 표시
+      // 5초 후에도 안 닫혔으면 수동 안내
       setTimeout(function() {
-        document.getElementById('return-btn').style.display = 'inline-block';
-        document.getElementById('web-btn').style.display = 'inline-block';
-      }, 3000);
+        document.querySelector('p').textContent = '왼쪽 상단 X를 눌러 앱으로 돌아가세요';
+        document.querySelector('p').style.color = '#60a5fa';
+        document.querySelector('p').style.fontWeight = '700';
+      }, 5000);
     } else {
       // Android: 기존 방식 - 직접 딥링크
       window.location.href = deepLink;

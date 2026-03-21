@@ -24,6 +24,7 @@ Rails.application.routes.draw do
   post "/auth/google_oauth2/callback", to: "omniauth_callbacks#google_oauth2"
   get  "/auth/failure",                to: "omniauth_callbacks#failure"
   get  "/auth/token_login",            to: "omniauth_callbacks#token_login"
+  get  "/auth/check_login",            to: "omniauth_callbacks#check_login"
 
 
   # App Settings

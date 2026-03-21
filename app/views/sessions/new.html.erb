@@ -102,32 +102,64 @@
 
   // ── Google 로그인: Capacitor 앱 또는 Android WebView에서 외부 브라우저로 열기 ──
   if (isCapacitor || isAndroidWebView) {
+    var isIOS = /iPhone|iPad|iPod/i.test(ua);
     var googleBtn = document.getElementById('google-login-btn');
     if (googleBtn) {
       googleBtn.addEventListener('click', function(e) {
         e.preventDefault();
-        // origin 파라미터에 source=app을 포함하여 서버에서 앱 요청 판별
-        var oauthUrl = window.location.origin + '/auth/google_oauth2?origin=' + encodeURIComponent(window.location.origin + '?source=app');
-        console.log('[일머리] Google login clicked, oauthUrl:', oauthUrl);
+        // nonce 생성 (iOS 폴링용)
+        var nonce = Math.random().toString(36).substr(2) + Date.now().toString(36);
+        // origin 파라미터에 source=app과 nonce를 포함
+        var oauthUrl = window.location.origin + '/auth/google_oauth2?origin=' + encodeURIComponent(window.location.origin + '?source=app&nonce=' + nonce);
+        console.log('[일머리] Google login clicked, nonce:', nonce, 'oauthUrl:', oauthUrl);
 
         try {
           if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.Browser && window.Capacitor.Plugins.Browser.open) {
             console.log('[일머리] Using Capacitor Browser plugin');
             window.Capacitor.Plugins.Browser.open({ url: oauthUrl });
           } else {
-            // Capacitor Browser가 없으면 직접 이동 (Chrome Custom Tabs 또는 외부 브라우저)
             console.log('[일머리] Browser plugin not available, using location.href');
             window.location.href = oauthUrl;
+            return;
           }
         } catch(err) {
           console.error('[일머리] Google login error:', err);
           window.location.href = oauthUrl;
+          return;
         }
+
+        // 폴링: OAuth 완료될 때까지 서버에 토큰 존재 여부 확인
+        var pollCount = 0;
+        var maxPoll = 60; // 최대 2분
+        var pollInterval = setInterval(function() {
+          pollCount++;
+          if (pollCount > maxPoll) {
+            clearInterval(pollInterval);
+            return;
+          }
+          fetch('/auth/check_login?nonce=' + nonce)
+            .then(function(r) { return r.json(); })
+            .then(function(data) {
+              if (data.token) {
+                clearInterval(pollInterval);
+                console.log('[일머리] Token received via polling, closing browser');
+                // 외부 브라우저 닫기
+                try {
+                  if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.Browser) {
+                    window.Capacitor.Plugins.Browser.close();
+                  }
+                } catch(e) { console.log('[일머리] Browser close error:', e); }
+                // WebView에서 세션 생성
+                window.location.href = window.location.origin + '/auth/token_login?token=' + data.token;
+              }
+            })
+            .catch(function(err) { console.log('[일머리] Poll error:', err); });
+        }, 2000);
       });
     }
 
-    // 딥링크 수신 리스너: OAuth 완료 후 앱으로 복귀
-    if (window.Capacitor.Plugins && window.Capacitor.Plugins.App) {
+    // 딥링크 수신 리스너: OAuth 완료 후 앱으로 복귀 (Android용)
+    if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.App) {
       window.Capacitor.Plugins.App.addListener('appUrlOpen', function(event) {
         // ilmeori://auth/callback?token=xxx
         var url = event.url || '';
