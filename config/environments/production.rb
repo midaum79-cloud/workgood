@@ -10,7 +10,9 @@ Rails.application.configure do
   config.eager_load = true
 
   # Use ENV secret key directly — no credentials.yml.enc needed
-  config.secret_key_base = ENV["SECRET_KEY_BASE"] if ENV["SECRET_KEY_BASE"].present?
+  if ENV["SECRET_KEY_BASE"].present?
+    config.secret_key_base = ENV["SECRET_KEY_BASE"]
+  end
   config.require_master_key = false
 
   # Full error reports are disabled.
