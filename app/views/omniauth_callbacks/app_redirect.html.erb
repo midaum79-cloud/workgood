@@ -39,15 +39,44 @@
     <h2>✅ Google 로그인 성공!</h2>
     <p>앱으로 돌아가는 중...</p>
     <a class="btn" href="<%= @deep_link %>" id="return-btn" style="display:none;">앱으로 돌아가기</a>
+    <a class="btn" href="<%= @web_fallback || "/auth/token_login?token=#{@deep_link.split('token=').last}" %>" id="web-btn" style="display:none; margin-top:10px; background:#374151;">웹에서 계속하기</a>
   </div>
   <script>
-    // 즉시 딥링크로 앱 복귀 시도
-    window.location.href = '<%= @deep_link %>';
+    var deepLink = '<%= @deep_link %>';
+    var token = deepLink.split('token=')[1];
+    var webFallback = window.location.origin + '/auth/token_login?token=' + token;
 
-    // 2초 후에도 남아있으면 수동 버튼 표시
-    setTimeout(function() {
-      document.getElementById('return-btn').style.display = 'inline-block';
-    }, 2000);
+    // iOS 감지
+    var isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
+
+    if (isIOS) {
+      // iOS: SFSafariViewController에서 커스텀 스키마가 차단됨
+      // 방법 1: iframe으로 딥링크 시도
+      var iframe = document.createElement('iframe');
+      iframe.style.display = 'none';
+      iframe.src = deepLink;
+      document.body.appendChild(iframe);
+
+      // 방법 2: 1.5초 후에도 앱으로 못 돌아가면 웹 폴백 URL로 이동
+      setTimeout(function() {
+        // 직접 웹 세션 생성으로 폴백
+        window.location.href = webFallback;
+      }, 1500);
+
+      // 3초 후에도 남아있으면 수동 버튼 표시
+      setTimeout(function() {
+        document.getElementById('return-btn').style.display = 'inline-block';
+        document.getElementById('web-btn').style.display = 'inline-block';
+      }, 3000);
+    } else {
+      // Android: 기존 방식 - 직접 딥링크
+      window.location.href = deepLink;
+
+      // 2초 후에도 남아있으면 수동 버튼 표시
+      setTimeout(function() {
+        document.getElementById('return-btn').style.display = 'inline-block';
+      }, 2000);
+    }
   </script>
 </body>
 </html>
