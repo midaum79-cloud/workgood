@@ -1,6 +1,6 @@
 services:
   - type: web
-    name: ilmeori
+    name: workgood
     runtime: ruby
     plan: starter
     region: singapore
@@ -18,5 +18,5 @@ services:
       - key: DATABASE_URL
         sync: false
     customDomains:
-      - name: workhead.co.kr
-      - name: www.workhead.co.kr
+      - name: workgood.co.kr
+      - name: www.workgood.co.kr

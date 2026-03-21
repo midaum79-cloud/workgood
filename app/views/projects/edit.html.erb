@@ -17,17 +17,14 @@
 
     <div style="background:white; border-radius:20px; padding:18px; box-shadow:0 2px 10px rgba(0,0,0,0.04); display:flex; flex-direction:column; gap:16px;">
 
-      <div>
-        <div style="font-size:14px; font-weight:800; color:#374151; margin-bottom:8px;">현장명</div>
-        <%= form.text_field :project_name,
-            placeholder: "현장명을 적어주세요",
-            style: "width:100%; padding:14px 16px; border:1px solid #dcdfe4; border-radius:14px; font-size:16px; box-sizing:border-box;" %>
-      </div>
+      <!-- Hidden project name field, synced with client_name -->
+      <%= form.hidden_field :project_name, id: "hidden_edit_project_name" %>
 
       <div>
-        <div style="font-size:14px; font-weight:800; color:#374151; margin-bottom:8px;">고객명</div>
+        <div style="font-size:14px; font-weight:800; color:#374151; margin-bottom:8px;">업체명 / 고객명</div>
         <%= form.text_field :client_name,
-            placeholder: "예: 홍길동",
+            id: "edit_project_client_name",
+            placeholder: "거래처명 검색 또는 입력",
             style: "width:100%; padding:14px 16px; border:1px solid #dcdfe4; border-radius:14px; font-size:16px; box-sizing:border-box;" %>
       </div>
 
@@ -69,29 +66,138 @@
         </div>
       </div>
 
+      <!-- 시작일/종료일 hidden fields -->
+      <%= form.hidden_field :start_date, id: "edit_project_start_date" %>
+      <%= form.hidden_field :end_date, id: "edit_project_end_date" %>
+
+      <!-- 시공 일정 캘린더 -->
       <div>
-        <div style="font-size:14px; font-weight:800; color:#374151; margin-bottom:8px;">프로젝트 유형</div>
-        <%= form.select :project_type,
-            [["주거공간", "apartment"], ["상업공간", "commercial"]],
-            { selected: (@project.project_type.presence || "apartment") },
-            {
-              id: "edit_project_type_select",
-              style: "width:100%; padding:14px 16px; border:1px solid #dcdfe4; border-radius:14px; font-size:16px; box-sizing:border-box; background:white;"
-            } %>
+        <div style="font-size:14px; font-weight:800; color:#374151; margin-bottom:8px;">📅 시공 일정 수정</div>
+        <div style="font-size:12px; color:#6b7280; font-weight:600; margin-bottom:12px;">날짜를 터치하여 시공일을 선택/해제하세요.</div>
+
+        <div style="background:white; border:1px solid #e5e7eb; border-radius:16px; overflow:hidden;">
+          <div style="display:flex; justify-content:space-between; align-items:center; padding:14px 16px; background:#f9fafb; border-bottom:1px solid #f3f4f6;">
+            <button type="button" onclick="changeCalMonth(-1)" style="background:none; border:none; font-size:20px; cursor:pointer; padding:4px 8px;">◀</button>
+            <div id="calMonthLabel" style="font-size:16px; font-weight:900; color:#111827;"></div>
+            <button type="button" onclick="changeCalMonth(1)" style="background:none; border:none; font-size:20px; cursor:pointer; padding:4px 8px;">▶</button>
+          </div>
+          <div style="display:grid; grid-template-columns:repeat(7, 1fr); text-align:center; padding:8px 0; border-bottom:1px solid #f3f4f6;">
+            <div style="font-size:12px; font-weight:800; color:#dc2626;">일</div>
+            <div style="font-size:12px; font-weight:800; color:#374151;">월</div>
+            <div style="font-size:12px; font-weight:800; color:#374151;">화</div>
+            <div style="font-size:12px; font-weight:800; color:#374151;">수</div>
+            <div style="font-size:12px; font-weight:800; color:#374151;">목</div>
+            <div style="font-size:12px; font-weight:800; color:#374151;">금</div>
+            <div style="font-size:12px; font-weight:800; color:#2563eb;">토</div>
+          </div>
+          <div id="calGrid" style="display:grid; grid-template-columns:repeat(7, 1fr); text-align:center;"></div>
+        </div>
+
+        <div id="selectedDatesInfo" style="margin-top:10px; padding:10px 14px; background:#eff6ff; border:1px solid #bfdbfe; border-radius:12px; display:none;">
+          <div style="font-size:13px; font-weight:800; color:#1d4ed8;">선택된 시공일: <span id="selectedDatesCount">0</span>일</div>
+          <div id="selectedDatesRange" style="font-size:12px; color:#6b7280; font-weight:600; margin-top:4px;"></div>
+        </div>
       </div>
 
-      <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
-        <div>
-          <div style="font-size:14px; font-weight:800; color:#374151; margin-bottom:8px;">시작일</div>
-          <%= form.date_field :start_date,
-              style: "width:100%; padding:14px 16px; border:1px solid #dcdfe4; border-radius:14px; font-size:16px; box-sizing:border-box; background:white;" %>
-        </div>
+      <!-- 기본 기록 사항 -->
+      <div style="background:#f9fafb; border:1px solid #e5e7eb; border-radius:16px; padding:16px;">
+        <div style="font-size:15px; font-weight:900; color:#111827; margin-bottom:14px;">💰 기본 기록 사항</div>
 
-        <div>
-          <div style="font-size:14px; font-weight:800; color:#374151; margin-bottom:8px;">종료일</div>
-          <%= form.date_field :end_date,
-              style: "width:100%; padding:14px 16px; border:1px solid #dcdfe4; border-radius:14px; font-size:16px; box-sizing:border-box; background:white;" %>
+        <div style="display:flex; flex-direction:column; gap:12px;">
+          <div>
+            <div style="font-size:13px; font-weight:800; color:#374151; margin-bottom:6px;">견적금액</div>
+            <div style="position:relative;">
+              <%= form.number_field :estimate_amount,
+                  id: "edit_estimate_amount",
+                  placeholder: "견적금액을 입력하세요",
+                  style: "width:100%; padding:14px 16px 14px 16px; border:1px solid #dcdfe4; border-radius:12px; font-size:16px; box-sizing:border-box; background:white;",
+                  min: 0 %>
+              <span style="position:absolute; right:14px; top:50%; transform:translateY(-50%); font-size:14px; color:#9ca3af; font-weight:700;">원</span>
+            </div>
+          </div>
+
+          <div>
+            <div style="font-size:13px; font-weight:800; color:#374151; margin-bottom:6px;">계약금</div>
+            <div style="position:relative;">
+              <%= form.number_field :deposit_amount,
+                  id: "edit_deposit_amount",
+                  placeholder: "계약금이 있다면 입력하세요",
+                  style: "width:100%; padding:14px 16px 14px 16px; border:1px solid #dcdfe4; border-radius:12px; font-size:16px; box-sizing:border-box; background:white;",
+                  min: 0 %>
+              <span style="position:absolute; right:14px; top:50%; transform:translateY(-50%); font-size:14px; color:#9ca3af; font-weight:700;">원</span>
+            </div>
+          </div>
+
+          <div style="background:#fff7ed; border:1px solid #fed7aa; border-radius:12px; padding:12px 14px; display:flex; justify-content:space-between; align-items:center;">
+            <div style="font-size:13px; font-weight:800; color:#ea580c;">💰 잔금</div>
+            <div id="edit_balance_display" style="font-size:18px; font-weight:900; color:#ea580c;">
+              <%= number_with_delimiter([@project.estimate_amount.to_i - @project.deposit_amount.to_i, 0].max) %>원
+            </div>
+          </div>
+
+          <div>
+            <div style="font-size:13px; font-weight:800; color:#374151; margin-bottom:6px;">결제여부</div>
+            <div style="display:flex; gap:8px; overflow-x:auto; padding-bottom:4px; -webkit-overflow-scrolling:touch;">
+              <% ['미결제', '계약금결제', '중도금결제', '잔금결제', '완납'].each do |status| %>
+                <label style="cursor:pointer;">
+                  <%= form.radio_button :payment_status, status, style: "display:none;", id: "payment_status_#{status}" %>
+                  <span onclick="this.previousElementSibling.click();"
+                        class="payment-pill"
+                        data-status="<%= status %>"
+                        style="display:inline-flex; align-items:center; padding:10px 12px; border-radius:12px; font-size:13px; font-weight:800; border:1.5px solid #d1d5db; color:#6b7280; background:white; cursor:pointer; white-space:nowrap;
+                        <%= @project.payment_status == status ? 'background:#2563eb; color:white; border-color:#2563eb;' : '' %>">
+                    <%= status %>
+                  </span>
+                </label>
+              <% end %>
+            </div>
+          </div>
+
+          <div>
+            <div style="font-size:13px; font-weight:800; color:#374151; margin-bottom:6px;">일한 사람 명단</div>
+            <%= form.text_area :worker_names,
+                rows: 2,
+                placeholder: "예: 홍길동, 김철수, 이영희",
+                style: "width:100%; padding:14px 16px; border:1px solid #dcdfe4; border-radius:12px; font-size:15px; box-sizing:border-box; resize:none; background:white;" %>
+          </div>
+
+          <div>
+            <div style="font-size:13px; font-weight:800; color:#374151; margin-bottom:6px;">일 내용</div>
+            <%= form.text_area :work_description,
+                rows: 4,
+                placeholder: "시공 내용을 기록하세요",
+                style: "width:100%; padding:14px 16px; border:1px solid #dcdfe4; border-radius:12px; font-size:15px; box-sizing:border-box; resize:none; background:white;" %>
+          </div>
         </div>
+      </div>
+      <!-- 시공 사진 -->
+      <div style="background:#f9fafb; border:1px solid #e5e7eb; border-radius:16px; padding:16px;">
+        <div style="font-size:15px; font-weight:900; color:#111827; margin-bottom:14px;">📸 시공 사진</div>
+
+        <% if @project.photos.attached? %>
+          <div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:8px; margin-bottom:12px;">
+            <% @project.photos.each do |photo| %>
+              <div style="position:relative; border-radius:12px; overflow:hidden; aspect-ratio:1; background:#e5e7eb;">
+                <%= image_tag photo, style: "width:100%; height:100%; object-fit:cover;" %>
+                <%= button_to "✕", purge_photo_project_path(@project, photo_id: photo.id),
+                    method: :delete,
+                    data: { turbo_confirm: "이 사진을 삭제하시겠습니까?" },
+                    style: "position:absolute; top:4px; right:4px; width:24px; height:24px; border-radius:50%; background:rgba(0,0,0,0.6); color:white; border:none; font-size:14px; font-weight:900; cursor:pointer; display:flex; align-items:center; justify-content:center; padding:0;" %>
+              </div>
+            <% end %>
+          </div>
+        <% end %>
+
+        <label style="display:flex; flex-direction:column; align-items:center; gap:8px; padding:20px; border:2px dashed #d1d5db; border-radius:14px; cursor:pointer; background:white;">
+          <div style="font-size:28px;">📷</div>
+          <div style="font-size:14px; font-weight:800; color:#6b7280;">사진 추가하기</div>
+          <div style="font-size:12px; font-weight:600; color:#9ca3af;">여러 장 선택 가능</div>
+          <%= form.file_field :photos, multiple: true, accept: "image/*",
+              style: "display:none;",
+              onchange: "previewPhotos(this)" %>
+        </label>
+
+        <div id="photo-preview" style="display:none; grid-template-columns:repeat(3, 1fr); gap:8px; margin-top:10px;"></div>
       </div>
 
       <div>
@@ -177,6 +283,199 @@
           width: '100%',
           height: '100%'
         }).embed(wrap);
+      });
+    }
+  });
+</script>
+
+<script>
+  // === 시공 일정 캘린더 ===
+  var calYear, calMonth;
+  var selectedDates = {};
+
+  function initCal() {
+    // 기존 날짜 프리셋
+    var startVal = document.getElementById('edit_project_start_date').value;
+    var endVal = document.getElementById('edit_project_end_date').value;
+
+    if (startVal && endVal) {
+      // 시작일~종료일 사이의 모든 날짜를 선택
+      var start = new Date(startVal);
+      var end = new Date(endVal);
+      var cur = new Date(start);
+      while (cur <= end) {
+        var ds = formatDate(cur.getFullYear(), cur.getMonth(), cur.getDate());
+        selectedDates[ds] = true;
+        cur.setDate(cur.getDate() + 1);
+      }
+      // 시작일 기준으로 캘린더 표시
+      calYear = start.getFullYear();
+      calMonth = start.getMonth();
+    } else {
+      var now = new Date();
+      calYear = now.getFullYear();
+      calMonth = now.getMonth();
+    }
+
+    updateSelectedDatesUI();
+    renderCal();
+  }
+
+  function changeCalMonth(delta) {
+    calMonth += delta;
+    if (calMonth < 0) { calMonth = 11; calYear--; }
+    if (calMonth > 11) { calMonth = 0; calYear++; }
+    renderCal();
+  }
+
+  function pad(n) { return n < 10 ? '0' + n : '' + n; }
+
+  function formatDate(y, m, d) {
+    return y + '-' + pad(m + 1) + '-' + pad(d);
+  }
+
+  function renderCal() {
+    document.getElementById('calMonthLabel').textContent = calYear + '년 ' + (calMonth + 1) + '월';
+
+    var grid = document.getElementById('calGrid');
+    grid.innerHTML = '';
+
+    var firstDay = new Date(calYear, calMonth, 1).getDay();
+    var daysInMonth = new Date(calYear, calMonth + 1, 0).getDate();
+    var today = new Date();
+    var todayStr = formatDate(today.getFullYear(), today.getMonth(), today.getDate());
+
+    for (var i = 0; i < firstDay; i++) {
+      var empty = document.createElement('div');
+      empty.style.padding = '10px 0';
+      grid.appendChild(empty);
+    }
+
+    for (var d = 1; d <= daysInMonth; d++) {
+      var dateStr = formatDate(calYear, calMonth, d);
+      var cell = document.createElement('div');
+      cell.setAttribute('data-date', dateStr);
+      cell.style.padding = '10px 0';
+      cell.style.cursor = 'pointer';
+      cell.style.fontWeight = '700';
+      cell.style.fontSize = '14px';
+      cell.style.borderRadius = '10px';
+      cell.style.margin = '2px';
+      cell.style.transition = 'all 0.15s';
+
+      var dayOfWeek = new Date(calYear, calMonth, d).getDay();
+      if (dayOfWeek === 0) cell.style.color = '#dc2626';
+      else if (dayOfWeek === 6) cell.style.color = '#2563eb';
+      else cell.style.color = '#374151';
+
+      if (dateStr === todayStr) cell.style.fontWeight = '900';
+
+      if (selectedDates[dateStr]) {
+        cell.style.background = '#2563eb';
+        cell.style.color = 'white';
+        cell.style.fontWeight = '900';
+      }
+
+      cell.textContent = d;
+      cell.addEventListener('click', (function(ds) {
+        return function() { toggleDate(ds); };
+      })(dateStr));
+
+      grid.appendChild(cell);
+    }
+  }
+
+  function toggleDate(dateStr) {
+    if (selectedDates[dateStr]) {
+      delete selectedDates[dateStr];
+    } else {
+      selectedDates[dateStr] = true;
+    }
+    updateSelectedDatesUI();
+    renderCal();
+  }
+
+  function updateSelectedDatesUI() {
+    var dates = Object.keys(selectedDates).sort();
+    var info = document.getElementById('selectedDatesInfo');
+    var countEl = document.getElementById('selectedDatesCount');
+    var rangeEl = document.getElementById('selectedDatesRange');
+    var startInput = document.getElementById('edit_project_start_date');
+    var endInput = document.getElementById('edit_project_end_date');
+
+    if (dates.length === 0) {
+      info.style.display = 'none';
+      startInput.value = '';
+      endInput.value = '';
+      return;
+    }
+
+    info.style.display = 'block';
+    countEl.textContent = dates.length;
+    rangeEl.textContent = dates[0] + ' ~ ' + dates[dates.length - 1];
+    startInput.value = dates[0];
+    endInput.value = dates[dates.length - 1];
+  }
+
+  document.addEventListener('DOMContentLoaded', initCal);
+
+  // 결제여부 pill toggle
+  document.querySelectorAll('input[name="project[payment_status]"]').forEach(function(radio) {
+    radio.addEventListener('change', function() {
+      document.querySelectorAll('.payment-pill').forEach(function(pill) {
+        pill.style.background = 'white';
+        pill.style.color = '#6b7280';
+        pill.style.borderColor = '#d1d5db';
+      });
+      var selected = this.nextElementSibling;
+      if (selected) {
+        selected.style.background = '#2563eb';
+        selected.style.color = 'white';
+        selected.style.borderColor = '#2563eb';
+      }
+    });
+  });
+  // 잔금 자동 계산
+  function updateBalance() {
+    var est = parseInt(document.getElementById('edit_estimate_amount').value) || 0;
+    var dep = parseInt(document.getElementById('edit_deposit_amount').value) || 0;
+    var bal = Math.max(est - dep, 0);
+    document.getElementById('edit_balance_display').textContent = bal.toLocaleString() + '원';
+  }
+  document.getElementById('edit_estimate_amount').addEventListener('input', updateBalance);
+  document.getElementById('edit_deposit_amount').addEventListener('input', updateBalance);
+
+  // 사진 미리보기
+  function previewPhotos(input) {
+    var preview = document.getElementById('photo-preview');
+    preview.innerHTML = '';
+    if (input.files && input.files.length > 0) {
+      preview.style.display = 'grid';
+      Array.from(input.files).forEach(function(file) {
+        var reader = new FileReader();
+        reader.onload = function(e) {
+          var div = document.createElement('div');
+          div.style.cssText = 'border-radius:12px; overflow:hidden; aspect-ratio:1; background:#e5e7eb;';
+          var img = document.createElement('img');
+          img.src = e.target.result;
+          img.style.cssText = 'width:100%; height:100%; object-fit:cover;';
+          div.appendChild(img);
+          preview.appendChild(div);
+        };
+        reader.readAsDataURL(file);
+      });
+    } else {
+      preview.style.display = 'none';
+    }
+  }
+
+  // Sync client_name changes to hidden_project_name
+  document.addEventListener('DOMContentLoaded', function() {
+    var clientNameInput = document.getElementById('edit_project_client_name');
+    var hiddenProjectName = document.getElementById('hidden_edit_project_name');
+    if(clientNameInput && hiddenProjectName) {
+      clientNameInput.addEventListener('input', function(e) {
+        hiddenProjectName.value = e.target.value;
       });
     }
   });

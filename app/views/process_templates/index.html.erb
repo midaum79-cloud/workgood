@@ -4,7 +4,7 @@
   <div style="background:white; padding:18px 20px 14px 20px; border-bottom:1px solid #ececec; position:sticky; top:0; z-index:30; margin-bottom:16px;">
     <div style="display:flex; justify-content:space-between; align-items:center;">
       <div style="font-size:24px; color:#111827; font-weight:900; cursor:pointer;" onclick="openDrawer()">☰</div>
-      <div style="font-size:20px; font-weight:900;">공정 용어 관리</div>
+      <div style="font-size:20px; font-weight:900;">거래처 관리</div>
       <div style="width:40px;"></div>
     </div>
   </div>
@@ -18,98 +18,305 @@
       </div>
     <% end %>
 
-    <%# Description Card %>
-    <div style="background:white; border-radius:16px; padding:16px; margin-bottom:20px; box-shadow:0 2px 8px rgba(0,0,0,0.04);">
-      <div style="font-size:15px; font-weight:900; color:#111827; margin-bottom:6px;">📋 공정 용어란?</div>
-      <div style="font-size:13px; font-weight:600; color:#6b7280; line-height:1.6;">
-        현장추가 시 빠른 선택 버튼에 표시되는 공정 이름 목록입니다.<br>
-        주거공간과 상업공간을 각각 관리하고, 새 용어를 추가할 수 있습니다.
+    <%# 통합 검색 %>
+    <div style="margin-bottom:16px;">
+      <div style="position:relative;">
+        <input type="text" id="vendor-search" placeholder="거래처 검색 (초성 검색 가능: ㄱㄴㄷ...)"
+          oninput="filterVendors(this.value)"
+          style="width:100%; padding:12px 16px 12px 40px; border:1.5px solid #d1d5db; border-radius:14px; font-size:14px; font-weight:700; font-family:inherit; outline:none; box-sizing:border-box; background:white;"
+          onfocus="this.style.borderColor='#2563eb'" onblur="this.style.borderColor='#d1d5db'">
+        <span style="position:absolute; left:14px; top:50%; transform:translateY(-50%); font-size:16px;">🔍</span>
       </div>
     </div>
 
-    <%# === 주거공간 === %>
-    <div style="background:white; border-radius:16px; overflow:hidden; box-shadow:0 2px 8px rgba(0,0,0,0.04); margin-bottom:20px;">
+    <%# === 업체관리 === %>
+    <div id="company-section" style="background:white; border-radius:16px; overflow:hidden; box-shadow:0 2px 8px rgba(0,0,0,0.04); margin-bottom:20px;">
       <div style="padding:14px 16px; border-bottom:1px solid #f3f4f6; background:#eff6ff; display:flex; justify-content:space-between; align-items:center;">
-        <div style="font-size:15px; font-weight:900; color:#2563eb;">🏠 주거공간 공정 (<%= @residential_templates.count %>개)</div>
+        <div style="font-size:15px; font-weight:900; color:#2563eb;">🏢 업체관리 (<span id="company-count"><%= @company_vendors.count %></span>개)</div>
+        <div style="font-size:13px; font-weight:700; color:#2563eb; cursor:pointer;" onclick="document.getElementById('company-form').style.display = document.getElementById('company-form').style.display === 'none' ? 'block' : 'none'">+ 업체 추가</div>
       </div>
-      <% if @residential_templates.any? %>
-        <% @residential_templates.each_with_index do |template, idx| %>
-          <div style="display:flex; align-items:center; padding:12px 16px; border-bottom:<%= idx == @residential_templates.length - 1 ? 'none' : '1px solid #f3f4f6' %>; gap:12px;">
-            <div style="flex:1;">
-              <div style="display:flex; align-items:center; gap:8px;">
-                <span style="font-size:11px; font-weight:800; color:#9ca3af; min-width:20px;">#<%= idx + 1 %></span>
-                <span style="font-size:15px; font-weight:800; color:#111827;"><%= template.name %></span>
-                <% if template.is_default %>
-                  <span style="font-size:10px; font-weight:700; color:#2563eb; background:#dbeafe; padding:2px 7px; border-radius:999px;">기본</span>
+
+      <%# 업체 추가 폼 (기본 숨김) %>
+      <div id="company-form" style="display:none; padding:16px; border-bottom:1px solid #f3f4f6; background:#f9fafb;">
+        <%= form_with model: Vendor.new, url: vendors_path, method: :post, local: true do |f| %>
+          <%= f.hidden_field :vendor_type, value: "company" %>
+          <div style="display:flex; flex-direction:column; gap:10px;">
+            <div>
+              <div style="font-size:12px; font-weight:800; color:#374151; margin-bottom:4px;">업체명 *</div>
+              <%= f.text_field :name, placeholder: "업체명을 입력하세요", required: true,
+                  style: "width:100%; padding:10px 12px; border:1.5px solid #d1d5db; border-radius:10px; font-size:14px; font-weight:700; font-family:inherit; outline:none; box-sizing:border-box;" %>
+            </div>
+            <div>
+              <div style="font-size:12px; font-weight:800; color:#374151; margin-bottom:4px;">사업자등록번호</div>
+              <%= f.text_field :business_number, placeholder: "000-00-00000",
+                  style: "width:100%; padding:10px 12px; border:1.5px solid #d1d5db; border-radius:10px; font-size:14px; font-weight:700; font-family:inherit; outline:none; box-sizing:border-box;" %>
+            </div>
+            <div>
+              <div style="font-size:12px; font-weight:800; color:#374151; margin-bottom:4px;">사업장주소</div>
+              <%= f.text_field :address, placeholder: "사업장 주소를 입력하세요",
+                  style: "width:100%; padding:10px 12px; border:1.5px solid #d1d5db; border-radius:10px; font-size:14px; font-weight:700; font-family:inherit; outline:none; box-sizing:border-box;" %>
+            </div>
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+              <div>
+                <div style="font-size:12px; font-weight:800; color:#374151; margin-bottom:4px;">담당자 이름</div>
+                <%= f.text_field :contact_name, placeholder: "담당자명",
+                    style: "width:100%; padding:10px 12px; border:1.5px solid #d1d5db; border-radius:10px; font-size:14px; font-weight:700; font-family:inherit; outline:none; box-sizing:border-box;" %>
+              </div>
+              <div>
+                <div style="font-size:12px; font-weight:800; color:#374151; margin-bottom:4px;">연락처</div>
+                <%= f.telephone_field :phone, placeholder: "010-0000-0000",
+                    style: "width:100%; padding:10px 12px; border:1.5px solid #d1d5db; border-radius:10px; font-size:14px; font-weight:700; font-family:inherit; outline:none; box-sizing:border-box;" %>
+              </div>
+            </div>
+            <div>
+              <div style="font-size:12px; font-weight:800; color:#374151; margin-bottom:4px;">메모</div>
+              <%= f.text_area :memo, placeholder: "메모를 입력하세요", rows: 2,
+                  style: "width:100%; padding:10px 12px; border:1.5px solid #d1d5db; border-radius:10px; font-size:14px; font-weight:700; font-family:inherit; outline:none; box-sizing:border-box; resize:vertical;" %>
+            </div>
+            <button type="submit" style="width:100%; padding:12px; background:#2563eb; color:white; border:none; border-radius:12px; font-size:15px; font-weight:900; cursor:pointer;">업체 등록</button>
+          </div>
+        <% end %>
+      </div>
+
+      <%# 업체 목록 %>
+      <div id="company-list">
+        <% if @company_vendors.any? %>
+          <% @company_vendors.each_with_index do |vendor, idx| %>
+            <div class="vendor-item" data-name="<%= vendor.name %>" style="padding:14px 16px; border-bottom:<%= idx == @company_vendors.length - 1 ? 'none' : '1px solid #f3f4f6' %>;">
+              <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:6px;">
+                <div style="font-size:16px; font-weight:900; color:#111827;"><%= vendor.name %></div>
+                <div style="display:flex; gap:6px;">
+                  <%= link_to "수정", edit_vendor_path(vendor), style: "padding:5px 10px; background:#eff6ff; color:#2563eb; border-radius:8px; font-size:11px; font-weight:800; text-decoration:none;" %>
+                  <%= button_to "삭제", vendor_path(vendor), method: :delete,
+                      data: { confirm: "\"#{vendor.name}\" 업체를 삭제할까요?" },
+                      style: "padding:5px 10px; background:#fee2e2; color:#dc2626; border:none; border-radius:8px; font-size:11px; font-weight:800; cursor:pointer;" %>
+                </div>
+              </div>
+              <div style="display:flex; flex-direction:column; gap:3px;">
+                <% if vendor.business_number.present? %>
+                  <div style="font-size:12px; color:#6b7280; font-weight:600;">📋 사업자번호: <%= vendor.business_number %></div>
+                <% end %>
+                <% if vendor.address.present? %>
+                  <div style="font-size:12px; color:#6b7280; font-weight:600;">📍 <%= vendor.address %></div>
+                <% end %>
+                <% if vendor.contact_name.present? || vendor.phone.present? %>
+                  <div style="font-size:12px; color:#6b7280; font-weight:600;">👤 <%= vendor.contact_name %> <% if vendor.phone.present? %>· 📞 <%= vendor.phone %><% end %></div>
+                <% end %>
+                <% if vendor.memo.present? %>
+                  <div style="font-size:12px; color:#9ca3af; font-weight:600; margin-top:2px;">💬 <%= vendor.memo %></div>
                 <% end %>
               </div>
             </div>
-            <% unless template.is_default %>
-              <%= button_to "삭제",
-                  process_template_path(template),
-                  method: :delete,
-                  data: { confirm: "\"#{template.name}\" 용어를 삭제할까요?" },
-                  style: "padding:6px 10px; background:#fee2e2; color:#dc2626; border:none; border-radius:10px; font-size:12px; font-weight:800; cursor:pointer;" %>
-            <% end %>
-          </div>
+          <% end %>
         <% end %>
-      <% else %>
-        <div style="padding:24px; text-align:center; color:#9ca3af; font-size:14px;">등록된 주거공간 공정이 없습니다.</div>
-      <% end %>
-
-      <%# 주거공간 용어 추가 %>
-      <div style="padding:12px 16px; border-top:1px solid #f3f4f6; background:#f9fafb;">
-        <%= form_with model: ProcessTemplate.new, url: process_templates_path, method: :post, local: true, style: "display:flex; gap:8px;" do |f| %>
-          <%= f.hidden_field :project_type, value: "residential" %>
-          <%= f.text_field :name, placeholder: "새 공정 용어 입력",
-              style: "flex:1; padding:10px 12px; border:1.5px solid #d1d5db; border-radius:10px; font-size:14px; font-weight:700; font-family:inherit; outline:none; box-sizing:border-box;",
-              required: true %>
-          <button type="submit" style="padding:10px 16px; background:#2563eb; color:white; border:none; border-radius:10px; font-size:14px; font-weight:800; cursor:pointer; white-space:nowrap;">+ 추가</button>
-        <% end %>
+        <div id="company-empty" style="padding:24px; text-align:center; color:#9ca3af; font-size:14px; <%= @company_vendors.any? ? 'display:none;' : '' %>">등록된 업체가 없습니다.</div>
       </div>
     </div>
 
-    <%# === 상업공간 === %>
-    <div style="background:white; border-radius:16px; overflow:hidden; box-shadow:0 2px 8px rgba(0,0,0,0.04); margin-bottom:20px;">
+    <%# === 개인관리 === %>
+    <div id="individual-section" style="background:white; border-radius:16px; overflow:hidden; box-shadow:0 2px 8px rgba(0,0,0,0.04); margin-bottom:20px;">
       <div style="padding:14px 16px; border-bottom:1px solid #f3f4f6; background:#fff7ed; display:flex; justify-content:space-between; align-items:center;">
-        <div style="font-size:15px; font-weight:900; color:#ea580c;">🏢 상업공간 공정 (<%= @commercial_templates.count %>개)</div>
+        <div style="font-size:15px; font-weight:900; color:#ea580c;">👤 개인관리 (<span id="individual-count"><%= @individual_vendors.count %></span>개)</div>
+        <div style="font-size:13px; font-weight:700; color:#ea580c; cursor:pointer;" onclick="document.getElementById('individual-form').style.display = document.getElementById('individual-form').style.display === 'none' ? 'block' : 'none'">+ 개인 추가</div>
       </div>
-      <% if @commercial_templates.any? %>
-        <% @commercial_templates.each_with_index do |template, idx| %>
-          <div style="display:flex; align-items:center; padding:12px 16px; border-bottom:<%= idx == @commercial_templates.length - 1 ? 'none' : '1px solid #f3f4f6' %>; gap:12px;">
-            <div style="flex:1;">
-              <div style="display:flex; align-items:center; gap:8px;">
-                <span style="font-size:11px; font-weight:800; color:#9ca3af; min-width:20px;">#<%= idx + 1 %></span>
-                <span style="font-size:15px; font-weight:800; color:#111827;"><%= template.name %></span>
-                <% if template.is_default %>
-                  <span style="font-size:10px; font-weight:700; color:#ea580c; background:#fff7ed; padding:2px 7px; border-radius:999px; border:1px solid #fed7aa;">기본</span>
+
+      <%# 개인 추가 폼 (기본 숨김) %>
+      <div id="individual-form" style="display:none; padding:16px; border-bottom:1px solid #f3f4f6; background:#f9fafb;">
+        <%= form_with model: Vendor.new, url: vendors_path, method: :post, local: true do |f| %>
+          <%= f.hidden_field :vendor_type, value: "individual" %>
+          <div style="display:flex; flex-direction:column; gap:10px;">
+            <div>
+              <div style="font-size:12px; font-weight:800; color:#374151; margin-bottom:4px;">이름 *</div>
+              <%= f.text_field :name, placeholder: "거래처 이름을 입력하세요", required: true,
+                  style: "width:100%; padding:10px 12px; border:1.5px solid #d1d5db; border-radius:10px; font-size:14px; font-weight:700; font-family:inherit; outline:none; box-sizing:border-box;" %>
+            </div>
+            <div>
+              <div style="font-size:12px; font-weight:800; color:#374151; margin-bottom:4px;">사업자등록번호</div>
+              <%= f.text_field :business_number, placeholder: "000-00-00000",
+                  style: "width:100%; padding:10px 12px; border:1.5px solid #d1d5db; border-radius:10px; font-size:14px; font-weight:700; font-family:inherit; outline:none; box-sizing:border-box;" %>
+            </div>
+            <div>
+              <div style="font-size:12px; font-weight:800; color:#374151; margin-bottom:4px;">주소</div>
+              <%= f.text_field :address, placeholder: "주소를 입력하세요",
+                  style: "width:100%; padding:10px 12px; border:1.5px solid #d1d5db; border-radius:10px; font-size:14px; font-weight:700; font-family:inherit; outline:none; box-sizing:border-box;" %>
+            </div>
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+              <div>
+                <div style="font-size:12px; font-weight:800; color:#374151; margin-bottom:4px;">담당자 이름</div>
+                <%= f.text_field :contact_name, placeholder: "담당자명",
+                    style: "width:100%; padding:10px 12px; border:1.5px solid #d1d5db; border-radius:10px; font-size:14px; font-weight:700; font-family:inherit; outline:none; box-sizing:border-box;" %>
+              </div>
+              <div>
+                <div style="font-size:12px; font-weight:800; color:#374151; margin-bottom:4px;">연락처</div>
+                <%= f.telephone_field :phone, placeholder: "010-0000-0000",
+                    style: "width:100%; padding:10px 12px; border:1.5px solid #d1d5db; border-radius:10px; font-size:14px; font-weight:700; font-family:inherit; outline:none; box-sizing:border-box;" %>
+              </div>
+            </div>
+            <div>
+              <div style="font-size:12px; font-weight:800; color:#374151; margin-bottom:4px;">메모</div>
+              <%= f.text_area :memo, placeholder: "메모를 입력하세요", rows: 2,
+                  style: "width:100%; padding:10px 12px; border:1.5px solid #d1d5db; border-radius:10px; font-size:14px; font-weight:700; font-family:inherit; outline:none; box-sizing:border-box; resize:vertical;" %>
+            </div>
+            <button type="submit" style="width:100%; padding:12px; background:#ea580c; color:white; border:none; border-radius:12px; font-size:15px; font-weight:900; cursor:pointer;">개인 거래처 등록</button>
+          </div>
+        <% end %>
+      </div>
+
+      <%# 개인 목록 %>
+      <div id="individual-list">
+        <% if @individual_vendors.any? %>
+          <% @individual_vendors.each_with_index do |vendor, idx| %>
+            <div class="vendor-item" data-name="<%= vendor.name %>" style="padding:14px 16px; border-bottom:<%= idx == @individual_vendors.length - 1 ? 'none' : '1px solid #f3f4f6' %>;">
+              <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:6px;">
+                <div style="font-size:16px; font-weight:900; color:#111827;"><%= vendor.name %></div>
+                <div style="display:flex; gap:6px;">
+                  <%= link_to "수정", edit_vendor_path(vendor), style: "padding:5px 10px; background:#fff7ed; color:#ea580c; border-radius:8px; font-size:11px; font-weight:800; text-decoration:none;" %>
+                  <%= button_to "삭제", vendor_path(vendor), method: :delete,
+                      data: { confirm: "\"#{vendor.name}\" 거래처를 삭제할까요?" },
+                      style: "padding:5px 10px; background:#fee2e2; color:#dc2626; border:none; border-radius:8px; font-size:11px; font-weight:800; cursor:pointer;" %>
+                </div>
+              </div>
+              <div style="display:flex; flex-direction:column; gap:3px;">
+                <% if vendor.business_number.present? %>
+                  <div style="font-size:12px; color:#6b7280; font-weight:600;">📋 사업자번호: <%= vendor.business_number %></div>
+                <% end %>
+                <% if vendor.address.present? %>
+                  <div style="font-size:12px; color:#6b7280; font-weight:600;">📍 <%= vendor.address %></div>
+                <% end %>
+                <% if vendor.contact_name.present? || vendor.phone.present? %>
+                  <div style="font-size:12px; color:#6b7280; font-weight:600;">👤 <%= vendor.contact_name %> <% if vendor.phone.present? %>· 📞 <%= vendor.phone %><% end %></div>
+                <% end %>
+                <% if vendor.memo.present? %>
+                  <div style="font-size:12px; color:#9ca3af; font-weight:600; margin-top:2px;">💬 <%= vendor.memo %></div>
                 <% end %>
               </div>
             </div>
-            <% unless template.is_default %>
-              <%= button_to "삭제",
-                  process_template_path(template),
-                  method: :delete,
-                  data: { confirm: "\"#{template.name}\" 용어를 삭제할까요?" },
-                  style: "padding:6px 10px; background:#fee2e2; color:#dc2626; border:none; border-radius:10px; font-size:12px; font-weight:800; cursor:pointer;" %>
-            <% end %>
-          </div>
+          <% end %>
         <% end %>
-      <% else %>
-        <div style="padding:24px; text-align:center; color:#9ca3af; font-size:14px;">등록된 상업공간 공정이 없습니다.</div>
-      <% end %>
-
-      <%# 상업공간 용어 추가 %>
-      <div style="padding:12px 16px; border-top:1px solid #f3f4f6; background:#f9fafb;">
-        <%= form_with model: ProcessTemplate.new, url: process_templates_path, method: :post, local: true, style: "display:flex; gap:8px;" do |f| %>
-          <%= f.hidden_field :project_type, value: "commercial" %>
-          <%= f.text_field :name, placeholder: "새 공정 용어 입력",
-              style: "flex:1; padding:10px 12px; border:1.5px solid #d1d5db; border-radius:10px; font-size:14px; font-weight:700; font-family:inherit; outline:none; box-sizing:border-box;",
-              required: true %>
-          <button type="submit" style="padding:10px 16px; background:#ea580c; color:white; border:none; border-radius:10px; font-size:14px; font-weight:800; cursor:pointer; white-space:nowrap;">+ 추가</button>
-        <% end %>
+        <div id="individual-empty" style="padding:24px; text-align:center; color:#9ca3af; font-size:14px; <%= @individual_vendors.any? ? 'display:none;' : '' %>">등록된 개인 거래처가 없습니다.</div>
       </div>
     </div>
 
   </div>
 </div>
+
+<script>
+// 한글 초성 검색 엔진
+var CHO = ['ㄱ','ㄲ','ㄴ','ㄷ','ㄸ','ㄹ','ㅁ','ㅂ','ㅃ','ㅅ','ㅆ','ㅇ','ㅈ','ㅉ','ㅊ','ㅋ','ㅌ','ㅍ','ㅎ'];
+var HANGUL_START = 0xAC00;
+var HANGUL_END = 0xD7A3;
+var CHO_PERIOD = 21 * 28;
+
+function getChosung(str) {
+  var result = '';
+  for (var i = 0; i < str.length; i++) {
+    var code = str.charCodeAt(i);
+    if (code >= HANGUL_START && code <= HANGUL_END) {
+      var choIndex = Math.floor((code - HANGUL_START) / CHO_PERIOD);
+      result += CHO[choIndex];
+    } else {
+      result += str[i];
+    }
+  }
+  return result;
+}
+
+function isChosung(ch) {
+  return CHO.indexOf(ch) !== -1;
+}
+
+function isAllChosung(str) {
+  for (var i = 0; i < str.length; i++) {
+    if (!isChosung(str[i])) return false;
+  }
+  return true;
+}
+
+function matchChosung(name, query) {
+  if (!query) return true;
+  var lowerName = name.toLowerCase();
+  var lowerQuery = query.toLowerCase();
+
+  // 일반 텍스트 포함 검색
+  if (lowerName.indexOf(lowerQuery) !== -1) return true;
+
+  // 초성만 입력된 경우: 초성 매칭
+  if (isAllChosung(query)) {
+    var nameChosung = getChosung(name);
+    return nameChosung.indexOf(query) !== -1;
+  }
+
+  // 초성+한글 혼합: 문자별 매칭
+  var nameIdx = 0;
+  for (var qi = 0; qi < query.length; qi++) {
+    var qChar = query[qi];
+    var found = false;
+    while (nameIdx < name.length) {
+      var nCode = name.charCodeAt(nameIdx);
+      if (isChosung(qChar)) {
+        // 쿼리 문자가 초성이면, name의 초성과 비교
+        if (nCode >= HANGUL_START && nCode <= HANGUL_END) {
+          var nCho = CHO[Math.floor((nCode - HANGUL_START) / CHO_PERIOD)];
+          if (nCho === qChar) { nameIdx++; found = true; break; }
+        } else if (name[nameIdx].toLowerCase() === qChar.toLowerCase()) {
+          nameIdx++; found = true; break;
+        }
+      } else {
+        // 일반 문자끼리 비교
+        if (name[nameIdx].toLowerCase() === qChar.toLowerCase()) {
+          nameIdx++; found = true; break;
+        }
+      }
+      nameIdx++;
+    }
+    if (!found) return false;
+  }
+  return true;
+}
+
+function filterVendors(query) {
+  query = query.trim();
+
+  // 업체 필터링
+  var companyItems = document.querySelectorAll('#company-list .vendor-item');
+  var companyVisible = 0;
+  companyItems.forEach(function(item) {
+    var name = item.getAttribute('data-name') || '';
+    if (matchChosung(name, query)) {
+      item.style.display = '';
+      companyVisible++;
+    } else {
+      item.style.display = 'none';
+    }
+  });
+  document.getElementById('company-count').textContent = companyVisible;
+  var companyEmpty = document.getElementById('company-empty');
+  if (companyVisible === 0) {
+    companyEmpty.style.display = '';
+    companyEmpty.textContent = query ? '"' + query + '" 검색 결과가 없습니다.' : '등록된 업체가 없습니다.';
+  } else {
+    companyEmpty.style.display = 'none';
+  }
+
+  // 개인 필터링
+  var individualItems = document.querySelectorAll('#individual-list .vendor-item');
+  var individualVisible = 0;
+  individualItems.forEach(function(item) {
+    var name = item.getAttribute('data-name') || '';
+    if (matchChosung(name, query)) {
+      item.style.display = '';
+      individualVisible++;
+    } else {
+      item.style.display = 'none';
+    }
+  });
+  document.getElementById('individual-count').textContent = individualVisible;
+  var individualEmpty = document.getElementById('individual-empty');
+  if (individualVisible === 0) {
+    individualEmpty.style.display = '';
+    individualEmpty.textContent = query ? '"' + query + '" 검색 결과가 없습니다.' : '등록된 개인 거래처가 없습니다.';
+  } else {
+    individualEmpty.style.display = 'none';
+  }
+}
+</script>

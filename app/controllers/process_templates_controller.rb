@@ -5,6 +5,9 @@ class ProcessTemplatesController < ApplicationController
     @commercial_templates  = ProcessTemplate.commercial
     @templates             = ProcessTemplate.ordered
     @new_template          = ProcessTemplate.new
+    # 거래처 관리용
+    @company_vendors    = Vendor.companies
+    @individual_vendors = Vendor.individuals
   end
 
   def create

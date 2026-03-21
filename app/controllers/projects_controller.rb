@@ -83,6 +83,39 @@ class ProjectsController < ApplicationController
     @selected_year = params[:year]&.to_i || @grouped.first&.first || Date.current.year
   end
 
+  def monthly_payments
+    @unread_notifications_count = Notification.where(status: "unread").count
+
+    # 기간 파라미터 (기본: 현재 월)
+    if params[:start_date].present? && params[:end_date].present?
+      @start_date = Date.parse(params[:start_date])
+      @end_date = Date.parse(params[:end_date])
+    else
+      today = Date.current
+      @start_date = today.beginning_of_month
+      @end_date = today.end_of_month
+    end
+
+    @projects = current_user.projects
+      .includes(work_processes: :work_days)
+      .where("start_date <= ? AND end_date >= ?", @end_date, @start_date)
+      .or(current_user.projects.where("start_date >= ? AND start_date <= ?", @start_date, @end_date))
+      .order(start_date: :asc)
+
+    @total_estimate = @projects.sum(:estimate_amount).to_i
+    @total_deposit = @projects.sum(:deposit_amount).to_i
+    @total_outstanding = @total_estimate - @total_deposit
+
+    # 해당 기간 내 작업일 수집 (캘린더 표시용)
+    project_ids = @projects.pluck(:id)
+    @work_dates = WorkDay.joins(:work_process)
+      .where(work_processes: { project_id: project_ids })
+      .where(work_date: @start_date..@end_date)
+      .pluck(:work_date)
+      .uniq
+      .sort
+  end
+
   def calendar
     @selected_status = params[:status]
     @view_mode = "month"
@@ -90,9 +123,9 @@ class ProjectsController < ApplicationController
     @projects =
       case @selected_status
       when "진행중", "예정", "완료"
-        current_user.projects.includes(:work_processes).where(status: @selected_status).order(created_at: :asc)
+        current_user.projects.where(status: @selected_status).order(:start_date)
       else
-        current_user.projects.includes(:work_processes).order(created_at: :asc)
+        current_user.projects.order(:start_date)
       end
 
     base_date =
@@ -107,19 +140,12 @@ class ProjectsController < ApplicationController
     @calendar_year = base_date.year
     @calendar_month = base_date.month
 
-    if @view_mode == "2weeks"
-      calendar_start = base_date.beginning_of_week(:sunday)
-      calendar_end = calendar_start + 13.days
-      all_days = (calendar_start..calendar_end).to_a
-      @calendar_rows = [ all_days.first(7), all_days.last(7) ]
-    else
-      month_first_day = Date.new(@calendar_year, @calendar_month, 1)
-      month_last_day = Date.new(@calendar_year, @calendar_month, -1)
-      calendar_start = month_first_day.beginning_of_week(:sunday)
-      calendar_end = month_last_day.end_of_week(:sunday)
-      all_days = (calendar_start..calendar_end).to_a
-      @calendar_rows = all_days.each_slice(7).to_a
-    end
+    month_first_day = Date.new(@calendar_year, @calendar_month, 1)
+    month_last_day = Date.new(@calendar_year, @calendar_month, -1)
+    calendar_start = month_first_day.beginning_of_week(:sunday)
+    calendar_end = month_last_day.end_of_week(:sunday)
+    all_days = (calendar_start..calendar_end).to_a
+    @calendar_rows = all_days.each_slice(7).to_a
 
     @prev_month = base_date.prev_month
     @next_month = base_date.next_month
@@ -139,77 +165,76 @@ class ProjectsController < ApplicationController
         available_days.first || Time.zone.today
       end
 
-    project_ids = @projects.pluck(:id)
+    # 등록된 날짜: 각 프로젝트의 start_date~end_date 범위
+    @registered_dates = Set.new
+    @projects.each do |proj|
+      next unless proj.start_date && proj.end_date
+      (proj.start_date..proj.end_date).each { |d| @registered_dates.add(d) }
+    end
 
-    work_day_scope = WorkDay.includes(work_process: :project)
-                            .joins(:work_process)
-                            .where(work_processes: { project_id: project_ids })
-
+    # 프로젝트 단위 바 생성 (start_date ~ end_date)
     @calendar_bars_by_row = {}
     @calendar_row_heights = {}
 
     @calendar_rows.each_with_index do |row_days, row_index|
       row_start = row_days.first
+      row_end = row_days.last
 
-      raw_bars = work_day_scope.map do |work_day|
-        next unless row_days.include?(work_day.work_date)
+      raw_bars = @projects.filter_map do |proj|
+        next unless proj.start_date && proj.end_date
+        bar_start = [proj.start_date, row_start].max
+        bar_end = [proj.end_date, row_end].min
+        next if bar_start > bar_end
 
-        start_index = (work_day.work_date - row_start).to_i
+        start_index = (bar_start - row_start).to_i
+        end_index = (bar_end - row_start).to_i
+        span_days = end_index - start_index + 1
 
         {
-          work_day: work_day,
-          work_process: work_day.work_process,
-          project: work_day.work_process.project,
+          project: proj,
           start_index: start_index,
-          end_index: start_index,
-          span_days: 1
+          end_index: end_index,
+          span_days: span_days,
+          label: proj.client_name.presence || proj.project_name
         }
-      end.compact
-
-      sorted_bars = raw_bars.sort_by do |bar|
-        [
-          bar[:project].created_at,
-          bar[:start_index],
-          bar[:work_process].position || 9999,
-          bar[:work_process].id || 0,
-          bar[:work_day].id || 0
-        ]
       end
 
-      lane_end_indexes = []
+      sorted_bars = raw_bars.sort_by { |bar| [bar[:start_index], bar[:project].id] }
 
+      lane_end_indexes = []
       sorted_bars.each do |bar|
         assigned_lane = nil
-
-        lane_end_indexes.each_with_index do |lane_end_index, lane|
-          if bar[:start_index] > lane_end_index
+        lane_end_indexes.each_with_index do |lane_end, lane|
+          if bar[:start_index] > lane_end
             assigned_lane = lane
             break
           end
         end
-
         assigned_lane ||= lane_end_indexes.length
         lane_end_indexes[assigned_lane] = bar[:end_index]
         bar[:lane] = assigned_lane
       end
 
       @calendar_bars_by_row[row_index] = sorted_bars
-      @calendar_row_heights[row_index] = [ lane_end_indexes.length, 1 ].max * 20
+      @calendar_row_heights[row_index] = [lane_end_indexes.length, 1].max * 22
     end
 
     @calendar_projects = @calendar_bars_by_row.values.flatten.map { |bar| bar[:project] }.uniq
 
-    selected_day_work_days = work_day_scope.select { |wd| wd.work_date == @selected_date }
-
-    @selected_day_work_processes = selected_day_work_days
-      .map(&:work_process)
-      .uniq
-      .sort_by { |process| [ process.project.created_at, process.position || 9999, process.id || 0 ] }
+    # 선택 날짜에 해당하는 프로젝트 목록
+    @selected_day_projects = @projects.select do |proj|
+      proj.start_date && proj.end_date &&
+        @selected_date >= proj.start_date && @selected_date <= proj.end_date
+    end
   end
 
   def project_calendar
     @view_mode = "month"
 
+    # 같은 거래처의 모든 프로젝트 조회
+    @client_name = @project.client_name.presence || @project.project_name
+    @client_projects = current_user.projects.where(client_name: @client_name).order(:start_date)
+
     base_date =
       if params[:year].present? && params[:month].present?
         Date.new(params[:year].to_i, params[:month].to_i, 1)
@@ -222,19 +247,12 @@ class ProjectsController < ApplicationController
     @calendar_year = base_date.year
     @calendar_month = base_date.month
 
-    if @view_mode == "2weeks"
-      calendar_start = base_date.beginning_of_week(:sunday)
-      calendar_end = calendar_start + 13.days
-      all_days = (calendar_start..calendar_end).to_a
-      @calendar_rows = [ all_days.first(7), all_days.last(7) ]
-    else
-      month_first_day = Date.new(@calendar_year, @calendar_month, 1)
-      month_last_day = Date.new(@calendar_year, @calendar_month, -1)
-      calendar_start = month_first_day.beginning_of_week(:sunday)
-      calendar_end = month_last_day.end_of_week(:sunday)
-      all_days = (calendar_start..calendar_end).to_a
-      @calendar_rows = all_days.each_slice(7).to_a
-    end
+    month_first_day = Date.new(@calendar_year, @calendar_month, 1)
+    month_last_day = Date.new(@calendar_year, @calendar_month, -1)
+    calendar_start = month_first_day.beginning_of_week(:sunday)
+    calendar_end = month_last_day.end_of_week(:sunday)
+    all_days = (calendar_start..calendar_end).to_a
+    @calendar_rows = all_days.each_slice(7).to_a
 
     @prev_month = base_date.prev_month
     @next_month = base_date.next_month
@@ -254,70 +272,68 @@ class ProjectsController < ApplicationController
         available_days.first || Time.zone.today
       end
 
-    work_day_scope = WorkDay.includes(work_process: :project)
-                            .joins(:work_process)
-                            .where(work_processes: { project_id: @project.id })
+    # 등록된 날짜: 각 프로젝트의 start_date~end_date 범위
+    @registered_dates = Set.new
+    @client_projects.each do |proj|
+      next unless proj.start_date && proj.end_date
+      (proj.start_date..proj.end_date).each { |d| @registered_dates.add(d) }
+    end
 
+    # 프로젝트 단위 바 생성 (start_date ~ end_date)
     @calendar_bars_by_row = {}
     @calendar_row_heights = {}
 
     @calendar_rows.each_with_index do |row_days, row_index|
       row_start = row_days.first
+      row_end = row_days.last
 
-      raw_bars = work_day_scope.map do |work_day|
-        next unless row_days.include?(work_day.work_date)
+      raw_bars = @client_projects.filter_map do |proj|
+        next unless proj.start_date && proj.end_date
+        # 이 주(row)와 프로젝트 기간이 겹치는지 확인
+        bar_start = [proj.start_date, row_start].max
+        bar_end = [proj.end_date, row_end].min
+        next if bar_start > bar_end
 
-        start_index = (work_day.work_date - row_start).to_i
+        start_index = (bar_start - row_start).to_i
+        end_index = (bar_end - row_start).to_i
+        span_days = end_index - start_index + 1
 
         {
-          work_day: work_day,
-          work_process: work_day.work_process,
-          project: work_day.work_process.project,
+          project: proj,
           start_index: start_index,
-          end_index: start_index,
-          span_days: 1
+          end_index: end_index,
+          span_days: span_days,
+          label: proj.project_name.presence || proj.client_name
         }
-      end.compact
-
-      sorted_bars = raw_bars.sort_by do |bar|
-        [
-          bar[:start_index],
-          bar[:work_process].position || 9999,
-          bar[:work_process].id || 0,
-          bar[:work_day].id || 0
-        ]
       end
 
-      lane_end_indexes = []
+      sorted_bars = raw_bars.sort_by { |bar| [bar[:start_index], bar[:project].id] }
 
+      lane_end_indexes = []
       sorted_bars.each do |bar|
         assigned_lane = nil
-
-        lane_end_indexes.each_with_index do |lane_end_index, lane|
-          if bar[:start_index] > lane_end_index
+        lane_end_indexes.each_with_index do |lane_end, lane|
+          if bar[:start_index] > lane_end
             assigned_lane = lane
             break
           end
         end
-
         assigned_lane ||= lane_end_indexes.length
         lane_end_indexes[assigned_lane] = bar[:end_index]
         bar[:lane] = assigned_lane
       end
 
       @calendar_bars_by_row[row_index] = sorted_bars
-      @calendar_row_heights[row_index] = [ lane_end_indexes.length, 1 ].max * 20
+      @calendar_row_heights[row_index] = [lane_end_indexes.length, 1].max * 22
     end
 
-    @calendar_projects = [ @project ]
-    @projects = [ @project ] # Required for bottom sheet selection
+    @projects = @client_projects
 
-    selected_day_work_days = work_day_scope.select { |wd| wd.work_date == @selected_date }
-
-    @selected_day_work_processes = selected_day_work_days
-      .map(&:work_process)
-      .uniq
-      .sort_by { |process| [ process.position || 9999, process.id || 0 ] }
+    # 선택 날짜에 해당하는 프로젝트 목록
+    @selected_day_projects = @client_projects.select do |proj|
+      proj.start_date && proj.end_date &&
+        @selected_date >= proj.start_date && @selected_date <= proj.end_date
+    end
   end
 
   def show
@@ -327,6 +343,8 @@ class ProjectsController < ApplicationController
 
   def new
     @project = Project.new
+    @project.client_name = params[:client_name] if params[:client_name].present?
+    @project.start_date = params[:start_date] if params[:start_date].present?
   end
 
   def edit
@@ -398,6 +416,12 @@ class ProjectsController < ApplicationController
       render :edit, status: :unprocessable_entity
     end
   end
+  def purge_photo
+    @project = current_user.projects.find(params[:id])
+    photo = @project.photos.find(params[:photo_id])
+    photo.purge
+    redirect_to edit_project_path(@project), notice: "사진이 삭제되었습니다."
+  end
 
   def destroy
     @project.destroy
@@ -427,7 +451,13 @@ class ProjectsController < ApplicationController
       :color,
       :memo,
       :project_type,
-      selected_process_names: []
+      :estimate_amount,
+      :deposit_amount,
+      :payment_status,
+      :worker_names,
+      :work_description,
+      selected_process_names: [],
+      photos: []
     )
   end
 end

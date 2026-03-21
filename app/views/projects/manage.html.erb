@@ -89,19 +89,10 @@
               <% end %>
             </div>
 
-            <%# Progress bar %>
-            <div style="margin-bottom:14px;">
-              <div style="display:flex; justify-content:space-between; margin-bottom:5px;">
-                <span style="font-size:12px; font-weight:700; color:#9ca3af;">진행률</span>
-                <span style="font-size:12px; font-weight:900; color:#374151;"><%= project.progress_percentage %>%</span>
-              </div>
-              <div style="width:100%; height:6px; background:#e5e7eb; border-radius:999px; overflow:hidden;">
-                <div style="width:<%= project.progress_percentage %>%; height:100%; background:<%= project.theme_color_hex %>; border-radius:999px;"></div>
-              </div>
-            </div>
+
 
             <%# Action buttons %>
-            <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px;">
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
               <%= link_to project_path(project),
                   style: "display:block; padding:10px 0; background:#f3f4f6; color:#374151; border-radius:12px; text-align:center; text-decoration:none; font-size:13px; font-weight:800;" do %>
                 상세보기
@@ -109,10 +100,6 @@
               <%= link_to edit_project_path(project),
                   style: "display:block; padding:10px 0; background:#dbeafe; color:#2563eb; border-radius:12px; text-align:center; text-decoration:none; font-size:13px; font-weight:800;" do %>
                 현장수정
-              <% end %>
-              <%= link_to new_work_process_path(project_id: project.id),
-                  style: "display:block; padding:10px 0; background:#dcfce7; color:#166534; border-radius:12px; text-align:center; text-decoration:none; font-size:13px; font-weight:800;" do %>
-                공정추가
               <% end %>
             </div>
 

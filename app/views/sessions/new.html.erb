@@ -4,10 +4,10 @@
 
     <%# Logo %>
     <div style="margin-bottom:12px;">
-      <img src="/logo.png" alt="일머리 로고" style="width:260px; height:auto; filter:drop-shadow(0 4px 24px rgba(37,99,235,0.3));">
+      <img src="/logo.png" alt="일잘러 로고" style="width:260px; height:auto; filter:drop-shadow(0 4px 24px rgba(37,99,235,0.3));">
     </div>
 
-    <div style="font-size:15px; font-weight:700; color:rgba(255,255,255,0.5); text-align:center; margin-bottom:40px; letter-spacing:0.3px;">인테리어 현장 공정관리</div>
+    <div style="font-size:15px; font-weight:700; color:rgba(255,255,255,0.5); text-align:center; margin-bottom:40px; letter-spacing:0.3px;">시공 일정 관리 앱</div>
 
     <% if alert %>
       <div style="width:100%; background:rgba(239,68,68,0.15); border:1px solid rgba(239,68,68,0.3); color:#fca5a5; border-radius:14px; padding:12px 16px; margin-bottom:16px; font-size:14px; font-weight:700; text-align:center;"><%= alert %></div>
@@ -73,7 +73,7 @@
     </div>
 
     <div style="font-size:12px; color:rgba(255,255,255,0.2); text-align:center; margin-top:40px; line-height:1.7;">
-      일머리 v1.0 · © 2026<br>
+      일잘러 v1.0 · © 2026<br>
       <%= link_to "개인정보처리방침", privacy_path, style: "color:rgba(255,255,255,0.3); text-decoration:underline;" %> ·
       <%= link_to "이용약관", terms_path, style: "color:rgba(255,255,255,0.3); text-decoration:underline;" %>
     </div>
@@ -89,7 +89,7 @@
   var isCapacitor = !!(window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform());
   // Android WebView 감지 (Capacitor bridge가 없어도)
   var isAndroidWebView = /wv/.test(ua) || (/Android/.test(ua) && /Version\//.test(ua));
-  console.log('[일머리] isCapacitor:', isCapacitor, 'isAndroidWebView:', isAndroidWebView, 'UA:', ua);
+  console.log('[일잘러] isCapacitor:', isCapacitor, 'isAndroidWebView:', isAndroidWebView, 'UA:', ua);
 
   // 주요 인앱 브라우저 감지 (네이버, 카카오, 인스타, 페이스북, 라인, 다음 등)
   var inAppPatterns = [
@@ -111,19 +111,19 @@
         var nonce = Math.random().toString(36).substr(2) + Date.now().toString(36);
         // origin 파라미터에 source=app과 nonce를 포함
         var oauthUrl = window.location.origin + '/auth/google_oauth2?origin=' + encodeURIComponent(window.location.origin + '?source=app&nonce=' + nonce);
-        console.log('[일머리] Google login clicked, nonce:', nonce, 'oauthUrl:', oauthUrl);
+        console.log('[일잘러] Google login clicked, nonce:', nonce, 'oauthUrl:', oauthUrl);
 
         try {
           if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.Browser && window.Capacitor.Plugins.Browser.open) {
-            console.log('[일머리] Using Capacitor Browser plugin');
+            console.log('[일잘러] Using Capacitor Browser plugin');
             window.Capacitor.Plugins.Browser.open({ url: oauthUrl });
           } else {
-            console.log('[일머리] Browser plugin not available, using location.href');
+            console.log('[일잘러] Browser plugin not available, using location.href');
             window.location.href = oauthUrl;
             return;
           }
         } catch(err) {
-          console.error('[일머리] Google login error:', err);
+          console.error('[일잘러] Google login error:', err);
           window.location.href = oauthUrl;
           return;
         }
@@ -142,18 +142,18 @@
             .then(function(data) {
               if (data.token) {
                 clearInterval(pollInterval);
-                console.log('[일머리] Token received via polling, closing browser');
+                console.log('[일잘러] Token received via polling, closing browser');
                 // 외부 브라우저 닫기
                 try {
                   if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.Browser) {
                     window.Capacitor.Plugins.Browser.close();
                   }
-                } catch(e) { console.log('[일머리] Browser close error:', e); }
+                } catch(e) { console.log('[일잘러] Browser close error:', e); }
                 // WebView에서 세션 생성
                 window.location.href = window.location.origin + '/auth/token_login?token=' + data.token;
               }
             })
-            .catch(function(err) { console.log('[일머리] Poll error:', err); });
+            .catch(function(err) { console.log('[일잘러] Poll error:', err); });
         }, 2000);
       });
     }

@@ -1,12 +1,12 @@
 <!DOCTYPE html>
 <html lang="ko">
   <head>
-    <title>일머리</title>
+    <title>일잘러</title>
     <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="일머리">
+    <meta name="apple-mobile-web-app-title" content="일잘러">
     <meta name="theme-color" content="#ffffff">
     <meta name="format-detection" content="telephone=no">
 
@@ -331,7 +331,7 @@
       align-items:center; justify-content:center;
       transition:opacity 0.4s ease;
     ">
-      <img src="/icon-512.png" alt="일머리" style="
+      <img src="/icon-512.png" alt="일잘러" style="
         width:30vw; max-width:160px; min-width:80px;
         border-radius:22%;
         box-shadow:0 8px 30px rgba(0,0,0,0.12);
@@ -340,12 +340,12 @@
         margin-top:20px; font-size:22px; font-weight:900;
         color:#111827; letter-spacing:-0.5px;
         font-family: 'Pretendard', -apple-system, sans-serif;
-      ">일머리</div>
+      ">일잘러</div>
       <div style="
         margin-top:6px; font-size:13px; font-weight:600;
         color:#9ca3af;
         font-family: 'Pretendard', -apple-system, sans-serif;
-      ">인테리어 공정관리</div>
+      ">시공 관리</div>
     </div>
     <script>
       (function() {
@@ -427,22 +427,10 @@
           <span>홈</span>
         <% end %>
 
-        <% project_show_match = current_path.match(/\A\/projects\/(\d+)(\/calendar)?\z/) %>
-        <% if current_path == '/projects/calendar' %>
-          <div class="bottom-nav-item" onclick="document.getElementById('ongoing-processes-modal').style.display='flex'" style="cursor:pointer;">
-            <span class="bottom-nav-icon">➕</span>
-            <span>공정 추가</span>
-          </div>
-        <% elsif project_show_match %>
-          <%= link_to new_work_process_path(project_id: project_show_match[1]), class: "bottom-nav-item" do %>
-            <span class="bottom-nav-icon">➕</span>
-            <span>공정 추가</span>
-          <% end %>
-        <% else %>
-          <%= link_to new_project_path, class: "bottom-nav-item #{current_path == '/projects/new' ? 'active' : ''}" do %>
-            <span class="bottom-nav-icon">➕</span>
-            <span>현장추가</span>
-          <% end %>
+        <% add_active = current_path == '/projects/new' ? 'active' : '' %>
+        <%= link_to new_project_path, class: "bottom-nav-item #{add_active}" do %>
+          <span class="bottom-nav-icon">➕</span>
+          <span>현장추가</span>
         <% end %>
 
         <%= link_to calendar_projects_path, class: "bottom-nav-item #{current_path == '/projects/calendar' ? 'active' : ''}" do %>
@@ -459,7 +447,7 @@
       <!-- Drawer Header -->
       <div class="drawer-header">
         <div>
-          <div class="drawer-title">일머리</div>
+          <div class="drawer-title">일잘러</div>
           <% if logged_in? %>
             <div style="font-size:12px; color:#374151; font-weight:700; margin-top:4px;">
               <%= current_user.name %>
@@ -468,7 +456,7 @@
               </span>
             </div>
           <% else %>
-            <div style="font-size:12px; color:#6b7280; font-weight:600; margin-top:2px;">인테리어 공정관리</div>
+            <div style="font-size:12px; color:#6b7280; font-weight:600; margin-top:2px;">시공 관리</div>
           <% end %>
         </div>
         <div class="drawer-close" onclick="closeDrawer()">✕</div>
@@ -526,7 +514,7 @@
 
         <!-- 사용 방법 안내 -->
         <%= link_to guide_path, class: "drawer-item", onclick: "closeDrawer()", style: "background:#eff6ff;" do %>
-          <span class="drawer-item-icon">📘</span> 일머리 사용 설명서 <span style="margin-left:auto; font-size:10px; font-weight:800; background:#dbeafe; color:#1d4ed8; padding:2px 8px; border-radius:999px;">NEW</span>
+          <span class="drawer-item-icon">📘</span> 일잘러 사용 설명서 <span style="margin-left:auto; font-size:10px; font-weight:800; background:#dbeafe; color:#1d4ed8; padding:2px 8px; border-radius:999px;">NEW</span>
         <% end %>
 
         <div class="drawer-divider"></div>
@@ -535,11 +523,8 @@
         <%= link_to manage_projects_path, class: "drawer-item", onclick: "closeDrawer()" do %>
           <span class="drawer-item-icon">🏗️</span> 현장관리
         <% end %>
-        <%= link_to vendors_path, class: "drawer-item", onclick: "closeDrawer()" do %>
-          <span class="drawer-item-icon">🏢</span> 업체 관리
-        <% end %>
-        <%= link_to process_templates_path, class: "drawer-item", onclick: "closeDrawer()" do %>
-          <span class="drawer-item-icon">📋</span> 공정 용어 관리
+        <%= link_to monthly_payments_projects_path, class: "drawer-item", onclick: "closeDrawer()" do %>
+          <span class="drawer-item-icon">💰</span> 한달 입금 내역
         <% end %>
         <%= link_to archive_projects_path, class: "drawer-item", onclick: "closeDrawer()" do %>
           <span class="drawer-item-icon">🔍</span> 완료 현장 검색
@@ -590,7 +575,7 @@
           <% end %>
         <% end %>
         <div style="padding:10px 20px; font-size:12px; color:#9ca3af; font-weight:500; text-align:center;">
-          일머리 v1.0 · © 2026
+          일잘러 v1.0 · © 2026
         </div>
 
       </div>

@@ -6,7 +6,7 @@ require "rails/all"
 # you've limited to :test, :development, or :production.
 Bundler.require(*Rails.groups)
 
-module InteriorManager
+module Workgood
   class Application < Rails::Application
     if File.exist?(Rails.root.join('.env'))
       File.readlines(Rails.root.join('.env')).each do |line|

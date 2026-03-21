@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_03_17_214908) do
+ActiveRecord::Schema[8.1].define(version: 2026_03_21_123513) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -105,8 +105,11 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_17_214908) do
     t.string "color"
     t.string "common_entrance_password"
     t.datetime "created_at", null: false
+    t.integer "deposit_amount"
     t.date "end_date"
+    t.integer "estimate_amount"
     t.text "memo"
+    t.string "payment_status"
     t.string "private_entrance_password"
     t.string "project_name"
     t.string "project_type"
@@ -114,6 +117,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_17_214908) do
     t.string "status"
     t.datetime "updated_at", null: false
     t.bigint "user_id"
+    t.text "work_description"
+    t.text "worker_names"
   end
 
   create_table "site_members", force: :cascade do |t|
@@ -201,6 +206,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_17_214908) do
   end
 
   create_table "vendors", force: :cascade do |t|
+    t.string "address"
+    t.string "business_number"
     t.string "contact_name"
     t.datetime "created_at", null: false
     t.text "memo"
@@ -208,6 +215,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_17_214908) do
     t.string "phone"
     t.string "specialty"
     t.datetime "updated_at", null: false
+    t.string "vendor_type"
   end
 
   create_table "web_push_subscriptions", force: :cascade do |t|

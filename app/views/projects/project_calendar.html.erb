@@ -12,7 +12,7 @@
         text-overflow:ellipsis;
         max-width:100%;
         display:block;
-      "><%= @project.project_name %> 일정표</span>
+      "><%= @client_name %> 일정표</span>
     </div>
 
     <%= link_to notifications_path, style: "position:relative; text-decoration:none;" do %>
@@ -45,7 +45,7 @@
 <div style="min-height:100dvh; background:#f5f5f5; padding:16px 16px 80px 16px; display:flex; flex-direction:column;">
   <div style="background:white; border-radius:20px; padding:18px; box-shadow:0 2px 10px rgba(0,0,0,0.04); margin-bottom:0; flex:1; display:flex; flex-direction:column;">
     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
-      <div style="font-size:22px; font-weight:900; color:#111827;">인테리어 공정 일정</div>
+      <div style="font-size:22px; font-weight:900; color:#111827;"><%= @client_name %> 일정</div>
 
       <div style="display:flex; align-items:center; gap:12px;">
         <%= link_to "◀",
@@ -98,6 +98,7 @@
             <% row_days.each do |day| %>
               <% is_current_month = (day.month == @calendar_month) %>
               <% is_selected = (day == @selected_date) %>
+              <% has_work = @registered_dates.include?(day) %>
               
               <% date_text_color = if !is_current_month
                   '#9ca3af'
@@ -124,62 +125,58 @@
                     padding:4px 0 2px 0;
                     box-sizing:border-box;
                     text-align:center;
-                    background:#{is_selected ? '#f6e8b0' : 'white'};
+                    background:#{is_selected ? '#f6e8b0' : has_work ? '#e0f2fe' : 'white'};
                     color:#{date_text_color};
                     font-size:16px;
                     font-weight:900;
                     display:flex;
-                    align-items:flex-start;
-                    justify-content:center;
+                    flex-direction:column;
+                    align-items:center;
+                    justify-content:flex-start;
                     transition:background 0.15s;
                   " do %>
                 <span><%= format('%02d', day.day) %></span>
+                <% if has_work && is_current_month %>
+                  <span style="width:6px; height:6px; border-radius:50%; background:<%= @project.theme_color_hex %>; margin-top:2px;"></span>
+                <% end %>
               <% end %>
             <% end %>
           </div>
 
-          <div style="position:relative; flex:1; min-height:<%= [@calendar_row_heights[row_index] || 20, 20].max %>px; margin:0 6px 6px 6px;">
+          <div style="position:relative; flex:1; min-height:<%= [@calendar_row_heights[row_index] || 22, 22].max %>px; margin:0 6px 6px 6px;">
             <% (@calendar_bars_by_row[row_index] || []).each do |bar| %>
-              <% work_process = bar[:work_process] %>
               <% left_percent = (bar[:start_index] * 100.0 / 7.0) %>
               <% width_percent = (bar[:span_days] * 100.0 / 7.0) %>
-              <% top_offset = (bar[:lane] * 20) %>
-
-              <% bar_color = bar[:project].color.presence || 'gold' %>
+              <% top_offset = (bar[:lane] * 22) %>
               <% text_color = bar[:project].theme_color_hex %>
               
               <%= content_tag :div,
-                  data: { work_day_id: bar[:work_day].id, process_name: work_process.process_name, href: work_process_path(work_process) },
                   class: "calendar-bar",
-                  onclick: "if(!window._dragOccurred){window.location.href='#{work_process_path(work_process)}'}",
+                  onclick: "window.location.href='#{project_path(bar[:project])}'",
                   style: "
                     position:absolute;
                     left:#{left_percent}%;
                     width:calc(#{width_percent}% - 4px);
                     top:#{top_offset}px;
-                    height:18px;
+                    height:20px;
                     color:#{text_color};
                     cursor:pointer;
                     display:flex;
                     align-items:center;
-                    padding:0 2px;
-                    font-size:clamp(7px, 2.2vw, 9px);
+                    padding:0 4px;
+                    font-size:clamp(8px, 2.4vw, 10px);
                     font-weight:800;
-                    letter-spacing:clamp(-0.6px, -0.14vw, -0.4px);
+                    letter-spacing:-0.3px;
                     overflow:hidden;
                     white-space:nowrap;
                     text-overflow:ellipsis;
                     box-sizing:border-box;
-                    touch-action:none;
-                    -webkit-touch-callout:none;
-                    -webkit-user-select:none;
-                    user-select:none;
                     background:#{text_color}1a;
                     border:1px solid #{text_color}4d;
-                    border-radius:4px;
+                    border-radius:5px;
                   " do %>
                 <span style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">
-                  <%= work_process.process_name %>
+                  <%= bar[:label] %>
                 </span>
               <% end %>
             <% end %>
@@ -200,7 +197,7 @@
   transition:all 0.3s ease;
 "></div>
 
-<!-- Bottom Sheet -->
+<!-- Bottom Sheet - 거래처 선택 -->
 <div id="bottomSheet" style="
   position:fixed; left:0; right:0; bottom:0;
   background:white; z-index:510;
@@ -217,100 +214,52 @@
 
   <div style="padding:8px 20px 14px 20px; display:flex; justify-content:space-between; align-items:center;">
     <div>
-      <div id="bsTitle" style="font-size:20px; font-weight:900; color:#111827;">공정 추가</div>
+      <div id="bsTitle" style="font-size:20px; font-weight:900; color:#111827;">현장 추가</div>
       <div id="bsSubtitle" style="font-size:13px; font-weight:700; color:#9ca3af; margin-top:2px;"></div>
     </div>
     <div onclick="closeBottomSheet()" style="font-size:22px; color:#9ca3af; cursor:pointer; padding:4px 8px;">✕</div>
   </div>
 
-  <div id="bsStep1" style="padding:0 16px 20px 16px;">
-    <div style="font-size:14px; font-weight:800; color:#6b7280; margin-bottom:10px;">현장을 선택하세요</div>
-    <div id="bsProjectList" style="display:flex; flex-direction:column; gap:8px;"></div>
-  </div>
+  <div style="padding:0 16px 20px 16px;">
+    <!-- 탭 -->
+    <div style="display:flex; gap:8px; margin-bottom:14px;">
+      <button type="button" id="bsTabCompany" onclick="bsSwitchTab('company')" style="flex:1; padding:10px; border:none; border-radius:12px; font-size:14px; font-weight:800; cursor:pointer; background:#111827; color:white;">🏢 업체</button>
+      <button type="button" id="bsTabPersonal" onclick="bsSwitchTab('personal')" style="flex:1; padding:10px; border:none; border-radius:12px; font-size:14px; font-weight:800; cursor:pointer; background:#f3f4f6; color:#6b7280;">👤 개인</button>
+      <button type="button" id="bsTabDirect" onclick="bsSwitchTab('direct')" style="flex:1; padding:10px; border:none; border-radius:12px; font-size:14px; font-weight:800; cursor:pointer; background:#f3f4f6; color:#6b7280;">✏️ 직접입력</button>
+    </div>
 
-  <div id="bsStep2" style="display:none; padding:0 16px 20px 16px;">
-    <div style="font-size:14px; font-weight:800; color:#6b7280; margin-bottom:10px;">📋 기존 공정에 날짜 추가</div>
-    <div id="bsProcessList" style="display:flex; flex-wrap:wrap; gap:8px; margin-bottom:20px;"></div>
+    <!-- 검색 (업체/개인) -->
+    <div id="bsSearchArea">
+      <input type="text" id="bsSearchInput" placeholder="거래처명을 검색하세요 (초성 검색 가능)"
+        oninput="bsSearchVendor()"
+        style="width:100%; padding:14px 16px; border:1px solid #dcdfe4; border-radius:12px; font-size:15px; box-sizing:border-box; margin-bottom:10px;">
+      <div id="bsSearchResults" style="display:flex; flex-direction:column; gap:6px; max-height:200px; overflow-y:auto;"></div>
+    </div>
 
-    <div style="font-size:14px; font-weight:800; color:#6b7280; margin-bottom:10px;">⚡ 기본 공정 빠른 추가</div>
-    <div id="bsPresetList" style="display:flex; flex-wrap:wrap; gap:8px; margin-bottom:20px;"></div>
-
-    <div style="font-size:14px; font-weight:800; color:#6b7280; margin-bottom:10px;">✏️ 추가 공정 직접 입력</div>
-    <div style="display:flex; gap:8px;">
-      <input type="text" id="bsCustomProcessName" placeholder="공정명을 입력하세요"
-        style="flex:1; height:46px; border:1px solid #dcdcdc; border-radius:12px; padding:0 14px; font-size:15px; font-weight:700; box-sizing:border-box;">
-      <button type="button" onclick="bsQuickCreateCustom()" style="padding:0 18px; height:46px; border:none; border-radius:12px; background:#374151; color:white; font-size:15px; font-weight:900; cursor:pointer; white-space:nowrap;">추가</button>
+    <!-- 직접 입력 -->
+    <div id="bsDirectArea" style="display:none;">
+      <input type="text" id="bsDirectName" placeholder="거래처명을 입력하세요"
+        style="width:100%; padding:14px 16px; border:1px solid #dcdfe4; border-radius:12px; font-size:15px; box-sizing:border-box; margin-bottom:10px;">
+      <button type="button" onclick="bsGoToNewProject(document.getElementById('bsDirectName').value)"
+        style="width:100%; padding:14px; border:none; border-radius:12px; background:#2563eb; color:white; font-size:16px; font-weight:900; cursor:pointer;">
+        현장 추가로 이동 →
+      </button>
     </div>
   </div>
 </div>
 
-
-
-<% all_projects_data = @projects.map { |p|
-  {
-    id: p.id,
-    name: p.project_name,
-    color: p.theme_color_hex,
-    processes: p.work_processes
-      .sort_by { |wp| [wp.position || 9999, wp.id] }
-      .group_by(&:process_name)
-      .map { |name, wps| { id: wps.first.id, name: name } }
-  }
-} %>
-
 <script>
-var calendarProjects = <%= raw all_projects_data.to_json %>;
 var bsSelectedDate = null;
-var bsSelectedProjectId = null;
-var projectType = '<%= @project.project_type %>';
-var presetResidential = ["철거", "확장", "샤시", "목공", "전기", "에어컨", "타일", "도기", "필름", "도배", "바닥", "돔천장", "탄성코트", "가구", "조명", "청소"];
-var presetCommercial = ["철거", "설비", "경량", "목공", "전기", "냉난방", "유리공사", "금속공사", "자동문", "페인트", "도배", "바닥", "가구", "간판", "사인", "조명", "청소"];
-var presetProcesses = (projectType === 'commercial') ? presetCommercial : presetResidential;
+var bsCurrentTab = 'company';
 
 function openBottomSheet(dateStr) {
   bsSelectedDate = dateStr;
-  bsSelectedProjectId = null;
-
   var parts = dateStr.split('-');
   document.getElementById('bsSubtitle').textContent = parts[0] + '년 ' + parseInt(parts[1]) + '월 ' + parseInt(parts[2]) + '일';
-  document.getElementById('bsTitle').textContent = '공정 추가';
-
-  if (calendarProjects.length === 1) {
-    bsSelectProject(calendarProjects[0].id);
-  } else {
-    var list = document.getElementById('bsProjectList');
-    list.innerHTML = '';
-
-    if (calendarProjects.length === 0) {
-      list.innerHTML = '<div style="text-align:center; padding:20px; color:#9ca3af; font-size:14px; font-weight:700;">등록된 현장이 없습니다.</div>';
-    } else {
-      calendarProjects.forEach(function(project) {
-        var btn = document.createElement('button');
-        btn.type = 'button';
-        btn.onclick = function() { bsSelectProject(project.id); };
-        btn.style.cssText = 'display:flex; align-items:center; gap:12px; width:100%; padding:14px 16px; border:1.5px solid #e5e7eb; border-radius:16px; background:white; cursor:pointer; font-family:inherit; text-align:left; transition:all 0.15s;';
-
-        var dot = document.createElement('span');
-        dot.style.cssText = 'width:12px; height:12px; border-radius:50%; flex-shrink:0; background:' + project.color + ';';
-
-        var text = document.createElement('span');
-        text.textContent = project.name;
-        text.style.cssText = 'font-size:15px; font-weight:800; color:#111827;';
-
-        var arrow = document.createElement('span');
-        arrow.textContent = '→';
-        arrow.style.cssText = 'margin-left:auto; color:#d1d5db; font-size:16px;';
-
-        btn.appendChild(dot);
-        btn.appendChild(text);
-        btn.appendChild(arrow);
-        list.appendChild(btn);
-      });
-    }
-
-    document.getElementById('bsStep1').style.display = 'block';
-    document.getElementById('bsStep2').style.display = 'none';
-  }
+  document.getElementById('bsSearchInput').value = '';
+  document.getElementById('bsSearchResults').innerHTML = '';
+  document.getElementById('bsDirectName').value = '';
+  bsSwitchTab('company');
 
   document.getElementById('bsOverlay').style.opacity = '1';
   document.getElementById('bsOverlay').style.visibility = 'visible';
@@ -325,129 +274,70 @@ function closeBottomSheet() {
   document.body.style.overflow = '';
 }
 
-function bsGoBack() {
-  document.getElementById('bsStep1').style.display = 'block';
-  document.getElementById('bsStep2').style.display = 'none';
-  document.getElementById('bsTitle').textContent = '공정 추가';
-}
+function bsSwitchTab(tab) {
+  bsCurrentTab = tab;
+  var tabs = {company: 'bsTabCompany', personal: 'bsTabPersonal', direct: 'bsTabDirect'};
+  Object.keys(tabs).forEach(function(k) {
+    var el = document.getElementById(tabs[k]);
+    if (k === tab) {
+      el.style.background = '#111827'; el.style.color = 'white';
+    } else {
+      el.style.background = '#f3f4f6'; el.style.color = '#6b7280';
+    }
+  });
 
-function bsSelectProject(projectId) {
-  bsSelectedProjectId = projectId;
-  var project = calendarProjects.find(function(p) { return p.id === projectId; });
-  if (!project) return;
-
-  document.getElementById('bsTitle').textContent = project.name;
-  document.getElementById('bsStep1').style.display = 'none';
-  document.getElementById('bsStep2').style.display = 'block';
-
-  // 1. Existing processes
-  var list = document.getElementById('bsProcessList');
-  list.innerHTML = '';
-
-  if (project.processes.length === 0) {
-    list.innerHTML = '<div style="color:#9ca3af; font-size:13px; font-weight:700; width:100%;">등록된 공정이 없습니다.</div>';
+  if (tab === 'direct') {
+    document.getElementById('bsSearchArea').style.display = 'none';
+    document.getElementById('bsDirectArea').style.display = 'block';
   } else {
-    project.processes.forEach(function(proc) {
-      var btn = document.createElement('button');
-      btn.type = 'button';
-      btn.onclick = function() { bsSaveProcess(proc.id); };
-      btn.style.cssText = 'padding:10px 16px; border:1.5px solid ' + project.color + '; border-radius:14px; background:white; color:' + project.color + '; font-size:14px; font-weight:800; cursor:pointer; font-family:inherit;';
-      btn.textContent = proc.name;
-      list.appendChild(btn);
+    document.getElementById('bsSearchArea').style.display = 'block';
+    document.getElementById('bsDirectArea').style.display = 'none';
+    document.getElementById('bsSearchInput').placeholder =
+      tab === 'company' ? '업체명을 검색하세요 (초성 검색 가능)' : '개인명을 검색하세요 (초성 검색 가능)';
+    document.getElementById('bsSearchInput').value = '';
+    document.getElementById('bsSearchResults').innerHTML = '';
+  }
+}
+
+function bsSearchVendor() {
+  var query = document.getElementById('bsSearchInput').value.trim();
+  var results = document.getElementById('bsSearchResults');
+  if (query.length === 0) { results.innerHTML = ''; return; }
+
+  var vendorType = bsCurrentTab === 'company' ? 'company' : 'individual';
+  fetch('/vendors/search?q=' + encodeURIComponent(query) + '&vendor_type=' + vendorType)
+    .then(function(res) { return res.json(); })
+    .then(function(vendors) {
+      results.innerHTML = '';
+      if (vendors.length === 0) {
+        results.innerHTML = '<div style="text-align:center; padding:16px; color:#9ca3af; font-size:14px; font-weight:700;">검색 결과가 없습니다.</div>';
+        return;
+      }
+      vendors.forEach(function(v) {
+        var btn = document.createElement('button');
+        btn.type = 'button';
+        btn.onclick = function() { bsGoToNewProject(v.name); };
+        btn.style.cssText = 'display:flex; align-items:center; gap:10px; width:100%; padding:12px 14px; border:1.5px solid #e5e7eb; border-radius:14px; background:white; cursor:pointer; font-family:inherit; text-align:left;';
+        btn.innerHTML = '<span style="font-size:15px; font-weight:800; color:#111827;">' + v.name + '</span>' +
+          (v.contact ? '<span style="font-size:12px; color:#9ca3af; margin-left:auto;">' + v.contact + '</span>' : '') +
+          '<span style="color:#d1d5db;">→</span>';
+        results.appendChild(btn);
+      });
     });
-  }
-
-  // 2. Preset process buttons (exclude already existing)
-  var existingNames = project.processes.map(function(p) { return p.name; });
-  var presetList = document.getElementById('bsPresetList');
-  presetList.innerHTML = '';
-
-  presetProcesses.forEach(function(name) {
-    if (existingNames.indexOf(name) >= 0) return; // skip existing
-    var btn = document.createElement('button');
-    btn.type = 'button';
-    btn.onclick = function() { bsQuickCreate(name); };
-    btn.style.cssText = 'padding:10px 14px; border:none; border-radius:12px; background:#eef2f7; color:#111827; font-size:13px; font-weight:800; cursor:pointer; font-family:inherit;';
-    btn.textContent = name;
-    presetList.appendChild(btn);
-  });
-
-  if (presetList.children.length === 0) {
-    presetList.innerHTML = '<div style="color:#9ca3af; font-size:13px; font-weight:700;">모든 기본 공정이 이미 등록되어 있습니다.</div>';
-  }
-
-  // 3. Clear custom input
-  var customInput = document.getElementById('bsCustomProcessName');
-  if (customInput) customInput.value = '';
 }
 
-function bsQuickCreate(processName) {
-  if (!bsSelectedDate || !bsSelectedProjectId || !processName) return;
-  var csrfToken = document.querySelector('meta[name="csrf-token"]').content;
-
-  fetch('/work_processes/quick_create', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': csrfToken },
-    body: JSON.stringify({
-      project_id: bsSelectedProjectId,
-      process_name: processName,
-      work_date: bsSelectedDate
-    })
-  })
-  .then(function(res) { return res.json(); })
-  .then(function(data) {
-    if (data.success) {
-      closeBottomSheet();
-      window.location.reload();
-    } else {
-      alert(data.error || '공정 추가에 실패했습니다.');
-    }
-  })
-  .catch(function() { alert('네트워크 오류가 발생했습니다.'); });
+function bsGoToNewProject(clientName) {
+  if (!clientName || !clientName.trim()) { alert('거래처명을 입력해주세요.'); return; }
+  var url = '<%= new_project_path %>' +
+    '?start_date=' + encodeURIComponent(bsSelectedDate) +
+    '&client_name=' + encodeURIComponent(clientName.trim());
+  window.location.href = url;
 }
+</script>
 
-function bsQuickCreateCustom() {
-  var input = document.getElementById('bsCustomProcessName');
-  var name = (input.value || '').trim();
-  if (!name) { alert('공정명을 입력해주세요.'); return; }
-  bsQuickCreate(name);
-}
-
-function bsSaveProcess(workProcessId) {
-  if (!bsSelectedDate || !workProcessId) return;
-
-  var csrfToken = document.querySelector('meta[name="csrf-token"]').content;
-
-  fetch('/work_days/toggle', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'X-CSRF-Token': csrfToken
-    },
-    body: JSON.stringify({
-      work_process_id: workProcessId,
-      work_date: bsSelectedDate
-    })
-  })
-  .then(function(res) { return res.json(); })
-  .then(function(data) {
-    if (data.success) {
-      closeBottomSheet();
-      window.location.reload();
-    } else {
-      alert(data.error || '저장에 실패했습니다.');
-    }
-  })
-  .catch(function() {
-    alert('네트워크 오류가 발생했습니다.');
-  });
-}
-
-
-
-// ========== Date Cell Click & Drag-and-Drop ==========
+<script>
+// ========== Date Cell Click ==========
 document.addEventListener('DOMContentLoaded', function() {
-  // Date cell click → open bottom sheet
   document.querySelectorAll('.calendar-date-cell').forEach(function(cell) {
     cell.addEventListener('click', function(e) {
       e.preventDefault();
@@ -456,205 +346,6 @@ document.addEventListener('DOMContentLoaded', function() {
     });
   });
 
-  // Drag & Drop
-  var dragState = null;
-  var longPressTimer = null;
-  var ghostEl = null;
-  var lastHighlightedCell = null;
-  var touchedBar = null;
-  var touchStartX = 0;
-  var touchStartY = 0;
-  var LONG_PRESS_MS = 300;
-  var MOVE_THRESHOLD = 10;
-
-  document.querySelectorAll('.calendar-bar').forEach(function(bar) {
-    bar.addEventListener('contextmenu', function(e) { e.preventDefault(); });
-  });
-
-  document.addEventListener('touchstart', function(e) {
-    var bar = e.target.closest('.calendar-bar');
-    if (!bar) return;
-
-    e.preventDefault();
-    touchedBar = bar;
-
-    var touch = e.touches[0];
-    var startX = touch.clientX;
-    var startY = touch.clientY;
-    touchStartX = startX;
-    touchStartY = startY;
-
-    longPressTimer = setTimeout(function() {
-      if (navigator.vibrate) navigator.vibrate(30);
-
-      window._dragOccurred = true;
-
-      dragState = {
-        workDayId: bar.dataset.workDayId,
-        processName: bar.dataset.processName,
-        originBar: bar
-      };
-
-      ghostEl = document.createElement('div');
-      ghostEl.textContent = dragState.processName;
-      ghostEl.style.cssText = 'position:fixed;z-index:9999;padding:6px 14px;border-radius:12px;background:#2563eb;color:white;font-size:13px;font-weight:900;pointer-events:none;opacity:0.92;box-shadow:0 4px 16px rgba(0,0,0,0.25);white-space:nowrap;transform:translate(-50%,-120%);';
-      ghostEl.style.left = startX + 'px';
-      ghostEl.style.top = startY + 'px';
-      document.body.appendChild(ghostEl);
-
-      bar.style.opacity = '0.3';
-    }, LONG_PRESS_MS);
-  }, { passive: false });
-
-  // Helper: find date cell nearest to given coordinates
-  function findNearestDateCell(x, y) {
-    var cells = document.querySelectorAll('.calendar-date-cell');
-    var best = null;
-    var bestDist = Infinity;
-    cells.forEach(function(cell) {
-      var rect = cell.getBoundingClientRect();
-      // Check if x is within the column
-      if (x >= rect.left && x <= rect.right) {
-        // Check vertical distance
-        var cy = rect.top + rect.height / 2;
-        var dist = Math.abs(y - cy);
-        if (dist < bestDist) {
-          bestDist = dist;
-          best = cell;
-        }
-      }
-    });
-    // Fallback: find closest cell by x and y if no column match
-    if (!best) {
-      cells.forEach(function(cell) {
-        var rect = cell.getBoundingClientRect();
-        var cx = rect.left + rect.width / 2;
-        var cy = rect.top + rect.height / 2;
-        var dist = Math.sqrt(Math.pow(x - cx, 2) + Math.pow(y - cy, 2));
-        if (dist < bestDist) {
-          bestDist = dist;
-          best = cell;
-        }
-      });
-    }
-    return best;
-  }
-
-  document.addEventListener('touchmove', function(e) {
-    if (!dragState) {
-      // Only cancel long press if moved more than threshold (Android fires micro-movements)
-      if (longPressTimer) {
-        var touch = e.touches[0];
-        var dx = touch.clientX - touchStartX;
-        var dy = touch.clientY - touchStartY;
-        if (Math.sqrt(dx*dx + dy*dy) > MOVE_THRESHOLD) {
-          clearTimeout(longPressTimer);
-          longPressTimer = null;
-        }
-      }
-      return;
-    }
-
-    e.preventDefault();
-
-    var touch = e.touches[0];
-    if (ghostEl) {
-      ghostEl.style.left = touch.clientX + 'px';
-      ghostEl.style.top = touch.clientY + 'px';
-    }
-
-    document.querySelectorAll('.calendar-date-cell').forEach(function(cell) {
-      cell.style.outline = '';
-      cell.style.outlineOffset = '';
-    });
-
-    // Find the nearest date cell using coordinates
-    var dateCell = findNearestDateCell(touch.clientX, touch.clientY);
-    if (dateCell) {
-      dateCell.style.outline = '2px solid #2563eb';
-      dateCell.style.outlineOffset = '-2px';
-      lastHighlightedCell = dateCell;
-    }
-  }, { passive: false });
-
-  document.addEventListener('touchend', function(e) {
-    clearTimeout(longPressTimer);
-    longPressTimer = null;
-
-    // Short tap (no drag started) → navigate to process detail
-    if (!dragState) {
-      if (touchedBar && touchedBar.dataset.href) {
-        window.location.href = touchedBar.dataset.href;
-      }
-      touchedBar = null;
-      return;
-    }
-
-    // Drag occurred → process drop
-    if (ghostEl) { ghostEl.remove(); ghostEl = null; }
-
-    var touch = e.changedTouches[0];
-    var dateCell = findNearestDateCell(touch.clientX, touch.clientY);
-
-    // Fallback: use last cell highlighted during drag
-    if (!dateCell && lastHighlightedCell) {
-      dateCell = lastHighlightedCell;
-    }
-
-    document.querySelectorAll('.calendar-date-cell').forEach(function(cell) {
-      cell.style.outline = '';
-      cell.style.outlineOffset = '';
-    });
-
-    if (dragState.originBar) dragState.originBar.style.opacity = '1';
-
-    if (dateCell && dateCell.dataset.date) {
-      var newDate = dateCell.dataset.date;
-      var csrfToken = document.querySelector('meta[name="csrf-token"]').content;
-
-      fetch('/work_days/move', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-CSRF-Token': csrfToken
-        },
-        body: JSON.stringify({
-          work_day_id: dragState.workDayId,
-          new_date: newDate
-        })
-      })
-      .then(function(res) { return res.json(); })
-      .then(function(data) {
-        if (data.success) {
-          window.location.reload();
-        } else {
-          alert(data.error || '이동에 실패했습니다.');
-        }
-      })
-      .catch(function() {
-        alert('네트워크 오류가 발생했습니다.');
-      });
-    }
-
-    dragState = null;
-    lastHighlightedCell = null;
-    touchedBar = null;
-    setTimeout(function() { window._dragOccurred = false; }, 100);
-  }, { passive: true });
-
-  document.addEventListener('touchcancel', function() {
-    clearTimeout(longPressTimer);
-    longPressTimer = null;
-
-    if (ghostEl) { ghostEl.remove(); ghostEl = null; }
-    if (dragState && dragState.originBar) dragState.originBar.style.opacity = '1';
-    dragState = null;
-
-    document.querySelectorAll('.calendar-date-cell').forEach(function(cell) {
-      cell.style.outline = '';
-      cell.style.outlineOffset = '';
-    });
-  }, { passive: true });
 });
 </script>
 

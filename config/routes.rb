@@ -72,7 +72,11 @@ Rails.application.routes.draw do
       post :quick_create
     end
   end
-  resources :vendors
+  resources :vendors do
+    collection do
+      get :search
+    end
+  end
   resources :process_templates, only: [:index, :create, :destroy] do
     member do
       post :move_up
@@ -82,11 +86,13 @@ Rails.application.routes.draw do
   resources :projects do
     member do
       get :project_calendar, path: 'calendar'
+      delete :purge_photo
     end
     collection do
       get :calendar
       get :manage
       get :archive
+      get :monthly_payments
     end
     resources :ai_imports, only: [] do
       collection do

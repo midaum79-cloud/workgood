@@ -2,6 +2,7 @@ class Project < ApplicationRecord
   belongs_to :user, optional: true
   has_many :work_processes, dependent: :destroy
   has_many :notifications, dependent: :destroy
+  has_many_attached :photos
 
   attr_accessor :selected_process_names, :custom_process_names_text, :ai_processes_json
 
