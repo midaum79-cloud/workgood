@@ -51,8 +51,12 @@ COPY . .
 # -j 1 disable parallel compilation to avoid a QEMU bug: https://github.com/rails/bootsnap/issues/495
 RUN bundle exec bootsnap precompile -j 1 app/ lib/
 
-# Precompiling assets for production without requiring secret RAILS_MASTER_KEY
-RUN SECRET_KEY_BASE_DUMMY=1 SECRET_KEY_BASE=dummy_for_build DATABASE_URL=dummy RAILS_MASTER_KEY= ./bin/rails assets:precompile
+# Expose RAILS_MASTER_KEY from Render dashboard so assets:precompile can decrypt credentials normally
+ARG RAILS_MASTER_KEY
+ENV RAILS_MASTER_KEY=$RAILS_MASTER_KEY
+
+# Precompiling assets for production
+RUN SECRET_KEY_BASE_DUMMY=1 DATABASE_URL=dummy ./bin/rails assets:precompile
 
 
 
