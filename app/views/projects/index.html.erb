@@ -211,7 +211,7 @@
 
 
   <div style="display:flex; gap:10px; margin-bottom:18px;">
-    <% ["진행중", "예정", "완료"].each do |status| %>
+    <% ["예정", "진행중", "완료"].each do |status| %>
       <%= link_to status,
           projects_path(
             status: status,
