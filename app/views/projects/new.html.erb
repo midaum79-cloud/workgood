@@ -37,7 +37,6 @@
             <input type="text" id="vendorSearchInput"
               placeholder="거래처명 검색 (초성 가능: ㄱㄴㄷ...)"
               autocomplete="off"
-              oninput="searchVendors(this.value)"
               onfocus="this.style.borderColor='#2563eb'; if(this.value.length > 0) searchVendors(this.value); else searchVendors('');"
               onblur="this.style.borderColor='#d1d5db'; setTimeout(function(){document.getElementById('vendorDropdown').style.display='none';}, 200);"
               style="width:100%; padding:14px 16px 14px 40px; border:1px solid #dcdfe4; border-radius:14px; font-size:16px; box-sizing:border-box;">
@@ -677,6 +676,30 @@
   // === 거래처 검색 ===
   var currentVendorTab = 'company';
   var vendorSearchTimer = null;
+  var isComposing = false;
+
+  // IME 조합 처리 (한국어 초성 검색 지원)
+  (function() {
+    var input = document.getElementById('vendorSearchInput');
+    if (!input) return;
+
+    input.addEventListener('compositionstart', function() {
+      isComposing = true;
+    });
+
+    input.addEventListener('compositionend', function(e) {
+      isComposing = false;
+      // 조합 완료 후 검색 실행
+      searchVendors(e.target.value);
+    });
+
+    input.addEventListener('input', function(e) {
+      // 조합 중이 아닐 때만 검색 (영문, 숫자, 이미 완성된 한글)
+      if (!isComposing) {
+        searchVendors(e.target.value);
+      }
+    });
+  })();
 
   function switchVendorTab(tab) {
     currentVendorTab = tab;
