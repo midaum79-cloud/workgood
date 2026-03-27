@@ -17,6 +17,9 @@ class User < ApplicationRecord
   PLAN_PRICES  = { "free" => 0, "standard" => 4_900, "premium" => 9_900 }.freeze
   PLAN_LABELS  = { "free" => "무료", "standard" => "스탠다드", "premium" => "프리미엄" }.freeze
 
+  # ⚠️ 테스트 기간: 모든 사용자 프리미엄 처리 (요금제 완성 후 false로 변경)
+  TESTING_PERIOD = true
+
   # ── Google OAuth ──────────────────────────────────────────────────────
   def self.find_or_create_from_omniauth(auth)
     find_or_initialize_by(email: auth.info.email.downcase).tap do |user|
@@ -39,6 +42,8 @@ class User < ApplicationRecord
   end
 
   def subscription_plan
+    return "premium" if TESTING_PERIOD
+
     plan = self[:subscription_plan].presence || "free"
     # 체험 만료 체크: 유료 플랜 + 만료일 지남 + 결제(빌링키) 없음 → 무료로 다운그레이드
     if plan != "free" && subscription_expires_at.present? && subscription_expires_at < Time.current && billing_key.blank?

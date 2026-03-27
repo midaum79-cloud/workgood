@@ -134,7 +134,7 @@
                   <div style="width:10px; height:10px; min-width:10px; border-radius:50%; background:<%= process.project.theme_color_hex %>; margin-top:6px;"></div>
                   <div>
                     <div style="font-size:17px; font-weight:900; color:#111827; margin-bottom:4px;"><%= process.project.client_name.presence || process.process_name %></div>
-                    <div style="font-size:14px; font-weight:700; color:#6b7280; margin-bottom:2px;"><%= process.project.client_name.presence || process.project.project_name %></div>
+                    <div style="font-size:14px; font-weight:700; color:#6b7280; margin-bottom:2px;">📍 <%= process.project.address.presence || "주소 미입력" %></div>
                     <div style="font-size:13px; font-weight:700; color:#9ca3af;">업체명: <%= process.vendor_name.presence || "미입력" %></div>
                   </div>
                 </div>
@@ -193,7 +193,7 @@
                   <div style="width:10px; height:10px; min-width:10px; border-radius:50%; background:<%= process.project.theme_color_hex %>; margin-top:6px;"></div>
                   <div>
                     <div style="font-size:17px; font-weight:900; color:#111827; margin-bottom:4px;"><%= process.project.client_name.presence || process.process_name %></div>
-                    <div style="font-size:14px; font-weight:700; color:#6b7280; margin-bottom:2px;"><%= process.project.client_name.presence || process.project.project_name %></div>
+                    <div style="font-size:14px; font-weight:700; color:#6b7280; margin-bottom:2px;">📍 <%= process.project.address.presence || "주소 미입력" %></div>
                     <div style="font-size:13px; font-weight:700; color:#9ca3af;">업체명: <%= process.vendor_name.presence || "미입력" %></div>
                   </div>
                 </div>
@@ -281,7 +281,7 @@
               </div>
             </div>
             <div style="font-size:12px; font-weight:700; color:#9ca3af; margin-top:3px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
-              📍 <%= project.client_name.presence || project.project_name %>
+              📍 <%= project.address.presence || "주소 미입력" %>
             </div>
           </div>
           <div style="font-size:13px; font-weight:800; color:<%= project.theme_color_hex %>; white-space:nowrap; flex-shrink:0; margin-left:8px;">
