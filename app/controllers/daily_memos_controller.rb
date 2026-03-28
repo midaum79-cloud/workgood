@@ -1,6 +1,10 @@
 class DailyMemosController < ApplicationController
   before_action :require_login
 
+  def index
+    @memos = current_user.daily_memos.where.not(content: [nil, '']).order(memo_date: :desc).page_memo(params[:page])
+  end
+
   def show
     @memo_date = Date.parse(params[:memo_date])
     @memo = current_user.daily_memos.find_or_initialize_by(memo_date: @memo_date)
