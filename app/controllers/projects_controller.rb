@@ -4,7 +4,7 @@ class ProjectsController < ApplicationController
   before_action :set_project, only: %i[show edit update destroy project_calendar]
 
   def index
-    @selected_status = params[:status].presence || '진행중'
+    @selected_status = params[:status].presence || '예정'
     @view_mode = params[:view_mode].presence || "month"
 
     all_projects = current_user.projects
