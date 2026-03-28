@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_03_21_123513) do
+ActiveRecord::Schema[8.1].define(version: 2026_03_28_000826) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -97,6 +97,14 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_21_123513) do
     t.integer "position"
     t.string "project_type"
     t.datetime "updated_at", null: false
+  end
+
+  create_table "project_schedules", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.bigint "project_id", null: false
+    t.datetime "updated_at", null: false
+    t.date "work_date"
+    t.index ["project_id"], name: "index_project_schedules_on_project_id"
   end
 
   create_table "projects", force: :cascade do |t|
@@ -262,6 +270,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_21_123513) do
   add_foreign_key "notifications", "work_processes"
   add_foreign_key "payments", "companies"
   add_foreign_key "payments", "sites"
+  add_foreign_key "project_schedules", "projects"
   add_foreign_key "site_members", "sites"
   add_foreign_key "site_members", "users"
   add_foreign_key "site_photos", "sites"

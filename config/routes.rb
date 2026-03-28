@@ -93,6 +93,8 @@ Rails.application.routes.draw do
       get :manage
       get :archive
       get :monthly_payments
+      post :move_schedule
+      post :toggle_schedule
     end
     resources :ai_imports, only: [] do
       collection do

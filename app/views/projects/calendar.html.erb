@@ -121,7 +121,8 @@
             <% row_days.each do |day| %>
               <% is_current_month = (day.month == @calendar_month) %>
               <% is_selected = (day == @selected_date) %>
-              <% has_work = @registered_dates.include?(day) %>
+              <% day_projects = @projects_by_date[day] || [] %>
+              <% has_work = day_projects.any? %>
               
               <% date_text_color = if !is_current_month
                   '#9ca3af'
@@ -133,76 +134,47 @@
                   '#111827'
                 end %>
 
-              <%= link_to calendar_projects_path(
-                    status: @selected_status,
-                    view_mode: @view_mode,
-                    year: @calendar_year,
-                    month: @calendar_month,
-                    selected_date: day
-                  ),
-                  data: { date: day.to_s },
-                  class: "calendar-date-cell",
-                  style: "
-                    min-height:28px;
-                    text-decoration:none;
+              <div class="calendar-date-cell"
+                   data-date="<%= day.to_s %>"
+                   style="
+                    min-height:60px;
                     border-right:1px solid #f3f4f6;
-                    padding:4px 0 2px 0;
+                    padding:3px 2px 2px 2px;
                     box-sizing:border-box;
-                    text-align:center;
-                    background:#{is_selected ? '#f6e8b0' : has_work ? '#e0f2fe' : 'white'};
-                    color:#{date_text_color};
-                    font-size:16px;
-                    font-weight:900;
+                    background:<%= is_selected ? '#f6e8b0' : 'white' %>;
                     display:flex;
                     flex-direction:column;
-                    align-items:center;
-                    justify-content:flex-start;
-                    transition:background 0.15s;
-                  " do %>
-                <span><%= format('%02d', day.day) %></span>
-                <% if has_work && is_current_month %>
-                  <span style="width:6px; height:6px; border-radius:50%; background:#2563eb; margin-top:2px;"></span>
+                    align-items:stretch;
+                  ">
+                <div style="text-align:center; font-size:13px; font-weight:900; color:<%= date_text_color %>; margin-bottom:2px;"><%= format('%02d', day.day) %></div>
+                <% if is_current_month %>
+                  <% day_projects.each do |proj| %>
+                    <div class="schedule-chip"
+                         draggable="true"
+                         data-project-id="<%= proj.id %>"
+                         data-date="<%= day.to_s %>"
+                         onclick="window.location.href='<%= project_path(proj) %>'"
+                         style="
+                          font-size:9px;
+                          font-weight:800;
+                          color:<%= proj.theme_color_hex %>;
+                          background:<%= proj.theme_color_hex %>1a;
+                          border:1px solid <%= proj.theme_color_hex %>4d;
+                          border-radius:4px;
+                          padding:2px 3px;
+                          margin-bottom:1px;
+                          overflow:hidden;
+                          white-space:nowrap;
+                          text-overflow:ellipsis;
+                          cursor:grab;
+                          user-select:none;
+                          -webkit-user-select:none;
+                         ">
+                      <%= proj.client_name.presence || proj.project_name %>
+                    </div>
+                  <% end %>
                 <% end %>
-              <% end %>
-            <% end %>
-          </div>
-
-          <div style="position:relative; flex:1; min-height:<%= [@calendar_row_heights[row_index] || 22, 22].max %>px; margin:0 6px 6px 6px;">
-            <% (@calendar_bars_by_row[row_index] || []).each do |bar| %>
-              <% left_percent = (bar[:start_index] * 100.0 / 7.0) %>
-              <% width_percent = (bar[:span_days] * 100.0 / 7.0) %>
-              <% top_offset = (bar[:lane] * 22) %>
-              <% text_color = bar[:project].theme_color_hex %>
-              
-              <%= content_tag :div,
-                  class: "calendar-bar",
-                  onclick: "window.location.href='#{project_path(bar[:project])}'",
-                  style: "
-                    position:absolute;
-                    left:#{left_percent}%;
-                    width:calc(#{width_percent}% - 4px);
-                    top:#{top_offset}px;
-                    height:20px;
-                    color:#{text_color};
-                    cursor:pointer;
-                    display:flex;
-                    align-items:center;
-                    padding:0 4px;
-                    font-size:clamp(8px, 2.4vw, 10px);
-                    font-weight:800;
-                    letter-spacing:-0.3px;
-                    overflow:hidden;
-                    white-space:nowrap;
-                    text-overflow:ellipsis;
-                    box-sizing:border-box;
-                    background:#{text_color}1a;
-                    border:1px solid #{text_color}4d;
-                    border-radius:5px;
-                  " do %>
-                <span style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">
-                  <%= bar[:label] %>
-                </span>
-              <% end %>
+              </div>
             <% end %>
           </div>
         </div>
@@ -358,37 +330,227 @@ function bsGoToNewProject(clientName) {
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+  var csrfToken = document.querySelector('meta[name="csrf-token"]').content;
+
+  // 날짜 셀 클릭 → 바텀시트 열기 (칩이 아닌 빈 영역 클릭 시)
   document.querySelectorAll('.calendar-date-cell').forEach(function(cell) {
     cell.addEventListener('click', function(e) {
-      e.preventDefault();
+      if (e.target.closest('.schedule-chip')) return; // 칩 클릭은 무시
       var dateStr = cell.dataset.date;
       if (dateStr) openBottomSheet(dateStr);
     });
   });
+
+  // === 드래그 앤 드롭 (데스크톱) ===
+  var draggedChip = null;
+  var dragProjectId = null;
+  var dragOldDate = null;
+
+  document.querySelectorAll('.schedule-chip').forEach(function(chip) {
+    chip.addEventListener('dragstart', function(e) {
+      draggedChip = chip;
+      dragProjectId = chip.dataset.projectId;
+      dragOldDate = chip.dataset.date;
+      chip.style.opacity = '0.4';
+      e.dataTransfer.effectAllowed = 'move';
+      e.dataTransfer.setData('text/plain', dragProjectId + '|' + dragOldDate);
+    });
+
+    chip.addEventListener('dragend', function(e) {
+      chip.style.opacity = '1';
+      draggedChip = null;
+      clearDropHighlights();
+    });
+
+    // 칩 클릭 시 페이지 이동 (드래그와 구분)
+    var clickTimer = null;
+    chip.addEventListener('mousedown', function() { clickTimer = Date.now(); });
+    chip.addEventListener('mouseup', function(e) {
+      if (Date.now() - clickTimer < 200) {
+        // 짧은 클릭은 onclick으로 처리됨
+      }
+    });
+  });
+
+  document.querySelectorAll('.calendar-date-cell').forEach(function(cell) {
+    cell.addEventListener('dragover', function(e) {
+      e.preventDefault();
+      e.dataTransfer.dropEffect = 'move';
+      cell.style.background = '#dbeafe';
+    });
+
+    cell.addEventListener('dragleave', function(e) {
+      cell.style.background = '';
+    });
+
+    cell.addEventListener('drop', function(e) {
+      e.preventDefault();
+      cell.style.background = '';
+      var newDate = cell.dataset.date;
+      var data = e.dataTransfer.getData('text/plain').split('|');
+      var projectId = data[0];
+      var oldDate = data[1];
+      if (oldDate === newDate) return;
+      moveSchedule(projectId, oldDate, newDate);
+    });
+  });
+
+  // === 터치 드래그 앤 드롭 (모바일) ===
+  var touchChip = null;
+  var touchProjectId = null;
+  var touchOldDate = null;
+  var touchClone = null;
+  var touchStartTime = 0;
+  var touchMoved = false;
+  var longPressTimer = null;
+
+  document.querySelectorAll('.schedule-chip').forEach(function(chip) {
+    chip.addEventListener('touchstart', function(e) {
+      touchStartTime = Date.now();
+      touchMoved = false;
+      var self = this;
+
+      // 길게 누르면 드래그 시작
+      longPressTimer = setTimeout(function() {
+        touchChip = self;
+        touchProjectId = self.dataset.projectId;
+        touchOldDate = self.dataset.date;
+        touchMoved = true;
+
+        // 드래그 클론 생성
+        touchClone = self.cloneNode(true);
+        touchClone.style.position = 'fixed';
+        touchClone.style.zIndex = '9999';
+        touchClone.style.opacity = '0.85';
+        touchClone.style.pointerEvents = 'none';
+        touchClone.style.transform = 'scale(1.15)';
+        touchClone.style.boxShadow = '0 4px 12px rgba(0,0,0,0.3)';
+        touchClone.style.width = self.offsetWidth + 'px';
+        document.body.appendChild(touchClone);
+
+        self.style.opacity = '0.3';
+
+        // 진동 피드백
+        if (navigator.vibrate) navigator.vibrate(30);
+
+        var touch = e.touches[0];
+        touchClone.style.left = (touch.clientX - 30) + 'px';
+        touchClone.style.top = (touch.clientY - 10) + 'px';
+      }, 400);
+    }, { passive: false });
+
+    chip.addEventListener('touchmove', function(e) {
+      if (!touchClone) {
+        clearTimeout(longPressTimer);
+        return;
+      }
+      e.preventDefault();
+      var touch = e.touches[0];
+      touchClone.style.left = (touch.clientX - 30) + 'px';
+      touchClone.style.top = (touch.clientY - 10) + 'px';
+
+      // 드롭 대상 하이라이트
+      clearDropHighlights();
+      var elem = document.elementFromPoint(touch.clientX, touch.clientY);
+      if (elem) {
+        var cell = elem.closest('.calendar-date-cell');
+        if (cell) cell.style.background = '#dbeafe';
+      }
+    }, { passive: false });
+
+    chip.addEventListener('touchend', function(e) {
+      clearTimeout(longPressTimer);
+
+      if (touchClone) {
+        // 드롭 처리
+        var touch = e.changedTouches[0];
+        var elem = document.elementFromPoint(touch.clientX, touch.clientY);
+        clearDropHighlights();
+
+        if (elem) {
+          var cell = elem.closest('.calendar-date-cell');
+          if (cell && cell.dataset.date !== touchOldDate) {
+            moveSchedule(touchProjectId, touchOldDate, cell.dataset.date);
+          }
+        }
+
+        if (touchChip) touchChip.style.opacity = '1';
+        touchClone.remove();
+        touchClone = null;
+        touchChip = null;
+        e.preventDefault();
+        return;
+      }
+
+      // 짧은 탭은 클릭으로 처리
+      if (!touchMoved && Date.now() - touchStartTime < 300) {
+        // onclick이 처리
+      }
+    });
+
+    chip.addEventListener('touchcancel', function() {
+      clearTimeout(longPressTimer);
+      if (touchClone) {
+        if (touchChip) touchChip.style.opacity = '1';
+        touchClone.remove();
+        touchClone = null;
+        touchChip = null;
+      }
+    });
+  });
+
+  function clearDropHighlights() {
+    document.querySelectorAll('.calendar-date-cell').forEach(function(c) {
+      c.style.background = '';
+    });
+  }
+
+  function moveSchedule(projectId, oldDate, newDate) {
+    fetch('<%= move_schedule_projects_path %>', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRF-Token': csrfToken,
+        'Accept': 'application/json'
+      },
+      body: JSON.stringify({
+        project_id: projectId,
+        old_date: oldDate,
+        new_date: newDate
+      })
+    })
+    .then(function(res) { return res.json(); })
+    .then(function(data) {
+      if (data.success) {
+        window.location.reload();
+      } else {
+        alert(data.error || '이동에 실패했습니다.');
+      }
+    })
+    .catch(function(err) {
+      console.error('Move error:', err);
+      alert('네트워크 오류가 발생했습니다.');
+    });
+  }
 });
 </script>
 
-
-
-
 <script>
-// Swipe gesture for month navigation
+// Swipe gesture for month navigation (칩 드래그 중에는 비활성)
 (function() {
   var swipeStartX = 0, swipeStartY = 0;
-  var calendarArea = document.querySelector('[style*="border-radius:20px"]');
-  if (!calendarArea) calendarArea = document.body;
 
   document.addEventListener('touchstart', function(e) {
-    if (e.target.closest('.calendar-bar')) return; // skip drag bars
+    if (e.target.closest('.schedule-chip')) return;
     swipeStartX = e.touches[0].clientX;
     swipeStartY = e.touches[0].clientY;
   }, { passive: true });
 
   document.addEventListener('touchend', function(e) {
-    if (e.target.closest('.calendar-bar')) return;
+    if (e.target.closest('.schedule-chip')) return;
     var dx = e.changedTouches[0].clientX - swipeStartX;
     var dy = e.changedTouches[0].clientY - swipeStartY;
-    if (Math.abs(dx) < 50 || Math.abs(dy) > Math.abs(dx)) return; // too short or vertical
+    if (Math.abs(dx) < 50 || Math.abs(dy) > Math.abs(dx)) return;
     if (dx < 0) {
       var next = document.getElementById('nextMonthLink');
       if (next) next.click();

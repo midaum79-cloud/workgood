@@ -165,67 +165,83 @@ class ProjectsController < ApplicationController
         available_days.first || Time.zone.today
       end
 
-    # 등록된 날짜: 각 프로젝트의 start_date~end_date 범위
-    @registered_dates = Set.new
-    @projects.each do |proj|
-      next unless proj.start_date && proj.end_date
-      (proj.start_date..proj.end_date).each { |d| @registered_dates.add(d) }
+    # project_schedules 기반으로 날짜별 프로젝트 조회
+    calendar_start = @calendar_rows.flatten.first
+    calendar_end = @calendar_rows.flatten.last
+
+    schedules = ProjectSchedule
+      .joins(:project)
+      .where(projects: { user_id: current_user.id })
+      .where(work_date: calendar_start..calendar_end)
+      .includes(:project)
+
+    # 상태 필터 적용
+    if @selected_status.present? && @selected_status != "all"
+      schedules = schedules.where(projects: { status: @selected_status })
     end
 
-    # 프로젝트 단위 바 생성 (start_date ~ end_date)
+    @registered_dates = Set.new(schedules.pluck(:work_date))
+
+    # 날짜별 프로젝트 목록
+    @projects_by_date = {}
+    schedules.each do |schedule|
+      @projects_by_date[schedule.work_date] ||= []
+      @projects_by_date[schedule.work_date] << schedule.project unless @projects_by_date[schedule.work_date].include?(schedule.project)
+    end
+
+    # 바 레이아웃은 더 이상 사용하지 않음 (날짜별 칩으로 대체)
     @calendar_bars_by_row = {}
     @calendar_row_heights = {}
-
     @calendar_rows.each_with_index do |row_days, row_index|
-      row_start = row_days.first
-      row_end = row_days.last
-
-      raw_bars = @projects.filter_map do |proj|
-        next unless proj.start_date && proj.end_date
-        bar_start = [proj.start_date, row_start].max
-        bar_end = [proj.end_date, row_end].min
-        next if bar_start > bar_end
-
-        start_index = (bar_start - row_start).to_i
-        end_index = (bar_end - row_start).to_i
-        span_days = end_index - start_index + 1
-
-        {
-          project: proj,
-          start_index: start_index,
-          end_index: end_index,
-          span_days: span_days,
-          label: proj.client_name.presence || proj.project_name
-        }
-      end
-
-      sorted_bars = raw_bars.sort_by { |bar| [bar[:start_index], bar[:project].id] }
-
-      lane_end_indexes = []
-      sorted_bars.each do |bar|
-        assigned_lane = nil
-        lane_end_indexes.each_with_index do |lane_end, lane|
-          if bar[:start_index] > lane_end
-            assigned_lane = lane
-            break
-          end
-        end
-        assigned_lane ||= lane_end_indexes.length
-        lane_end_indexes[assigned_lane] = bar[:end_index]
-        bar[:lane] = assigned_lane
-      end
-
-      @calendar_bars_by_row[row_index] = sorted_bars
-      @calendar_row_heights[row_index] = [lane_end_indexes.length, 1].max * 22
+      max_count = row_days.map { |d| (@projects_by_date[d] || []).length }.max || 0
+      @calendar_row_heights[row_index] = [max_count * 20, 0].max
     end
 
-    @calendar_projects = @calendar_bars_by_row.values.flatten.map { |bar| bar[:project] }.uniq
+    @calendar_projects = @projects_by_date.values.flatten.uniq
 
     # 선택 날짜에 해당하는 프로젝트 목록
-    @selected_day_projects = @projects.select do |proj|
-      proj.start_date && proj.end_date &&
-        @selected_date >= proj.start_date && @selected_date <= proj.end_date
+    @selected_day_projects = @projects_by_date[@selected_date] || []
+  end
+
+  def move_schedule
+    project = current_user.projects.find(params[:project_id])
+    old_date = Date.parse(params[:old_date])
+    new_date = Date.parse(params[:new_date])
+
+    schedule = project.project_schedules.find_by(work_date: old_date)
+    if schedule
+      # 새 날짜에 이미 같은 프로젝트 스케줄이 있으면 이동 불가
+      existing = project.project_schedules.find_by(work_date: new_date)
+      if existing
+        render json: { success: false, error: "이미 해당 날짜에 등록된 일정입니다." }, status: :unprocessable_entity
+        return
+      end
+      schedule.update!(work_date: new_date)
+      project.recalculate_dates_from_schedules!
+      render json: { success: true }
+    else
+      render json: { success: false, error: "스케줄을 찾을 수 없습니다." }, status: :not_found
     end
+  rescue => e
+    render json: { success: false, error: e.message }, status: :unprocessable_entity
+  end
+
+  def toggle_schedule
+    project = current_user.projects.find(params[:project_id])
+    date = Date.parse(params[:date])
+
+    schedule = project.project_schedules.find_by(work_date: date)
+    if schedule
+      schedule.destroy!
+      project.recalculate_dates_from_schedules!
+      render json: { success: true, action: "removed" }
+    else
+      project.project_schedules.create!(work_date: date)
+      project.recalculate_dates_from_schedules!
+      render json: { success: true, action: "added" }
+    end
+  rescue => e
+    render json: { success: false, error: e.message }, status: :unprocessable_entity
   end
 
   def project_calendar

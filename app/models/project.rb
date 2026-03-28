@@ -2,6 +2,7 @@ class Project < ApplicationRecord
   belongs_to :user, optional: true
   has_many :work_processes, dependent: :destroy
   has_many :notifications, dependent: :destroy
+  has_many :project_schedules, dependent: :destroy
   has_many_attached :photos
 
   attr_accessor :selected_process_names, :custom_process_names_text, :ai_processes_json
@@ -10,6 +11,22 @@ class Project < ApplicationRecord
   validates :end_date,   presence: { message: "공사 종료일을 입력해 주세요." }
 
   after_create :create_selected_processes
+  after_create :create_initial_schedules
+
+  # 기존 start_date~end_date 범위로 개별 스케줄 자동 생성
+  def create_initial_schedules
+    return unless start_date && end_date
+    (start_date..end_date).each do |date|
+      project_schedules.find_or_create_by(work_date: date)
+    end
+  end
+
+  # 스케줄 날짜에서 시작일/종료일 자동 재계산
+  def recalculate_dates_from_schedules!
+    dates = project_schedules.pluck(:work_date).sort
+    return if dates.empty?
+    update_columns(start_date: dates.first, end_date: dates.last)
+  end
 
   def ordered_work_processes
     work_processes.sort_by do |process|
