@@ -439,6 +439,25 @@ class ProjectsController < ApplicationController
     redirect_to edit_project_path(@project), notice: "사진이 삭제되었습니다."
   end
 
+  def update_payment
+    @project = current_user.projects.find(params[:id])
+    if @project.update(payment_status: params[:payment_status])
+      redirect_to @project, notice: "결제상태가 변경되었습니다."
+    else
+      redirect_to @project, alert: "결제상태 변경에 실패했습니다."
+    end
+  end
+
+  def add_photos
+    @project = current_user.projects.find(params[:id])
+    if params[:photos].present?
+      @project.photos.attach(params[:photos])
+      redirect_to @project, notice: "사진이 추가되었습니다."
+    else
+      redirect_to @project, alert: "사진을 선택해주세요."
+    end
+  end
+
   def destroy
     @project.destroy
     redirect_to projects_path, notice: "현장이 삭제되었습니다."

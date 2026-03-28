@@ -87,6 +87,8 @@ Rails.application.routes.draw do
     member do
       get :project_calendar, path: 'calendar'
       delete :purge_photo
+      patch :update_payment
+      post :add_photos
     end
     collection do
       get :calendar

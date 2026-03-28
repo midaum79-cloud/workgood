@@ -124,17 +124,25 @@
         </div>
 
         <div style="background:#f9fafb; border-radius:14px; padding:14px;">
-          <div style="font-size:12px; font-weight:800; color:#6b7280; margin-bottom:6px;">결제여부</div>
-          <% ps = @project.payment_status %>
-          <span style="display:inline-block; padding:6px 12px; border-radius:10px; font-size:14px; font-weight:800;
-            <% if ps == '완납' %>
-              background:#dcfce7; color:#166534;
-            <% elsif ps.present? %>
-              background:#fef3c7; color:#92400e;
-            <% else %>
-              background:#f3f4f6; color:#9ca3af;
+          <div style="font-size:12px; font-weight:800; color:#6b7280; margin-bottom:8px;">결제여부</div>
+          <div style="display:flex; flex-wrap:wrap; gap:6px;">
+            <% ['미결제', '계약금결제', '중도금결제', '잔금결제', '완납'].each do |status| %>
+              <% is_active = (@project.payment_status == status) %>
+              <%= link_to update_payment_project_path(@project, payment_status: status),
+                    method: :patch,
+                    data: { turbo_method: :patch },
+                    style: "
+                      display:inline-flex; align-items:center; padding:8px 12px;
+                      border-radius:10px; font-size:13px; font-weight:800;
+                      text-decoration:none; cursor:pointer;
+                      border:1.5px solid #{is_active ? (status == '완납' ? '#16a34a' : '#2563eb') : '#d1d5db'};
+                      background:#{is_active ? (status == '완납' ? '#dcfce7' : '#dbeafe') : 'white'};
+                      color:#{is_active ? (status == '완납' ? '#166534' : '#1d4ed8') : '#6b7280'};
+                    " do %>
+                <%= is_active ? '✓ ' : '' %><%= status %>
+              <% end %>
             <% end %>
-          "><%= ps.presence || '미설정' %></span>
+          </div>
         </div>
 
         <div style="background:#f9fafb; border-radius:14px; padding:14px;">
@@ -150,19 +158,37 @@
     </div>
 
     <!-- 시공 사진 -->
-    <% if @project.photos.attached? %>
-      <div style="background:white; border-radius:20px; padding:18px; box-shadow:0 2px 10px rgba(0,0,0,0.04);">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
-          <div style="font-size:18px; font-weight:900; color:#111827;">📸 시공 사진 (<%= @project.photos.count %>장)</div>
-          <div style="display:flex; gap:6px;">
+    <div style="background:white; border-radius:20px; padding:18px; box-shadow:0 2px 10px rgba(0,0,0,0.04);">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
+        <div style="font-size:18px; font-weight:900; color:#111827;">📸 시공 사진 (<%= @project.photos.attached? ? @project.photos.count : 0 %>장)</div>
+        <div style="display:flex; gap:6px; align-items:center;">
+          <% if @project.photos.attached? %>
             <button type="button" onclick="shareAllPhotos()" style="display:flex; align-items:center; gap:5px; padding:8px 14px; background:#2563eb; color:white; border:none; border-radius:10px; font-size:12px; font-weight:800; cursor:pointer;">
               📤 전체공유
             </button>
             <button type="button" onclick="downloadAllPhotos()" style="display:flex; align-items:center; gap:5px; padding:8px 14px; background:#111827; color:white; border:none; border-radius:10px; font-size:12px; font-weight:800; cursor:pointer;">
               💾 전체저장
             </button>
-          </div>
+          <% end %>
         </div>
+      </div>
+
+      <!-- 사진 업로드 버튼 -->
+      <%= form_tag add_photos_project_path(@project), method: :post, multipart: true, style: "margin-bottom:14px;" do %>
+        <label for="photoInput" style="
+          display:flex; align-items:center; justify-content:center; gap:8px;
+          padding:14px; border:2px dashed #d1d5db; border-radius:14px;
+          background:#f9fafb; cursor:pointer; transition:all 0.2s;
+        ">
+          <span style="font-size:24px;">📷</span>
+          <span style="font-size:14px; font-weight:800; color:#6b7280;">사진 추가하기</span>
+        </label>
+        <input type="file" name="photos[]" id="photoInput" multiple accept="image/*"
+          style="display:none;"
+          onchange="if(this.files.length > 0) { this.closest('form').submit(); }">
+      <% end %>
+
+      <% if @project.photos.attached? %>
         <div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:8px;">
           <% @project.photos.each_with_index do |photo, idx| %>
             <div onclick="openGallery(<%= idx %>)" style="border-radius:12px; overflow:hidden; aspect-ratio:1; background:#e5e7eb; cursor:pointer; position:relative;">
@@ -170,7 +196,14 @@
             </div>
           <% end %>
         </div>
-      </div>
+      <% else %>
+        <div style="text-align:center; padding:20px; color:#9ca3af; font-size:14px; font-weight:700;">
+          아직 등록된 사진이 없습니다.
+        </div>
+      <% end %>
+    </div>
+
+    <% if @project.photos.attached? %>
 
       <!-- 풀스크린 갤러리 뷰어 -->
       <div id="galleryViewer" style="display:none; position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.95); z-index:999; flex-direction:column;">
