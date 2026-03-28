@@ -288,68 +288,35 @@ class ProjectsController < ApplicationController
         available_days.first || Time.zone.today
       end
 
-    # 등록된 날짜: 각 프로젝트의 start_date~end_date 범위
-    @registered_dates = Set.new
-    @client_projects.each do |proj|
-      next unless proj.start_date && proj.end_date
-      (proj.start_date..proj.end_date).each { |d| @registered_dates.add(d) }
+    # project_schedules 기반으로 날짜별 프로젝트 조회
+    calendar_start = @calendar_rows.flatten.first
+    calendar_end = @calendar_rows.flatten.last
+
+    client_project_ids = @client_projects.pluck(:id)
+    schedules = ProjectSchedule
+      .where(project_id: client_project_ids)
+      .where(work_date: calendar_start..calendar_end)
+      .includes(:project)
+
+    @registered_dates = Set.new(schedules.pluck(:work_date))
+
+    # 날짜별 프로젝트 목록
+    @projects_by_date = {}
+    schedules.each do |schedule|
+      @projects_by_date[schedule.work_date] ||= []
+      @projects_by_date[schedule.work_date] << schedule.project unless @projects_by_date[schedule.work_date].include?(schedule.project)
     end
 
-    # 프로젝트 단위 바 생성 (start_date ~ end_date)
-    @calendar_bars_by_row = {}
     @calendar_row_heights = {}
-
     @calendar_rows.each_with_index do |row_days, row_index|
-      row_start = row_days.first
-      row_end = row_days.last
-
-      raw_bars = @client_projects.filter_map do |proj|
-        next unless proj.start_date && proj.end_date
-        # 이 주(row)와 프로젝트 기간이 겹치는지 확인
-        bar_start = [proj.start_date, row_start].max
-        bar_end = [proj.end_date, row_end].min
-        next if bar_start > bar_end
-
-        start_index = (bar_start - row_start).to_i
-        end_index = (bar_end - row_start).to_i
-        span_days = end_index - start_index + 1
-
-        {
-          project: proj,
-          start_index: start_index,
-          end_index: end_index,
-          span_days: span_days,
-          label: proj.project_name.presence || proj.client_name
-        }
-      end
-
-      sorted_bars = raw_bars.sort_by { |bar| [bar[:start_index], bar[:project].id] }
-
-      lane_end_indexes = []
-      sorted_bars.each do |bar|
-        assigned_lane = nil
-        lane_end_indexes.each_with_index do |lane_end, lane|
-          if bar[:start_index] > lane_end
-            assigned_lane = lane
-            break
-          end
-        end
-        assigned_lane ||= lane_end_indexes.length
-        lane_end_indexes[assigned_lane] = bar[:end_index]
-        bar[:lane] = assigned_lane
-      end
-
-      @calendar_bars_by_row[row_index] = sorted_bars
-      @calendar_row_heights[row_index] = [lane_end_indexes.length, 1].max * 22
+      max_count = row_days.map { |d| (@projects_by_date[d] || []).length }.max || 0
+      @calendar_row_heights[row_index] = [max_count * 20, 0].max
     end
 
     @projects = @client_projects
 
     # 선택 날짜에 해당하는 프로젝트 목록
-    @selected_day_projects = @client_projects.select do |proj|
-      proj.start_date && proj.end_date &&
-        @selected_date >= proj.start_date && @selected_date <= proj.end_date
-    end
+    @selected_day_projects = @projects_by_date[@selected_date] || []
   end
 
   def show
