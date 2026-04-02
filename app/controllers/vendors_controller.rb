@@ -10,7 +10,13 @@ class VendorsController < ApplicationController
     query = params[:q].to_s.strip
     vendor_type = params[:vendor_type]
     vendors = Vendor.ordered
-    vendors = vendors.where(vendor_type: vendor_type) if vendor_type.present?
+
+    # vendor_type이 null인 기존 데이터도 '업체' 탭에서 표시
+    if vendor_type == "company"
+      vendors = vendors.where(vendor_type: [nil, "", "company"])
+    elsif vendor_type.present?
+      vendors = vendors.where(vendor_type: vendor_type)
+    end
 
     if query.present?
       vendors = vendors.select { |v| chosung_match?(v.name, query) }
