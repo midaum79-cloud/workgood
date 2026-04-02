@@ -102,9 +102,26 @@ class ProjectsController < ApplicationController
       .or(current_user.projects.where("start_date >= ? AND start_date <= ?", @start_date, @end_date))
       .order(start_date: :asc)
 
-    @total_estimate = @projects.sum(:estimate_amount).to_i
-    @total_deposit = @projects.sum(:deposit_amount).to_i
-    @total_outstanding = @total_estimate - @total_deposit
+    @total_estimate   = @projects.sum(:estimate_amount).to_i
+    @total_deposit    = @projects.sum(:deposit_amount).to_i
+    @total_mid        = @projects.sum(:mid_payment).to_i
+    @total_collected  = @total_deposit + @total_mid
+    @total_outstanding = [@total_estimate - @total_collected, 0].max
+
+    # 미수금 현장 (완납 제외)
+    @outstanding_projects = @projects.reject { |p| p.payment_status == "완납" }
+                                     .select { |p| p.estimate_amount.to_i > (p.deposit_amount.to_i + p.mid_payment.to_i) }
+
+    # 거래처별 매출 분석
+    @vendor_stats = @projects.group_by(&:client_name).map do |client_name, projs|
+      {
+        name: client_name.presence || "미지정",
+        count: projs.size,
+        estimate: projs.sum { |p| p.estimate_amount.to_i },
+        collected: projs.sum { |p| p.deposit_amount.to_i + p.mid_payment.to_i },
+        outstanding: projs.sum { |p| [p.estimate_amount.to_i - p.deposit_amount.to_i - p.mid_payment.to_i, 0].max }
+      }
+    end.sort_by { |v| -v[:estimate] }
 
     # 해당 기간 내 작업일 수집 (캘린더 표시용)
     project_ids = @projects.pluck(:id)

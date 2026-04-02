@@ -1,9 +1,10 @@
-<div style="min-height:100dvh; background:#f5f5f5; padding:16px 16px 80px 16px;">
+<div style="min-height:100dvh; background:#f5f5f5;">
 
-  <div style="background:white; padding:18px 20px 14px 20px; border-bottom:1px solid #ececec; position:sticky; top:0; z-index:30; margin:-16px -16px 16px -16px;">
+  <%# Header %>
+  <div style="background:white; padding:18px 20px 14px 20px; border-bottom:1px solid #ececec; position:sticky; top:0; z-index:30; margin-bottom:0;">
     <div style="display:flex; justify-content:space-between; align-items:center;">
       <div style="font-size:24px; color:#111827; font-weight:900; cursor:pointer;" onclick="openDrawer()">☰</div>
-      <div style="font-size:22px; font-weight:900;">💰 입금 내역</div>
+      <div style="font-size:20px; font-weight:900;">💰 돈 관리</div>
       <%= link_to notifications_path, style: "position:relative; text-decoration:none;" do %>
         <div style="font-size:24px;">🔔</div>
         <% if @unread_notifications_count.to_i > 0 %>
@@ -15,159 +16,292 @@
     </div>
   </div>
 
-  <!-- 기간 선택 -->
-  <div style="background:white; border-radius:20px; padding:18px; box-shadow:0 2px 10px rgba(0,0,0,0.04); margin-bottom:16px;">
-    <div style="font-size:15px; font-weight:900; color:#111827; margin-bottom:12px;">📅 조회 기간</div>
-    <form action="<%= monthly_payments_projects_path %>" method="get" style="display:flex; flex-direction:column; gap:10px;">
-      <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
-        <div>
-          <div style="font-size:12px; font-weight:800; color:#6b7280; margin-bottom:4px;">시작일</div>
-          <input type="date" name="start_date" value="<%= @start_date %>"
-            style="width:100%; padding:12px 14px; border:1px solid #dcdfe4; border-radius:12px; font-size:15px; box-sizing:border-box;">
-        </div>
-        <div>
-          <div style="font-size:12px; font-weight:800; color:#6b7280; margin-bottom:4px;">종료일</div>
-          <input type="date" name="end_date" value="<%= @end_date %>"
-            style="width:100%; padding:12px 14px; border:1px solid #dcdfe4; border-radius:12px; font-size:15px; box-sizing:border-box;">
-        </div>
-      </div>
-      <div style="display:flex; gap:8px;">
-        <button type="submit" style="flex:1; padding:12px; border:none; border-radius:12px; background:#2563eb; color:white; font-size:15px; font-weight:900; cursor:pointer;">조회하기</button>
-        <a href="<%= monthly_payments_projects_path %>" style="flex:1; display:flex; align-items:center; justify-content:center; padding:12px; border:none; border-radius:12px; background:#e5e7eb; color:#374151; font-size:15px; font-weight:900; text-decoration:none;">이번달</a>
-      </div>
+  <%# 탭 메뉴 %>
+  <div style="background:white; border-bottom:2px solid #f3f4f6; display:flex; position:sticky; top:62px; z-index:29;">
+    <button id="tab-btn-stats" onclick="switchTab('stats')"
+      style="flex:1; padding:14px 0; font-size:13px; font-weight:800; border:none; background:none; cursor:pointer; color:#2563eb; border-bottom:3px solid #2563eb;">
+      📊 수입통계
+    </button>
+    <button id="tab-btn-receivable" onclick="switchTab('receivable')"
+      style="flex:1; padding:14px 0; font-size:13px; font-weight:800; border:none; background:none; cursor:pointer; color:#9ca3af; border-bottom:3px solid transparent;">
+      ⚠️ 미수금
+    </button>
+    <button id="tab-btn-vendor" onclick="switchTab('vendor')"
+      style="flex:1; padding:14px 0; font-size:13px; font-weight:800; border:none; background:none; cursor:pointer; color:#9ca3af; border-bottom:3px solid transparent;">
+      🏢 거래처분석
+    </button>
+  </div>
+
+  <%# 기간 선택 %>
+  <div style="background:white; padding:14px 16px; border-bottom:1px solid #f3f4f6;">
+    <form action="<%= monthly_payments_projects_path %>" method="get" style="display:flex; gap:8px; align-items:center;">
+      <input type="hidden" name="tab" id="form_tab_input" value="<%= params[:tab] || 'stats' %>">
+      <input type="date" name="start_date" value="<%= @start_date %>"
+        style="flex:1; padding:10px 12px; border:1px solid #dcdfe4; border-radius:10px; font-size:14px; box-sizing:border-box;">
+      <span style="color:#9ca3af; font-weight:700; flex-shrink:0;">~</span>
+      <input type="date" name="end_date" value="<%= @end_date %>"
+        style="flex:1; padding:10px 12px; border:1px solid #dcdfe4; border-radius:10px; font-size:14px; box-sizing:border-box;">
+      <button type="submit" style="padding:10px 14px; border:none; border-radius:10px; background:#2563eb; color:white; font-size:13px; font-weight:900; cursor:pointer; white-space:nowrap;">조회</button>
     </form>
   </div>
 
-  <!-- 금액 요약 카드 -->
-  <div style="display:flex; flex-direction:column; gap:12px; margin-bottom:16px;">
-    <div style="background:linear-gradient(135deg, #1e40af 0%, #3b82f6 100%); border-radius:20px; padding:20px; color:white; box-shadow:0 4px 16px rgba(37,99,235,0.3);">
+  <%# ===== 탭 1: 수입통계 ===== %>
+  <div id="tab-stats" style="padding:16px 16px 100px 16px;">
+
+    <%# 요약 카드 %>
+    <div style="background:linear-gradient(135deg, #1e40af 0%, #2563eb 100%); border-radius:20px; padding:22px; color:white; margin-bottom:12px; box-shadow:0 4px 16px rgba(37,99,235,0.3);">
       <div style="font-size:13px; font-weight:700; opacity:0.85; margin-bottom:6px;">📊 조회기간 총 견적금액</div>
-      <div style="font-size:28px; font-weight:900; letter-spacing:-0.5px;"><%= number_with_delimiter(@total_estimate) %>원</div>
-      <div style="font-size:12px; font-weight:600; opacity:0.7; margin-top:4px;">
+      <div style="font-size:32px; font-weight:900; letter-spacing:-0.5px;"><%= number_with_delimiter(@total_estimate) %>원</div>
+      <div style="font-size:12px; color:rgba(255,255,255,0.7); margin-top:6px;">
         <%= @start_date.strftime("%Y.%m.%d") %> ~ <%= @end_date.strftime("%Y.%m.%d") %>
       </div>
     </div>
 
-    <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
-      <div style="background:white; border-radius:16px; padding:16px; box-shadow:0 2px 10px rgba(0,0,0,0.04);">
-        <div style="font-size:12px; font-weight:800; color:#16a34a; margin-bottom:6px;">✅ 수금액 (계약금)</div>
-        <div style="font-size:22px; font-weight:900; color:#166534;"><%= number_with_delimiter(@total_deposit) %>원</div>
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:16px;">
+      <div style="background:white; border-radius:16px; padding:16px; box-shadow:0 2px 8px rgba(0,0,0,0.05);">
+        <div style="font-size:11px; font-weight:800; color:#16a34a; margin-bottom:6px;">✅ 총 수금액</div>
+        <div style="font-size:20px; font-weight:900; color:#166534;"><%= number_with_delimiter(@total_collected) %>원</div>
+        <div style="font-size:11px; color:#9ca3af; margin-top:4px; font-weight:600;">계약금+중도금</div>
       </div>
-      <div style="background:white; border-radius:16px; padding:16px; box-shadow:0 2px 10px rgba(0,0,0,0.04);">
-        <div style="font-size:12px; font-weight:800; color:#dc2626; margin-bottom:6px;">⚠️ 미수금</div>
-        <div style="font-size:22px; font-weight:900; color:#dc2626;"><%= number_with_delimiter(@total_outstanding) %>원</div>
+      <div style="background:white; border-radius:16px; padding:16px; box-shadow:0 2px 8px rgba(0,0,0,0.05);">
+        <div style="font-size:11px; font-weight:800; color:#dc2626; margin-bottom:6px;">⚠️ 미수금 합계</div>
+        <div style="font-size:20px; font-weight:900; color:#dc2626;"><%= number_with_delimiter(@total_outstanding) %>원</div>
+        <div style="font-size:11px; color:#9ca3af; margin-top:4px; font-weight:600;"><%= @outstanding_projects.size %>개 현장</div>
       </div>
+    </div>
+
+    <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px; margin-bottom:16px;">
+      <div style="background:white; border-radius:14px; padding:12px; text-align:center; box-shadow:0 2px 8px rgba(0,0,0,0.04);">
+        <div style="font-size:10px; font-weight:800; color:#6b7280; margin-bottom:4px;">계약금</div>
+        <div style="font-size:15px; font-weight:900; color:#374151;"><%= number_with_delimiter(@total_deposit) %></div>
+        <div style="font-size:10px; color:#9ca3af;">원</div>
+      </div>
+      <div style="background:white; border-radius:14px; padding:12px; text-align:center; box-shadow:0 2px 8px rgba(0,0,0,0.04);">
+        <div style="font-size:10px; font-weight:800; color:#6b7280; margin-bottom:4px;">중도금</div>
+        <div style="font-size:15px; font-weight:900; color:#374151;"><%= number_with_delimiter(@total_mid) %></div>
+        <div style="font-size:10px; color:#9ca3af;">원</div>
+      </div>
+      <div style="background:white; border-radius:14px; padding:12px; text-align:center; box-shadow:0 2px 8px rgba(0,0,0,0.04);">
+        <div style="font-size:10px; font-weight:800; color:#6b7280; margin-bottom:4px;">현장 수</div>
+        <div style="font-size:15px; font-weight:900; color:#374151;"><%= @projects.size %></div>
+        <div style="font-size:10px; color:#9ca3af;">개</div>
+      </div>
+    </div>
+
+    <%# 일한 날짜 캘린더 %>
+    <div style="background:white; border-radius:20px; padding:18px; box-shadow:0 2px 8px rgba(0,0,0,0.04); margin-bottom:16px;">
+      <div style="font-size:15px; font-weight:900; color:#111827; margin-bottom:12px;">🗓️ 일한 날짜 (<%= @work_dates.size %>일)</div>
+      <% cal_start = @start_date.beginning_of_month %>
+      <% cal_end = @end_date.end_of_month %>
+      <% work_date_set = @work_dates.map(&:to_s).to_set %>
+      <% current_month = cal_start %>
+      <% while current_month <= cal_end %>
+        <% month_start = current_month.beginning_of_month %>
+        <% month_end = current_month.end_of_month %>
+        <% first_day = month_start.wday %>
+        <% days_in_month = month_end.day %>
+        <div style="margin-bottom:16px;">
+          <div style="font-size:14px; font-weight:900; color:#374151; margin-bottom:8px; text-align:center;"><%= current_month.year %>년 <%= current_month.month %>월</div>
+          <div style="display:grid; grid-template-columns:repeat(7, 1fr); text-align:center; margin-bottom:4px;">
+            <div style="font-size:11px; font-weight:800; color:#dc2626;">일</div>
+            <div style="font-size:11px; font-weight:800; color:#374151;">월</div>
+            <div style="font-size:11px; font-weight:800; color:#374151;">화</div>
+            <div style="font-size:11px; font-weight:800; color:#374151;">수</div>
+            <div style="font-size:11px; font-weight:800; color:#374151;">목</div>
+            <div style="font-size:11px; font-weight:800; color:#374151;">금</div>
+            <div style="font-size:11px; font-weight:800; color:#2563eb;">토</div>
+          </div>
+          <div style="display:grid; grid-template-columns:repeat(7, 1fr); text-align:center;">
+            <% first_day.times do %><div style="padding:6px 0;"></div><% end %>
+            <% (1..days_in_month).each do |d| %>
+              <% date_str = "%04d-%02d-%02d" % [current_month.year, current_month.month, d] %>
+              <% is_work = work_date_set.include?(date_str) %>
+              <% dow = Date.new(current_month.year, current_month.month, d).wday %>
+              <div style="padding:6px 2px; font-size:13px; font-weight:<%= is_work ? '900' : '600' %>;
+                <%= is_work ? 'background:#2563eb; color:white; border-radius:8px; margin:1px;' : dow == 0 ? 'color:#dc2626;' : dow == 6 ? 'color:#2563eb;' : 'color:#374151;' %>
+              "><%= d %></div>
+            <% end %>
+          </div>
+        </div>
+        <% current_month = current_month.next_month %>
+      <% end %>
+    </div>
+
+    <%# 현장별 내역 %>
+    <div style="background:white; border-radius:20px; padding:18px; box-shadow:0 2px 8px rgba(0,0,0,0.04);">
+      <div style="font-size:15px; font-weight:900; color:#111827; margin-bottom:14px;">📋 현장별 내역</div>
+      <% if @projects.any? %>
+        <div style="display:flex; flex-direction:column; gap:10px;">
+          <% @projects.each do |project| %>
+            <% est = project.estimate_amount.to_i %>
+            <% dep = project.deposit_amount.to_i %>
+            <% mid = project.mid_payment.to_i %>
+            <% out = [est - dep - mid, 0].max %>
+            <div style="background:#f9fafb; border:1px solid #f3f4f6; border-radius:16px; padding:14px;">
+              <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:8px;">
+                <div>
+                  <div style="font-size:15px; font-weight:900; color:#111827;"><%= project.project_name %></div>
+                  <div style="font-size:13px; font-weight:700; color:#6b7280; margin-top:2px;"><%= project.client_name %></div>
+                </div>
+                <% ps = project.payment_status %>
+                <span style="padding:5px 10px; border-radius:10px; font-size:12px; font-weight:800; white-space:nowrap;
+                  <%= ps == '완납' ? 'background:#dcfce7; color:#166534;' : ps.present? ? 'background:#fef3c7; color:#92400e;' : 'background:#f3f4f6; color:#6b7280;' %>
+                "><%= ps.presence || '미결제' %></span>
+              </div>
+              <div style="display:flex; flex-direction:column; gap:4px; font-size:13px; font-weight:700;">
+                <div style="display:flex; justify-content:space-between; color:#374151;"><span>견적금액</span><span><%= number_with_delimiter(est) %>원</span></div>
+                <div style="display:flex; justify-content:space-between; color:#16a34a;"><span>계약금</span><span><%= number_with_delimiter(dep) %>원</span></div>
+                <% if mid > 0 %>
+                  <div style="display:flex; justify-content:space-between; color:#0891b2;"><span>중도금</span><span><%= number_with_delimiter(mid) %>원</span></div>
+                <% end %>
+                <% if out > 0 %>
+                  <div style="display:flex; justify-content:space-between; color:#dc2626; font-weight:900;"><span>⚠️ 미수금</span><span><%= number_with_delimiter(out) %>원</span></div>
+                <% end %>
+              </div>
+            </div>
+          <% end %>
+        </div>
+      <% else %>
+        <div style="text-align:center; padding:30px 16px; color:#9ca3af;">
+          <div style="font-size:32px; margin-bottom:10px;">📭</div>
+          <div style="font-size:15px; font-weight:800; color:#6b7280;">해당 기간에 등록된 현장이 없습니다.</div>
+        </div>
+      <% end %>
     </div>
   </div>
 
-  <!-- 일한 날짜 캘린더 -->
-  <div style="background:white; border-radius:20px; padding:18px; box-shadow:0 2px 10px rgba(0,0,0,0.04); margin-bottom:16px;">
-    <div style="font-size:15px; font-weight:900; color:#111827; margin-bottom:12px;">🗓️ 일한 날짜 (<%= @work_dates.size %>일)</div>
+  <%# ===== 탭 2: 미수금 관리 ===== %>
+  <div id="tab-receivable" style="display:none; padding:16px 16px 100px 16px;">
 
-    <% cal_start = @start_date.beginning_of_month %>
-    <% cal_end = @end_date.end_of_month %>
-    <% work_date_set = @work_dates.map(&:to_s).to_set %>
+    <div style="background:<%= @total_outstanding > 0 ? 'linear-gradient(135deg, #dc2626, #ef4444)' : 'linear-gradient(135deg, #16a34a, #22c55e)' %>; border-radius:20px; padding:22px; color:white; margin-bottom:16px; box-shadow:0 4px 16px rgba(220,38,38,0.25);">
+      <div style="font-size:13px; font-weight:700; opacity:0.9; margin-bottom:6px;"><%= @total_outstanding > 0 ? '⚠️ 총 미수금' : '✅ 미수금 없음' %></div>
+      <div style="font-size:32px; font-weight:900;"><%= number_with_delimiter(@total_outstanding) %>원</div>
+      <div style="font-size:12px; opacity:0.8; margin-top:6px;"><%= @outstanding_projects.size %>개 현장에서 미수금 발생</div>
+    </div>
 
-    <% current_month = cal_start %>
-    <% while current_month <= cal_end %>
-      <% month_start = current_month.beginning_of_month %>
-      <% month_end = current_month.end_of_month %>
-      <% first_day = month_start.wday %>
-      <% days_in_month = month_end.day %>
-
-      <div style="margin-bottom:16px;">
-        <div style="font-size:14px; font-weight:900; color:#374151; margin-bottom:8px; text-align:center;"><%= current_month.year %>년 <%= current_month.month %>월</div>
-
-        <div style="display:grid; grid-template-columns:repeat(7, 1fr); text-align:center; margin-bottom:4px;">
-          <div style="font-size:11px; font-weight:800; color:#dc2626;">일</div>
-          <div style="font-size:11px; font-weight:800; color:#374151;">월</div>
-          <div style="font-size:11px; font-weight:800; color:#374151;">화</div>
-          <div style="font-size:11px; font-weight:800; color:#374151;">수</div>
-          <div style="font-size:11px; font-weight:800; color:#374151;">목</div>
-          <div style="font-size:11px; font-weight:800; color:#374151;">금</div>
-          <div style="font-size:11px; font-weight:800; color:#2563eb;">토</div>
-        </div>
-
-        <div style="display:grid; grid-template-columns:repeat(7, 1fr); text-align:center;">
-          <% first_day.times do %>
-            <div style="padding:6px 0;"></div>
+    <% if @outstanding_projects.any? %>
+      <div style="font-size:13px; font-weight:800; color:#6b7280; margin-bottom:10px; padding-left:4px;">⚠️ 미수금 현장 목록</div>
+      <div style="display:flex; flex-direction:column; gap:10px;">
+        <% @outstanding_projects.sort_by { |p| -(p.estimate_amount.to_i - p.deposit_amount.to_i - p.mid_payment.to_i) }.each do |project| %>
+          <% est = project.estimate_amount.to_i %>
+          <% dep = project.deposit_amount.to_i %>
+          <% mid = project.mid_payment.to_i %>
+          <% out = [est - dep - mid, 0].max %>
+          <% ratio = est > 0 ? [(dep + mid) * 100 / est, 100].min : 0 %>
+          <%= link_to project_path(project), style: "text-decoration:none;" do %>
+            <div style="background:white; border-radius:18px; padding:16px; box-shadow:0 2px 8px rgba(0,0,0,0.05); border-left:4px solid #ef4444;">
+              <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:10px;">
+                <div>
+                  <div style="font-size:16px; font-weight:900; color:#111827;"><%= project.project_name %></div>
+                  <div style="font-size:13px; color:#6b7280; font-weight:700; margin-top:2px;"><%= project.client_name %></div>
+                </div>
+                <div style="text-align:right;">
+                  <div style="font-size:18px; font-weight:900; color:#dc2626;"><%= number_with_delimiter(out) %>원</div>
+                  <div style="font-size:11px; color:#9ca3af; font-weight:600;">미수금</div>
+                </div>
+              </div>
+              <%# 수금률 바 %>
+              <div style="background:#f3f4f6; border-radius:999px; height:8px; margin-bottom:6px;">
+                <div style="background:linear-gradient(90deg, #16a34a, #22c55e); border-radius:999px; height:8px; width:<%= ratio %>%;"></div>
+              </div>
+              <div style="display:flex; justify-content:space-between; font-size:11px; font-weight:700; color:#9ca3af;">
+                <span>수금률 <%= ratio %>%</span>
+                <span>견적 <%= number_with_delimiter(est) %>원</span>
+              </div>
+            </div>
           <% end %>
-
-          <% (1..days_in_month).each do |d| %>
-            <% date_str = "%04d-%02d-%02d" % [current_month.year, current_month.month, d] %>
-            <% is_work = work_date_set.include?(date_str) %>
-            <% day_of_week = Date.new(current_month.year, current_month.month, d).wday %>
-            <div style="padding:6px 0; font-size:13px; font-weight:<%= is_work ? '900' : '600' %>;
-              <% if is_work %>
-                background:#2563eb; color:white; border-radius:8px; margin:1px;
-              <% elsif day_of_week == 0 %>
-                color:#dc2626;
-              <% elsif day_of_week == 6 %>
-                color:#2563eb;
-              <% else %>
-                color:#374151;
-              <% end %>
-            "><%= d %></div>
-          <% end %>
-        </div>
+        <% end %>
       </div>
-      <% current_month = current_month.next_month %>
+    <% else %>
+      <div style="text-align:center; padding:60px 16px;">
+        <div style="font-size:48px; margin-bottom:16px;">🎉</div>
+        <div style="font-size:18px; font-weight:900; color:#166534; margin-bottom:8px;">미수금이 없습니다!</div>
+        <div style="font-size:14px; color:#9ca3af;">모든 현장이 완납되었습니다.</div>
+      </div>
     <% end %>
   </div>
 
-  <!-- 현장별 내역 -->
-  <div style="background:white; border-radius:20px; padding:18px; box-shadow:0 2px 10px rgba(0,0,0,0.04);">
-    <div style="font-size:15px; font-weight:900; color:#111827; margin-bottom:14px;">📋 현장별 내역</div>
+  <%# ===== 탭 3: 거래처별 매출 분석 ===== %>
+  <div id="tab-vendor" style="display:none; padding:16px 16px 100px 16px;">
 
-    <% if @projects.any? %>
+    <% if @vendor_stats.any? %>
+      <% top_vendor = @vendor_stats.first %>
+      <div style="background:linear-gradient(135deg, #312e81, #4f46e5); border-radius:20px; padding:20px; color:white; margin-bottom:16px; box-shadow:0 4px 16px rgba(79,70,229,0.3);">
+        <div style="font-size:12px; font-weight:700; opacity:0.8; margin-bottom:4px;">🏆 최다 거래 거래처</div>
+        <div style="font-size:20px; font-weight:900; margin-bottom:4px;"><%= top_vendor[:name] %></div>
+        <div style="font-size:15px; font-weight:700; opacity:0.9;"><%= number_with_delimiter(top_vendor[:estimate]) %>원 · <%= top_vendor[:count] %>개 현장</div>
+      </div>
+
       <div style="display:flex; flex-direction:column; gap:10px;">
-        <% @projects.each do |project| %>
-          <% est = project.estimate_amount.to_i %>
-          <% dep = project.deposit_amount.to_i %>
-          <% out = est - dep %>
-          <div style="background:#f9fafb; border:1px solid #f3f4f6; border-radius:16px; padding:14px;">
-            <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:8px;">
-              <div>
-                <div style="font-size:16px; font-weight:900; color:#111827;"><%= project.project_name %></div>
-                <div style="font-size:13px; font-weight:700; color:#6b7280; margin-top:2px;"><%= project.client_name %></div>
-              </div>
-              <% ps = project.payment_status %>
-              <span style="padding:5px 10px; border-radius:10px; font-size:12px; font-weight:800; white-space:nowrap;
-                <% if ps == '완납' %>
-                  background:#dcfce7; color:#166534;
-                <% elsif ps.present? %>
-                  background:#fef3c7; color:#92400e;
-                <% else %>
-                  background:#f3f4f6; color:#6b7280;
-                <% end %>
-              "><%= ps.presence || '미결제' %></span>
-            </div>
-
-            <div style="display:flex; flex-direction:column; gap:4px; font-size:14px; font-weight:700;">
-              <div style="display:flex; justify-content:space-between; color:#374151;">
-                <span>견적금액</span>
-                <span><%= number_with_delimiter(est) %>원</span>
-              </div>
-              <div style="display:flex; justify-content:space-between; color:#16a34a;">
-                <span>수금액</span>
-                <span><%= number_with_delimiter(dep) %>원</span>
-              </div>
-              <% if out > 0 %>
-                <div style="display:flex; justify-content:space-between; color:#dc2626; font-weight:900;">
-                  <span>미수금</span>
-                  <span><%= number_with_delimiter(out) %>원</span>
+        <% @vendor_stats.each_with_index do |v, idx| %>
+          <% max_est = @vendor_stats.first[:estimate] %>
+          <% bar_width = max_est > 0 ? [v[:estimate] * 100 / max_est, 100].min : 0 %>
+          <% collect_ratio = v[:estimate] > 0 ? [v[:collected] * 100 / v[:estimate], 100].min : 0 %>
+          <div style="background:white; border-radius:18px; padding:16px; box-shadow:0 2px 8px rgba(0,0,0,0.05);">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+              <div style="display:flex; align-items:center; gap:8px;">
+                <div style="width:24px; height:24px; border-radius:50%; background:<%= idx == 0 ? '#fbbf24' : idx == 1 ? '#9ca3af' : idx == 2 ? '#b45309' : '#e5e7eb' %>; display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:900; color:<%= idx < 3 ? 'white' : '#374151' %>;"><%= idx + 1 %></div>
+                <div>
+                  <div style="font-size:15px; font-weight:900; color:#111827;"><%= v[:name] %></div>
+                  <div style="font-size:11px; color:#9ca3af; font-weight:600;"><%= v[:count] %>개 현장</div>
                 </div>
-              <% end %>
+              </div>
+              <div style="text-align:right;">
+                <div style="font-size:16px; font-weight:900; color:#111827;"><%= number_with_delimiter(v[:estimate]) %>원</div>
+                <div style="font-size:11px; color:#<%= v[:outstanding] > 0 ? 'dc2626' : '16a34a' %>; font-weight:700;">
+                  <% if v[:outstanding] > 0 %>⚠️ 미수금 <%= number_with_delimiter(v[:outstanding]) %>원<% else %>✅ 완납<% end %>
+                </div>
+              </div>
+            </div>
+            <%# 매출 비율 바 %>
+            <div style="background:#f3f4f6; border-radius:999px; height:6px; margin-bottom:4px;">
+              <div style="background:linear-gradient(90deg, #4f46e5, #818cf8); border-radius:999px; height:6px; width:<%= bar_width %>%;"></div>
+            </div>
+            <%# 수금률 바 %>
+            <div style="background:#f3f4f6; border-radius:999px; height:6px;">
+              <div style="background:linear-gradient(90deg, #16a34a, #22c55e); border-radius:999px; height:6px; width:<%= collect_ratio %>%;"></div>
+            </div>
+            <div style="display:flex; justify-content:space-between; font-size:11px; font-weight:700; color:#9ca3af; margin-top:4px;">
+              <span>수금률 <%= collect_ratio %>%</span>
+              <span>수금 <%= number_with_delimiter(v[:collected]) %>원</span>
             </div>
           </div>
         <% end %>
       </div>
     <% else %>
-      <div style="text-align:center; padding:30px 16px; color:#9ca3af;">
-        <div style="font-size:32px; margin-bottom:10px;">📭</div>
-        <div style="font-size:15px; font-weight:800; color:#6b7280;">해당 기간에 등록된 현장이 없습니다.</div>
+      <div style="text-align:center; padding:60px 16px;">
+        <div style="font-size:48px; margin-bottom:16px;">📊</div>
+        <div style="font-size:16px; font-weight:800; color:#6b7280;">분석할 데이터가 없습니다.</div>
       </div>
     <% end %>
   </div>
 
 </div>
+
+<script>
+  var currentTab = '<%= params[:tab] || "stats" %>';
+
+  function switchTab(tab) {
+    currentTab = tab;
+    // 탭 컨텐츠
+    ['stats', 'receivable', 'vendor'].forEach(function(t) {
+      document.getElementById('tab-' + t).style.display = t === tab ? 'block' : 'none';
+    });
+    // 탭 버튼 스타일
+    ['stats', 'receivable', 'vendor'].forEach(function(t) {
+      var btn = document.getElementById('tab-btn-' + t);
+      if (t === tab) {
+        btn.style.color = '#2563eb';
+        btn.style.borderBottom = '3px solid #2563eb';
+      } else {
+        btn.style.color = '#9ca3af';
+        btn.style.borderBottom = '3px solid transparent';
+      }
+    });
+    // form hidden input 업데이트 (기간 조회 시 탭 유지)
+    document.getElementById('form_tab_input').value = tab;
+  }
+
+  // 초기 탭 설정
+  switchTab(currentTab);
+</script>
