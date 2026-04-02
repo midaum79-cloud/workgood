@@ -224,10 +224,7 @@
     </div>
 
     <div id="bsSearchArea">
-      <input type="text" id="bsSearchInput" placeholder="거래처명을 검색하세요 (초성 검색 가능)"
-        oninput="bsSearchVendor()"
-        style="width:100%; padding:14px 16px; border:1px solid #dcdfe4; border-radius:12px; font-size:15px; box-sizing:border-box; margin-bottom:10px;">
-      <div id="bsSearchResults" style="display:flex; flex-direction:column; gap:6px; max-height:200px; overflow-y:auto;"></div>
+      <div id="bsSearchResults" style="display:flex; flex-direction:column; gap:6px; max-height:350px; overflow-y:auto; padding-bottom:10px;"></div>
     </div>
 
     <div id="bsDirectArea" style="display:none;">
@@ -249,7 +246,6 @@ function openBottomSheet(dateStr) {
   bsSelectedDate = dateStr;
   var parts = dateStr.split('-');
   document.getElementById('bsSubtitle').textContent = parts[0] + '년 ' + parseInt(parts[1]) + '월 ' + parseInt(parts[2]) + '일';
-  document.getElementById('bsSearchInput').value = '';
   document.getElementById('bsSearchResults').innerHTML = '';
   document.getElementById('bsDirectName').value = '';
   bsSwitchTab('company');
@@ -285,34 +281,30 @@ function bsSwitchTab(tab) {
   } else {
     document.getElementById('bsSearchArea').style.display = 'block';
     document.getElementById('bsDirectArea').style.display = 'none';
-    document.getElementById('bsSearchInput').placeholder =
-      tab === 'company' ? '업체명을 검색하세요 (초성 검색 가능)' : '개인명을 검색하세요 (초성 검색 가능)';
-    document.getElementById('bsSearchInput').value = '';
-    document.getElementById('bsSearchResults').innerHTML = '';
+    document.getElementById('bsSearchResults').innerHTML = '<div style="text-align:center; padding:16px; color:#9ca3af; font-size:14px; font-weight:700;">불러오는 중...</div>';
+    bsLoadVendors();
   }
 }
 
-function bsSearchVendor() {
-  var query = document.getElementById('bsSearchInput').value.trim();
+function bsLoadVendors() {
   var results = document.getElementById('bsSearchResults');
-  if (query.length === 0) { results.innerHTML = ''; return; }
-
   var vendorType = bsCurrentTab === 'company' ? 'company' : 'individual';
-  fetch('/vendors/search?q=' + encodeURIComponent(query) + '&vendor_type=' + vendorType)
+  
+  fetch('/vendors/search?q=&vendor_type=' + vendorType)
     .then(function(res) { return res.json(); })
     .then(function(vendors) {
       results.innerHTML = '';
       if (vendors.length === 0) {
-        results.innerHTML = '<div style="text-align:center; padding:16px; color:#9ca3af; font-size:14px; font-weight:700;">검색 결과가 없습니다.</div>';
+        results.innerHTML = '<div style="text-align:center; padding:16px; color:#9ca3af; font-size:14px; font-weight:700;">등록된 거래처가 없습니다.</div>';
         return;
       }
       vendors.forEach(function(v) {
         var btn = document.createElement('button');
         btn.type = 'button';
         btn.onclick = function() { bsGoToNewProject(v.name); };
-        btn.style.cssText = 'display:flex; align-items:center; gap:10px; width:100%; padding:12px 14px; border:1.5px solid #e5e7eb; border-radius:14px; background:white; cursor:pointer; font-family:inherit; text-align:left;';
-        btn.innerHTML = '<span style="font-size:15px; font-weight:800; color:#111827;">' + v.name + '</span>' +
-          (v.contact ? '<span style="font-size:12px; color:#9ca3af; margin-left:auto;">' + v.contact + '</span>' : '') +
+        btn.style.cssText = 'display:flex; align-items:center; gap:10px; width:100%; padding:14px 16px; border:1px solid #e5e7eb; border-radius:14px; background:white; cursor:pointer; font-family:inherit; text-align:left;';
+        btn.innerHTML = '<span style="font-size:16px; font-weight:800; color:#111827;">' + v.name + '</span>' +
+          (v.contact_name ? '<span style="font-size:13px; color:#9ca3af; margin-left:auto;">' + v.contact_name + '</span>' : '') +
           '<span style="color:#d1d5db;">→</span>';
         results.appendChild(btn);
       });
