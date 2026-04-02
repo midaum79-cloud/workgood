@@ -492,17 +492,17 @@
               <div style="background:<%= current_user.subscription_plan == 'free' ? '#111827' : '#f3f4f6' %>; border-radius:10px; padding:8px 6px; text-align:center;">
                 <div style="font-size:11px; font-weight:800; color:<%= current_user.subscription_plan == 'free' ? 'white' : '#6b7280' %>;">FREE</div>
                 <div style="font-size:12px; font-weight:900; color:<%= current_user.subscription_plan == 'free' ? 'white' : '#374151' %>; margin-top:2px;">₩0</div>
-                <div style="font-size:10px; color:<%= current_user.subscription_plan == 'free' ? 'rgba(255,255,255,0.7)' : '#9ca3af' %>;">1개</div>
+                <div style="font-size:10px; color:<%= current_user.subscription_plan == 'free' ? 'rgba(255,255,255,0.7)' : '#9ca3af' %>;">일정관리</div>
               </div>
               <div style="background:<%= current_user.subscription_plan == 'standard' ? '#2563eb' : '#f3f4f6' %>; border-radius:10px; padding:8px 6px; text-align:center;">
                 <div style="font-size:11px; font-weight:800; color:<%= current_user.subscription_plan == 'standard' ? 'white' : '#6b7280' %>;">STANDARD</div>
                 <div style="font-size:12px; font-weight:900; color:<%= current_user.subscription_plan == 'standard' ? 'white' : '#374151' %>; margin-top:2px;">₩4,900</div>
-                <div style="font-size:10px; color:<%= current_user.subscription_plan == 'standard' ? 'rgba(255,255,255,0.7)' : '#9ca3af' %>;">3개</div>
+                <div style="font-size:10px; color:<%= current_user.subscription_plan == 'standard' ? 'rgba(255,255,255,0.7)' : '#9ca3af' %>;">+돈관리</div>
               </div>
               <div style="background:<%= current_user.subscription_plan == 'premium' ? '#312e81' : '#f3f4f6' %>; border-radius:10px; padding:8px 6px; text-align:center;">
                 <div style="font-size:11px; font-weight:800; color:<%= current_user.subscription_plan == 'premium' ? '#fde68a' : '#6b7280' %>;">PREMIUM</div>
                 <div style="font-size:12px; font-weight:900; color:<%= current_user.subscription_plan == 'premium' ? 'white' : '#374151' %>; margin-top:2px;">₩9,900</div>
-                <div style="font-size:10px; color:<%= current_user.subscription_plan == 'premium' ? 'rgba(255,255,255,0.7)' : '#9ca3af' %>;">무제한</div>
+                <div style="font-size:10px; color:<%= current_user.subscription_plan == 'premium' ? 'rgba(255,255,255,0.7)' : '#9ca3af' %>;">+세금관리</div>
               </div>
             </div>
           <% end %>

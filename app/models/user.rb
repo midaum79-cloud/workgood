@@ -13,7 +13,7 @@ class User < ApplicationRecord
 
   before_save :downcase_email
 
-  PLAN_LIMITS  = { "free" => 1, "standard" => 3, "premium" => Float::INFINITY }.freeze
+  PLAN_LIMITS  = { "free" => Float::INFINITY, "standard" => Float::INFINITY, "premium" => Float::INFINITY }.freeze
   PLAN_PRICES  = { "free" => 0, "standard" => 4_900, "premium" => 9_900 }.freeze
   PLAN_LABELS  = { "free" => "무료", "standard" => "스탠다드", "premium" => "프리미엄" }.freeze
 
@@ -72,13 +72,42 @@ class User < ApplicationRecord
 
   def can_use_ai_import?
     return true if premium?
-    standard_or_above? && (ai_imports_count || 0) < 3
+    standard_or_above? && (ai_imports_count || 0) < 10
   end
 
   def ai_imports_remaining
     return "무제한" if premium?
     return 0 if free?
-    [3 - (ai_imports_count || 0), 0].max
+    [10 - (ai_imports_count || 0), 0].max
+  end
+
+  # ── 기능 권한 (플랜별 차별화) ──────────────────────────────────────
+  def can_view_stats?
+    standard_or_above?
+  end
+
+  def can_view_vendor_analysis?
+    standard_or_above?
+  end
+
+  def can_manage_receivables?
+    standard_or_above?
+  end
+
+  def can_export_excel?
+    premium?
+  end
+
+  def can_use_tax_report?
+    premium?
+  end
+
+  def can_use_widget?
+    premium?
+  end
+
+  def can_use_auto_alert?
+    premium?
   end
 
   def premium?

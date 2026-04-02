@@ -18,24 +18,28 @@
       <div style="background:#fef2f2; color:#991b1b; border-radius:14px; padding:12px 16px; margin-bottom:16px; font-size:14px; font-weight:700;"><%= alert %></div>
     <% end %>
 
+    <%# 테스트 기간 배너 %>
+    <% if User::TESTING_PERIOD %>
+      <div style="background:linear-gradient(135deg, #059669 0%, #10b981 100%); border-radius:18px; padding:18px 20px; margin-bottom:16px; color:white; position:relative; overflow:hidden;">
+        <div style="position:absolute; top:-20px; right:-20px; width:80px; height:80px; border-radius:50%; background:rgba(255,255,255,0.1);"></div>
+        <div style="font-size:20px; margin-bottom:6px;">⚡</div>
+        <div style="font-size:17px; font-weight:900; margin-bottom:4px;">지금 테스트 기간!</div>
+        <div style="font-size:13px; font-weight:700; opacity:0.9; line-height:1.6;">
+          모든 프리미엄 기능을 무료로 체험 중입니다<br>
+          정식 출시 전까지 마음껏 사용하세요 🎉
+        </div>
+      </div>
+    <% end %>
+
     <%# Current Plan Card %>
     <div style="background:linear-gradient(135deg, #111827 0%, #1e3a5f 100%); border-radius:20px; padding:22px; margin-bottom:20px; color:white;">
       <div style="font-size:12px; font-weight:700; color:rgba(255,255,255,0.6); margin-bottom:6px;">현재 요금제</div>
-      <div style="font-size:26px; font-weight:900; margin-bottom:6px;"><%= current_user.plan_label %> 플랜</div>
-      <div style="font-size:14px; color:rgba(255,255,255,0.7);">
-        공사현장 <%= @project_count %>개 사용 중 /
-        <%= @plan_limit == Float::INFINITY ? "무제한" : "최대 #{@plan_limit}개" %>
+      <div style="display:flex; justify-content:space-between; align-items:center;">
+        <div style="font-size:26px; font-weight:900;"><%= current_user.plan_label %> 플랜</div>
+        <div style="font-size:14px; font-weight:800; color:#4ade80;">현장 무제한</div>
       </div>
-
-      <%# Usage bar %>
-      <div style="margin-top:16px;">
-        <div style="width:100%; height:6px; background:rgba(255,255,255,0.2); border-radius:999px; overflow:hidden;">
-          <% usage_pct = @plan_limit == Float::INFINITY ? 0 : [(@project_count.to_f / @plan_limit * 100).round, 100].min %>
-          <div style="width:<%= usage_pct %>%; height:100%; background:<%= usage_pct >= 100 ? '#ef4444' : '#4ade80' %>; border-radius:999px;"></div>
-        </div>
-        <div style="font-size:11px; color:rgba(255,255,255,0.5); margin-top:5px; text-align:right;">
-          <%= usage_pct %>% 사용
-        </div>
+      <div style="font-size:13px; color:rgba(255,255,255,0.6); margin-top:6px;">
+        공사현장 <%= @project_count %>개 사용 중
       </div>
 
       <% if @current_plan != "free" && @last_payment %>
@@ -46,95 +50,179 @@
       <% end %>
     </div>
 
-    <%# Plans %>
-    <div style="font-size:16px; font-weight:900; color:#111827; margin-bottom:14px;">요금제 변경</div>
+    <%# Plans Section %>
+    <div style="font-size:16px; font-weight:900; color:#111827; margin-bottom:6px;">요금제 선택</div>
+    <div style="font-size:13px; font-weight:600; color:#9ca3af; margin-bottom:16px;">모든 플랜은 현장 등록 무제한! 💪</div>
 
-    <div style="display:flex; flex-direction:column; gap:12px;">
+    <div style="display:flex; flex-direction:column; gap:14px;">
 
-      <%# FREE %>
+      <%# ===== FREE ===== %>
       <% is_current = @current_plan == "free" %>
-      <div style="background:white; border-radius:18px; padding:18px; border:2px solid <%= is_current ? '#111827' : '#e5e7eb' %>;">
-        <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:12px;">
+      <div style="background:white; border-radius:20px; padding:20px; border:2px solid <%= is_current ? '#111827' : '#e5e7eb' %>; position:relative;">
+        <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:14px;">
           <div>
-            <div style="font-size:16px; font-weight:900; color:#374151;">무료 플랜</div>
-            <div style="font-size:12px; color:#9ca3af; font-weight:600; margin-top:2px;">공사현장 1개</div>
+            <div style="font-size:18px; font-weight:900; color:#374151;">🟢 무료 플랜</div>
+            <div style="font-size:13px; color:#6b7280; font-weight:700; margin-top:3px;">일정만 깔끔하게</div>
           </div>
-          <div style="font-size:20px; font-weight:900; color:#111827;">₩0</div>
+          <div style="text-align:right;">
+            <div style="font-size:24px; font-weight:900; color:#111827;">₩0</div>
+          </div>
         </div>
-        <div style="font-size:13px; color:#6b7280; margin-bottom:14px; line-height:1.8;">
-          ✓ 공사현장 1개<br>
-          ✓ 공정 일정 관리<br>
-          ✓ 캘린더 보기<br>
-          ✓ 현장 공정 진행 상태 확인
+
+        <%# 기능 그룹: 일정 관리 %>
+        <div style="margin-bottom:12px;">
+          <div style="font-size:11px; font-weight:800; color:#9ca3af; margin-bottom:8px; letter-spacing:0.5px;">📅 일정 관리</div>
+          <div style="font-size:13px; color:#374151; font-weight:600; line-height:2;">
+            ✅ 현장 등록 <strong>무제한</strong><br>
+            ✅ 캘린더 일정 관리<br>
+            ✅ 시공 사진 기록<br>
+            ✅ 거래처 관리<br>
+            ✅ 견적/계약금 입력
+          </div>
         </div>
+
+        <div style="margin-bottom:14px;">
+          <div style="font-size:11px; font-weight:800; color:#d1d5db; margin-bottom:8px; letter-spacing:0.5px;">💰 돈 관리</div>
+          <div style="font-size:13px; color:#d1d5db; font-weight:600; line-height:2;">
+            ❌ 월별 수입 통계<br>
+            ❌ 미수금 관리<br>
+            ❌ AI 일정표 캡처
+          </div>
+        </div>
+
         <% if is_current %>
-          <div style="text-align:center; padding:11px; background:#f9fafb; border-radius:12px; font-size:14px; font-weight:800; color:#9ca3af;">현재 플랜</div>
+          <div style="text-align:center; padding:13px; background:#f3f4f6; border-radius:14px; font-size:15px; font-weight:800; color:#9ca3af;">현재 플랜</div>
         <% else %>
           <%= button_to "무료로 전환", subscription_path, method: :patch, params: { plan: "free" },
-              style: "width:100%; padding:12px; background:#f3f4f6; color:#374151; border:none; border-radius:12px; font-size:14px; font-weight:800; cursor:pointer; font-family:inherit;" %>
+              style: "width:100%; padding:13px; background:#f3f4f6; color:#374151; border:none; border-radius:14px; font-size:15px; font-weight:800; cursor:pointer; font-family:inherit;" %>
         <% end %>
       </div>
 
-      <%# STANDARD %>
+      <%# ===== STANDARD ===== %>
       <% is_current = @current_plan == "standard" %>
-      <div style="background:white; border-radius:18px; padding:18px; border:2px solid <%= is_current ? '#2563eb' : '#e5e7eb' %>;">
-        <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:12px;">
+      <div style="background:white; border-radius:20px; padding:20px; border:2px solid <%= is_current ? '#2563eb' : '#e5e7eb' %>; position:relative;">
+        <%# BEST 뱃지 %>
+        <div style="position:absolute; top:-10px; right:16px; background:linear-gradient(135deg, #f59e0b, #d97706); color:white; font-size:11px; font-weight:900; padding:5px 14px; border-radius:999px; box-shadow:0 2px 8px rgba(245,158,11,0.4);">
+          🏆 BEST
+        </div>
+
+        <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:14px;">
           <div>
-            <div style="font-size:16px; font-weight:900; color:#1d4ed8;">스탠다드 플랜</div>
-            <div style="font-size:12px; color:#93c5fd; font-weight:600; margin-top:2px;">공사현장 3개</div>
+            <div style="font-size:18px; font-weight:900; color:#1d4ed8;">🔵 스탠다드</div>
+            <div style="font-size:13px; color:#60a5fa; font-weight:700; margin-top:3px;">돈 흐름을 한눈에</div>
           </div>
-          <div>
-            <div style="font-size:20px; font-weight:900; color:#111827;">₩4,900</div>
-            <div style="font-size:11px; color:#9ca3af; text-align:right;">/월</div>
+          <div style="text-align:right;">
+            <div style="font-size:24px; font-weight:900; color:#111827;">₩4,900</div>
+            <div style="font-size:11px; color:#9ca3af; font-weight:600;">/월</div>
           </div>
         </div>
-        <div style="font-size:13px; color:#374151; margin-bottom:14px; line-height:1.8;">
-          ✓ 공사현장 최대 3개<br>
-          ✓ 공정 일정 관리<br>
-          ✓ 캘린더<br>
-          ✓ 공정 용어 사용<br>
-          ✓ 업체 관리<br>
-          ✓ 기본 알림<br>
-          ✓ AI 일정표 캡처 등록 · 월 3회
+
+        <%# 핵심 가치 배너 %>
+        <div style="background:#eff6ff; border:1px solid #bfdbfe; border-radius:12px; padding:12px 14px; margin-bottom:14px;">
+          <div style="font-size:13px; font-weight:800; color:#1d4ed8; line-height:1.6;">
+            💡 "이번 달에 기름값 빼고 얼마 벌었지?"<br>
+            → <strong>한눈에 확인</strong>
+          </div>
         </div>
+
+        <%# 기능 그룹: 일정 관리 %>
+        <div style="margin-bottom:10px;">
+          <div style="font-size:11px; font-weight:800; color:#9ca3af; margin-bottom:8px; letter-spacing:0.5px;">📅 일정 관리</div>
+          <div style="font-size:13px; color:#374151; font-weight:600; line-height:2;">
+            ✅ 무료 플랜 전체 포함
+          </div>
+        </div>
+
+        <%# 기능 그룹: 돈 관리 %>
+        <div style="margin-bottom:10px;">
+          <div style="font-size:11px; font-weight:800; color:#2563eb; margin-bottom:8px; letter-spacing:0.5px;">💰 돈 관리</div>
+          <div style="font-size:13px; color:#374151; font-weight:600; line-height:2;">
+            <span style="color:#2563eb;">⭐</span> <strong>월별 수입 통계 리포트</strong><br>
+            <span style="color:#2563eb;">⭐</span> <strong>거래처별 매출 분석</strong><br>
+            <span style="color:#2563eb;">⭐</span> <strong>미수금 관리 대시보드</strong><br>
+            ✅ 결제 상태 필터/검색
+          </div>
+        </div>
+
+        <%# AI 기능 %>
+        <div style="margin-bottom:14px;">
+          <div style="font-size:11px; font-weight:800; color:#9ca3af; margin-bottom:8px; letter-spacing:0.5px;">🤖 AI 기능</div>
+          <div style="font-size:13px; color:#374151; font-weight:600; line-height:2;">
+            ✅ AI 일정표 캡처 · <strong>월 10회</strong>
+          </div>
+        </div>
+
         <% if is_current %>
-          <div style="text-align:center; padding:11px; background:#dbeafe; border-radius:12px; font-size:14px; font-weight:800; color:#2563eb;">현재 플랜</div>
+          <div style="text-align:center; padding:13px; background:#dbeafe; border-radius:14px; font-size:15px; font-weight:800; color:#2563eb;">현재 플랜</div>
         <% else %>
-          <button onclick="requestPayment('standard', 4900)" style="width:100%; padding:12px; background:#2563eb; color:white; border:none; border-radius:12px; font-size:14px; font-weight:900; cursor:pointer; font-family:inherit;">
+          <button onclick="requestPayment('standard', 4900)" style="width:100%; padding:14px; background:#2563eb; color:white; border:none; border-radius:14px; font-size:16px; font-weight:900; cursor:pointer; font-family:inherit; box-shadow:0 4px 12px rgba(37,99,235,0.3);">
             스탠다드 시작 · ₩4,900/월
           </button>
         <% end %>
       </div>
 
-      <%# PREMIUM %>
+      <%# ===== PREMIUM ===== %>
       <% is_current = @current_plan == "premium" %>
-      <div style="background:linear-gradient(135deg, #1e1b4b 0%, #312e81 100%); border-radius:18px; padding:18px; border:2px solid <%= is_current ? '#818cf8' : 'transparent' %>;">
-        <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:12px;">
+      <div style="background:linear-gradient(135deg, #1e1b4b 0%, #312e81 100%); border-radius:20px; padding:20px; border:2px solid <%= is_current ? '#818cf8' : 'transparent' %>; position:relative; overflow:hidden;">
+        <div style="position:absolute; top:-30px; right:-30px; width:120px; height:120px; border-radius:50%; background:rgba(255,255,255,0.05);"></div>
+        <div style="position:absolute; bottom:-20px; left:-20px; width:80px; height:80px; border-radius:50%; background:rgba(255,255,255,0.03);"></div>
+
+        <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:14px;">
           <div>
-            <div style="font-size:16px; font-weight:900; color:white;">프리미엄 플랜</div>
-            <div style="font-size:12px; color:#a5b4fc; font-weight:600; margin-top:2px;">공사현장 등록 무제한</div>
+            <div style="font-size:18px; font-weight:900; color:white;">🟣 프리미엄</div>
+            <div style="font-size:13px; color:#a5b4fc; font-weight:700; margin-top:3px;">세금 걱정까지 끝</div>
           </div>
-          <div>
-            <div style="font-size:20px; font-weight:900; color:white;">₩9,900</div>
-            <div style="font-size:11px; color:#a5b4fc; text-align:right;">/월</div>
+          <div style="text-align:right;">
+            <div style="font-size:24px; font-weight:900; color:white;">₩9,900</div>
+            <div style="font-size:11px; color:#a5b4fc; font-weight:600;">/월</div>
           </div>
         </div>
-        <div style="font-size:13px; color:rgba(255,255,255,0.85); margin-bottom:14px; line-height:1.8;">
-          ✓ 스탠다드 전체 포함<br>
-          ✓ 공사현장 등록 무제한<br>
-          <span style="color:#fde68a;">⭐ AI 일정표 캡처 등록 · 무제한</span><br>
-          <span style="color:#fde68a;">⭐ 캘린더 위젯</span><br>
-          <span style="color:#fde68a;">⭐ 잠금화면 위젯</span><br>
-          <span style="color:#fde68a;">⭐ 시간 알림 설정</span><br>
-          <span style="color:#fde68a;">⭐ 고급 알림</span>
+
+        <%# 핵심 가치 배너 %>
+        <div style="background:rgba(255,255,255,0.1); border:1px solid rgba(255,255,255,0.15); border-radius:12px; padding:12px 14px; margin-bottom:14px; backdrop-filter:blur(10px);">
+          <div style="font-size:13px; font-weight:800; color:#fde68a; line-height:1.6;">
+            🧾 "5월에 세무사한테 엑셀 하나만 보내면 끝"<br>
+            → <strong>월 9,900원이면 정말 싼 가격</strong>
+          </div>
         </div>
-        <% if is_current %>
-          <div style="text-align:center; padding:11px; background:rgba(255,255,255,0.15); border-radius:12px; font-size:14px; font-weight:800; color:white;">현재 플랜</div>
-        <% else %>
-          <button onclick="requestPayment('premium', 9900)" style="width:100%; padding:12px; background:linear-gradient(90deg, #6366f1, #818cf8); color:white; border:none; border-radius:12px; font-size:14px; font-weight:900; cursor:pointer; font-family:inherit;">
-            프리미엄 시작 · ₩9,900/월
-          </button>
-        <% end %>
+
+        <%# 기능 그룹 %>
+        <div style="margin-bottom:10px;">
+          <div style="font-size:11px; font-weight:800; color:rgba(255,255,255,0.5); margin-bottom:8px; letter-spacing:0.5px;">📅 일정 + 💰 돈 관리</div>
+          <div style="font-size:13px; color:rgba(255,255,255,0.85); font-weight:600; line-height:2;">
+            ✅ 스탠다드 전체 포함
+          </div>
+        </div>
+
+        <div style="margin-bottom:10px;">
+          <div style="font-size:11px; font-weight:800; color:#fde68a; margin-bottom:8px; letter-spacing:0.5px;">🧾 세금 관리</div>
+          <div style="font-size:13px; color:rgba(255,255,255,0.9); font-weight:600; line-height:2;">
+            <span style="color:#fde68a;">⭐</span> <strong>3.3% 세금 자동 계산 및 수익 통계</strong><br>
+            <span style="color:#fde68a;">⭐</span> <strong>종합소득세 대비 엑셀 리포트 다운로드</strong><br>
+            <span style="color:#fde68a;">⭐</span> <strong>미수금 입금 요청 알림</strong><br>
+            <span style="color:#fde68a;">⭐</span> <strong>1년 정산 리포트</strong>
+          </div>
+        </div>
+
+        <div style="margin-bottom:10px;">
+          <div style="font-size:11px; font-weight:800; color:#fde68a; margin-bottom:8px; letter-spacing:0.5px;">📱 프리미엄 전용</div>
+          <div style="font-size:13px; color:rgba(255,255,255,0.9); font-weight:600; line-height:2;">
+            <span style="color:#fde68a;">⭐</span> <strong>홈 화면/잠금 화면 '전체 캘린더' 위젯</strong><br>
+            <span style="font-size:11px; color:#a5b4fc; margin-left:20px;">(앱 안 켜도 확인 가능!)</span><br>
+            <span style="color:#fde68a;">⭐</span> <strong>업체 전날 예약 확인 문자 자동 발송</strong><br>
+            <span style="color:#fde68a;">⭐</span> <strong>AI 일정표 캡처 · 무제한</strong>
+          </div>
+        </div>
+
+        <div style="margin-top:14px;">
+          <% if is_current %>
+            <div style="text-align:center; padding:13px; background:rgba(255,255,255,0.15); border-radius:14px; font-size:15px; font-weight:800; color:white;">현재 플랜</div>
+          <% else %>
+            <button onclick="requestPayment('premium', 9900)" style="width:100%; padding:14px; background:linear-gradient(90deg, #6366f1, #818cf8); color:white; border:none; border-radius:14px; font-size:16px; font-weight:900; cursor:pointer; font-family:inherit; box-shadow:0 4px 16px rgba(99,102,241,0.4);">
+              프리미엄 시작 · ₩9,900/월
+            </button>
+          <% end %>
+        </div>
       </div>
 
     </div>
@@ -162,17 +250,18 @@
 
           <div style="background:#fef2f2; border-radius:14px; padding:14px 16px; margin-bottom:16px;">
             <div style="font-size:13px; font-weight:700; color:#991b1b; line-height:1.8;">
-              ❌ 공사현장 등록이 1개로 제한됩니다<br>
-              ❌ AI 일정표 캡처 등록 불가<br>
+              ❌ 월별 수입 통계 이용 불가<br>
+              ❌ 미수금 관리 기능 해제<br>
+              ❌ AI 일정표 캡처 이용 불가<br>
               ❌ 위젯 기능 이용 불가<br>
-              ❌ 다중 현장 색상 사용 불가
+              ❌ 엑셀 다운로드 불가
             </div>
           </div>
 
           <div style="background:#f0fdf4; border-radius:14px; padding:14px 16px; margin-bottom:20px;">
             <div style="font-size:13px; font-weight:700; color:#166534; line-height:1.8;">
               💡 <strong>지금 유지하시면</strong><br>
-              ✅ 진행 중인 현장 관리 계속 가능<br>
+              ✅ 돈 관리/세금 관리 계속 이용<br>
               ✅ 모든 프리미엄 기능 이용 가능<br>
               ✅ 언제든지 해지할 수 있어요
             </div>
@@ -189,6 +278,73 @@
       </div>
     <% end %>
 
+    <%# 플랜 비교 요약 %>
+    <div style="margin-top:20px; background:white; border-radius:18px; padding:18px; box-shadow:0 2px 10px rgba(0,0,0,0.04);">
+      <div style="font-size:15px; font-weight:900; color:#111827; margin-bottom:14px; text-align:center;">📊 플랜 비교</div>
+      <div style="overflow-x:auto;">
+        <table style="width:100%; border-collapse:collapse; font-size:12px;">
+          <thead>
+            <tr style="border-bottom:2px solid #e5e7eb;">
+              <th style="text-align:left; padding:8px 6px; font-weight:800; color:#6b7280;">기능</th>
+              <th style="text-align:center; padding:8px 4px; font-weight:800; color:#374151;">무료</th>
+              <th style="text-align:center; padding:8px 4px; font-weight:800; color:#2563eb;">스탠다드</th>
+              <th style="text-align:center; padding:8px 4px; font-weight:800; color:#6366f1;">프리미엄</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr style="border-bottom:1px solid #f3f4f6;">
+              <td style="padding:10px 6px; font-weight:700; color:#374151;">현장 등록</td>
+              <td style="text-align:center; padding:10px 4px; font-weight:800; color:#16a34a;">무제한</td>
+              <td style="text-align:center; padding:10px 4px; font-weight:800; color:#16a34a;">무제한</td>
+              <td style="text-align:center; padding:10px 4px; font-weight:800; color:#16a34a;">무제한</td>
+            </tr>
+            <tr style="border-bottom:1px solid #f3f4f6;">
+              <td style="padding:10px 6px; font-weight:700; color:#374151;">캘린더/사진</td>
+              <td style="text-align:center; padding:10px 4px;">✅</td>
+              <td style="text-align:center; padding:10px 4px;">✅</td>
+              <td style="text-align:center; padding:10px 4px;">✅</td>
+            </tr>
+            <tr style="border-bottom:1px solid #f3f4f6; background:#f0f9ff;">
+              <td style="padding:10px 6px; font-weight:700; color:#374151;">월별 수입 통계</td>
+              <td style="text-align:center; padding:10px 4px; color:#d1d5db;">—</td>
+              <td style="text-align:center; padding:10px 4px; font-weight:800; color:#2563eb;">⭐</td>
+              <td style="text-align:center; padding:10px 4px; font-weight:800; color:#6366f1;">⭐</td>
+            </tr>
+            <tr style="border-bottom:1px solid #f3f4f6; background:#f0f9ff;">
+              <td style="padding:10px 6px; font-weight:700; color:#374151;">미수금 관리</td>
+              <td style="text-align:center; padding:10px 4px; color:#d1d5db;">—</td>
+              <td style="text-align:center; padding:10px 4px; font-weight:800; color:#2563eb;">⭐</td>
+              <td style="text-align:center; padding:10px 4px; font-weight:800; color:#6366f1;">⭐</td>
+            </tr>
+            <tr style="border-bottom:1px solid #f3f4f6;">
+              <td style="padding:10px 6px; font-weight:700; color:#374151;">AI 캡처</td>
+              <td style="text-align:center; padding:10px 4px; color:#d1d5db;">—</td>
+              <td style="text-align:center; padding:10px 4px; font-weight:700; color:#374151;">월 10회</td>
+              <td style="text-align:center; padding:10px 4px; font-weight:800; color:#6366f1;">무제한</td>
+            </tr>
+            <tr style="border-bottom:1px solid #f3f4f6; background:#faf5ff;">
+              <td style="padding:10px 6px; font-weight:700; color:#374151;">3.3% 세금 계산</td>
+              <td style="text-align:center; padding:10px 4px; color:#d1d5db;">—</td>
+              <td style="text-align:center; padding:10px 4px; color:#d1d5db;">—</td>
+              <td style="text-align:center; padding:10px 4px; font-weight:800; color:#6366f1;">⭐</td>
+            </tr>
+            <tr style="border-bottom:1px solid #f3f4f6; background:#faf5ff;">
+              <td style="padding:10px 6px; font-weight:700; color:#374151;">엑셀 다운로드</td>
+              <td style="text-align:center; padding:10px 4px; color:#d1d5db;">—</td>
+              <td style="text-align:center; padding:10px 4px; color:#d1d5db;">—</td>
+              <td style="text-align:center; padding:10px 4px; font-weight:800; color:#6366f1;">⭐</td>
+            </tr>
+            <tr style="background:#faf5ff;">
+              <td style="padding:10px 6px; font-weight:700; color:#374151;">캘린더 위젯</td>
+              <td style="text-align:center; padding:10px 4px; color:#d1d5db;">—</td>
+              <td style="text-align:center; padding:10px 4px; color:#d1d5db;">—</td>
+              <td style="text-align:center; padding:10px 4px; font-weight:800; color:#6366f1;">⭐</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
     <%# Info Box %>
     <div style="margin-top:16px; background:#f0f9ff; border-radius:14px; padding:14px 16px;">
       <div style="font-size:13px; font-weight:700; color:#0c4a6e; line-height:1.7;">
@@ -201,8 +357,6 @@
   </div>
 </div>
 
-<%# TossPayments Payment Modal - removed, using redirect flow %>
-
 <script src="https://js.tosspayments.com/v2/standard"></script>
 <script>
   const TOSS_CLIENT_KEY = "<%= ENV['TOSS_CLIENT_KEY'] || '' %>";
@@ -214,17 +368,17 @@
     }
 
     const planLabels = { standard: "스탠다드", premium: "프리미엄" };
-    const orderId = `ilmeori_${plan}_<%= current_user.id %>_${Date.now()}`;
+    const orderId = `workgood_${plan}_<%= current_user.id %>_${Date.now()}`;
 
     try {
       const tossPayments = TossPayments(TOSS_CLIENT_KEY);
-      const payment = tossPayments.payment({ customerKey: "ilmeori_<%= current_user.id %>" });
+      const payment = tossPayments.payment({ customerKey: "workgood_<%= current_user.id %>" });
 
       await payment.requestPayment({
         method: "CARD",
         amount: { currency: "KRW", value: amount },
         orderId: orderId,
-        orderName: `일머리 ${planLabels[plan]} 플랜 (월간)`,
+        orderName: `일잘러 ${planLabels[plan]} 플랜 (월간)`,
         customerEmail: "<%= current_user.email %>",
         customerName: "<%= current_user.name %>",
         successUrl: `${window.location.origin}/subscription/verify?plan=${plan}&amount=${amount}`,
