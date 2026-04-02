@@ -20,13 +20,56 @@
     <%= form_with model: vendor, local: true do |f| %>
       <div style="background:white; border-radius:16px; padding:18px; box-shadow:0 2px 8px rgba(0,0,0,0.04); display:flex; flex-direction:column; gap:16px;">
 
+        <%# 거래처 구분 %>
+        <div>
+          <label style="font-size:13px; font-weight:800; color:#374151; display:block; margin-bottom:6px;">구분 *</label>
+          <div style="display:flex; gap:12px;" id="vendor_type_container">
+            <label style="flex:1; display:flex; align-items:center; justify-content:center; padding:12px; border:1px solid #dcdfe4; border-radius:12px; cursor:pointer; background:<%= vendor.vendor_type == 'individual' ? 'white' : '#eff6ff' %>; border-color:<%= vendor.vendor_type == 'individual' ? '#dcdfe4' : '#2563eb' %>;">
+              <%= f.radio_button :vendor_type, "company", checked: (vendor.vendor_type != "individual"), style: "display:none;" %>
+              <span style="font-size:14px; font-weight:800; color:<%= vendor.vendor_type == 'individual' ? '#6b7280' : '#1d4ed8' %>;">🏢 업체</span>
+            </label>
+            <label style="flex:1; display:flex; align-items:center; justify-content:center; padding:12px; border:1px solid #dcdfe4; border-radius:12px; cursor:pointer; background:<%= vendor.vendor_type == 'individual' ? '#fff7ed' : 'white' %>; border-color:<%= vendor.vendor_type == 'individual' ? '#ea580c' : '#dcdfe4' %>;">
+              <%= f.radio_button :vendor_type, "individual", checked: (vendor.vendor_type == "individual"), style: "display:none;" %>
+              <span style="font-size:14px; font-weight:800; color:<%= vendor.vendor_type == 'individual' ? '#c2410c' : '#6b7280' %>;">👤 개인</span>
+            </label>
+          </div>
+          <script>
+            document.querySelectorAll('input[name="vendor[vendor_type]"]').forEach(function(radio) {
+              radio.addEventListener('change', function() {
+                var isCompany = (this.value === 'company');
+                var companyLabel = document.getElementById('vendor_type_container').children[0];
+                var individualLabel = document.getElementById('vendor_type_container').children[1];
+                
+                companyLabel.style.background = isCompany ? '#eff6ff' : 'white';
+                companyLabel.style.borderColor = isCompany ? '#2563eb' : '#dcdfe4';
+                companyLabel.querySelector('span').style.color = isCompany ? '#1d4ed8' : '#6b7280';
+                
+                individualLabel.style.background = !isCompany ? '#fff7ed' : 'white';
+                individualLabel.style.borderColor = !isCompany ? '#ea580c' : '#dcdfe4';
+                individualLabel.querySelector('span').style.color = !isCompany ? '#c2410c' : '#6b7280';
+              });
+            });
+          </script>
+        </div>
+
         <%# 업체명 %>
         <div>
-          <label style="font-size:13px; font-weight:800; color:#374151; display:block; margin-bottom:6px;">업체명 *</label>
-          <%= f.text_field :name, placeholder: "공정명+업체명을 등록해 주세요 (예: 타일 홍타일)",
+          <label style="font-size:13px; font-weight:800; color:#374151; display:block; margin-bottom:6px;"><span id="vendor-name-label"><%= vendor.vendor_type == 'individual' ? '고객명' : '업체명' %></span> *</label>
+          <%= f.text_field :name, placeholder: "업체명 또는 고객명을 등록해 주세요",
               style: "width:100%; height:48px; border:1.5px solid #e5e7eb; border-radius:12px; padding:0 14px; font-size:15px; font-weight:700; font-family:inherit; box-sizing:border-box;" %>
-          <div style="font-size:11px; color:#9ca3af; margin-top:4px; font-weight:600;">공정명을 앞에 붙이면 초성 검색에 유리합니다 (예: 타일 홍타일 / 도배 나이스)</div>
+          <div id="vendor-name-hint" style="font-size:11px; color:#9ca3af; margin-top:4px; font-weight:600; display:<%= vendor.vendor_type == 'individual' ? 'none' : 'block' %>;">공정명을 앞에 붙이면 초성 검색에 유리합니다 (예: 타일 홍타일 / 도배 나이스)</div>
         </div>
+
+        <script>
+          // 라디오 버튼 선택 시 라벨/힌트 동기화
+          document.querySelectorAll('input[name="vendor[vendor_type]"]').forEach(function(radio) {
+            radio.addEventListener('change', function() {
+              var isCompany = (this.value === 'company');
+              document.getElementById('vendor-name-label').textContent = isCompany ? '업체명' : '고객명';
+              document.getElementById('vendor-name-hint').style.display = isCompany ? 'block' : 'none';
+            });
+          });
+        </script>
 
         <%# 담당자명 %>
         <div>

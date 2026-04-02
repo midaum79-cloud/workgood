@@ -1,14 +1,22 @@
 <div style="max-width:430px; margin:0 auto; min-height:100vh; background:#f5f5f5;">
 
   <%# Sticky Header %>
-  <div style="background:white; padding:18px 20px 14px 20px; border-bottom:1px solid #ececec; position:sticky; top:0; z-index:30; margin-bottom:16px;">
-    <div style="display:flex; justify-content:space-between; align-items:center;">
+  <div style="background:white; padding:18px 20px 0 20px; border-bottom:1px solid #ececec; position:sticky; top:0; z-index:30; margin-bottom:16px;">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
       <div style="font-size:24px; color:#111827; font-weight:900; cursor:pointer;" onclick="openDrawer()">☰</div>
-      <div style="font-size:20px; font-weight:900;">업체 관리</div>
+      <div style="font-size:20px; font-weight:900;">거래처 관리</div>
       <%= link_to new_vendor_path,
           style: "background:#111827; color:white; padding:8px 14px; border-radius:12px; text-decoration:none; font-size:14px; font-weight:800;" do %>
         + 추가
       <% end %>
+    </div>
+    
+    <%# 업체/개인 탭 %>
+    <div style="display:flex;">
+      <%= link_to "🏢 업체", vendors_path(vendor_type: "company"), 
+          style: "flex:1; text-align:center; padding:12px 0; font-size:14px; font-weight:800; text-decoration:none; color:#{@vendor_type == 'individual' ? '#9ca3af' : '#2563eb'}; border-bottom:3px solid #{@vendor_type == 'individual' ? 'transparent' : '#2563eb'};" %>
+      <%= link_to "👤 개인", vendors_path(vendor_type: "individual"), 
+          style: "flex:1; text-align:center; padding:12px 0; font-size:14px; font-weight:800; text-decoration:none; color:#{@vendor_type == 'individual' ? '#ea580c' : '#9ca3af'}; border-bottom:3px solid #{@vendor_type == 'individual' ? '#ea580c' : 'transparent'};" %>
     </div>
   </div>
 

@@ -2,7 +2,13 @@ class VendorsController < ApplicationController
   before_action :set_vendor, only: %i[show edit update destroy]
 
   def index
-    @vendors = Vendor.ordered
+    @vendor_type = params[:vendor_type] || "company"
+    @vendors =
+      if @vendor_type == "individual"
+        Vendor.ordered.where(vendor_type: "individual")
+      else
+        Vendor.ordered.where(vendor_type: ["company", nil, ""])
+      end
     @unread_notifications_count = Notification.where(status: "unread").count
   end
 
