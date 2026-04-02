@@ -9,9 +9,17 @@
   </div>
 
   <%= form_with(model: @project, local: true) do |form| %>
+    <% if flash[:alert].present? %>
+      <div style="background:#fee2e2; color:#b91c1c; padding:14px; border-radius:14px; margin-bottom:16px; font-size:14px; font-weight:700;">
+        ⚠️ <%= flash[:alert] %>
+      </div>
+    <% end %>
     <% if @project.errors.any? %>
       <div style="background:#fee2e2; color:#b91c1c; padding:14px; border-radius:14px; margin-bottom:16px; font-size:14px; font-weight:700;">
-        입력 내용을 확인해주세요.
+        ⚠️ 입력 내용을 확인해주세요:<br>
+        <% @project.errors.full_messages.each do |msg| %>
+          · <%= msg %><br>
+        <% end %>
       </div>
     <% end %>
 

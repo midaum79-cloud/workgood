@@ -426,9 +426,17 @@ class ProjectsController < ApplicationController
       params[:project][:address] = merged_address
     end
 
-    if @project.update(project_params)
+    # 사진 파일은 별도 처리 (빈 파일 필드가 오류 일으키지 않도록)
+    photo_files = params.dig(:project, :photos)&.reject { |f| f.blank? || !f.respond_to?(:read) } || []
+    base_params = project_params.except(:photos)
+
+    if @project.update(base_params)
+      # 새 사진이 실제로 업로드된 경우에만 첨부
+      @project.photos.attach(photo_files) if photo_files.any?
       redirect_to @project, notice: "현장이 수정되었습니다."
     else
+      Rails.logger.error "[Project Update Failed] #{@project.errors.full_messages.inspect}"
+      flash.now[:alert] = @project.errors.full_messages.join(", ")
       render :edit, status: :unprocessable_entity
     end
   end
