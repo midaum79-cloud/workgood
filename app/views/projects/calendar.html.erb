@@ -141,12 +141,25 @@
                     border-right:1px solid #f3f4f6;
                     padding:3px 2px 2px 2px;
                     box-sizing:border-box;
-                    background:<%= is_selected ? '#f6e8b0' : 'white' %>;
+                    background:white;
                     display:flex;
                     flex-direction:column;
                     align-items:stretch;
                   ">
-                <div style="text-align:center; font-size:13px; font-weight:900; color:<%= date_text_color %>; margin-bottom:2px;"><%= format('%02d', day.day) %></div>
+                <div style="display:flex; justify-content:center; margin-bottom:2px;">
+                  <span style="
+                    display:inline-flex;
+                    align-items:center;
+                    justify-content:center;
+                    width:24px;
+                    height:24px;
+                    border-radius:50%;
+                    font-size:13px;
+                    font-weight:900;
+                    color:<%= is_selected ? 'white' : date_text_color %>;
+                    background:<%= is_selected ? '#f59e0b' : 'transparent' %>;
+                  "><%= format('%02d', day.day) %></span>
+                </div>
                 <% if is_current_month %>
                   <% day_projects.each do |proj| %>
                     <div class="schedule-chip"
