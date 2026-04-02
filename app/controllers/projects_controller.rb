@@ -455,6 +455,7 @@ class ProjectsController < ApplicationController
       :project_type,
       :estimate_amount,
       :deposit_amount,
+      :mid_payment,
       :payment_status,
       :worker_names,
       :work_description,

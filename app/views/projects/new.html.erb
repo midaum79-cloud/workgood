@@ -173,6 +173,18 @@
             </div>
           </div>
 
+          <div>
+            <div style="font-size:13px; font-weight:800; color:#374151; margin-bottom:6px;">중도금</div>
+            <div style="position:relative;">
+              <%= form.number_field :mid_payment,
+                  id: "new_mid_payment",
+                  placeholder: "중도금이 있다면 입력하세요",
+                  style: "width:100%; padding:14px 16px; border:1px solid #dcdfe4; border-radius:12px; font-size:16px; box-sizing:border-box; background:white;",
+                  min: 0 %>
+              <span style="position:absolute; right:14px; top:50%; transform:translateY(-50%); font-size:14px; color:#9ca3af; font-weight:700;">원</span>
+            </div>
+          </div>
+
           <div style="background:#fff7ed; border:1px solid #fed7aa; border-radius:12px; padding:12px 14px; display:flex; justify-content:space-between; align-items:center;">
             <div style="font-size:13px; font-weight:800; color:#ea580c;">💰 잔금</div>
             <div id="new_balance_display" style="font-size:18px; font-weight:900; color:#ea580c;">0원</div>
@@ -918,11 +930,13 @@
   function updateNewBalance() {
     var est = parseInt(document.getElementById('new_estimate_amount').value) || 0;
     var dep = parseInt(document.getElementById('new_deposit_amount').value) || 0;
-    var bal = Math.max(est - dep, 0);
+    var mid = parseInt(document.getElementById('new_mid_payment').value) || 0;
+    var bal = Math.max(est - dep - mid, 0);
     document.getElementById('new_balance_display').textContent = bal.toLocaleString() + '원';
   }
   document.getElementById('new_estimate_amount').addEventListener('input', updateNewBalance);
   document.getElementById('new_deposit_amount').addEventListener('input', updateNewBalance);
+  document.getElementById('new_mid_payment').addEventListener('input', updateNewBalance);
 
   // 사진 미리보기
   function previewNewPhotos(input) {
