@@ -72,7 +72,7 @@ group :test do
   gem "selenium-webdriver"
 end
 
-gem "webpush", "~> 0.3.2"
+gem "webpush", "~> 1.1.0"
 
 gem "gemini-ai", "~> 4.3"
 
