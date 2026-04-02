@@ -98,9 +98,9 @@ class ProjectsController < ApplicationController
 
     @projects = current_user.projects
       .includes(work_processes: :work_days)
-      .where("start_date <= ? AND end_date >= ?", @end_date, @start_date)
-      .or(current_user.projects.where("start_date >= ? AND start_date <= ?", @start_date, @end_date))
-      .order(start_date: :asc)
+      .where("projects.start_date <= ? AND projects.end_date >= ?", @end_date, @start_date)
+      .or(current_user.projects.where("projects.start_date >= ? AND projects.start_date <= ?", @start_date, @end_date))
+      .order("projects.start_date ASC")
 
     @total_estimate   = @projects.sum(:estimate_amount).to_i
     @total_deposit    = @projects.sum(:deposit_amount).to_i
