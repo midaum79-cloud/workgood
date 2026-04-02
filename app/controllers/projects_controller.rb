@@ -414,19 +414,6 @@ class ProjectsController < ApplicationController
       theme_color_hex: ["#ef4444", "#f97316", "#eab308", "#22c55e", "#3b82f6", "#a855f7", "#ec4899"].sample
     )
     if @project.save
-      # ProcessTemplates 연동 (기본 공정 목록이 있다면 복사)
-      process_template = current_user.process_templates.find_by(vendor_name: @project.client_name)
-      if process_template&.work_processes&.any?
-        process_template.work_processes.order(:process_order).each_with_index do |wp_template, index|
-          new_start = @project.start_date + index.days
-          @project.work_processes.create!(
-            process_name: wp_template.process_name,
-            start_date: new_start,
-            end_date: new_start,
-            process_order: index + 1
-          )
-        end
-      end
       render json: { success: true }
     else
       render json: { success: false, error: @project.errors.full_messages.join(", ") }
