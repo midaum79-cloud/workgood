@@ -5,6 +5,11 @@ Rails.application.routes.draw do
   post "daily_memos/update", to: "daily_memos#update",  as: :update_daily_memo
   get "announcements", to: "announcements#index", as: :announcements
   get "my_account",    to: "my_account#show",     as: :my_account
+
+  # 프리미엄: 세금 관리
+  get  "tax_report",          to: "tax_reports#index",  as: :tax_report
+  get  "tax_report/download", to: "tax_reports#download", as: :download_tax_report
+  post "tax_report/send_payment_request", to: "tax_reports#send_payment_request", as: :send_payment_request
   # Auth
   get  "login",  to: "sessions#new",          as: :login
   post "login",  to: "sessions#create"

@@ -1,0 +1,197 @@
+<div style="min-height:100dvh; background:#f5f5f5;">
+
+  <%# Header %>
+  <div style="background:#1e1b4b; padding:20px 20px 16px 20px; position:sticky; top:0; z-index:30;">
+    <div style="display:flex; justify-content:space-between; align-items:center;">
+      <div style="font-size:24px; color:white; font-weight:900; cursor:pointer;" onclick="openDrawer()">☰</div>
+      <div style="font-size:20px; font-weight:900; color:white;">🧾 세금 관리</div>
+      <div style="width:40px;"></div>
+    </div>
+  </div>
+
+  <div style="padding:16px 16px 100px 16px;">
+
+    <%# 연도 선택 + 엑셀 다운로드 %>
+    <div style="display:flex; gap:10px; margin-bottom:16px; align-items:center;">
+      <form action="<%= tax_report_path %>" method="get" style="flex:1; display:flex; gap:8px;">
+        <select name="year" onchange="this.form.submit()"
+          style="flex:1; padding:12px 14px; border:1px solid #dcdfe4; border-radius:12px; font-size:16px; font-weight:800; background:white;">
+          <% @years.each do |y| %>
+            <option value="<%= y %>" <%= y == @year ? 'selected' : '' %>><%= y %>년</option>
+          <% end %>
+        </select>
+      </form>
+      <%= link_to download_tax_report_path(year: @year),
+          style: "display:flex; align-items:center; gap:6px; padding:12px 16px; background:linear-gradient(135deg, #059669, #10b981); color:white; border-radius:12px; font-size:14px; font-weight:900; text-decoration:none; white-space:nowrap; box-shadow:0 2px 8px rgba(5,150,105,0.3);" do %>
+        📥 CSV 다운로드
+      <% end %>
+    </div>
+
+    <%# 프리미엄 배지 %>
+    <div style="background:linear-gradient(135deg, #312e81, #4f46e5); border-radius:20px; padding:20px; color:white; margin-bottom:16px; box-shadow:0 4px 16px rgba(79,70,229,0.3);">
+      <div style="font-size:12px; font-weight:700; color:#a5b4fc; margin-bottom:8px;">🟣 프리미엄 · <%= @year %>년 세금 정산</div>
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+        <div>
+          <div style="font-size:11px; color:rgba(255,255,255,0.7); margin-bottom:4px;">총 수금액</div>
+          <div style="font-size:22px; font-weight:900;"><%= number_with_delimiter(@total_collected) %>원</div>
+        </div>
+        <div>
+          <div style="font-size:11px; color:#fde68a; margin-bottom:4px;">3.3% 원천징수</div>
+          <div style="font-size:22px; font-weight:900; color:#fde68a;">△<%= number_with_delimiter(@withholding_tax) %>원</div>
+        </div>
+      </div>
+      <div style="margin-top:14px; padding-top:14px; border-top:1px solid rgba(255,255,255,0.15);">
+        <div style="font-size:12px; color:rgba(255,255,255,0.7); margin-bottom:4px;">실수령액 (세후)</div>
+        <div style="font-size:28px; font-weight:900; color:#4ade80;"><%= number_with_delimiter(@net_income) %>원</div>
+      </div>
+    </div>
+
+    <%# 요약 카드 3개 %>
+    <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px; margin-bottom:16px;">
+      <div style="background:white; border-radius:14px; padding:12px; text-align:center; box-shadow:0 2px 6px rgba(0,0,0,0.04);">
+        <div style="font-size:10px; font-weight:800; color:#6b7280; margin-bottom:4px;">총 견적</div>
+        <div style="font-size:14px; font-weight:900; color:#374151;"><%= number_with_delimiter(@total_estimate) %></div>
+        <div style="font-size:10px; color:#9ca3af;">원</div>
+      </div>
+      <div style="background:white; border-radius:14px; padding:12px; text-align:center; box-shadow:0 2px 6px rgba(0,0,0,0.04);">
+        <div style="font-size:10px; font-weight:800; color:#dc2626; margin-bottom:4px;">미수금</div>
+        <div style="font-size:14px; font-weight:900; color:#dc2626;"><%= number_with_delimiter(@total_outstanding) %></div>
+        <div style="font-size:10px; color:#9ca3af;">원</div>
+      </div>
+      <div style="background:white; border-radius:14px; padding:12px; text-align:center; box-shadow:0 2px 6px rgba(0,0,0,0.04);">
+        <div style="font-size:10px; font-weight:800; color:#6b7280; margin-bottom:4px;">현장 수</div>
+        <div style="font-size:14px; font-weight:900; color:#374151;"><%= @projects.size %></div>
+        <div style="font-size:10px; color:#9ca3af;">개</div>
+      </div>
+    </div>
+
+    <%# 월별 수입 테이블 %>
+    <div style="background:white; border-radius:20px; padding:18px; box-shadow:0 2px 8px rgba(0,0,0,0.04); margin-bottom:16px;">
+      <div style="font-size:15px; font-weight:900; color:#111827; margin-bottom:14px;">📅 월별 수입 현황</div>
+      <div style="overflow-x:auto;">
+        <table style="width:100%; border-collapse:collapse; font-size:12px;">
+          <thead>
+            <tr style="border-bottom:2px solid #e5e7eb;">
+              <th style="text-align:left; padding:8px 6px; font-weight:800; color:#6b7280;">월</th>
+              <th style="text-align:right; padding:8px 6px; font-weight:800; color:#374151;">수금액</th>
+              <th style="text-align:right; padding:8px 6px; font-weight:800; color:#fbbf24;">세금(3.3%)</th>
+              <th style="text-align:right; padding:8px 6px; font-weight:800; color:#16a34a;">실수령</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% @monthly_stats.each do |m| %>
+              <% next if m[:collected] == 0 %>
+              <tr style="border-bottom:1px solid #f3f4f6;">
+                <td style="padding:10px 6px; font-weight:800; color:#374151;"><%= m[:month] %>월</td>
+                <td style="text-align:right; padding:10px 6px; font-weight:700; color:#374151;"><%= number_with_delimiter(m[:collected]) %>원</td>
+                <td style="text-align:right; padding:10px 6px; font-weight:700; color:#d97706;">△<%= number_with_delimiter(m[:tax]) %>원</td>
+                <td style="text-align:right; padding:10px 6px; font-weight:900; color:#16a34a;"><%= number_with_delimiter(m[:net]) %>원</td>
+              </tr>
+            <% end %>
+            <% if @monthly_stats.all? { |m| m[:collected] == 0 } %>
+              <tr>
+                <td colspan="4" style="padding:20px; text-align:center; color:#9ca3af; font-size:13px;">해당 연도 수금 내역이 없습니다</td>
+              </tr>
+            <% end %>
+          </tbody>
+          <tfoot>
+            <tr style="border-top:2px solid #e5e7eb; background:#f9fafb;">
+              <td style="padding:10px 6px; font-weight:900; color:#111827;">합계</td>
+              <td style="text-align:right; padding:10px 6px; font-weight:900; color:#111827;"><%= number_with_delimiter(@total_collected) %>원</td>
+              <td style="text-align:right; padding:10px 6px; font-weight:900; color:#d97706;">△<%= number_with_delimiter(@withholding_tax) %>원</td>
+              <td style="text-align:right; padding:10px 6px; font-weight:900; color:#16a34a;"><%= number_with_delimiter(@net_income) %>원</td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+    </div>
+
+    <%# 3.3% 원천징수 안내 %>
+    <div style="background:#fffbeb; border:1px solid #fde68a; border-radius:16px; padding:16px; margin-bottom:16px;">
+      <div style="font-size:14px; font-weight:900; color:#92400e; margin-bottom:8px;">💡 3.3% 원천징수란?</div>
+      <div style="font-size:13px; color:#78350f; line-height:1.7; font-weight:600;">
+        사업소득자가 용역을 제공하고 지급받을 때 <strong>소득세 3% + 지방소득세 0.3%</strong>가 원천징수됩니다.<br>
+        • 연간 수입 금액 기준으로 5월에 <strong>종합소득세 신고</strong>를 해야 합니다.<br>
+        • 이미 납부한 원천징수세액은 종소세 신고 시 공제됩니다.
+      </div>
+    </div>
+
+    <%# 미수금 입금 요청 알림 %>
+    <% if @outstanding_projects.any? %>
+      <div style="background:white; border-radius:20px; padding:18px; box-shadow:0 2px 8px rgba(0,0,0,0.04); margin-bottom:16px;">
+        <div style="font-size:15px; font-weight:900; color:#111827; margin-bottom:14px;">⚠️ 미수금 입금 요청 알림</div>
+        <div style="display:flex; flex-direction:column; gap:10px;">
+          <% @outstanding_projects.each do |project| %>
+            <% out = [project.estimate_amount.to_i - project.deposit_amount.to_i - project.mid_payment.to_i, 0].max %>
+            <div style="background:#fef2f2; border:1px solid #fecaca; border-radius:14px; padding:14px;">
+              <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:10px;">
+                <div>
+                  <div style="font-size:14px; font-weight:900; color:#111827;"><%= project.project_name %></div>
+                  <div style="font-size:12px; color:#6b7280; font-weight:700; margin-top:2px;"><%= project.client_name %></div>
+                </div>
+                <div style="font-size:16px; font-weight:900; color:#dc2626;"><%= number_with_delimiter(out) %>원</div>
+              </div>
+              <%= button_to send_payment_request_path,
+                  method: :post,
+                  params: { project_id: project.id, year: @year },
+                  style: "width:100%; padding:10px; background:#dc2626; color:white; border:none; border-radius:10px; font-size:13px; font-weight:800; cursor:pointer; font-family:inherit;" do %>
+                🔔 내 알림함에 미수금 기록 추가
+              <% end %>
+            </div>
+          <% end %>
+        </div>
+      </div>
+    <% end %>
+
+    <%# 현장별 전체 내역 %>
+    <div style="background:white; border-radius:20px; padding:18px; box-shadow:0 2px 8px rgba(0,0,0,0.04);">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
+        <div style="font-size:15px; font-weight:900; color:#111827;">📋 <%= @year %>년 현장 전체 내역</div>
+        <div style="font-size:12px; color:#9ca3af; font-weight:600;"><%= @projects.size %>개</div>
+      </div>
+
+      <% if @projects.any? %>
+        <div style="display:flex; flex-direction:column; gap:8px;">
+          <% @projects.each do |project| %>
+            <% est = project.estimate_amount.to_i %>
+            <% dep = project.deposit_amount.to_i %>
+            <% mid = project.mid_payment.to_i %>
+            <% collected = dep + mid %>
+            <% out = [est - collected, 0].max %>
+            <% tax = (collected * 3.3 / 100).round %>
+            <% net = collected - tax %>
+            <%= link_to project_path(project), style: "text-decoration:none;" do %>
+              <div style="background:#f9fafb; border-radius:14px; padding:14px; border-left:4px solid <%= out > 0 ? '#ef4444' : '#22c55e' %>;">
+                <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:8px;">
+                  <div>
+                    <div style="font-size:14px; font-weight:900; color:#111827;"><%= project.project_name %></div>
+                    <div style="font-size:12px; color:#6b7280; font-weight:600; margin-top:1px;"><%= project.client_name %></div>
+                  </div>
+                  <div style="text-align:right;">
+                    <div style="font-size:14px; font-weight:900; color:#16a34a;"><%= number_with_delimiter(net) %>원</div>
+                    <div style="font-size:11px; color:#9ca3af;">세후 실수령</div>
+                  </div>
+                </div>
+                <div style="display:flex; justify-content:space-between; font-size:11px; font-weight:700; color:#9ca3af;">
+                  <span>견적 <%= number_with_delimiter(est) %>원</span>
+                  <span>세금 △<%= number_with_delimiter(tax) %>원</span>
+                  <% if out > 0 %>
+                    <span style="color:#dc2626;">미수 <%= number_with_delimiter(out) %>원</span>
+                  <% else %>
+                    <span style="color:#16a34a;">✅ 완납</span>
+                  <% end %>
+                </div>
+              </div>
+            <% end %>
+          <% end %>
+        </div>
+      <% else %>
+        <div style="text-align:center; padding:40px 16px; color:#9ca3af;">
+          <div style="font-size:32px; margin-bottom:10px;">📭</div>
+          <div style="font-size:15px; font-weight:800; color:#6b7280;"><%= @year %>년 등록된 현장이 없습니다.</div>
+        </div>
+      <% end %>
+    </div>
+
+  </div>
+</div>
