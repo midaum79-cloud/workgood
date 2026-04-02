@@ -106,9 +106,9 @@ class TaxReportsController < ApplicationController
     if project
       outstanding = [project.estimate_amount.to_i - project.deposit_amount.to_i - project.mid_payment.to_i, 0].max
       Notification.create!(
-        user: current_user,
+        project: project,
         title: "미수금 입금 요청",
-        body: "#{project.project_name} (#{project.client_name}) - 잔금 #{outstanding.to_s.reverse.gsub(/(\d{3})(?=\d)/, '\\1,').reverse}원을 확인해주세요.",
+        message: "#{project.project_name} (#{project.client_name}) - 잔금 #{outstanding.to_s.reverse.gsub(/(\d{3})(?=\d)/, '\\1,').reverse}원을 확인해주세요.",
         status: "unread"
       )
       redirect_to tax_report_path(year: params[:year]), notice: "알림이 등록되었습니다."
