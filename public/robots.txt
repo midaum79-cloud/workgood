@@ -1,1 +1,32 @@
-# See https://www.robotstxt.org/robotstxt.html for documentation on how to use the robots.txt file
+# robots.txt — 일잘러 (www.workgood.co.kr)
+# https://www.robotstxt.org/robotstxt.html
+
+User-agent: *
+
+# 공개 페이지는 허용
+Allow: /
+Allow: /login
+Allow: /signup
+Allow: /guide
+Allow: /terms
+Allow: /privacy
+Allow: /og-image.png
+
+# 인증 필요 / 내부 관리 페이지 크롤링 금지
+Disallow: /projects
+Disallow: /notifications
+Disallow: /vendors
+Disallow: /tax_report
+Disallow: /subscription
+Disallow: /app_settings
+Disallow: /my_account
+Disallow: /daily_memos
+Disallow: /process_templates
+Disallow: /work_processes
+Disallow: /work_days
+Disallow: /announcements
+Disallow: /api/
+Disallow: /auth/
+
+# 사이트맵 위치 안내
+Sitemap: https://www.workgood.co.kr/sitemap.xml

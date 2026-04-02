@@ -75,3 +75,7 @@ end
 gem "webpush", "~> 0.3.2"
 
 gem "gemini-ai", "~> 4.3"
+
+# SEO
+gem "meta-tags"
+gem "sitemap_generator"
