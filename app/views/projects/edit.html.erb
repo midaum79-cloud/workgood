@@ -9,17 +9,9 @@
   </div>
 
   <%= form_with(model: @project, local: true) do |form| %>
-    <% if flash[:alert].present? %>
-      <div style="background:#fee2e2; color:#b91c1c; padding:14px; border-radius:14px; margin-bottom:16px; font-size:14px; font-weight:700;">
-        ⚠️ <%= flash[:alert] %>
-      </div>
-    <% end %>
     <% if @project.errors.any? %>
       <div style="background:#fee2e2; color:#b91c1c; padding:14px; border-radius:14px; margin-bottom:16px; font-size:14px; font-weight:700;">
-        ⚠️ 입력 내용을 확인해주세요:<br>
-        <% @project.errors.full_messages.each do |msg| %>
-          · <%= msg %><br>
-        <% end %>
+        입력 내용을 확인해주세요.
       </div>
     <% end %>
 
@@ -207,16 +199,17 @@
           </div>
         <% end %>
 
-        <label style="display:flex; flex-direction:column; align-items:center; gap:8px; padding:20px; border:2px dashed #d1d5db; border-radius:14px; cursor:pointer; background:white;">
-          <div style="font-size:28px;">📷</div>
-          <div style="font-size:14px; font-weight:800; color:#6b7280;">사진 추가하기</div>
-          <div style="font-size:12px; font-weight:600; color:#9ca3af;">여러 장 선택 가능</div>
-          <%= form.file_field :photos, multiple: true, accept: "image/*",
-              style: "display:none;",
-              onchange: "previewPhotos(this)" %>
-        </label>
-
-        <div id="photo-preview" style="display:none; grid-template-columns:repeat(3, 1fr); gap:8px; margin-top:10px;"></div>
+        <%# 사진은 별도 폼으로 처리 (메인 수정폼에 섞이면 422 에러 발생) %>
+        <%= form_tag add_photos_project_path(@project), method: :post, multipart: true, id: "photo-upload-form" do %>
+          <label for="photo-upload-input" style="display:flex; flex-direction:column; align-items:center; gap:8px; padding:20px; border:2px dashed #d1d5db; border-radius:14px; cursor:pointer; background:white;">
+            <div style="font-size:28px;">📷</div>
+            <div style="font-size:14px; font-weight:800; color:#6b7280;">사진 추가하기</div>
+            <div style="font-size:12px; font-weight:600; color:#9ca3af;">여러 장 선택 가능</div>
+            <input type="file" id="photo-upload-input" name="photos[]" multiple accept="image/*"
+              style="display:none;"
+              onchange="if(this.files.length > 0) { document.getElementById('photo-upload-form').submit(); }">
+          </label>
+        <% end %>
       </div>
 
       <div>
