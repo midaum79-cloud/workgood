@@ -31,16 +31,15 @@
       <div>
         <div style="font-size:14px; font-weight:800; color:#374151; margin-bottom:8px;">주소</div>
 
-        <%= form.text_field :address,
-            id: "edit_project_address",
-            placeholder: "주소찾기 버튼으로 입력",
-            readonly: true,
-            style: "width:100%; padding:14px 16px; border:1px solid #dcdfe4; border-radius:14px; font-size:16px; box-sizing:border-box; background:#f9fafb;" %>
+        <%= form.hidden_field :address, id: "edit_project_address" %>
 
         <button type="button"
                 id="edit_address_search_button"
-                style="margin-top:8px; width:100%; padding:14px 16px; border:none; border-radius:14px; background:#111827; color:white; font-size:14px; font-weight:800;">
-          주소찾기
+                style="width:100%; padding:16px; border:1px solid #dcdfe4; border-radius:14px; background:white; color:#374151; font-size:16px; font-weight:700; text-align:left; display:flex; justify-content:space-between; align-items:center;">
+          <span id="edit_address_display_text" style="color:<%= @project.address.present? ? '#111827' : '#9ca3af' %>;">
+            <%= @project.address.presence || "주소 검색 (클릭)" %>
+          </span>
+          <span style="font-size:18px;">🔍</span>
         </button>
 
         <% detail_addr = @project.address.to_s.split(" ").last(2).join(" ") rescue "" %>
@@ -286,6 +285,8 @@
             }
 
             addressField.value = addr + extraAddr;
+            document.getElementById("edit_address_display_text").textContent = addr + extraAddr;
+            document.getElementById("edit_address_display_text").style.color = "#111827";
             detailAddressField.focus();
             closeDaumPostcode();
           },
