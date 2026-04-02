@@ -405,13 +405,16 @@ class ProjectsController < ApplicationController
   end
 
   def quick_create
+    color_palette = %w[blue orange green red purple pink sky yellow teal indigo]
+    project_count  = current_user.projects.count
+
     @project = current_user.projects.new(
-      client_name: params[:client_name],
-      project_name: params[:client_name],
-      start_date: params[:date],
-      end_date: params[:date],
+      client_name:    params[:client_name],
+      project_name:   params[:client_name],
+      start_date:     params[:date],
+      end_date:       params[:date],
       payment_status: "미결제",
-      theme_color_hex: ["#ef4444", "#f97316", "#eab308", "#22c55e", "#3b82f6", "#a855f7", "#ec4899"].sample
+      color:          color_palette[project_count % color_palette.size]
     )
     if @project.save
       render json: { success: true }
