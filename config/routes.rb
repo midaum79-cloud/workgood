@@ -73,11 +73,7 @@ Rails.application.routes.draw do
     end
   end
 
-  resources :work_processes do
-    collection do
-      post :quick_create
-    end
-  end
+  resources :work_processes
   resources :vendors do
     collection do
       get :search
@@ -103,6 +99,7 @@ Rails.application.routes.draw do
       get :monthly_payments
       post :move_schedule
       post :toggle_schedule
+      post :quick_create
     end
     resources :ai_imports, only: [] do
       collection do

@@ -134,8 +134,7 @@ class ProjectsController < ApplicationController
   end
 
   def calendar
-    begin
-      @selected_status = params[:status]
+    @selected_status = params[:status]
     @view_mode = "month"
 
     @projects =
@@ -219,11 +218,6 @@ class ProjectsController < ApplicationController
 
     # 선택 날짜에 해당하는 프로젝트 목록
     @selected_day_projects = @projects_by_date[@selected_date] || []
-    
-    render :calendar
-    rescue => e
-      render html: "<h1>500 Error: #{e.class} - #{e.message}</h1><pre>#{e.backtrace.join("\n")}</pre>".html_safe, status: 500
-    end
   end
 
   def move_schedule
