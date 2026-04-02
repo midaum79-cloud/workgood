@@ -125,8 +125,8 @@ class ProjectsController < ApplicationController
 
     # 해당 기간 내 작업일 수집 (캘린더 표시용)
     project_ids = @projects.pluck(:id)
-    @work_dates = WorkDay.joins(:work_process)
-      .where(work_processes: { project_id: project_ids })
+    @work_dates = ProjectSchedule
+      .where(project_id: project_ids)
       .where(work_date: @start_date..@end_date)
       .pluck(:work_date)
       .uniq
