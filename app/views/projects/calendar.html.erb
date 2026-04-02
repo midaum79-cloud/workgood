@@ -232,7 +232,7 @@
         style="width:100%; padding:14px 16px; border:1px solid #dcdfe4; border-radius:12px; font-size:15px; box-sizing:border-box; margin-bottom:10px;">
       <button type="button" onclick="bsGoToNewProject(document.getElementById('bsDirectName').value)"
         style="width:100%; padding:14px; border:none; border-radius:12px; background:#2563eb; color:white; font-size:16px; font-weight:900; cursor:pointer;">
-        현장 추가로 이동 →
+        일정에 바로 추가하기
       </button>
     </div>
   </div>
@@ -313,10 +313,31 @@ function bsLoadVendors() {
 
 function bsGoToNewProject(clientName) {
   if (!clientName || !clientName.trim()) { alert('거래처명을 입력해주세요.'); return; }
-  var url = '<%= new_project_path %>' +
-    '?start_date=' + encodeURIComponent(bsSelectedDate) +
-    '&client_name=' + encodeURIComponent(clientName.trim());
-  window.location.href = url;
+  
+  fetch('<%= quick_create_projects_path %>', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').content,
+      'Accept': 'application/json'
+    },
+    body: JSON.stringify({
+      date: bsSelectedDate,
+      client_name: clientName.trim()
+    })
+  })
+  .then(function(res) { return res.json(); })
+  .then(function(data) {
+    if (data.success) {
+      window.location.reload();
+    } else {
+      alert(data.error || '일정 추가에 실패했습니다.');
+    }
+  })
+  .catch(function(err) {
+    console.error('Quick create error:', err);
+    alert('네트워크 오류가 발생했습니다.');
+  });
 }
 </script>
 
