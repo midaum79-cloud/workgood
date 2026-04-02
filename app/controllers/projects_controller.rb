@@ -351,7 +351,10 @@ class ProjectsController < ApplicationController
   end
 
   def create
-    @project = Project.new(project_params)
+    # 사진 파일은 저장 후 별도 첨부 (create 시 동시 처리하면 500 에러 발생)
+    photo_files = params.dig(:project, :photos)&.reject { |f| f.blank? || !f.respond_to?(:read) } || []
+
+    @project = Project.new(project_params.except(:photos))
     @project.user = current_user
     @project.selected_process_names = params[:project][:selected_process_names]
     @project.custom_process_names_text = params[:project][:custom_process_names_text]
@@ -375,6 +378,9 @@ class ProjectsController < ApplicationController
     @project.status ||= "예정"
 
     if @project.save
+      # 사진이 있는 경우 저장 후 첨부
+      @project.photos.attach(photo_files) if photo_files.any?
+
       if params[:project][:ai_processes_json].present?
         begin
           ai_items = JSON.parse(params[:project][:ai_processes_json])
@@ -390,7 +396,7 @@ class ProjectsController < ApplicationController
               )
             end
           end
-          
+
           # 스탠다드 유저 체험 횟수 차감 기능. 프리미엄은 예외.
           current_user.increment!(:ai_imports_count) if current_user.standard_or_above? && !current_user.premium?
 
