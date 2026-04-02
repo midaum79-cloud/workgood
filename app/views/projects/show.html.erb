@@ -200,20 +200,8 @@
         </div>
       </div>
 
-      <!-- 사진 업로드 버튼 -->
-      <%= form_tag add_photos_project_path(@project), method: :post, multipart: true, style: "margin-bottom:14px;" do %>
-        <label for="photoInput" style="
-          display:flex; align-items:center; justify-content:center; gap:8px;
-          padding:14px; border:2px dashed #d1d5db; border-radius:14px;
-          background:#f9fafb; cursor:pointer; transition:all 0.2s;
-        ">
-          <span style="font-size:24px;">📷</span>
-          <span style="font-size:14px; font-weight:800; color:#6b7280;">사진 추가하기</span>
-        </label>
-        <input type="file" name="photos[]" id="photoInput" multiple accept="image/*"
-          style="display:none;"
-          onchange="if(this.files.length > 0) { this.closest('form').submit(); }">
-      <% end %>
+
+
 
       <% if @project.photos.attached? %>
         <div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:8px;">
