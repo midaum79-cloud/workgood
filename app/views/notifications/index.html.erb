@@ -1,81 +1,118 @@
 <div style="max-width:430px; margin:0 auto; min-height:100vh; background:#f5f5f5; padding:16px 16px 32px 16px;">
 
-  <div style="background:white; padding:18px 20px 14px 20px; border-bottom:1px solid #ececec; position:sticky; top:0; z-index:20; margin:-16px -16px 16px -16px;">
-    <div style="display:flex; justify-content:space-between; align-items:center;">
+  <div style="background:white; padding:18px 20px 0 20px; border-bottom:1px solid #ececec; position:sticky; top:0; z-index:20; margin:-16px -16px 16px -16px;">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
       <%= link_to "←", projects_path, style: "font-size:24px; color:#111; text-decoration:none; font-weight:800; padding-left:16px;" %>
-      <div style="font-size:22px; font-weight:900;">알림</div>
+      <div style="font-size:22px; font-weight:900;">알림함</div>
       <div style="width:40px;"></div>
+    </div>
+    
+    <!-- 카테고리 탭 (전체 / 일정 / 정산) -->
+    <div style="display:flex; gap:16px;">
+      <%= link_to "전체", notifications_path(tab: 'all'), 
+          style: "padding-bottom:12px; font-size:15px; font-weight:800; text-decoration:none; color:#{@current_tab == 'all' ? '#111827' : '#9ca3af'}; border-bottom:3px solid #{@current_tab == 'all' ? '#111827' : 'transparent'};" %>
+      <%= link_to notifications_path(tab: 'schedule'), style: "padding-bottom:12px; font-size:15px; font-weight:800; text-decoration:none; color:#{@current_tab == 'schedule' ? '#111827' : '#9ca3af'}; border-bottom:3px solid #{@current_tab == 'schedule' ? '#111827' : 'transparent'}; position:relative;" do %>
+        일정
+        <% if @current_tab != 'schedule' && Notification.unread.schedule.any? %>
+          <div style="position:absolute; top:-2px; right:-8px; width:6px; height:6px; background:#ef4444; border-radius:50%;"></div>
+        <% end %>
+      <% end %>
+      <%= link_to notifications_path(tab: 'finance'), style: "padding-bottom:12px; font-size:15px; font-weight:800; text-decoration:none; color:#{@current_tab == 'finance' ? '#111827' : '#9ca3af'}; border-bottom:3px solid #{@current_tab == 'finance' ? '#111827' : 'transparent'}; position:relative;" do %>
+        정산
+        <% if @current_tab != 'finance' && Notification.unread.finance.any? %>
+          <div style="position:absolute; top:-2px; right:-8px; width:6px; height:6px; background:#ef4444; border-radius:50%;"></div>
+        <% end %>
+      <% end %>
     </div>
   </div>
 
   <% if @notifications.any? %>
-    <div style="display:flex; flex-direction:column; gap:12px;">
+    <div style="display:flex; flex-direction:column; gap:12px; margin-bottom:30px;">
       <% @notifications.each do |n| %>
-        <div style="
-          background:white;
-          border-radius:16px;
-          padding:16px;
-          border:1px solid #eee;
-          box-shadow:0 2px 8px rgba(0,0,0,0.04);
+        <% 
+          card_link = n.link_url.presence || (n.project.present? ? project_path(n.project) : '#')
+          category_icon = case n.category
+                          when 'schedule' then '📅'
+                          when 'finance' then '💰'
+                          else '🔔'
+                          end
+        %>
+        
+        <div onclick="<%= "window.location.href='#{card_link}'" unless card_link == '#' %>" style="
+          background:<%= n.status == 'unread' ? '#eff6ff' : 'white' %>;
+          border-radius:18px;
+          padding:18px;
+          border:1px solid <%= n.status == 'unread' ? '#bfdbfe' : '#e5e7eb' %>;
+          box-shadow:0 2px 8px rgba(0,0,0,0.03);
+          cursor:<%= card_link == '#' ? 'default' : 'pointer' %>;
+          display:flex; flex-direction:column; gap:10px;
+          transition: transform 0.1s;
         ">
 
-          <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:12px; margin-bottom:8px;">
-            <div style="font-size:16px; font-weight:900; color:#111827;">
-              <%= n.title %>
+          <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+            <div style="display:flex; gap:8px; align-items:center;">
+              <div style="font-size:18px;"><%= category_icon %></div>
+              <div style="font-size:16px; font-weight:900; color:#111827;">
+                <%= n.title %>
+              </div>
             </div>
 
             <% if n.status == "unread" %>
-              <span style="display:inline-block; padding:4px 8px; border-radius:999px; background:#fee2e2; color:#b91c1c; font-size:12px; font-weight:800;">
-                새 알림
-              </span>
-            <% else %>
-              <span style="display:inline-block; padding:4px 8px; border-radius:999px; background:#e5e7eb; color:#6b7280; font-size:12px; font-weight:800;">
-                읽음
+              <span style="display:inline-block; padding:4px 8px; border-radius:8px; background:#ef4444; color:white; font-size:11px; font-weight:900;">
+                NEW
               </span>
             <% end %>
           </div>
 
-          <div style="font-size:14px; color:#4b5563; line-height:1.5; margin-bottom:10px;">
-            <%= n.message %>
-          </div>
+          <div style="font-size:14px; color:#4b5563; line-height:1.5; white-space:pre-wrap;"><%= n.message %></div>
 
-          <% if n.project.present? %>
-            <div style="font-size:13px; color:#6b7280; font-weight:700; margin-bottom:6px;">
-              현장: <%= n.project.project_name %>
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-top:4px;">
+            <div style="font-size:12px; color:#9ca3af; font-weight:700;">
+              <%= n.created_at.strftime("%m/%d %H:%M") %>
             </div>
-          <% end %>
-
-          <div style="font-size:12px; color:#9ca3af; margin-bottom:12px;">
-            <%= n.created_at.strftime("%Y-%m-%d %H:%M") %>
-          </div>
-
-          <div style="display:flex; gap:8px;">
-            <% if n.work_process.present? %>
-              <%= link_to "공정 보기",
-                  work_process_path(n.work_process),
-                  style: "display:inline-block; padding:10px 12px; background:#2563eb; color:white; text-decoration:none; border-radius:10px; font-size:13px; font-weight:800;" %>
-            <% end %>
-
-            <% if n.status == "unread" %>
-              <%= button_to "읽음 처리",
-                  read_notification_path(n),
-                  method: :post,
-                  style: "padding:10px 12px; border:none; background:#111827; color:white; border-radius:10px; font-size:13px; font-weight:800; cursor:pointer;" %>
+            <% if card_link != '#' %>
+              <div style="font-size:12px; font-weight:800; color:#2563eb;">바로가기 →</div>
             <% end %>
           </div>
+
         </div>
       <% end %>
     </div>
   <% else %>
     <div style="
       background:white;
-      border-radius:16px;
-      padding:28px 20px;
+      border-radius:18px;
+      padding:40px 20px;
       text-align:center;
-      color:#888;
+      color:#9ca3af;
+      font-weight:700;
       box-shadow:0 2px 8px rgba(0,0,0,0.04);
+      margin-bottom:30px;
     ">
-      알림이 없습니다.
+      아직 받은 알림이 없습니다.
     </div>
   <% end %>
+
+  <!-- 프리미엄 위젯 설명 섹션 -->
+  <div style="background:linear-gradient(135deg, #1e1b4b, #312e81); border-radius:20px; padding:24px 20px; color:white; box-shadow:0 8px 20px rgba(49, 46, 129, 0.3);">
+    <div style="display:flex; align-items:center; gap:8px; margin-bottom:12px;">
+      <span style="background:#fef08a; color:#854d0e; font-size:11px; font-weight:900; padding:4px 8px; border-radius:6px;">PREMIUM</span>
+      <span style="font-size:16px; font-weight:900;">내 스마트폰을 완벽한 현장 컨트롤 타워로!</span>
+    </div>
+    
+    <div style="font-size:13px; color:#c7d2fe; line-height:1.6; margin-bottom:16px;">
+      프리미엄 위젯을 켜두시면 <strong>앱을 열지 않아도 다음과 같은 스마트 혜택</strong>을 바탕화면에서 즉시 누릴 수 있습니다!
+    </div>
+
+    <ul style="padding-left:18px; margin:0; font-size:13px; color:#e0e7ff; line-height:1.7;">
+      <li style="margin-bottom:6px;"><strong>[자동 일정]</strong> 캘린더에서 업체만 지정해두면 내일 일정(주소/비번)을 비서처럼 <strong>자동으로 스캔하여 발송!</strong></li>
+      <li style="margin-bottom:6px;"><strong>[정산 연동]</strong> 미수금 내역이나 결제 완납 정보를 <strong>즉시 푸시 알림</strong>으로 받아 빠른 정산 가능!</li>
+      <li style="margin-bottom:6px;"><strong>[노쇼 방지]</strong> 반장님과의 실시간 현장 소통 알림 추가 예정!</li>
+    </ul>
+
+    <button style="margin-top:20px; width:100%; display:block; padding:14px; background:white; color:#312e81; border:none; border-radius:12px; font-size:15px; font-weight:900; box-shadow:0 4px 6px rgba(0,0,0,0.1); cursor:pointer;">
+      프리미엄 위젯 설정 알아보기 →
+    </button>
+  </div>
+
 </div>

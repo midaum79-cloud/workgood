@@ -455,6 +455,16 @@ class ProjectsController < ApplicationController
   def update_payment
     @project = current_user.projects.find(params[:id])
     if @project.update(payment_status: params[:payment_status])
+      if params[:payment_status] == "완납"
+        Notification.create!(
+          project: @project,
+          title: "입금 확인 완료",
+          message: "#{@project.project_name} 현장의 잔금이 성공적으로 입금되었습니다! 수고하셨습니다 👏",
+          status: "unread",
+          category: "finance",
+          link_url: "/projects/#{@project.id}"
+        )
+      end
       redirect_to @project, notice: "결제상태가 변경되었습니다."
     else
       redirect_to @project, alert: "결제상태 변경에 실패했습니다."

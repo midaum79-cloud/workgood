@@ -1,7 +1,22 @@
 class NotificationsController < ApplicationController
   def index
-    @notifications = Notification.order(created_at: :desc)
-    Notification.where(status: "unread").update_all(status: "read")
+    # 1. 앱(마이페이지/알림함)에 들어왔을 때 자동으로 내일 일정 등 스마트 비서 알림 스캔 후 생성
+    Notification.generate_smart_alerts(current_user) if current_user
+
+    @current_tab = params[:tab].presence || "all"
+
+    # 2. 탭에 따른 카테고리 필터링
+    base_query = Notification.order(created_at: :desc)
+    
+    @notifications = case @current_tab
+      when "schedule" then base_query.schedule
+      when "finance" then base_query.finance
+      else base_query
+    end.to_a
+
+    # 3. 알림함 진입(혹은 개별 탭 진입) 시 해당 탭 알림들은 자동 읽음 처리
+    unread_ids = @notifications.select { |n| n.status == "unread" }.map(&:id)
+    Notification.where(id: unread_ids).update_all(status: "read") if unread_ids.any?
   end
 
   def read

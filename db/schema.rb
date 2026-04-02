@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_03_28_000826) do
+ActiveRecord::Schema[8.1].define(version: 2026_04_02_150343) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -117,6 +117,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_28_000826) do
     t.date "end_date"
     t.integer "estimate_amount"
     t.text "memo"
+    t.integer "mid_payment"
     t.string "payment_status"
     t.string "private_entrance_password"
     t.string "project_name"
