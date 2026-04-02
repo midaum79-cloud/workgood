@@ -7,8 +7,8 @@ class Project < ApplicationRecord
 
   attr_accessor :selected_process_names, :custom_process_names_text, :ai_processes_json
 
-  validates :start_date, presence: { message: "공사 시작일을 입력해 주세요." }
-  validates :end_date,   presence: { message: "공사 종료일을 입력해 주세요." }
+  validates :start_date, presence: { message: "공사 시작일을 입력해 주세요." }, on: :create
+  validates :end_date,   presence: { message: "공사 종료일을 입력해 주세요." }, on: :create
 
   after_create :create_selected_processes
   after_create :create_initial_schedules
