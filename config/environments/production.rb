@@ -65,6 +65,9 @@ Rails.application.configure do
   # Set host to be used by links generated in mailer templates.
   config.action_mailer.default_url_options = { host: ENV.fetch("APP_HOST", "workgood.co.kr"), protocol: "https" }
 
+  # Active Storage URL 호스트 명시 (이미지 src가 올바른 도메인으로 생성되도록)
+  routes.default_url_options = { host: ENV.fetch("APP_HOST", "www.workgood.co.kr"), protocol: "https" }
+
   # SendGrid SMTP for password reset emails
   config.action_mailer.delivery_method = :smtp
   config.action_mailer.smtp_settings = {
