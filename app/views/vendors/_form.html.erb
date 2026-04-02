@@ -57,7 +57,6 @@
           <label style="font-size:13px; font-weight:800; color:#374151; display:block; margin-bottom:6px;"><span id="vendor-name-label"><%= vendor.vendor_type == 'individual' ? '고객명' : '업체명' %></span> *</label>
           <%= f.text_field :name, placeholder: "업체명 또는 고객명을 등록해 주세요",
               style: "width:100%; height:48px; border:1.5px solid #e5e7eb; border-radius:12px; padding:0 14px; font-size:15px; font-weight:700; font-family:inherit; box-sizing:border-box;" %>
-          <div id="vendor-name-hint" style="font-size:11px; color:#9ca3af; margin-top:4px; font-weight:600; display:<%= vendor.vendor_type == 'individual' ? 'none' : 'block' %>;">공정명을 앞에 붙이면 초성 검색에 유리합니다 (예: 타일 홍타일 / 도배 나이스)</div>
         </div>
 
         <script>
