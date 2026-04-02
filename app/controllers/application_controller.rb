@@ -1,5 +1,4 @@
 class ApplicationController < ActionController::Base
-  include MetaTags::ActionViewHelper
   before_action :prepare_meta_tags
   # Only allow modern browsers supporting webp images, web push, badges, import maps, CSS nesting, and CSS :has.
   # allow_browser versions: :modern
