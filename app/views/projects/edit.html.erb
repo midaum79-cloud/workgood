@@ -181,7 +181,7 @@
           </div>
         </div>
       </div>
-      <!-- 시공 사진 -->
+      <!-- 시공 사진 (중첩 폼 문제를 피하기 위해 JS Fetch 사용) -->
       <div style="background:#f9fafb; border:1px solid #e5e7eb; border-radius:16px; padding:16px;">
         <div style="font-size:15px; font-weight:900; color:#111827; margin-bottom:14px;">📸 시공 사진</div>
 
@@ -190,27 +190,76 @@
             <% @project.photos.each do |photo| %>
               <div style="position:relative; border-radius:12px; overflow:hidden; aspect-ratio:1; background:#e5e7eb;">
                 <%= image_tag photo, style: "width:100%; height:100%; object-fit:cover;" %>
-                <%= button_to "✕", purge_photo_project_path(@project, photo_id: photo.id),
-                    method: :delete,
-                    form: { onsubmit: "return confirm('이 사진을 삭제하시겠습니까?');" },
-                    style: "position:absolute; top:4px; right:4px; width:24px; height:24px; border-radius:50%; background:rgba(0,0,0,0.6); color:white; border:none; font-size:14px; font-weight:900; cursor:pointer; display:flex; align-items:center; justify-content:center; padding:0;" %>
+                <a href="#" class="delete-photo-btn"
+                   data-delete-url="<%= purge_photo_project_path(@project, photo_id: photo.id) %>"
+                   style="position:absolute; top:4px; right:4px; width:24px; height:24px; border-radius:50%; background:rgba(0,0,0,0.6); color:white; border:none; font-size:14px; font-weight:900; cursor:pointer; display:flex; align-items:center; justify-content:center; padding:0; text-decoration:none;">✕</a>
               </div>
             <% end %>
           </div>
         <% end %>
 
-        <%# 사진은 별도 폼으로 처리 (메인 수정폼에 섞이면 422 에러 발생) %>
-        <%= form_tag add_photos_project_path(@project), method: :post, multipart: true, id: "photo-upload-form" do %>
-          <label for="photo-upload-input" style="display:flex; flex-direction:column; align-items:center; gap:8px; padding:20px; border:2px dashed #d1d5db; border-radius:14px; cursor:pointer; background:white;">
-            <div style="font-size:28px;">📷</div>
-            <div style="font-size:14px; font-weight:800; color:#6b7280;">사진 추가하기</div>
-            <div style="font-size:12px; font-weight:600; color:#9ca3af;">여러 장 선택 가능</div>
-            <input type="file" id="photo-upload-input" name="photos[]" multiple accept="image/*"
-              style="display:none;"
-              onchange="if(this.files.length > 0) { document.getElementById('photo-upload-form').submit(); }">
-          </label>
-        <% end %>
+        <label for="photo-upload-input" style="display:flex; flex-direction:column; align-items:center; gap:8px; padding:20px; border:2px dashed #d1d5db; border-radius:14px; cursor:pointer; background:white;">
+          <div style="font-size:28px;">📷</div>
+          <div style="font-size:14px; font-weight:800; color:#6b7280;">사진 추가하기</div>
+          <div style="font-size:12px; font-weight:600; color:#9ca3af;">여러 장 선택 가능</div>
+          <input type="file" id="photo-upload-input" multiple accept="image/*" style="display:none;">
+        </label>
       </div>
+
+      <script>
+      document.addEventListener("DOMContentLoaded", function() {
+        var csrfToken = document.querySelector('meta[name="csrf-token"]').content;
+
+        // 사진 첨부 자동 업로드 - 폼 중첩 없이 JS로 바로 전송
+        var photoInput = document.getElementById('photo-upload-input');
+        if (photoInput) {
+          photoInput.addEventListener('change', function() {
+            if (this.files.length === 0) return;
+
+            var formData = new FormData();
+            for(var i = 0; i < this.files.length; i++) {
+              formData.append('photos[]', this.files[i]);
+            }
+
+            fetch("<%= add_photos_project_path(@project) %>", {
+              method: 'POST',
+              headers: { 'X-CSRF-Token': csrfToken },
+              body: formData
+            }).then(function(response) {
+              if (response.ok) {
+                window.location.reload();
+              } else {
+                alert("사진 업로드 중 서버 에러가 발생했습니다.");
+              }
+            }).catch(function(error) {
+              alert("사진 업로드 중 네트워크 에러가 발생했습니다.");
+            });
+          });
+        }
+
+        // 사진 삭제 - 폼 중첩 없이 JS로 바로 전송
+        document.querySelectorAll('.delete-photo-btn').forEach(function(btn) {
+          btn.addEventListener('click', function(e) {
+            e.preventDefault();
+            if (!confirm('이 사진을 삭제하시겠습니까?')) return;
+
+            var url = this.getAttribute('data-delete-url');
+            fetch(url, {
+              method: 'DELETE',
+              headers: { 'X-CSRF-Token': csrfToken }
+            }).then(function(response) {
+              if (response.ok) {
+                window.location.reload();
+              } else {
+                alert("삭제 중 서버 에러가 발생했습니다.");
+              }
+            }).catch(function(error) {
+              alert("삭제 중 네트워크 에러가 발생했습니다.");
+            });
+          });
+        });
+      });
+      </script>
 
       <div>
         <div style="font-size:14px; font-weight:800; color:#374151; margin-bottom:8px;">메모</div>
