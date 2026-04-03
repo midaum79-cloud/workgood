@@ -3,91 +3,131 @@
     <div style="flex:1;">
       <%= link_to "←", "javascript:history.back()", style: "color:white; font-size:24px; text-decoration:none; display:inline-block; margin-top:-2px;" %>
     </div>
-    <div style="color:white; font-size:18px; font-weight:800;">일용직 세금 계산기</div>
+    <div style="color:white; font-size:18px; font-weight:800;">일용근로 계산기</div>
     <div style="flex:1; text-align:right;">
       <span style="font-size:10px; font-weight:800; background:#fde68a; color:#78350f; padding:2px 8px; border-radius:999px;">PREMIUM</span>
     </div>
   </div>
 </div>
 
-<div style="padding:24px 20px;">
+<div style="padding:24px 20px; max-width:430px; margin:0 auto;">
   <!-- 안내 문구 -->
-  <div style="background:white; border-radius:16px; padding:20px; box-shadow:0 4px 12px rgba(0,0,0,0.05); margin-bottom:24px;">
+  <div style="background:white; border-radius:20px; padding:18px; box-shadow:0 4px 15px rgba(0,0,0,0.04); margin-bottom:20px; border-left:5px solid #2563eb;">
     <div style="display:flex; align-items:flex-start; gap:12px;">
-      <div style="font-size:24px; line-height:1;">💡</div>
+      <div style="font-size:24px;">💡</div>
       <div>
-        <div style="font-size:15px; font-weight:800; color:#111827; margin-bottom:4px;">
-          3.3%보다 더 많이 받는 마법의 계산기!
-        </div>
-        <div style="font-size:13px; font-weight:600; color:#4b5563; line-height:1.5;">
-          일용근로자 신고를 통해 사장님의 세무 부담은 줄이고, 팀원들의 지갑은 지켜주세요.
+        <div style="font-size:15px; font-weight:900; color:#111827; margin-bottom:2px;">일용직 세금, 이렇게 계산됩니다</div>
+        <div style="font-size:13px; font-weight:600; color:#6b7280; line-height:1.5;">
+          하루 15만 원까지는 <b>비과세</b>이며, 초과분에 대해서만 2.7% 수준의 낮은 세율이 적용됩니다.
         </div>
       </div>
     </div>
   </div>
 
-  <!-- 계산기 폼 -->
-  <div style="background:white; border-radius:16px; padding:24px 20px; box-shadow:0 4px 12px rgba(0,0,0,0.05);">
-    <label style="display:block; font-size:14px; font-weight:800; color:#374151; margin-bottom:8px;">
-      오늘 지급할 일당 (원)
+  <!-- 계산기 입력부 -->
+  <div style="background:white; border-radius:24px; padding:24px; box-shadow:0 10px 25px rgba(0,0,0,0.05); margin-bottom:20px;">
+    <label style="display:block; font-size:14px; font-weight:900; color:#4b5563; margin-bottom:12px; display:flex; align-items:center; gap:6px;">
+      🪙 오늘 지급할 일당을 입력하세요
     </label>
-    <div style="position:relative; margin-bottom:24px;">
-      <input type="text" id="dailyWageInput" inputmode="numeric" placeholder="예: 350,000" 
-             style="width:100%; height:52px; font-size:20px; font-weight:800; text-align:right; padding-right:48px; border:1px solid #d1d5db; border-radius:12px; transition:border-color 0.2s;" />
-      <span style="position:absolute; right:16px; top:50%; transform:translateY(-50%); color:#6b7280; font-size:16px; font-weight:700;">원</span>
+    <div style="position:relative;">
+      <input type="text" id="dailyWageInput" inputmode="numeric" placeholder="금액 입력" 
+             style="width:100%; height:64px; font-size:28px; font-weight:900; text-align:right; padding-right:54px; border:2px solid #e5e7eb; border-radius:18px; color:#111827; transition:all 0.2s; outline:none; box-sizing:border-box;"
+             onfocus="this.style.borderColor='#2563eb'; this.style.boxShadow='0 0 0 4px rgba(37,99,235,0.1)';"
+             onblur="this.style.borderColor='#e5e7eb'; this.style.boxShadow='none';" />
+      <span style="position:absolute; right:20px; top:50%; transform:translateY(-50%); color:#111827; font-size:18px; font-weight:900;">원</span>
+    </div>
+  </div>
+
+  <!-- 상세 내역 (실시간 업데이트) -->
+  <div id="taxDetailCard" style="display:none; background:white; border-radius:24px; padding:24px; box-shadow:0 10px 25px rgba(0,0,0,0.05); animation: slideUp 0.3s ease-out;">
+    <div style="font-size:15px; font-weight:900; color:#111827; margin-bottom:18px; display:flex; align-items:center; gap:6px;">
+      📋 세금 계산 상세 내역
     </div>
 
-    <!-- 결과 카드 -->
-    <div id="resultCard" style="display:none; background:#f8fafc; border:1px solid #e2e8f0; border-radius:12px; padding:20px;">
-      <div style="text-align:center; margin-bottom:16px;">
-        <div style="font-size:13px; font-weight:700; color:#6b7280; margin-bottom:4px;">신고 부탁할 때 알려줄 총 세액</div>
-        <div style="font-size:28px; font-weight:900; color:#ef4444;"><span id="totalTaxDisplay">0</span>원</div>
+    <div style="display:flex; flex-direction:column; gap:14px;">
+      <!-- 비과세 공제 -->
+      <div style="display:flex; justify-content:space-between; align-items:center;">
+        <div style="font-size:14px; font-weight:700; color:#6b7280;">기본 비과세 공제</div>
+        <div style="font-size:15px; font-weight:800; color:#16a34a;">- 150,000원</div>
       </div>
-      
-      <div style="border-top:1px dashed #cbd5e1; margin:16px 0;"></div>
-      
-      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
-        <div style="font-size:13px; font-weight:600; color:#6b7280;">소득세 (2.7%)</div>
-        <div style="font-size:14px; font-weight:800; color:#374151;"><span id="incomeTaxDisplay">0</span>원</div>
+
+      <!-- 과세 대상 -->
+      <div style="display:flex; justify-content:space-between; align-items:center; padding-bottom:12px; border-bottom:1px solid #f3f4f6;">
+        <div style="font-size:14px; font-weight:700; color:#6b7280;">세금을 매기는 금액(과표)</div>
+        <div style="font-size:15px; font-weight:800; color:#111827;"><span id="taxableDisplay">0</span>원</div>
       </div>
-      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
-        <div style="font-size:13px; font-weight:600; color:#6b7280;">지방소득세 (소득세의 10%)</div>
-        <div style="font-size:14px; font-weight:800; color:#374151;"><span id="localTaxDisplay">0</span>원</div>
+
+      <!-- 소득세 -->
+      <div style="display:flex; justify-content:space-between; align-items:center;">
+        <div>
+          <div style="font-size:14px; font-weight:700; color:#374151;">소득세 (2.7%)</div>
+          <div style="font-size:11px; color:#9ca3af; font-weight:600;">산출세액 6% - 근로소득공제 55% 적용</div>
+        </div>
+        <div style="font-size:15px; font-weight:800; color:#ef4444;"><span id="incomeTaxDisplay">0</span>원</div>
       </div>
-      
-      <div style="border-top:1px dashed #cbd5e1; margin:16px 0;"></div>
-      
-      <div style="display:flex; justify-content:space-between; align-items:center; background:#eff6ff; padding:12px; border-radius:8px;">
-        <div style="font-size:14px; font-weight:800; color:#1d4ed8;">실수령액 (세후)</div>
-        <div style="font-size:16px; font-weight:900; color:#1d4ed8;"><span id="netIncomeDisplay">0</span>원</div>
+
+      <!-- 지방소득세 -->
+      <div style="display:flex; justify-content:space-between; align-items:center;">
+        <div style="font-size:14px; font-weight:700; color:#374151;">지방소득세 (소득세의 10%)</div>
+        <div style="font-size:15px; font-weight:800; color:#ef4444;"><span id="localTaxDisplay">0</span>원</div>
       </div>
-    </div>
-    
-    <div id="noTaxNotice" style="display:none; background:#ecfdf5; border:1px solid #a7f3d0; border-radius:12px; padding:20px; text-align:center;">
-      <div style="font-size:28px; margin-bottom:8px;">🎉</div>
-      <div style="font-size:16px; font-weight:800; color:#065f46;">납부할 세금이 없습니다!</div>
-      <div style="font-size:13px; font-weight:600; color:#047857; margin-top:4px;">
-        일당 15만 원 이하(과세미달) 또는<br>소액부징수(소득세 1천 원 미만)에 해당합니다.
+
+      <!-- 총 공제액 -->
+      <div style="display:flex; justify-content:space-between; align-items:center; padding:16px; background:#fef2f2; border-radius:14px; margin-top:8px;">
+        <div style="font-size:14px; font-weight:900; color:#dc2626;">총 공제액(세금 합계)</div>
+        <div style="font-size:18px; font-weight:900; color:#dc2626;"><span id="totalTaxDisplay">0</span>원</div>
       </div>
-      <div style="margin-top:16px; font-size:18px; font-weight:900; color:#065f46;">
-        실수령액: <span id="netIncomeNoTax">0</span>원
+
+      <!-- 최종 실수령액 -->
+      <div style="display:flex; justify-content:space-between; align-items:center; padding:20px; background:#2563eb; border-radius:18px; margin-top:10px; box-shadow:0 8px 20px rgba(37,99,235,0.25);">
+        <div style="font-size:16px; font-weight:900; color:white;">최종 지급할 금액</div>
+        <div style="font-size:24px; font-weight:900; color:white;"><span id="netIncomeDisplay">0</span>원</div>
       </div>
     </div>
 
+    <!-- 소액부징수 안내 -->
+    <div id="smallTaxWarning" style="display:none; margin-top:20px; padding:14px; background:#f0fdf4; border:1px solid #bbf7d0; border-radius:14px; text-align:center;">
+      <div style="font-size:13px; font-weight:800; color:#166534;">
+        💡 소득세가 1,000원 미만이므로 세금을 징수하지 않습니다.<br>
+        <span style="font-size:12px; color:#15803d; opacity:0.8;">(소액부징수 원칙 적용)</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- 비과세 알림 (15만 원 이하) -->
+  <div id="noTaxNotice" style="display:none; background:white; border-radius:24px; padding:30px; box-shadow:0 10px 25px rgba(0,0,0,0.05); text-align:center; animation: slideUp 0.3s ease-out;">
+    <div style="font-size:40px; margin-bottom:16px;">🌱</div>
+    <div style="font-size:18px; font-weight:900; color:#111827; margin-bottom:8px;">납부할 세금이 없습니다!</div>
+    <div style="font-size:14px; font-weight:600; color:#6b7280; line-height:1.6; margin-bottom:24px;">
+      일당 15만 원까지는 비과세 혜택이 적용되어<br>공제 없이 전액 지급하시면 됩니다.
+    </div>
+    <div style="padding:20px; background:#f8fafc; border-radius:18px;">
+      <div style="font-size:13px; font-weight:700; color:#9ca3af; margin-bottom:6px;">지급할 금액</div>
+      <div style="font-size:28px; font-weight:900; color:#2563eb;"><span id="netIncomeNoTax">0</span>원</div>
+    </div>
   </div>
 </div>
+
+<style>
+  @keyframes slideUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+</style>
 
 <script>
   document.addEventListener('turbo:load', function() {
     var input = document.getElementById('dailyWageInput');
     if (!input) return;
 
-    var resultCard = document.getElementById('resultCard');
+    var taxDetailCard = document.getElementById('taxDetailCard');
     var noTaxNotice = document.getElementById('noTaxNotice');
+    var smallTaxWarning = document.getElementById('smallTaxWarning');
 
-    var totalTaxDisplay = document.getElementById('totalTaxDisplay');
+    var taxableDisplay = document.getElementById('taxableDisplay');
     var incomeTaxDisplay = document.getElementById('incomeTaxDisplay');
     var localTaxDisplay = document.getElementById('localTaxDisplay');
+    var totalTaxDisplay = document.getElementById('totalTaxDisplay');
     var netIncomeDisplay = document.getElementById('netIncomeDisplay');
     var netIncomeNoTax = document.getElementById('netIncomeNoTax');
 
@@ -96,11 +136,10 @@
     }
 
     input.addEventListener('input', function(e) {
-      // 숫자만 남기고 콤마 제거
       var value = this.value.replace(/[^0-9]/g, '');
       if (value === '') {
         this.value = '';
-        resultCard.style.display = 'none';
+        taxDetailCard.style.display = 'none';
         noTaxNotice.style.display = 'none';
         return;
       }
@@ -108,31 +147,34 @@
       var wage = parseInt(value, 10);
       this.value = formatNumber(wage);
 
-      // 일용직 소득세 계산 공식: 
-      // 1. 과세표준 = 일급 - 150,000
-      // 2. 산출세액 = 과세표준 * 6%
-      // 3. 결정세액(소득세) = 산출세액 * (1 - 0.55) = 과세표준 * 2.7%
-      
-      var taxable = Math.max(0, wage - 150000);
-      var incomeTax = Math.floor(taxable * 0.027);
-
-      // 소액부징수: 소득세가 1,000원 미만이면 세금을 징수하지 않음
-      if (wage <= 0 || incomeTax < 1000) {
-        resultCard.style.display = 'none';
+      if (wage <= 150000) {
+        taxDetailCard.style.display = 'none';
         noTaxNotice.style.display = 'block';
         netIncomeNoTax.textContent = formatNumber(wage);
       } else {
-        // 지방소득세 = 소득세의 10% (원단위 절사 등의 처리, 보통 10%로 Floor)
-        var localTax = Math.floor(incomeTax * 0.1 / 10) * 10; 
-        // 10원 단위 절사를 적용합니다 (지방소득세 원단위 절사 관행)
-        // 만약 단순 10%만 본다면 Math.floor(incomeTax * 0.1)도 무방합니다.
-        // 일반적인 국세/지방세 계산기들은 10원단위 절사를 주로 하므로 안전하게 절사합니다.
-        
-        var totalTax = incomeTax + localTax;
-        var netIncome = wage - totalTax;
-
-        resultCard.style.display = 'block';
         noTaxNotice.style.display = 'none';
+        taxDetailCard.style.display = 'block';
+
+        var taxable = wage - 150000;
+        taxableDisplay.textContent = formatNumber(taxable);
+
+        // 소득세: 과표 * 2.7% (산출세액 6% * (1 - 55%세액공제))
+        var incomeTax = Math.floor(taxable * 0.027);
+        
+        // 소액부징수: 소득세가 1,000원 미만이면 징수하지 않음
+        if (incomeTax < 1000) {
+          smallTaxWarning.style.display = 'block';
+          incomeTax = 0;
+          var localTax = 0;
+          var totalTax = 0;
+        } else {
+          smallTaxWarning.style.display = 'none';
+          // 지방소득세: 소득세의 10% (10원 단위 절사)
+          var localTax = Math.floor(incomeTax * 0.1 / 10) * 10;
+          var totalTax = incomeTax + localTax;
+        }
+
+        var netIncome = wage - totalTax;
 
         incomeTaxDisplay.textContent = formatNumber(incomeTax);
         localTaxDisplay.textContent = formatNumber(localTax);
@@ -140,5 +182,9 @@
         netIncomeDisplay.textContent = formatNumber(netIncome);
       }
     });
+
+    // 초기 포커스
+    // input.focus();
   });
 </script>
+
