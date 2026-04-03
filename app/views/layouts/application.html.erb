@@ -1,6 +1,15 @@
 <!DOCTYPE html>
 <html lang="ko">
   <head>
+    <!-- 인앱 브라우저 (카카오톡) 외부 브라우저(Safari/Chrome) 강제 실행 스크립트: 구글 로그인 거부(403) 방지 -->
+    <script>
+      (function() {
+        var ua = navigator.userAgent.toLowerCase();
+        if (ua.indexOf('kakaotalk') > -1) {
+          location.href = 'kakaotalk://web/openExternal?url=' + encodeURIComponent(location.href);
+        }
+      })();
+    </script>
     <%= display_meta_tags %>
     <meta name="google-site-verification" content="<%= ENV['GOOGLE_SITE_VERIFICATION'] %>">
     <meta name="naver-site-verification" content="<%= ENV['NAVER_SITE_VERIFICATION'] %>">
