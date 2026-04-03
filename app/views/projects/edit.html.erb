@@ -224,6 +224,7 @@
             fetch("<%= add_photos_project_path(@project) %>", {
               method: 'POST',
               headers: { 'X-CSRF-Token': csrfToken },
+              credentials: 'same-origin',
               body: formData
             }).then(function(response) {
               if (response.ok) {
@@ -246,7 +247,8 @@
             var url = this.getAttribute('data-delete-url');
             fetch(url, {
               method: 'DELETE',
-              headers: { 'X-CSRF-Token': csrfToken }
+              headers: { 'X-CSRF-Token': csrfToken },
+              credentials: 'same-origin'
             }).then(function(response) {
               if (response.ok) {
                 window.location.reload();
