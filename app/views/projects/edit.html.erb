@@ -198,42 +198,102 @@
           </div>
         <% end %>
 
-        <label for="photo-upload-input" style="display:flex; flex-direction:column; align-items:center; gap:8px; padding:20px; border:2px dashed #d1d5db; border-radius:14px; cursor:pointer; background:white;">
+        <label for="photo-upload-input" id="photo-upload-label" style="display:flex; flex-direction:column; align-items:center; gap:8px; padding:20px; border:2px dashed #d1d5db; border-radius:14px; cursor:pointer; background:white; transition:all 0.2s;">
           <div style="font-size:28px;">📷</div>
           <div style="font-size:14px; font-weight:800; color:#6b7280;">사진 추가하기</div>
-          <div style="font-size:12px; font-weight:600; color:#9ca3af;">여러 장 선택 가능</div>
+          <div style="font-size:12px; font-weight:600; color:#9ca3af;">여러 장 선택 가능 (자동 최적화)</div>
           <input type="file" id="photo-upload-input" multiple accept="image/*" style="display:none;">
         </label>
       </div>
 
       <script>
+      function compressImage(file, maxSize = 1200) {
+        return new Promise(function(resolve, reject) {
+          if (!file.type.match(/image.*/)) {
+            resolve(file);
+            return;
+          }
+          var reader = new FileReader();
+          reader.onload = function(readerEvent) {
+            var img = new Image();
+            img.onload = function() {
+              var canvas = document.createElement('canvas');
+              var width = img.width;
+              var height = img.height;
+
+              if (width > height) {
+                if (width > maxSize) { height *= maxSize / width; width = maxSize; }
+              } else {
+                if (height > maxSize) { width *= maxSize / height; height = maxSize; }
+              }
+              canvas.width = width;
+              canvas.height = height;
+              var ctx = canvas.getContext('2d');
+              ctx.drawImage(img, 0, 0, width, height);
+
+              canvas.toBlob(function(blob) {
+                if (blob) {
+                  var newName = file.name.replace(/\.[^/.]+$/, "") + ".jpg";
+                  var newFile = new File([blob], newName, { type: 'image/jpeg', lastModified: Date.now() });
+                  resolve(newFile);
+                } else {
+                  resolve(file);
+                }
+              }, 'image/jpeg', 0.8);
+            };
+            img.onerror = function() { resolve(file); };
+            img.src = readerEvent.target.result;
+          };
+          reader.onerror = function() { resolve(file); };
+          reader.readAsDataURL(file);
+        });
+      }
+
       document.addEventListener("DOMContentLoaded", function() {
         var csrfToken = document.querySelector('meta[name="csrf-token"]').content;
 
-        // 사진 첨부 자동 업로드 - 폼 중첩 없이 JS로 바로 전송
         var photoInput = document.getElementById('photo-upload-input');
+        var photoLabel = document.getElementById('photo-upload-label');
         if (photoInput) {
           photoInput.addEventListener('change', function() {
             if (this.files.length === 0) return;
 
-            var formData = new FormData();
-            for(var i = 0; i < this.files.length; i++) {
-              formData.append('photos[]', this.files[i]);
+            // 로딩 UI 처리
+            var originalLabelHtml = photoLabel.innerHTML;
+            photoLabel.style.background = '#f3f4f6';
+            photoLabel.style.borderColor = '#9ca3af';
+            photoLabel.innerHTML = '<div style="font-size:24px; animation:spin 2s linear infinite;">⏳</div><div style="font-size:14px; font-weight:800; color:#374151;">사진 최적화 및 업로드 중...</div><div style="font-size:12px; font-weight:600; color:#6b7280;">잠시만 기다려주세요</div><style>@keyframes spin { 100% { transform:rotate(360deg); } }</style>';
+            
+            var originalFiles = this.files;
+            var promises = [];
+            for (var i = 0; i < originalFiles.length; i++) {
+              promises.push(compressImage(originalFiles[i], 1200)); // 최대 1200px 축소
             }
 
-            fetch("<%= add_photos_project_path(@project) %>", {
-              method: 'POST',
-              headers: { 'X-CSRF-Token': csrfToken },
-              credentials: 'same-origin',
-              body: formData
-            }).then(function(response) {
-              if (response.ok) {
-                window.location.reload();
-              } else {
-                alert("사진 업로드 중 서버 에러가 발생했습니다.");
+            Promise.all(promises).then(function(processedFiles) {
+              var formData = new FormData();
+              for(var i = 0; i < processedFiles.length; i++) {
+                formData.append('photos[]', processedFiles[i]);
               }
-            }).catch(function(error) {
-              alert("사진 업로드 중 네트워크 에러가 발생했습니다.");
+
+              fetch("<%= add_photos_project_path(@project) %>", {
+                method: 'POST',
+                headers: { 'X-CSRF-Token': csrfToken },
+                credentials: 'same-origin',
+                body: formData
+              }).then(function(response) {
+                if (response.ok) {
+                  window.location.reload();
+                } else {
+                  photoLabel.innerHTML = originalLabelHtml;
+                  photoLabel.style.background = 'white';
+                  alert("사진 업로드 중 서버 에러가 발생했습니다.");
+                }
+              }).catch(function(error) {
+                photoLabel.innerHTML = originalLabelHtml;
+                photoLabel.style.background = 'white';
+                alert("사진 업로드 중 네트워크 에러가 발생했습니다.");
+              });
             });
           });
         }
