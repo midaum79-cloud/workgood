@@ -21,11 +21,44 @@
       <%= form.hidden_field :project_name, id: "hidden_edit_project_name" %>
 
       <div>
-        <div style="font-size:14px; font-weight:800; color:#374151; margin-bottom:8px;">업체명 / 고객명</div>
-        <%= form.text_field :client_name,
-            id: "edit_project_client_name",
-            placeholder: "거래처명 검색 또는 입력",
-            style: "width:100%; padding:14px 16px; border:1px solid #dcdfe4; border-radius:14px; font-size:16px; box-sizing:border-box;" %>
+        <div style="font-size:14px; font-weight:800; color:#374151; margin-bottom:8px;">거래처명</div>
+        <!-- 탭 선택: 업체 / 개인 / 직접입력 -->
+        <div style="display:flex; background:#f3f4f6; border-radius:10px; padding:3px; margin-bottom:10px;">
+          <div id="vendorTabCompany" onclick="switchVendorTab('company')" style="flex:1; text-align:center; padding:8px; font-size:13px; font-weight:800; border-radius:8px; cursor:pointer; background:white; color:#2563eb; box-shadow:0 1px 3px rgba(0,0,0,0.08);">🏢 업체</div>
+          <div id="vendorTabIndividual" onclick="switchVendorTab('individual')" style="flex:1; text-align:center; padding:8px; font-size:13px; font-weight:800; border-radius:8px; cursor:pointer; color:#6b7280;">👤 개인</div>
+          <div id="vendorTabDirect" onclick="switchVendorTab('direct')" style="flex:1; text-align:center; padding:8px; font-size:13px; font-weight:800; border-radius:8px; cursor:pointer; color:#6b7280;">✏️ 직접입력</div>
+        </div>
+
+        <div id="vendorSearchArea" style="display:none;">
+          <div id="vendorListArea">
+            <div style="font-size:12px; font-weight:700; color:#9ca3af; margin-bottom:6px;">▼ 거래처를 선택하세요 (가나다순)</div>
+            <div id="vendorList" style="max-height:305px; overflow-y:auto; border:1px solid #e5e7eb; border-radius:14px; background:white; box-shadow:0 2px 8px rgba(0,0,0,0.06);">
+              <div style="padding:14px; text-align:center; color:#9ca3af; font-size:13px;">불러오는 중...</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 선택된 거래처 표시 (초기에는 기존 거래처명 표시) -->
+        <div id="vendorSelected" style="margin-bottom:10px; padding:12px 14px; background:#eff6ff; border:1px solid #bfdbfe; border-radius:12px;">
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <div>
+              <div id="vendorSelectedName" style="font-size:15px; font-weight:900; color:#1d4ed8;"><%= @project.client_name.presence || @project.project_name %></div>
+              <div id="vendorSelectedInfo" style="font-size:12px; color:#6b7280; font-weight:600; margin-top:2px;">(기존 거래처명)</div>
+            </div>
+            <button type="button" onclick="clearVendorSelection()" style="background:#fee2e2; border:none; color:#dc2626; padding:5px 10px; border-radius:8px; font-size:12px; font-weight:800; cursor:pointer;">변경</button>
+          </div>
+        </div>
+
+        <!-- 직접입력 UI -->
+        <div id="vendorDirectArea" style="display:none;">
+          <input type="text" id="vendorDirectInput"
+            placeholder="새 거래처명을 입력하세요"
+            oninput="document.getElementById('edit_project_client_name').value = this.value; document.getElementById('hidden_edit_project_name').value = this.value;"
+            style="width:100%; padding:14px 16px; border:1px solid #dcdfe4; border-radius:14px; font-size:16px; box-sizing:border-box;">
+        </div>
+
+        <!-- 실제 hidden field -->
+        <%= form.hidden_field :client_name, id: "edit_project_client_name" %>
       </div>
 
       <div>
@@ -606,4 +639,91 @@
       });
     }
   });
+
+  // 거래처 관리 탭 및 선택 로직
+  var currentVendorTab = 'company';
+
+  function switchVendorTab(tab) {
+    currentVendorTab = tab;
+    var tabs = ['Company', 'Individual', 'Direct'];
+    tabs.forEach(function(t) {
+      var el = document.getElementById('vendorTab' + t);
+      if (t.toLowerCase() === tab) {
+        el.style.background = 'white';
+        el.style.color = tab === 'company' ? '#2563eb' : tab === 'individual' ? '#ea580c' : '#374151';
+        el.style.boxShadow = '0 1px 3px rgba(0,0,0,0.08)';
+      } else {
+        el.style.background = 'transparent';
+        el.style.color = '#6b7280';
+        el.style.boxShadow = 'none';
+      }
+    });
+
+    if (tab === 'direct') {
+      document.getElementById('vendorSearchArea').style.display = 'none';
+      document.getElementById('vendorDirectArea').style.display = 'block';
+      clearVendorSelection();
+    } else {
+      document.getElementById('vendorSearchArea').style.display = 'block';
+      document.getElementById('vendorDirectArea').style.display = 'none';
+      document.getElementById('vendorDirectInput').value = '';
+      clearVendorSelection();
+      loadVendorList(tab);
+    }
+  }
+
+  function loadVendorList(vendorType) {
+    var listContainer = document.getElementById('vendorList');
+    listContainer.innerHTML = '<div style="padding:14px; text-align:center; color:#9ca3af; font-size:13px;">불러오는 중...</div>';
+
+    fetch('/vendors/search?vendor_type=' + encodeURIComponent(vendorType) + '&q=', { headers: { 'Accept': 'application/json' } })
+    .then(function(res) { return res.json(); })
+    .then(function(vendors) {
+      listContainer.innerHTML = '';
+      if (vendors.length === 0) {
+        listContainer.innerHTML = '<div style="padding:20px; text-align:center; color:#9ca3af; font-size:13px; font-weight:700;">' +
+          (vendorType === 'company' ? '등록된 업체가 없습니다' : '등록된 개인 거래처가 없습니다') +
+          '<br><span style="font-size:12px; color:#d1d5db;">햄버거 메뉴 → 거래처 관리에서 추가하세요</span></div>';
+        return;
+      }
+      vendors.sort(function(a, b) { return a.name.localeCompare(b.name, 'ko'); });
+      vendors.forEach(function(v, idx) {
+        var item = document.createElement('div');
+        item.style.cssText = 'padding:13px 16px; cursor:pointer; border-bottom:' + (idx < vendors.length - 1 ? '1px solid #f3f4f6' : 'none') + '; transition:background 0.15s;';
+        item.onclick = function() { selectVendor(v); };
+        item.innerHTML = '<div style="font-size:15px; font-weight:800; color:#111827;">' + (v.vendor_type === 'company' ? '🏢 ' : '👤 ') + v.name + '</div>';
+        if (v.contact_name || v.phone) {
+          var infoParts = [];
+          if (v.contact_name) infoParts.push(v.contact_name);
+          if (v.phone) infoParts.push(v.phone);
+          item.innerHTML += '<div style="font-size:12px; color:#6b7280; font-weight:600; margin-top:3px;">' + infoParts.join(' · ') + '</div>';
+        }
+        listContainer.appendChild(item);
+      });
+    });
+  }
+
+  function selectVendor(vendor) {
+    document.getElementById('edit_project_client_name').value = vendor.name;
+    document.getElementById('hidden_edit_project_name').value = vendor.name;
+    document.getElementById('vendorSelectedName').textContent = (vendor.vendor_type === 'company' ? '🏢 ' : '👤 ') + vendor.name;
+    var infoParts = [];
+    if (vendor.contact_name) infoParts.push('담당: ' + vendor.contact_name);
+    if (vendor.phone) infoParts.push('📞 ' + vendor.phone);
+    if (infoParts.length > 0) {
+      document.getElementById('vendorSelectedInfo').textContent = infoParts.join(' · ');
+    } else {
+      document.getElementById('vendorSelectedInfo').textContent = '상세 정보 없음';
+    }
+
+    document.getElementById('vendorSelected').style.display = 'block';
+    document.getElementById('vendorSearchArea').style.display = 'none';
+  }
+
+  function clearVendorSelection() {
+    document.getElementById('edit_project_client_name').value = '';
+    document.getElementById('hidden_edit_project_name').value = '';
+    document.getElementById('vendorSelected').style.display = 'none';
+    if (currentVendorTab !== 'direct') document.getElementById('vendorSearchArea').style.display = 'block';
+  }
 </script>
