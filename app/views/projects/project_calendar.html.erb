@@ -115,33 +115,53 @@
                    style="
                     min-height:60px;
                     border-right:1px solid #f3f4f6;
-                    padding:8px 0;
+                    padding:3px 2px 2px 2px;
                     box-sizing:border-box;
-                    background:<%= is_selected ? '#fef3c7' : 'white' %>;
+                    background:<%= is_selected ? '#f6e8b0' : 'white' %>;
                     display:flex;
                     flex-direction:column;
-                    align-items:center;
+                    align-items:stretch;
                     cursor:pointer;
                     transition: background 0.2s;
                   ">
                 
-                <% has_schedule = is_current_month && day_projects.any? %>
-                <div class="date-circle-indicator" 
-                     data-date="<%= day.to_s %>"
-                     style="
-                      display:flex; 
-                      align-items:center; 
-                      justify-content:center;
-                      width:26px; 
-                      height:26px; 
-                      border-radius:50%;
-                      font-size:13px; 
-                      font-weight:900; 
-                      <%= has_schedule ? "background:#{@project.theme_color_hex}; color:white; box-shadow:0 2px 4px #{@project.theme_color_hex}40;" : "color:#{date_text_color}; background:transparent;" %>
-                      transition: all 0.2s;
-                     ">
-                  <%= day.day %>
+                <div style="display:flex; justify-content:center; margin-bottom:2px;">
+                  <span style="
+                    display:inline-flex;
+                    align-items:center;
+                    justify-content:center;
+                    width:24px;
+                    height:24px;
+                    border-radius:50%;
+                    font-size:13px;
+                    font-weight:900;
+                    color:<%= is_selected ? 'white' : date_text_color %>;
+                    background:<%= is_selected ? '#f59e0b' : 'transparent' %>;
+                  "><%= format('%02d', day.day) %></span>
                 </div>
+
+                <% if is_current_month %>
+                  <% day_projects.each do |proj| %>
+                    <div class="schedule-chip"
+                         style="
+                          font-size:9px;
+                          font-weight:800;
+                          color:<%= proj.theme_color_hex %>;
+                          background:<%= proj.theme_color_hex %>1a;
+                          border:1px solid <%= proj.theme_color_hex %>4d;
+                          border-radius:4px;
+                          padding:2px 3px;
+                          margin-bottom:1px;
+                          overflow:hidden;
+                          white-space:nowrap;
+                          text-overflow:ellipsis;
+                          user-select:none;
+                          -webkit-user-select:none;
+                         ">
+                      <%= proj.client_name.presence || proj.project_name %>
+                    </div>
+                  <% end %>
+                <% end %>
               </div>
             <% end %>
           </div>
