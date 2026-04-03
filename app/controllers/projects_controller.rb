@@ -477,11 +477,16 @@ class ProjectsController < ApplicationController
 
   def add_photos
     @project = current_user.projects.find(params[:id])
-    if params[:photos].present?
-      @project.photos.attach(params[:photos])
-      redirect_to @project, notice: "사진이 추가되었습니다."
-    else
-      redirect_to @project, alert: "사진을 선택해주세요."
+    begin
+      if params[:photos].present?
+        @project.photos.attach(params[:photos])
+        render json: { success: true }
+      else
+        render json: { success: false, error: "사진을 찾을 수 없습니다." }, status: :unprocessable_entity
+      end
+    rescue => e
+      Rails.logger.error "Photo Upload Error: #{e.message}\n#{e.backtrace.join("\n")}"
+      render json: { success: false, error: e.message }, status: :internal_server_error
     end
   end
 

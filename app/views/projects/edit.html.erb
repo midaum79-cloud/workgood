@@ -243,7 +243,7 @@
       function compressImage(file, maxSize = 1200) {
         return new Promise(function(resolve, reject) {
           if (!file.type.match(/image.*/)) {
-            resolve(file);
+            resolve({ file: file, name: file.name });
             return;
           }
           var reader = new FileReader();
@@ -267,17 +267,16 @@
               canvas.toBlob(function(blob) {
                 if (blob) {
                   var newName = file.name.replace(/\.[^/.]+$/, "") + ".jpg";
-                  var newFile = new File([blob], newName, { type: 'image/jpeg', lastModified: Date.now() });
-                  resolve(newFile);
+                  resolve({ file: blob, name: newName });
                 } else {
-                  resolve(file);
+                  resolve({ file: file, name: file.name });
                 }
               }, 'image/jpeg', 0.8);
             };
-            img.onerror = function() { resolve(file); };
+            img.onerror = function() { resolve({ file: file, name: file.name }); };
             img.src = readerEvent.target.result;
           };
-          reader.onerror = function() { resolve(file); };
+          reader.onerror = function() { resolve({ file: file, name: file.name }); };
           reader.readAsDataURL(file);
         });
       }
@@ -306,26 +305,32 @@
             Promise.all(promises).then(function(processedFiles) {
               var formData = new FormData();
               for(var i = 0; i < processedFiles.length; i++) {
-                formData.append('photos[]', processedFiles[i]);
+                formData.append('photos[]', processedFiles[i].file, processedFiles[i].name);
               }
 
               fetch("<%= add_photos_project_path(@project) %>", {
                 method: 'POST',
-                headers: { 'X-CSRF-Token': csrfToken },
+                headers: { 'X-CSRF-Token': csrfToken, 'Accept': 'application/json' },
                 credentials: 'same-origin',
                 body: formData
               }).then(function(response) {
-                if (response.ok) {
+                return response.json().then(function(data) {
+                  return { ok: response.ok, data: data };
+                }).catch(function() {
+                  return { ok: response.ok, data: { error: "JSON 파싱 에러" } };
+                });
+              }).then(function(result) {
+                if (result.ok && result.data.success) {
                   window.location.reload();
                 } else {
                   photoLabel.innerHTML = originalLabelHtml;
                   photoLabel.style.background = 'white';
-                  alert("사진 업로드 중 서버 에러가 발생했습니다.");
+                  alert("사진 업로드 중 서버쪽 문제가 발생했습니다: " + (result.data.error || "알 수 없는 에러"));
                 }
               }).catch(function(error) {
                 photoLabel.innerHTML = originalLabelHtml;
                 photoLabel.style.background = 'white';
-                alert("사진 업로드 중 네트워크 에러가 발생했습니다.");
+                alert("사진 처리/전송 중 네트워크 연결이 끊어졌거나 에러가 발생했습니다.");
               });
             });
           });
