@@ -122,5 +122,5 @@ Rails.application.routes.draw do
     get "widget/calendar", to: "widget#calendar"
   end
 
-  root "projects#index"
+  root "projects#calendar"
 end
