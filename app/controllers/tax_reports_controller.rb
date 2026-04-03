@@ -13,10 +13,10 @@ class TaxReportsController < ApplicationController
       .where("EXTRACT(year FROM start_date) = ? OR EXTRACT(year FROM end_date) = ?", @year, @year)
       .order(start_date: :asc)
 
-    # 수입 집계 (계약금 + 중도금 기준)
-    @total_estimate  = @projects.sum(:estimate_amount).to_i
-    @total_collected = @projects.sum(:deposit_amount).to_i + @projects.sum(:mid_payment).to_i
-    @total_outstanding = [@total_estimate - @total_collected, 0].max
+    # 수입 집계 (계약금 + 중도금 기준, 단 완납일 경우 전체 견적금액을 수집으로 간주 가능, 그러나 여기서는 기존처럼 하되 미수금 처리만 변경)
+    @total_estimate  = @projects.sum { |p| p.estimate_amount.to_i }
+    @total_collected = @projects.sum { |p| p.payment_status == "완납" ? p.estimate_amount.to_i : (p.deposit_amount.to_i + p.mid_payment.to_i) }
+    @total_outstanding = @projects.sum { |p| p.payment_status == "완납" ? 0 : [p.estimate_amount.to_i - (p.deposit_amount.to_i + p.mid_payment.to_i), 0].max }
 
     # 3.3% 원천징수 계산 (수령액 기준)
     @tax_rate        = 3.3
@@ -117,6 +117,10 @@ class TaxReportsController < ApplicationController
     else
       redirect_to tax_report_path, alert: "현장을 찾을 수 없습니다."
     end
+  end
+
+  def daily_worker_tax
+    # 일용직 인건비 역산 계산기 페이지 (JS로 동작하므로 넘겨줄 변수는 없음)
   end
 
   private

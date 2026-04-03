@@ -907,6 +907,7 @@
         selected.style.color = 'white';
         selected.style.borderColor = '#2563eb';
       }
+      updateNewBalance();
     });
   });
   // 잔금 자동 계산
@@ -915,6 +916,12 @@
     var dep = parseInt(document.getElementById('new_deposit_amount').value) || 0;
     var mid = parseInt(document.getElementById('new_mid_payment').value) || 0;
     var bal = Math.max(est - dep - mid, 0);
+
+    var isFullyPaid = document.getElementById('new_payment_status_완납') && document.getElementById('new_payment_status_완납').checked;
+    if (isFullyPaid) {
+      bal = 0;
+    }
+
     document.getElementById('new_balance_display').textContent = bal.toLocaleString() + '원';
   }
   document.getElementById('new_estimate_amount').addEventListener('input', updateNewBalance);

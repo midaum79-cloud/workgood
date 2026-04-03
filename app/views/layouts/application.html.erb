@@ -424,8 +424,8 @@
     <% if logged_in? %>
     <nav class="bottom-nav">
       <div class="bottom-nav-inner">
-        <%= link_to calendar_projects_path, class: "bottom-nav-item #{current_path == '/' || current_path == '/projects/calendar' ? 'active' : ''}" do %>
-          <span class="bottom-nav-icon">📅</span>
+        <%= link_to projects_path, class: "bottom-nav-item #{current_path.start_with?('/projects') && current_path != '/projects/calendar' && current_path != '/projects/new' ? 'active' : ''}" do %>
+          <span class="bottom-nav-icon">🏠</span>
           <span>스케줄</span>
         <% end %>
 
@@ -435,9 +435,9 @@
           <span>현장추가</span>
         <% end %>
 
-        <%= link_to projects_path, class: "bottom-nav-item #{current_path.start_with?('/projects') && current_path != '/projects/calendar' && current_path != '/projects/new' ? 'active' : ''}" do %>
-          <span class="bottom-nav-icon">🏠</span>
-          <span>현장목록</span>
+        <%= link_to calendar_projects_path, class: "bottom-nav-item #{current_path == '/' || current_path == '/projects/calendar' ? 'active' : ''}" do %>
+          <span class="bottom-nav-icon">📅</span>
+          <span>캘린더</span>
         <% end %>
       </div>
     </nav>
@@ -533,6 +533,10 @@
         <% end %>
         <%= link_to tax_report_path, class: "drawer-item", onclick: "closeDrawer()" do %>
           <span class="drawer-item-icon">🧾</span> 세금 관리
+        <% end %>
+        <%= link_to daily_worker_tax_path, class: "drawer-item", onclick: "closeDrawer()", style: "background:#fffbeb; color:#92400e;" do %>
+          <span class="drawer-item-icon" style="opacity:0.8;">🧮</span> 일용직 계산기
+          <span style="margin-left:auto; font-size:10px; font-weight:800; background:#fde68a; color:#78350f; padding:2px 8px; border-radius:999px;">PREMIUM</span>
         <% end %>
         <%= link_to daily_memos_list_path, class: "drawer-item", onclick: "closeDrawer()" do %>
           <span class="drawer-item-icon">📝</span> 일정 메모

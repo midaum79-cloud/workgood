@@ -102,11 +102,9 @@ class ProjectsController < ApplicationController
       .or(current_user.projects.where("projects.start_date >= ? AND projects.start_date <= ?", @start_date, @end_date))
       .order("projects.start_date ASC")
 
-    @total_estimate   = @projects.sum(:estimate_amount).to_i
-    @total_deposit    = @projects.sum(:deposit_amount).to_i
-    @total_mid        = @projects.sum(:mid_payment).to_i
-    @total_collected  = @total_deposit + @total_mid
-    @total_outstanding = [@total_estimate - @total_collected, 0].max
+    @total_estimate = @projects.sum { |p| p.estimate_amount.to_i }
+    @total_collected = @projects.sum { |p| p.payment_status == "완납" ? p.estimate_amount.to_i : (p.deposit_amount.to_i + p.mid_payment.to_i) }
+    @total_outstanding = @projects.sum { |p| p.payment_status == "완납" ? 0 : [p.estimate_amount.to_i - (p.deposit_amount.to_i + p.mid_payment.to_i), 0].max }
 
     # 미수금 현장 (완납 제외)
     @outstanding_projects = @projects.reject { |p| p.payment_status == "완납" }
@@ -118,8 +116,8 @@ class ProjectsController < ApplicationController
         name: client_name.presence || "미지정",
         count: projs.size,
         estimate: projs.sum { |p| p.estimate_amount.to_i },
-        collected: projs.sum { |p| p.deposit_amount.to_i + p.mid_payment.to_i },
-        outstanding: projs.sum { |p| [p.estimate_amount.to_i - p.deposit_amount.to_i - p.mid_payment.to_i, 0].max }
+        collected: projs.sum { |p| p.payment_status == "완납" ? p.estimate_amount.to_i : (p.deposit_amount.to_i + p.mid_payment.to_i) },
+        outstanding: projs.sum { |p| p.payment_status == "완납" ? 0 : [p.estimate_amount.to_i - p.deposit_amount.to_i - p.mid_payment.to_i, 0].max }
       }
     end.sort_by { |v| -v[:estimate] }
 

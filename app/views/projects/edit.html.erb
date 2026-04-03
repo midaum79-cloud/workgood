@@ -174,8 +174,10 @@
 
           <div style="background:#fff7ed; border:1px solid #fed7aa; border-radius:12px; padding:12px 14px; display:flex; justify-content:space-between; align-items:center;">
             <div style="font-size:13px; font-weight:800; color:#ea580c;">💰 잔금</div>
+            <% is_fully_paid = (@project.payment_status == '완납') %>
+            <% initial_balance = is_fully_paid ? 0 : [@project.estimate_amount.to_i - @project.deposit_amount.to_i - @project.mid_payment.to_i, 0].max %>
             <div id="edit_balance_display" style="font-size:18px; font-weight:900; color:#ea580c;">
-              <%= number_with_delimiter([@project.estimate_amount.to_i - @project.deposit_amount.to_i - @project.mid_payment.to_i, 0].max) %>원
+              <%= number_with_delimiter(initial_balance) %>원
             </div>
           </div>
 
@@ -450,6 +452,7 @@
         selected.style.color = 'white';
         selected.style.borderColor = '#2563eb';
       }
+      updateBalance();
     });
   });
   // 잔금 자동 계산
@@ -458,6 +461,12 @@
     var dep = parseInt(document.getElementById('edit_deposit_amount').value) || 0;
     var mid = parseInt(document.getElementById('edit_mid_payment').value) || 0;
     var bal = Math.max(est - dep - mid, 0);
+
+    var isFullyPaid = document.getElementById('payment_status_완납') && document.getElementById('payment_status_완납').checked;
+    if (isFullyPaid) {
+      bal = 0;
+    }
+
     document.getElementById('edit_balance_display').textContent = bal.toLocaleString() + '원';
   }
   document.getElementById('edit_estimate_amount').addEventListener('input', updateBalance);

@@ -9,6 +9,7 @@ Rails.application.routes.draw do
   # 프리미엄: 세금 관리
   get  "tax_report",          to: "tax_reports#index",  as: :tax_report
   get  "tax_report/download", to: "tax_reports#download", as: :download_tax_report
+  get  "tax_report/daily_worker_tax", to: "tax_reports#daily_worker_tax", as: :daily_worker_tax
   post "tax_report/send_payment_request", to: "tax_reports#send_payment_request", as: :send_payment_request
   # Auth
   get  "login",  to: "sessions#new",          as: :login

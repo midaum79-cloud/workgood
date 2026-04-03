@@ -1,0 +1,144 @@
+<div style="background:#2563eb; padding:env(safe-area-inset-top, 0) 0 0 0; position:sticky; top:0; z-index:50;">
+  <div style="height:56px; display:flex; align-items:center; justify-content:space-between; padding:0 20px;">
+    <div style="flex:1;">
+      <%= link_to "←", "javascript:history.back()", style: "color:white; font-size:24px; text-decoration:none; display:inline-block; margin-top:-2px;" %>
+    </div>
+    <div style="color:white; font-size:18px; font-weight:800;">일용직 세금 계산기</div>
+    <div style="flex:1; text-align:right;">
+      <span style="font-size:10px; font-weight:800; background:#fde68a; color:#78350f; padding:2px 8px; border-radius:999px;">PREMIUM</span>
+    </div>
+  </div>
+</div>
+
+<div style="padding:24px 20px;">
+  <!-- 안내 문구 -->
+  <div style="background:white; border-radius:16px; padding:20px; box-shadow:0 4px 12px rgba(0,0,0,0.05); margin-bottom:24px;">
+    <div style="display:flex; align-items:flex-start; gap:12px;">
+      <div style="font-size:24px; line-height:1;">💡</div>
+      <div>
+        <div style="font-size:15px; font-weight:800; color:#111827; margin-bottom:4px;">
+          3.3%보다 더 많이 받는 마법의 계산기!
+        </div>
+        <div style="font-size:13px; font-weight:600; color:#4b5563; line-height:1.5;">
+          일용근로자 신고를 통해 사장님의 세무 부담은 줄이고, 팀원들의 지갑은 지켜주세요.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 계산기 폼 -->
+  <div style="background:white; border-radius:16px; padding:24px 20px; box-shadow:0 4px 12px rgba(0,0,0,0.05);">
+    <label style="display:block; font-size:14px; font-weight:800; color:#374151; margin-bottom:8px;">
+      오늘 지급할 일당 (원)
+    </label>
+    <div style="position:relative; margin-bottom:24px;">
+      <input type="text" id="dailyWageInput" inputmode="numeric" placeholder="예: 350,000" 
+             style="width:100%; height:52px; font-size:20px; font-weight:800; text-align:right; padding-right:48px; border:1px solid #d1d5db; border-radius:12px; transition:border-color 0.2s;" />
+      <span style="position:absolute; right:16px; top:50%; transform:translateY(-50%); color:#6b7280; font-size:16px; font-weight:700;">원</span>
+    </div>
+
+    <!-- 결과 카드 -->
+    <div id="resultCard" style="display:none; background:#f8fafc; border:1px solid #e2e8f0; border-radius:12px; padding:20px;">
+      <div style="text-align:center; margin-bottom:16px;">
+        <div style="font-size:13px; font-weight:700; color:#6b7280; margin-bottom:4px;">신고 부탁할 때 알려줄 총 세액</div>
+        <div style="font-size:28px; font-weight:900; color:#ef4444;"><span id="totalTaxDisplay">0</span>원</div>
+      </div>
+      
+      <div style="border-top:1px dashed #cbd5e1; margin:16px 0;"></div>
+      
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+        <div style="font-size:13px; font-weight:600; color:#6b7280;">소득세 (2.7%)</div>
+        <div style="font-size:14px; font-weight:800; color:#374151;"><span id="incomeTaxDisplay">0</span>원</div>
+      </div>
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+        <div style="font-size:13px; font-weight:600; color:#6b7280;">지방소득세 (소득세의 10%)</div>
+        <div style="font-size:14px; font-weight:800; color:#374151;"><span id="localTaxDisplay">0</span>원</div>
+      </div>
+      
+      <div style="border-top:1px dashed #cbd5e1; margin:16px 0;"></div>
+      
+      <div style="display:flex; justify-content:space-between; align-items:center; background:#eff6ff; padding:12px; border-radius:8px;">
+        <div style="font-size:14px; font-weight:800; color:#1d4ed8;">실수령액 (세후)</div>
+        <div style="font-size:16px; font-weight:900; color:#1d4ed8;"><span id="netIncomeDisplay">0</span>원</div>
+      </div>
+    </div>
+    
+    <div id="noTaxNotice" style="display:none; background:#ecfdf5; border:1px solid #a7f3d0; border-radius:12px; padding:20px; text-align:center;">
+      <div style="font-size:28px; margin-bottom:8px;">🎉</div>
+      <div style="font-size:16px; font-weight:800; color:#065f46;">납부할 세금이 없습니다!</div>
+      <div style="font-size:13px; font-weight:600; color:#047857; margin-top:4px;">
+        일당 15만 원 이하(과세미달) 또는<br>소액부징수(소득세 1천 원 미만)에 해당합니다.
+      </div>
+      <div style="margin-top:16px; font-size:18px; font-weight:900; color:#065f46;">
+        실수령액: <span id="netIncomeNoTax">0</span>원
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+  document.addEventListener('turbo:load', function() {
+    var input = document.getElementById('dailyWageInput');
+    if (!input) return;
+
+    var resultCard = document.getElementById('resultCard');
+    var noTaxNotice = document.getElementById('noTaxNotice');
+
+    var totalTaxDisplay = document.getElementById('totalTaxDisplay');
+    var incomeTaxDisplay = document.getElementById('incomeTaxDisplay');
+    var localTaxDisplay = document.getElementById('localTaxDisplay');
+    var netIncomeDisplay = document.getElementById('netIncomeDisplay');
+    var netIncomeNoTax = document.getElementById('netIncomeNoTax');
+
+    function formatNumber(num) {
+      return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+    }
+
+    input.addEventListener('input', function(e) {
+      // 숫자만 남기고 콤마 제거
+      var value = this.value.replace(/[^0-9]/g, '');
+      if (value === '') {
+        this.value = '';
+        resultCard.style.display = 'none';
+        noTaxNotice.style.display = 'none';
+        return;
+      }
+
+      var wage = parseInt(value, 10);
+      this.value = formatNumber(wage);
+
+      // 일용직 소득세 계산 공식: 
+      // 1. 과세표준 = 일급 - 150,000
+      // 2. 산출세액 = 과세표준 * 6%
+      // 3. 결정세액(소득세) = 산출세액 * (1 - 0.55) = 과세표준 * 2.7%
+      
+      var taxable = Math.max(0, wage - 150000);
+      var incomeTax = Math.floor(taxable * 0.027);
+
+      // 소액부징수: 소득세가 1,000원 미만이면 세금을 징수하지 않음
+      if (wage <= 0 || incomeTax < 1000) {
+        resultCard.style.display = 'none';
+        noTaxNotice.style.display = 'block';
+        netIncomeNoTax.textContent = formatNumber(wage);
+      } else {
+        // 지방소득세 = 소득세의 10% (원단위 절사 등의 처리, 보통 10%로 Floor)
+        var localTax = Math.floor(incomeTax * 0.1 / 10) * 10; 
+        // 10원 단위 절사를 적용합니다 (지방소득세 원단위 절사 관행)
+        // 만약 단순 10%만 본다면 Math.floor(incomeTax * 0.1)도 무방합니다.
+        // 일반적인 국세/지방세 계산기들은 10원단위 절사를 주로 하므로 안전하게 절사합니다.
+        
+        var totalTax = incomeTax + localTax;
+        var netIncome = wage - totalTax;
+
+        resultCard.style.display = 'block';
+        noTaxNotice.style.display = 'none';
+
+        incomeTaxDisplay.textContent = formatNumber(incomeTax);
+        localTaxDisplay.textContent = formatNumber(localTax);
+        totalTaxDisplay.textContent = formatNumber(totalTax);
+        netIncomeDisplay.textContent = formatNumber(netIncome);
+      }
+    });
+  });
+</script>
