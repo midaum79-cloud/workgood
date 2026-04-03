@@ -43,7 +43,7 @@ class VendorsController < ApplicationController
   end
 
   def new
-    @vendor = Vendor.new
+    @vendor = Vendor.new(vendor_type: params[:vendor_type].presence || "company")
   end
 
   def edit

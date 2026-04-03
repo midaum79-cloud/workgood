@@ -33,50 +33,10 @@
     <div id="company-section" style="background:white; border-radius:16px; overflow:hidden; box-shadow:0 2px 8px rgba(0,0,0,0.04); margin-bottom:20px;">
       <div style="padding:14px 16px; border-bottom:1px solid #f3f4f6; background:#eff6ff; display:flex; justify-content:space-between; align-items:center;">
         <div style="font-size:15px; font-weight:900; color:#2563eb;">🏢 업체관리 (<span id="company-count"><%= @company_vendors.count %></span>개)</div>
-        <div style="font-size:13px; font-weight:700; color:#2563eb; cursor:pointer;" onclick="document.getElementById('company-form').style.display = document.getElementById('company-form').style.display === 'none' ? 'block' : 'none'">+ 업체 추가</div>
+        <a href="<%= new_vendor_path(vendor_type: 'company') %>" style="font-size:13px; font-weight:700; color:#2563eb; text-decoration:none;">+ 업체 추가</a>
       </div>
 
-      <%# 업체 추가 폼 (기본 숨김) %>
-      <div id="company-form" style="display:none; padding:16px; border-bottom:1px solid #f3f4f6; background:#f9fafb;">
-        <%= form_with model: Vendor.new, url: vendors_path, method: :post, local: true do |f| %>
-          <%= f.hidden_field :vendor_type, value: "company" %>
-          <div style="display:flex; flex-direction:column; gap:10px;">
-            <div>
-              <div style="font-size:12px; font-weight:800; color:#374151; margin-bottom:4px;">업체명 *</div>
-              <%= f.text_field :name, placeholder: "업체명을 입력하세요", required: true,
-                  style: "width:100%; padding:10px 12px; border:1.5px solid #d1d5db; border-radius:10px; font-size:14px; font-weight:700; font-family:inherit; outline:none; box-sizing:border-box;" %>
-            </div>
-            <div>
-              <div style="font-size:12px; font-weight:800; color:#374151; margin-bottom:4px;">사업자등록번호</div>
-              <%= f.text_field :business_number, placeholder: "000-00-00000",
-                  style: "width:100%; padding:10px 12px; border:1.5px solid #d1d5db; border-radius:10px; font-size:14px; font-weight:700; font-family:inherit; outline:none; box-sizing:border-box;" %>
-            </div>
-            <div>
-              <div style="font-size:12px; font-weight:800; color:#374151; margin-bottom:4px;">사업장주소</div>
-              <%= f.text_field :address, placeholder: "사업장 주소를 입력하세요",
-                  style: "width:100%; padding:10px 12px; border:1.5px solid #d1d5db; border-radius:10px; font-size:14px; font-weight:700; font-family:inherit; outline:none; box-sizing:border-box;" %>
-            </div>
-            <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
-              <div>
-                <div style="font-size:12px; font-weight:800; color:#374151; margin-bottom:4px;">담당자 이름</div>
-                <%= f.text_field :contact_name, placeholder: "담당자명",
-                    style: "width:100%; padding:10px 12px; border:1.5px solid #d1d5db; border-radius:10px; font-size:14px; font-weight:700; font-family:inherit; outline:none; box-sizing:border-box;" %>
-              </div>
-              <div>
-                <div style="font-size:12px; font-weight:800; color:#374151; margin-bottom:4px;">연락처</div>
-                <%= f.telephone_field :phone, placeholder: "010-0000-0000",
-                    style: "width:100%; padding:10px 12px; border:1.5px solid #d1d5db; border-radius:10px; font-size:14px; font-weight:700; font-family:inherit; outline:none; box-sizing:border-box;" %>
-              </div>
-            </div>
-            <div>
-              <div style="font-size:12px; font-weight:800; color:#374151; margin-bottom:4px;">메모</div>
-              <%= f.text_area :memo, placeholder: "메모를 입력하세요", rows: 2,
-                  style: "width:100%; padding:10px 12px; border:1.5px solid #d1d5db; border-radius:10px; font-size:14px; font-weight:700; font-family:inherit; outline:none; box-sizing:border-box; resize:vertical;" %>
-            </div>
-            <button type="submit" style="width:100%; padding:12px; background:#2563eb; color:white; border:none; border-radius:12px; font-size:15px; font-weight:900; cursor:pointer;">업체 등록</button>
-          </div>
-        <% end %>
-      </div>
+
 
       <%# 업체 목록 %>
       <div id="company-list">
@@ -117,50 +77,10 @@
     <div id="individual-section" style="background:white; border-radius:16px; overflow:hidden; box-shadow:0 2px 8px rgba(0,0,0,0.04); margin-bottom:20px;">
       <div style="padding:14px 16px; border-bottom:1px solid #f3f4f6; background:#fff7ed; display:flex; justify-content:space-between; align-items:center;">
         <div style="font-size:15px; font-weight:900; color:#ea580c;">👤 개인관리 (<span id="individual-count"><%= @individual_vendors.count %></span>개)</div>
-        <div style="font-size:13px; font-weight:700; color:#ea580c; cursor:pointer;" onclick="document.getElementById('individual-form').style.display = document.getElementById('individual-form').style.display === 'none' ? 'block' : 'none'">+ 개인 추가</div>
+        <a href="<%= new_vendor_path(vendor_type: 'individual') %>" style="font-size:13px; font-weight:700; color:#ea580c; text-decoration:none;">+ 개인 추가</a>
       </div>
 
-      <%# 개인 추가 폼 (기본 숨김) %>
-      <div id="individual-form" style="display:none; padding:16px; border-bottom:1px solid #f3f4f6; background:#f9fafb;">
-        <%= form_with model: Vendor.new, url: vendors_path, method: :post, local: true do |f| %>
-          <%= f.hidden_field :vendor_type, value: "individual" %>
-          <div style="display:flex; flex-direction:column; gap:10px;">
-            <div>
-              <div style="font-size:12px; font-weight:800; color:#374151; margin-bottom:4px;">이름 *</div>
-              <%= f.text_field :name, placeholder: "거래처 이름을 입력하세요", required: true,
-                  style: "width:100%; padding:10px 12px; border:1.5px solid #d1d5db; border-radius:10px; font-size:14px; font-weight:700; font-family:inherit; outline:none; box-sizing:border-box;" %>
-            </div>
-            <div>
-              <div style="font-size:12px; font-weight:800; color:#374151; margin-bottom:4px;">사업자등록번호</div>
-              <%= f.text_field :business_number, placeholder: "000-00-00000",
-                  style: "width:100%; padding:10px 12px; border:1.5px solid #d1d5db; border-radius:10px; font-size:14px; font-weight:700; font-family:inherit; outline:none; box-sizing:border-box;" %>
-            </div>
-            <div>
-              <div style="font-size:12px; font-weight:800; color:#374151; margin-bottom:4px;">주소</div>
-              <%= f.text_field :address, placeholder: "주소를 입력하세요",
-                  style: "width:100%; padding:10px 12px; border:1.5px solid #d1d5db; border-radius:10px; font-size:14px; font-weight:700; font-family:inherit; outline:none; box-sizing:border-box;" %>
-            </div>
-            <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
-              <div>
-                <div style="font-size:12px; font-weight:800; color:#374151; margin-bottom:4px;">담당자 이름</div>
-                <%= f.text_field :contact_name, placeholder: "담당자명",
-                    style: "width:100%; padding:10px 12px; border:1.5px solid #d1d5db; border-radius:10px; font-size:14px; font-weight:700; font-family:inherit; outline:none; box-sizing:border-box;" %>
-              </div>
-              <div>
-                <div style="font-size:12px; font-weight:800; color:#374151; margin-bottom:4px;">연락처</div>
-                <%= f.telephone_field :phone, placeholder: "010-0000-0000",
-                    style: "width:100%; padding:10px 12px; border:1.5px solid #d1d5db; border-radius:10px; font-size:14px; font-weight:700; font-family:inherit; outline:none; box-sizing:border-box;" %>
-              </div>
-            </div>
-            <div>
-              <div style="font-size:12px; font-weight:800; color:#374151; margin-bottom:4px;">메모</div>
-              <%= f.text_area :memo, placeholder: "메모를 입력하세요", rows: 2,
-                  style: "width:100%; padding:10px 12px; border:1.5px solid #d1d5db; border-radius:10px; font-size:14px; font-weight:700; font-family:inherit; outline:none; box-sizing:border-box; resize:vertical;" %>
-            </div>
-            <button type="submit" style="width:100%; padding:12px; background:#ea580c; color:white; border:none; border-radius:12px; font-size:15px; font-weight:900; cursor:pointer;">개인 거래처 등록</button>
-          </div>
-        <% end %>
-      </div>
+
 
       <%# 개인 목록 %>
       <div id="individual-list">

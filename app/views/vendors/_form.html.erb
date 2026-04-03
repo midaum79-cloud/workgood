@@ -59,13 +59,26 @@
               style: "width:100%; height:48px; border:1.5px solid #e5e7eb; border-radius:12px; padding:0 14px; font-size:15px; font-weight:700; font-family:inherit; box-sizing:border-box;" %>
         </div>
 
+        <%# 사업자등록번호 %>
+        <div>
+          <label style="font-size:13px; font-weight:800; color:#374151; display:block; margin-bottom:6px;">사업자등록번호</label>
+          <%= f.text_field :business_number, placeholder: "000-00-00000",
+              style: "width:100%; height:48px; border:1.5px solid #e5e7eb; border-radius:12px; padding:0 14px; font-size:15px; font-weight:700; font-family:inherit; box-sizing:border-box;" %>
+        </div>
+
+        <%# 사업장주소 %>
+        <div>
+          <label style="font-size:13px; font-weight:800; color:#374151; display:block; margin-bottom:6px;">사업장주소</label>
+          <%= f.text_field :address, placeholder: "사업장 주소를 입력하세요",
+              style: "width:100%; height:48px; border:1.5px solid #e5e7eb; border-radius:12px; padding:0 14px; font-size:15px; font-weight:700; font-family:inherit; box-sizing:border-box;" %>
+        </div>
+
         <script>
-          // 라디오 버튼 선택 시 라벨/힌트 동기화
+          // 라디오 버튼 선택 시 라벨 동기화
           document.querySelectorAll('input[name="vendor[vendor_type]"]').forEach(function(radio) {
             radio.addEventListener('change', function() {
               var isCompany = (this.value === 'company');
               document.getElementById('vendor-name-label').textContent = isCompany ? '업체명' : '고객명';
-              document.getElementById('vendor-name-hint').style.display = isCompany ? 'block' : 'none';
             });
           });
         </script>
