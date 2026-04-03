@@ -116,9 +116,10 @@
 </style>
 
 <script>
-  document.addEventListener('turbo:load', function() {
+  function initDailyWorkerTaxCalc() {
     var input = document.getElementById('dailyWageInput');
-    if (!input) return;
+    if (!input || input.dataset.initialized) return;
+    input.dataset.initialized = 'true';
 
     var taxDetailCard = document.getElementById('taxDetailCard');
     var noTaxNotice = document.getElementById('noTaxNotice');
@@ -158,20 +159,17 @@
         var taxable = wage - 150000;
         taxableDisplay.textContent = formatNumber(taxable);
 
-        // 소득세: 과표 * 2.7% (산출세액 6% * (1 - 55%세액공제))
         var incomeTax = Math.floor(taxable * 0.027);
+        var localTax = 0;
+        var totalTax = 0;
         
-        // 소액부징수: 소득세가 1,000원 미만이면 징수하지 않음
         if (incomeTax < 1000) {
           smallTaxWarning.style.display = 'block';
           incomeTax = 0;
-          var localTax = 0;
-          var totalTax = 0;
         } else {
           smallTaxWarning.style.display = 'none';
-          // 지방소득세: 소득세의 10% (10원 단위 절사)
-          var localTax = Math.floor(incomeTax * 0.1 / 10) * 10;
-          var totalTax = incomeTax + localTax;
+          localTax = Math.floor(incomeTax * 0.1 / 10) * 10;
+          totalTax = incomeTax + localTax;
         }
 
         var netIncome = wage - totalTax;
@@ -183,8 +181,15 @@
       }
     });
 
-    // 초기 포커스
-    // input.focus();
-  });
+    // 만약 초기에 값이 들어있다면 바로 계산 실행
+    if (input.value !== '') {
+      input.dispatchEvent(new Event('input'));
+    }
+  }
+
+  // 여러 환경(Turbo 등)에 대비하여 이벤트 및 즉시 실행 보장
+  document.addEventListener('turbo:load', initDailyWorkerTaxCalc);
+  document.addEventListener('DOMContentLoaded', initDailyWorkerTaxCalc);
+  initDailyWorkerTaxCalc();
 </script>
 
