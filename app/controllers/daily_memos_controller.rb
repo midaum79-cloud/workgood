@@ -2,7 +2,31 @@ class DailyMemosController < ApplicationController
   before_action :require_login
 
   def index
-    @memos = current_user.daily_memos.where.not(content: [nil, '']).order(memo_date: :desc).page_memo(params[:page])
+    @calendar_year = (params[:year] || Date.current.year).to_i
+    @calendar_month = (params[:month] || Date.current.month).to_i
+
+    begin
+      @selected_date = Date.new(@calendar_year, @calendar_month, 1)
+    rescue ArgumentError
+      @selected_date = Date.current.beginning_of_month
+      @calendar_year = @selected_date.year
+      @calendar_month = @selected_date.month
+    end
+
+    @prev_month = @selected_date.last_month
+    @next_month = @selected_date.next_month
+
+    start_date = @selected_date.beginning_of_month.beginning_of_week(:sunday)
+    end_date = @selected_date.end_of_month.end_of_week(:sunday)
+
+    @calendar_days = (start_date..end_date).to_a
+
+    # 해당 월(시작/끝 주 포함)의 작성된 메모를 날짜(Date) 기준으로 해시화
+    memos_in_range = current_user.daily_memos
+      .where(memo_date: start_date..end_date)
+      .where.not(content: [nil, ''])
+
+    @memos_by_date = memos_in_range.index_by(&:memo_date)
   end
 
   def show
