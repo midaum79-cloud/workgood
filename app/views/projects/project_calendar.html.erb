@@ -115,41 +115,33 @@
                    style="
                     min-height:60px;
                     border-right:1px solid #f3f4f6;
-                    padding:3px 2px 2px 2px;
+                    padding:8px 0;
                     box-sizing:border-box;
-                    background:<%= is_selected ? '#f6e8b0' : 'white' %>;
+                    background:<%= is_selected ? '#fef3c7' : 'white' %>;
                     display:flex;
                     flex-direction:column;
-                    align-items:stretch;
+                    align-items:center;
+                    cursor:pointer;
+                    transition: background 0.2s;
                   ">
-                <div style="text-align:center; font-size:13px; font-weight:900; color:<%= date_text_color %>; margin-bottom:2px;"><%= format('%02d', day.day) %></div>
-                <% if is_current_month %>
-                  <% day_projects.each do |proj| %>
-                    <div class="schedule-chip"
-                         draggable="true"
-                         data-project-id="<%= proj.id %>"
-                         data-date="<%= day.to_s %>"
-                         onclick="window.location.href='<%= project_path(proj) %>'"
-                         style="
-                          font-size:9px;
-                          font-weight:800;
-                          color:<%= proj.theme_color_hex %>;
-                          background:<%= proj.theme_color_hex %>1a;
-                          border:1px solid <%= proj.theme_color_hex %>4d;
-                          border-radius:4px;
-                          padding:2px 3px;
-                          margin-bottom:1px;
-                          overflow:hidden;
-                          white-space:nowrap;
-                          text-overflow:ellipsis;
-                          cursor:grab;
-                          user-select:none;
-                          -webkit-user-select:none;
-                         ">
-                      <%= proj.client_name.presence || proj.project_name %>
-                    </div>
-                  <% end %>
-                <% end %>
+                
+                <% has_schedule = is_current_month && day_projects.any? %>
+                <div class="date-circle-indicator" 
+                     data-date="<%= day.to_s %>"
+                     style="
+                      display:flex; 
+                      align-items:center; 
+                      justify-content:center;
+                      width:26px; 
+                      height:26px; 
+                      border-radius:50%;
+                      font-size:13px; 
+                      font-weight:900; 
+                      <%= has_schedule ? "background:#{@project.theme_color_hex}; color:white; box-shadow:0 2px 4px #{@project.theme_color_hex}40;" : "color:#{date_text_color}; background:transparent;" %>
+                      transition: all 0.2s;
+                     ">
+                  <%= day.day %>
+                </div>
               </div>
             <% end %>
           </div>
@@ -161,267 +153,48 @@
   </div>
 </div>
 
-<!-- Bottom Sheet Overlay -->
-<div id="bsOverlay" onclick="closeBottomSheet()" style="
-  position:fixed; top:0; left:0; right:0; bottom:0;
-  background:rgba(0,0,0,0.5); z-index:500;
-  opacity:0; visibility:hidden;
-  transition:all 0.3s ease;
-"></div>
-
-<!-- Bottom Sheet - 거래처 선택 -->
-<div id="bottomSheet" style="
-  position:fixed; left:0; right:0; bottom:0;
-  background:white; z-index:510;
-  border-radius:24px 24px 0 0;
-  box-shadow:0 -4px 30px rgba(0,0,0,0.15);
-  transform:translateY(100%);
-  transition:transform 0.35s cubic-bezier(0.4,0,0.2,1);
-  max-height:70vh; overflow-y:auto;
-  padding-bottom:env(safe-area-inset-bottom);
-">
-  <div style="display:flex; justify-content:center; padding:12px 0 4px 0;">
-    <div style="width:40px; height:4px; border-radius:99px; background:#d1d5db;"></div>
-  </div>
-
-  <div style="padding:8px 20px 14px 20px; display:flex; justify-content:space-between; align-items:center;">
-    <div>
-      <div id="bsTitle" style="font-size:20px; font-weight:900; color:#111827;">현장 추가</div>
-      <div id="bsSubtitle" style="font-size:13px; font-weight:700; color:#9ca3af; margin-top:2px;"></div>
-    </div>
-    <div onclick="closeBottomSheet()" style="font-size:22px; color:#9ca3af; cursor:pointer; padding:4px 8px;">✕</div>
-  </div>
-
-  <div style="padding:0 16px 20px 16px;">
-    <!-- 탭 -->
-    <div style="display:flex; gap:8px; margin-bottom:14px;">
-      <button type="button" id="bsTabCompany" onclick="bsSwitchTab('company')" style="flex:1; padding:10px; border:none; border-radius:12px; font-size:14px; font-weight:800; cursor:pointer; background:#111827; color:white;">🏢 업체</button>
-      <button type="button" id="bsTabPersonal" onclick="bsSwitchTab('personal')" style="flex:1; padding:10px; border:none; border-radius:12px; font-size:14px; font-weight:800; cursor:pointer; background:#f3f4f6; color:#6b7280;">👤 개인</button>
-      <button type="button" id="bsTabDirect" onclick="bsSwitchTab('direct')" style="flex:1; padding:10px; border:none; border-radius:12px; font-size:14px; font-weight:800; cursor:pointer; background:#f3f4f6; color:#6b7280;">✏️ 직접입력</button>
-    </div>
-
-    <!-- 검색 (업체/개인) -->
-    <div id="bsSearchArea">
-      <input type="text" id="bsSearchInput" placeholder="거래처명을 검색하세요 (초성 검색 가능)"
-        oninput="bsSearchVendor()"
-        style="width:100%; padding:14px 16px; border:1px solid #dcdfe4; border-radius:12px; font-size:15px; box-sizing:border-box; margin-bottom:10px;">
-      <div id="bsSearchResults" style="display:flex; flex-direction:column; gap:6px; max-height:200px; overflow-y:auto;"></div>
-    </div>
-
-    <!-- 직접 입력 -->
-    <div id="bsDirectArea" style="display:none;">
-      <input type="text" id="bsDirectName" placeholder="거래처명을 입력하세요"
-        style="width:100%; padding:14px 16px; border:1px solid #dcdfe4; border-radius:12px; font-size:15px; box-sizing:border-box; margin-bottom:10px;">
-      <button type="button" onclick="bsGoToNewProject(document.getElementById('bsDirectName').value)"
-        style="width:100%; padding:14px; border:none; border-radius:12px; background:#2563eb; color:white; font-size:16px; font-weight:900; cursor:pointer;">
-        현장 추가로 이동 →
-      </button>
-    </div>
-  </div>
-</div>
-
-<script>
-var bsSelectedDate = null;
-var bsCurrentTab = 'company';
-
-function openBottomSheet(dateStr) {
-  bsSelectedDate = dateStr;
-  var parts = dateStr.split('-');
-  document.getElementById('bsSubtitle').textContent = parts[0] + '년 ' + parseInt(parts[1]) + '월 ' + parseInt(parts[2]) + '일';
-  document.getElementById('bsSearchInput').value = '';
-  document.getElementById('bsSearchResults').innerHTML = '';
-  document.getElementById('bsDirectName').value = '';
-  bsSwitchTab('company');
-
-  document.getElementById('bsOverlay').style.opacity = '1';
-  document.getElementById('bsOverlay').style.visibility = 'visible';
-  document.getElementById('bottomSheet').style.transform = 'translateY(0)';
-  document.body.style.overflow = 'hidden';
-}
-
-function closeBottomSheet() {
-  document.getElementById('bsOverlay').style.opacity = '0';
-  document.getElementById('bsOverlay').style.visibility = 'hidden';
-  document.getElementById('bottomSheet').style.transform = 'translateY(100%)';
-  document.body.style.overflow = '';
-}
-
-function bsSwitchTab(tab) {
-  bsCurrentTab = tab;
-  var tabs = {company: 'bsTabCompany', personal: 'bsTabPersonal', direct: 'bsTabDirect'};
-  Object.keys(tabs).forEach(function(k) {
-    var el = document.getElementById(tabs[k]);
-    if (k === tab) {
-      el.style.background = '#111827'; el.style.color = 'white';
-    } else {
-      el.style.background = '#f3f4f6'; el.style.color = '#6b7280';
-    }
-  });
-
-  if (tab === 'direct') {
-    document.getElementById('bsSearchArea').style.display = 'none';
-    document.getElementById('bsDirectArea').style.display = 'block';
-  } else {
-    document.getElementById('bsSearchArea').style.display = 'block';
-    document.getElementById('bsDirectArea').style.display = 'none';
-    document.getElementById('bsSearchInput').placeholder =
-      tab === 'company' ? '업체명을 검색하세요 (초성 검색 가능)' : '개인명을 검색하세요 (초성 검색 가능)';
-    document.getElementById('bsSearchInput').value = '';
-    document.getElementById('bsSearchResults').innerHTML = '';
-  }
-}
-
-function bsSearchVendor() {
-  var query = document.getElementById('bsSearchInput').value.trim();
-  var results = document.getElementById('bsSearchResults');
-  if (query.length === 0) { results.innerHTML = ''; return; }
-
-  var vendorType = bsCurrentTab === 'company' ? 'company' : 'individual';
-  fetch('/vendors/search?q=' + encodeURIComponent(query) + '&vendor_type=' + vendorType)
-    .then(function(res) { return res.json(); })
-    .then(function(vendors) {
-      results.innerHTML = '';
-      if (vendors.length === 0) {
-        results.innerHTML = '<div style="text-align:center; padding:16px; color:#9ca3af; font-size:14px; font-weight:700;">검색 결과가 없습니다.</div>';
-        return;
-      }
-      vendors.forEach(function(v) {
-        var btn = document.createElement('button');
-        btn.type = 'button';
-        btn.onclick = function() { bsGoToNewProject(v.name); };
-        btn.style.cssText = 'display:flex; align-items:center; gap:10px; width:100%; padding:12px 14px; border:1.5px solid #e5e7eb; border-radius:14px; background:white; cursor:pointer; font-family:inherit; text-align:left;';
-        btn.innerHTML = '<span style="font-size:15px; font-weight:800; color:#111827;">' + v.name + '</span>' +
-          (v.contact ? '<span style="font-size:12px; color:#9ca3af; margin-left:auto;">' + v.contact + '</span>' : '') +
-          '<span style="color:#d1d5db;">→</span>';
-        results.appendChild(btn);
-      });
-    });
-}
-
-function bsGoToNewProject(clientName) {
-  if (!clientName || !clientName.trim()) { alert('거래처명을 입력해주세요.'); return; }
-  var url = '<%= new_project_path %>' +
-    '?start_date=' + encodeURIComponent(bsSelectedDate) +
-    '&client_name=' + encodeURIComponent(clientName.trim());
-  window.location.href = url;
-}
-</script>
-
 <script>
 document.addEventListener('DOMContentLoaded', function() {
   var csrfToken = document.querySelector('meta[name="csrf-token"]').content;
 
-  // 날짜 셀 클릭 → 바텀시트
+  // 날짜 셀 클릭 시 일정 토글
   document.querySelectorAll('.calendar-date-cell').forEach(function(cell) {
     cell.addEventListener('click', function(e) {
-      if (e.target.closest('.schedule-chip')) return;
+      if (cell.dataset.isProcessing === "true") return; // 중복 방지
+      
       var dateStr = cell.dataset.date;
-      if (dateStr) openBottomSheet(dateStr);
+      if (!dateStr) return;
+      
+      // 약간의 시각적 피드백
+      cell.dataset.isProcessing = "true";
+      cell.style.opacity = "0.5";
+
+      fetch('<%= project_path(@project) %>/toggle_schedule', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRF-Token': csrfToken,
+          'Accept': 'application/json'
+        },
+        body: JSON.stringify({ date: dateStr })
+      })
+      .then(function(res) { return res.json(); })
+      .then(function(data) {
+        if (data.success) {
+          window.location.reload(); 
+        } else {
+          alert('에러가 발생했습니다: ' + (data.error || ''));
+          cell.dataset.isProcessing = "false";
+          cell.style.opacity = "1";
+        }
+      })
+      .catch(function(err) {
+        alert('네트워크 오류가 발생했습니다.');
+        cell.dataset.isProcessing = "false";
+        cell.style.opacity = "1";
+      });
     });
   });
-
-  // === 드래그 앤 드롭 (데스크톱) ===
-  document.querySelectorAll('.schedule-chip').forEach(function(chip) {
-    chip.addEventListener('dragstart', function(e) {
-      chip.style.opacity = '0.4';
-      e.dataTransfer.effectAllowed = 'move';
-      e.dataTransfer.setData('text/plain', chip.dataset.projectId + '|' + chip.dataset.date);
-    });
-    chip.addEventListener('dragend', function() {
-      chip.style.opacity = '1';
-      clearDropHighlights();
-    });
-  });
-
-  document.querySelectorAll('.calendar-date-cell').forEach(function(cell) {
-    cell.addEventListener('dragover', function(e) {
-      e.preventDefault();
-      e.dataTransfer.dropEffect = 'move';
-      cell.style.background = '#dbeafe';
-    });
-    cell.addEventListener('dragleave', function() { cell.style.background = ''; });
-    cell.addEventListener('drop', function(e) {
-      e.preventDefault();
-      cell.style.background = '';
-      var newDate = cell.dataset.date;
-      var data = e.dataTransfer.getData('text/plain').split('|');
-      if (data[1] === newDate) return;
-      moveSchedule(data[0], data[1], newDate);
-    });
-  });
-
-  // === 터치 드래그 앤 드롭 (모바일) ===
-  var touchChip = null, touchClone = null, touchProjectId = null, touchOldDate = null;
-  var longPressTimer = null, touchStartTime = 0, touchMoved = false;
-
-  document.querySelectorAll('.schedule-chip').forEach(function(chip) {
-    chip.addEventListener('touchstart', function(e) {
-      touchStartTime = Date.now();
-      touchMoved = false;
-      var self = this;
-      longPressTimer = setTimeout(function() {
-        touchChip = self;
-        touchProjectId = self.dataset.projectId;
-        touchOldDate = self.dataset.date;
-        touchMoved = true;
-        touchClone = self.cloneNode(true);
-        touchClone.style.cssText = 'position:fixed;z-index:9999;opacity:0.85;pointer-events:none;transform:scale(1.15);box-shadow:0 4px 12px rgba(0,0,0,0.3);width:' + self.offsetWidth + 'px;';
-        document.body.appendChild(touchClone);
-        self.style.opacity = '0.3';
-        if (navigator.vibrate) navigator.vibrate(30);
-        var touch = e.touches[0];
-        touchClone.style.left = (touch.clientX - 30) + 'px';
-        touchClone.style.top = (touch.clientY - 10) + 'px';
-      }, 400);
-    }, { passive: false });
-
-    chip.addEventListener('touchmove', function(e) {
-      if (!touchClone) { clearTimeout(longPressTimer); return; }
-      e.preventDefault();
-      var touch = e.touches[0];
-      touchClone.style.left = (touch.clientX - 30) + 'px';
-      touchClone.style.top = (touch.clientY - 10) + 'px';
-      clearDropHighlights();
-      var elem = document.elementFromPoint(touch.clientX, touch.clientY);
-      if (elem) { var cell = elem.closest('.calendar-date-cell'); if (cell) cell.style.background = '#dbeafe'; }
-    }, { passive: false });
-
-    chip.addEventListener('touchend', function(e) {
-      clearTimeout(longPressTimer);
-      if (touchClone) {
-        var touch = e.changedTouches[0];
-        var elem = document.elementFromPoint(touch.clientX, touch.clientY);
-        clearDropHighlights();
-        if (elem) { var cell = elem.closest('.calendar-date-cell'); if (cell && cell.dataset.date !== touchOldDate) moveSchedule(touchProjectId, touchOldDate, cell.dataset.date); }
-        if (touchChip) touchChip.style.opacity = '1';
-        touchClone.remove(); touchClone = null; touchChip = null;
-        e.preventDefault(); return;
-      }
-    });
-
-    chip.addEventListener('touchcancel', function() {
-      clearTimeout(longPressTimer);
-      if (touchClone) { if (touchChip) touchChip.style.opacity = '1'; touchClone.remove(); touchClone = null; touchChip = null; }
-    });
-  });
-
-  function clearDropHighlights() {
-    document.querySelectorAll('.calendar-date-cell').forEach(function(c) { c.style.background = ''; });
-  }
-
-  function moveSchedule(projectId, oldDate, newDate) {
-    fetch('<%= move_schedule_projects_path %>', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': csrfToken, 'Accept': 'application/json' },
-      body: JSON.stringify({ project_id: projectId, old_date: oldDate, new_date: newDate })
-    })
-    .then(function(res) { return res.json(); })
-    .then(function(data) {
-      if (data.success) window.location.reload();
-      else alert(data.error || '이동에 실패했습니다.');
-    })
-    .catch(function() { alert('네트워크 오류가 발생했습니다.'); });
-  }
 });
 </script>
 
