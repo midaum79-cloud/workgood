@@ -220,21 +220,6 @@
         </div>
       </div>
 
-      <!-- 시공 사진 -->
-      <div style="background:#f9fafb; border:1px solid #e5e7eb; border-radius:16px; padding:16px;">
-        <div style="font-size:15px; font-weight:900; color:#111827; margin-bottom:14px;">📸 시공 사진</div>
-
-        <label style="display:flex; flex-direction:column; align-items:center; gap:8px; padding:20px; border:2px dashed #d1d5db; border-radius:14px; cursor:pointer; background:white;">
-          <div style="font-size:28px;">📷</div>
-          <div style="font-size:14px; font-weight:800; color:#6b7280;">사진 추가하기</div>
-          <div style="font-size:12px; font-weight:600; color:#9ca3af;">여러 장 선택 가능</div>
-          <%= form.file_field :photos, multiple: true, accept: "image/*",
-              style: "display:none;",
-              onchange: "previewNewPhotos(this)" %>
-        </label>
-
-        <div id="new-photo-preview" style="display:none; grid-template-columns:repeat(3, 1fr); gap:8px; margin-top:10px;"></div>
-      </div>
 
       <div>
         <div style="font-size:14px; font-weight:800; color:#374151; margin-bottom:8px;">메모</div>
@@ -936,7 +921,6 @@
   document.getElementById('new_deposit_amount').addEventListener('input', updateNewBalance);
   document.getElementById('new_mid_payment').addEventListener('input', updateNewBalance);
 
-  // 사진 미리보기
   function previewNewPhotos(input) {
     var preview = document.getElementById('new-photo-preview');
     preview.innerHTML = '';
