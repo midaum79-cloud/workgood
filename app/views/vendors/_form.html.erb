@@ -69,8 +69,23 @@
         <%# 사업장주소 %>
         <div>
           <label style="font-size:13px; font-weight:800; color:#374151; display:block; margin-bottom:6px;">사업장주소</label>
-          <%= f.text_field :address, placeholder: "사업장 주소를 입력하세요",
-              style: "width:100%; height:48px; border:1.5px solid #e5e7eb; border-radius:12px; padding:0 14px; font-size:15px; font-weight:700; font-family:inherit; box-sizing:border-box;" %>
+          <%= f.hidden_field :address, id: "vendor_address" %>
+          
+          <button type="button"
+                  id="vendor_address_search_button"
+                  style="width:100%; height:48px; border:1.5px solid #e5e7eb; border-radius:12px; background:white; color:#374151; font-size:15px; font-weight:700; text-align:left; padding:0 14px; display:flex; justify-content:space-between; align-items:center;">
+            <span id="vendor_address_display_text" style="color:<%= vendor.address.present? ? '#111827' : '#9ca3af' %>; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">
+              <%= vendor.address.presence || "주소 검색 (클릭)" %>
+            </span>
+            <span style="font-size:16px;">🔍</span>
+          </button>
+
+          <% detail_addr = vendor.address.to_s.split(" ").last(2).join(" ") rescue "" %>
+          <input type="text"
+                 id="vendor_detail_address"
+                 name="detail_address"
+                 placeholder="상세주소 입력"
+                 style="margin-top:8px; width:100%; height:48px; border:1.5px solid #e5e7eb; border-radius:12px; padding:0 14px; font-size:15px; font-weight:700; font-family:inherit; box-sizing:border-box;">
         </div>
 
         <script>
@@ -107,7 +122,7 @@
 
       </div>
 
-      <%# Action buttons - 수정 완료 버튼만 form 안에 %\>
+      <%# Action buttons - 수정 완료 버튼만 form 안에 %>
       <div style="display:flex; flex-direction:column; gap:10px; margin-top:20px;">
         <%= f.submit vendor.new_record? ? "업체 등록하기" : "수정 완료",
             style: "display:block; width:100%; padding:16px; background:#111827; color:white; border:none; border-radius:14px; font-size:18px; font-weight:900; cursor:pointer; font-family:inherit; box-sizing:border-box;" %>
@@ -125,5 +140,89 @@
       <%= link_to "취소", vendors_path,
           style: "display:block; width:100%; padding:14px; background:#e5e7eb; color:#374151; border-radius:14px; font-size:16px; font-weight:800; text-decoration:none; text-align:center; box-sizing:border-box;" %>
     </div>
+    </div>
   </div>
 </div>
+
+<!-- iOS/Android compatible popup layer -->
+<div id="daum_postcode_layer" style="display:none;position:fixed;overflow:hidden;z-index:9999;-webkit-overflow-scrolling:touch;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);">
+  <div style="position:absolute;top:50%;left:50%;transform:translate(-50%, -50%);width:90%;max-width:500px;background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 10px 25px rgba(0,0,0,0.2);">
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:14px 18px;background:#f9fafb;border-bottom:1px solid #e5e7eb;">
+      <span style="font-weight:800; color:#111;">주소 검색</span>
+      <button type="button" onclick="closeDaumPostcode()" style="background:none;border:none;font-size:26px;line-height:1;cursor:pointer;color:#6b7280;padding:0;margin:0;">&times;</button>
+    </div>
+    <div id="daum_postcode_wrap" style="width:100%;height:450px;max-height:70vh;"></div>
+  </div>
+</div>
+
+<script src="//t1.kakaocdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
+
+<script>
+  function closeDaumPostcode() {
+    document.getElementById('daum_postcode_layer').style.display = 'none';
+  }
+
+  document.addEventListener("DOMContentLoaded", function () {
+    const addressSearchButton = document.getElementById("vendor_address_search_button");
+    const addressField = document.getElementById("vendor_address");
+    const detailAddressField = document.getElementById("vendor_detail_address");
+
+    if (addressSearchButton) {
+      addressSearchButton.addEventListener("click", function () {
+        var layer = document.getElementById('daum_postcode_layer');
+        var wrap = document.getElementById('daum_postcode_wrap');
+        layer.style.display = 'block';
+
+        new daum.Postcode({
+          oncomplete: function(data) {
+            let addr = "";
+            let extraAddr = "";
+
+            if (data.userSelectedType === "R") {
+              addr = data.roadAddress;
+            } else {
+              addr = data.jibunAddress;
+            }
+
+            if (data.userSelectedType === "R") {
+              if (data.bname && /[동|로|가]$/g.test(data.bname)) {
+                extraAddr += data.bname;
+              }
+              if (data.buildingName && data.apartment === "Y") {
+                extraAddr += (extraAddr !== "" ? ", " + data.buildingName : data.buildingName);
+              }
+              if (extraAddr !== "") {
+                extraAddr = " (" + extraAddr + ")";
+              }
+            }
+
+            addressField.value = addr + extraAddr;
+            document.getElementById("vendor_address_display_text").textContent = addr + extraAddr;
+            document.getElementById("vendor_address_display_text").style.color = "#111827";
+            detailAddressField.focus();
+            closeDaumPostcode();
+          },
+          width: '100%',
+          height: '100%',
+          maxSuggestItems: 5
+        }).embed(wrap);
+      });
+    }
+
+    // 폼 제출 시 상세 주소 병합
+    if (addressField) {
+      const form = addressField.closest("form");
+      if (form) {
+        form.addEventListener("submit", function (e) {
+          if (detailAddressField && detailAddressField.value.trim() !== "") {
+            const detailValue = detailAddressField.value.trim();
+            // 이미 주소에 포함되어 있지 않은 경우에만 병합
+            if (!addressField.value.includes(detailValue)) {
+              addressField.value = addressField.value.trim() + " " + detailValue;
+            }
+          }
+        });
+      }
+    }
+  });
+</script>
