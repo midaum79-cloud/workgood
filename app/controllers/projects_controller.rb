@@ -479,7 +479,10 @@ class ProjectsController < ApplicationController
     @project = current_user.projects.find(params[:id])
     begin
       if params[:photos].present?
-        @project.photos.attach(params[:photos])
+        Array(params[:photos]).each do |photo|
+          next if photo.blank?
+          @project.photos.attach(photo)
+        end
         render json: { success: true }
       else
         render json: { success: false, error: "사진을 찾을 수 없습니다." }, status: :unprocessable_entity
