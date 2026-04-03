@@ -1,3 +1,8 @@
+<style>
+.hide-scrollbar::-webkit-scrollbar { display: none; }
+.hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+</style>
+
 <div style="min-height:100dvh; background:#f5f5f5; padding:16px 16px 80px 16px; display:flex; flex-direction:column;">
 
   <div style="background:white; padding:18px 20px 14px 20px; border-bottom:1px solid #ececec; position:sticky; top:0; z-index:30; margin:-16px -16px 16px -16px;">
@@ -71,7 +76,7 @@
 
 
     <% if @calendar_projects.any? %>
-      <div style="display:flex; flex-wrap:wrap; gap:6px; margin-bottom:14px; align-items:center;">
+      <div class="hide-scrollbar" style="display:flex; overflow-x:auto; white-space:nowrap; gap:6px; margin-bottom:14px; align-items:center; padding-bottom:2px; -webkit-overflow-scrolling:touch;">
         <% @calendar_projects.each do |project| %>
           <%= link_to project_calendar_project_path(project), style: "
             display:inline-flex;
