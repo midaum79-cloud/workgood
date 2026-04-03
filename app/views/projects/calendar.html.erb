@@ -41,10 +41,10 @@
   </div>
 
   <div style="background:white; border-radius:20px; padding:18px; box-shadow:0 2px 10px rgba(0,0,0,0.04); margin-bottom:0; flex:1; display:flex; flex-direction:column;">
-    <div style="position:relative; display:flex; justify-content:center; align-items:center; margin-bottom:14px; min-height:28px;">
-      <div style="font-size:22px; font-weight:900; color:#111827;">시공 일정</div>
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
+      <div style="font-size:22px; font-weight:900; color:#111827; margin-left:8px;">시공 일정</div>
 
-      <div style="position:absolute; right:0; display:flex; align-items:center; gap:12px;">
+      <div style="display:flex; align-items:center; gap:12px;">
         <%= link_to "◀",
             calendar_projects_path(
               status: @selected_status,
