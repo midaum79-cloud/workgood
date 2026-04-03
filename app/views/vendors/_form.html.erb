@@ -5,7 +5,7 @@
   <div style="background:white; padding:18px 20px 14px 20px; border-bottom:1px solid #ececec; position:sticky; top:0; z-index:30; margin-bottom:16px;">
     <div style="display:flex; justify-content:space-between; align-items:center;">
       <%= link_to "←", vendors_path, style: "font-size:24px; color:#111; text-decoration:none; font-weight:800;" %>
-      <div style="font-size:20px; font-weight:900;"><%= vendor.new_record? ? "업체 등록" : "업체 수정" %></div>
+      <div style="font-size:20px; font-weight:900;"><%= vendor.new_record? ? "거래처 등록" : "거래처 수정" %></div>
       <div style="width:40px;"></div>
     </div>
   </div>
@@ -124,7 +124,7 @@
 
       <%# Action buttons - 수정 완료 버튼만 form 안에 %>
       <div style="display:flex; flex-direction:column; gap:10px; margin-top:20px;">
-        <%= f.submit vendor.new_record? ? "업체 등록하기" : "수정 완료",
+        <%= f.submit vendor.new_record? ? "거래처 등록하기" : "수정 완료",
             style: "display:block; width:100%; padding:16px; background:#111827; color:white; border:none; border-radius:14px; font-size:18px; font-weight:900; cursor:pointer; font-family:inherit; box-sizing:border-box;" %>
       </div>
 
@@ -132,8 +132,8 @@
     <%# 삭제·취소 버튼은 form 바깥에 위치 (form 중첩 방지) %>
     <div style="display:flex; flex-direction:column; gap:10px; margin-top:10px;">
       <% unless vendor.new_record? %>
-        <%= button_to "업체 삭제", vendor_path(vendor), method: :delete,
-            form: { onsubmit: "return confirm('\"#{vendor.name}\" 업체를 삭제할까요?');" },
+        <%= button_to "거래처 삭제", vendor_path(vendor), method: :delete,
+            form: { onsubmit: "return confirm('\"#{vendor.name}\" 거래처를 삭제할까요?');" },
             style: "width:100%; padding:14px; background:#fee2e2; color:#dc2626; border:none; border-radius:14px; font-size:16px; font-weight:900; cursor:pointer; font-family:inherit;" %>
       <% end %>
 
