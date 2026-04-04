@@ -561,21 +561,7 @@
         <%= link_to notifications_path, class: "drawer-item", onclick: "closeDrawer()" do %>
           <span class="drawer-item-icon">🔔</span> 알림함
         <% end %>
-        <%= link_to widget_settings_path, onclick: "closeDrawer()",
-            style: "display:block; margin:2px 8px; text-decoration:none; border-radius:16px; overflow:hidden;" do %>
-          <div style="background:linear-gradient(135deg, #1e1b4b 0%, #312e81 100%); padding:14px 16px;">
-            <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px;">
-              <span style="font-size:18px;">📱</span>
-              <span style="font-size:15px; font-weight:900; color:white;">위젯 설정</span>
-              <span style="margin-left:auto; font-size:10px; font-weight:800; background:#fde68a; color:#78350f; padding:2px 8px; border-radius:999px;">PREMIUM</span>
-            </div>
-            <div style="font-size:12px; color:#c7d2fe; font-weight:600; line-height:1.6;">
-              잠금화면에서 내일 공정을<br>
-              바로 확인하세요 ⭐
-            </div>
-            <div style="margin-top:10px; font-size:11px; font-weight:800; color:#818cf8;">자세히 보기 →</div>
-          </div>
-        <% end %>
+
         <%= link_to app_settings_path, class: "drawer-item", onclick: "closeDrawer()" do %>
           <span class="drawer-item-icon">⚙️</span> 앱 설정
         <% end %>
