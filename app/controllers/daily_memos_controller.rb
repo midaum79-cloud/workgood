@@ -1,5 +1,6 @@
 class DailyMemosController < ApplicationController
   before_action :require_login
+  before_action :require_premium
 
   def index
     @calendar_year = (params[:year] || Date.current.year).to_i
@@ -51,6 +52,14 @@ class DailyMemosController < ApplicationController
         format.json { render json: { success: false } }
         format.any  { render json: { success: false } }
       end
+    end
+  end
+
+  private
+
+  def require_premium
+    unless current_user.premium?
+      redirect_to subscription_path, alert: "일일 다이어리는 프리미엄 요금제 전용 기능입니다."
     end
   end
 end
