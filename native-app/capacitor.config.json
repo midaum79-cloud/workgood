@@ -1,6 +1,6 @@
 {
   "appId": "com.ilmeori.app",
-  "appName": "일머리",
+  "appName": "일잘러",
   "webDir": "www",
   "server": {
     "url": "https://ilmeori.onrender.com",
@@ -14,7 +14,7 @@
     }
   },
   "ios": {
-    "scheme": "일머리"
+    "scheme": "일잘러"
   },
   "android": {
     "allowMixedContent": false

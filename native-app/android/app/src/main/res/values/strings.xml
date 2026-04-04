@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='utf-8'?>
 <resources>
-    <string name="app_name">일머리</string>
-    <string name="title_activity_main">일머리</string>
+    <string name="app_name">일잘러</string>
+    <string name="title_activity_main">일잘러</string>
     <string name="package_name">com.ilmeori.app</string>
     <string name="custom_url_scheme">com.ilmeori.app</string>
     <string name="widget_description">오늘/내일 공정 일정을 홈 화면에서 확인하세요</string>

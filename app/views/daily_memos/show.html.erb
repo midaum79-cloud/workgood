@@ -1,7 +1,7 @@
-<div style="max-width:430px; margin:0 auto; min-height:100vh; background:#f5f5f5;">
+<div style="max-width:430px; margin:0 auto; min-height:100dvh; background:#f5f5f5; display:flex; flex-direction:column;">
 
-  <%# Header - fixed position %>
-  <div style="background:white; padding:18px 20px 14px 20px; border-bottom:1px solid #ececec; position:fixed; top:0; left:0; right:0; z-index:40; max-width:430px; margin:0 auto;">
+  <%# Header - sticky position %>
+  <div style="background:white; padding:18px 20px 14px 20px; border-bottom:1px solid #ececec; position:sticky; top:0; z-index:40;">
     <div style="display:flex; justify-content:space-between; align-items:center;">
       <%= link_to "←", daily_memos_list_path(year: @memo_date.year, month: @memo_date.month), style: "font-size:24px; color:#111; text-decoration:none; font-weight:800;" %>
       <div style="font-size:20px; font-weight:900;">📝 오늘의 다이어리</div>
@@ -9,7 +9,7 @@
     </div>
   </div>
 
-  <div style="padding:64px 16px 100px 16px;">
+  <div style="padding:16px 16px 100px 16px; flex:1;">
 
     <% if notice %>
       <div style="background:#dcfce7; color:#166534; border-radius:14px; padding:12px 16px; margin-bottom:16px; font-size:14px; font-weight:700;">
