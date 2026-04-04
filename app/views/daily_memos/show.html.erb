@@ -4,7 +4,7 @@
   <div style="background:white; padding:18px 20px 14px 20px; border-bottom:1px solid #ececec; position:fixed; top:0; left:0; right:0; z-index:40; max-width:430px; margin:0 auto;">
     <div style="display:flex; justify-content:space-between; align-items:center;">
       <%= link_to "←", daily_memos_list_path(year: @memo_date.year, month: @memo_date.month), style: "font-size:24px; color:#111; text-decoration:none; font-weight:800;" %>
-      <div style="font-size:20px; font-weight:900;"><%= @is_today ? '📝 오늘' : '📋 내일' %> 메모</div>
+      <div style="font-size:20px; font-weight:900;">📝 오늘의 다이어리</div>
       <div style="width:40px;"></div>
     </div>
   </div>
@@ -24,7 +24,7 @@
         <div style="font-size:16px; font-weight:900; color:white;"><%= @memo_date.strftime("%Y년 %-m월 %-d일") %></div>
         <div style="font-size:13px; font-weight:700; color:rgba(255,255,255,0.8);"><%= @is_today ? '오늘 준비물 / 할 일' : '내일 준비물 / 할 일' %></div>
       </div>
-      <%= link_to "🏠 홈", root_path,
+      <%= link_to "📅 달력", daily_memos_list_path(year: @memo_date.year, month: @memo_date.month),
           style: "padding:8px 14px; background:rgba(255,255,255,0.25); color:white; border-radius:10px; font-size:13px; font-weight:800; text-decoration:none;" %>
     </div>
 
