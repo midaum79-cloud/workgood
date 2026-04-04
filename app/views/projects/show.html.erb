@@ -28,7 +28,7 @@
 
   <div style="background: white; padding: 18px 20px 14px 20px; border-bottom: 1px solid #ececec; position: sticky; top: 0; z-index: 10;">
     <div style="display:flex; justify-content:space-between; align-items:center;">
-      <%= link_to "←", projects_path, style: "font-size:24px; color:#111; text-decoration:none; font-weight:800;" %>
+      <a href="javascript:history.back()" style="font-size:24px; color:#111; text-decoration:none; font-weight:800;">←</a>
       <div style="font-size: 22px; font-weight: 900;">현장 상세</div>
       <%= link_to edit_project_path(@project), style: "display:inline-flex; align-items:center; gap:5px; padding:9px 14px; background:#2563eb; color:white; text-decoration:none; border-radius:999px; font-size:14px; font-weight:900; box-shadow:0 2px 8px rgba(37,99,235,0.4); white-space:nowrap; letter-spacing:-0.3px;" do %>
         ✏️ 현장수정
