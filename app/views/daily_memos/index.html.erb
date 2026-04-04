@@ -3,10 +3,10 @@
 .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 </style>
 
-<div style="min-height:100dvh; background:#f5f5f5; padding:16px 16px 80px 16px; display:flex; flex-direction:column;">
+<div style="min-height:100dvh; background:white; padding:0 0 80px 0; display:flex; flex-direction:column;">
 
   <!-- 헤더 -->
-  <div style="background:white; padding:18px 20px 14px 20px; border-bottom:1px solid #ececec; position:sticky; top:0; z-index:30; margin:-16px -16px 16px -16px;">
+  <div style="background:white; padding:18px 20px 14px 20px; border-bottom:1px solid #f0f0f0; position:sticky; top:0; z-index:30;">
     <div style="display:flex; justify-content:space-between; align-items:center;">
       <div style="font-size:24px; color:#111827; font-weight:900; cursor:pointer;" onclick="openDrawer()">☰</div>
       <div style="font-size:18px; font-weight:900; color:#111827;">📝 일정 메모</div>
@@ -17,7 +17,7 @@
   </div>
 
   <!-- 캘린더 컨테이너 -->
-  <div style="background:white; border-radius:24px; padding:20px 14px; box-shadow:0 6px 20px rgba(0,0,0,0.03); margin-bottom:16px; flex:1; display:flex; flex-direction:column;">
+  <div style="background:white; padding:20px 10px 0 10px; margin-bottom:0; flex:1; display:flex; flex-direction:column;">
     
     <!-- 스와이프를 위한 숨김 링크 -->
     <%= link_to "", daily_memos_list_path(year: @prev_month.year, month: @prev_month.month), id: "prevMonthLink", style: "display:none;" %>
@@ -46,7 +46,7 @@
     </div>
 
     <!-- 달력 그리드 -->
-    <div id="calendarGrid" style="display:grid; grid-template-columns:repeat(7, 1fr); gap:6px; flex:1;">
+    <div id="calendarGrid" style="display:grid; grid-template-columns:repeat(7, 1fr); gap:4px; flex:1;">
       <% @calendar_days.each do |date| %>
         <%
           is_current_month = date.month == @calendar_month
@@ -60,7 +60,7 @@
                        else; '#d1d5db' end
           
           bg_color = is_today ? "#eff6ff" : "transparent"
-          border = is_today ? "1px solid #bfdbfe" : "1px solid #f3f4f6"
+          border = is_today ? "1px solid #bfdbfe" : "none"
         %>
         
         <%= link_to daily_memo_path(memo_date: date), style: "text-decoration:none; color:inherit; display:flex; flex-direction:column; background:#{bg_color}; border:#{border}; border-radius:12px; padding:6px 4px; min-height:86px; position:relative; overflow:hidden;" do %>

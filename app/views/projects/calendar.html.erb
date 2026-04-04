@@ -3,9 +3,9 @@
 .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 </style>
 
-<div style="min-height:100dvh; background:#f5f5f5; padding:16px 16px 80px 16px; display:flex; flex-direction:column;">
+<div style="min-height:100dvh; background:white; padding:0 0 80px 0; display:flex; flex-direction:column;">
 
-  <div style="background:white; padding:18px 20px 14px 20px; border-bottom:1px solid #ececec; position:sticky; top:0; z-index:30; margin:-16px -16px 16px -16px;">
+  <div style="background:white; padding:18px 20px 14px 20px; border-bottom:1px solid #f0f0f0; position:sticky; top:0; z-index:30;">
     <div style="display:flex; justify-content:space-between; align-items:center;">
       <div style="font-size:24px; color:#111827; font-weight:900; cursor:pointer;" onclick="openDrawer()">☰</div>
 
@@ -40,8 +40,8 @@
     </div>
   </div>
 
-  <div style="background:white; border-radius:20px; padding:18px; box-shadow:0 2px 10px rgba(0,0,0,0.04); margin-bottom:0; flex:1; display:flex; flex-direction:column;">
-    <div style="display:flex; justify-content:center; align-items:center; margin-bottom:14px; position:relative;">
+  <div style="background:white; padding:14px 0 0 0; margin-bottom:0; flex:1; display:flex; flex-direction:column;">
+    <div style="display:flex; justify-content:center; align-items:center; margin-bottom:14px; padding:0 16px; position:relative;">
       
       <!-- 스와이프 로직용 숨김 링크 -->
       <%= link_to "", calendar_projects_path(status: @selected_status, view_mode: @view_mode, year: @prev_month.year, month: @prev_month.month, selected_date: @selected_date), id: "prevMonthLink", style: "display:none;" %>
@@ -63,9 +63,9 @@
 
 
 
-    <div style="border:1px solid #ececec; border-radius:18px; overflow:hidden; background:white; flex:1; display:flex; flex-direction:column; position:relative; touch-action:pan-y;">
+    <div style="overflow:hidden; background:white; flex:1; display:flex; flex-direction:column; position:relative; touch-action:pan-y;">
       <div id="calendarSwipeBody" class="calendar-animate-in" style="flex:1; display:flex; flex-direction:column; width:100%; will-change:transform;">
-        <div style="display:grid; grid-template-columns:repeat(7, 1fr); border-bottom:1px solid #ececec; background:#fafafa;">
+        <div style="display:grid; grid-template-columns:repeat(7, 1fr); border-bottom:1px solid #f0f0f0; background:white;">
         <% ["일", "월", "화", "수", "목", "금", "토"].each do |weekday| %>
           <% header_color = case weekday
               when "일" then "#ef4444"
@@ -79,7 +79,7 @@
       </div>
 
       <% @calendar_rows.each_with_index do |row_days, row_index| %>
-        <div style="flex:1; border-bottom:<%= row_index == @calendar_rows.length - 1 ? 'none' : '1px solid #ececec' %>; display:flex; flex-direction:column;">
+        <div style="flex:1; border-bottom:<%= row_index == @calendar_rows.length - 1 ? 'none' : '1px solid #f3f4f6' %>; display:flex; flex-direction:column;">
           <div style="display:grid; grid-template-columns:repeat(7, 1fr);">
             <% row_days.each do |day| %>
               <% is_current_month = (day.month == @calendar_month) %>
@@ -101,7 +101,7 @@
                    data-date="<%= day.to_s %>"
                    style="
                     min-height:60px;
-                    border-right:1px solid #f3f4f6;
+                    border-right:none;
                     padding:3px 2px 2px 2px;
                     box-sizing:border-box;
                     background:white;
