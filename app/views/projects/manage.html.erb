@@ -6,7 +6,7 @@
       <div style="font-size:24px; color:#111827; font-weight:900; cursor:pointer;" onclick="openDrawer()">☰</div>
       <div style="font-size:20px; font-weight:900;">현장관리</div>
       <%= link_to notifications_path, style: "position:relative; text-decoration:none;" do %>
-        <div style="font-size:24px;">🔔</div>
+        <div style="font-size:20px;">🔔</div>
         <% if @unread_notifications_count.to_i > 0 %>
           <div style="position:absolute; top:-6px; right:-8px; min-width:18px; height:18px; padding:0 5px; border-radius:999px; background:#ef4444; color:white; font-size:11px; font-weight:900; display:flex; align-items:center; justify-content:center; box-sizing:border-box;">
             <%= @unread_notifications_count %>
