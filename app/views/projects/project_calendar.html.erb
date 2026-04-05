@@ -42,7 +42,7 @@
   </div>
 </div>
 
-<div style="min-height:100dvh; background:white; padding:0 0 80px 0; display:flex; flex-direction:column;">
+<div style="height:100dvh; background:white; padding:0 0 80px 0; display:flex; flex-direction:column; box-sizing:border-box;">
   <div style="background:white; padding:14px 0 0 0; margin-bottom:0; flex:1; display:flex; flex-direction:column;">
     <div style="display:flex; justify-content:center; align-items:center; margin-bottom:14px; padding:0 16px; position:relative;">
 
@@ -73,7 +73,7 @@
     </div>
 
     <!-- 3패널 캐러셀 컨테이너 -->
-    <div id="carouselViewport" style="overflow:hidden; background:white; flex:1; display:flex; flex-direction:column; position:relative; touch-action:pan-y;">
+    <div id="carouselViewport" style="overflow:hidden; background:white; flex:1; height:0; position:relative; touch-action:pan-y;">
       <div id="carouselTrack" style="display:flex; width:300%; height:100%; transform:translateX(-33.333%); will-change:transform;">
         
         <!-- 패널 0: 이전달 -->
@@ -182,10 +182,9 @@ document.addEventListener('DOMContentLoaded', function() {
 </script>
 
 <style>
-#carouselViewport { min-height: 0; }
-#carouselTrack { transition: none; min-height: 0; }
+#carouselTrack { transition: none; }
 #carouselTrack.animating { transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
-.carousel-panel { min-height: 0; height: 100%; }
+.carousel-panel { height: 100%; }
 </style>
 
 <script>
