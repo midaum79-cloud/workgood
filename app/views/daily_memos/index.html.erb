@@ -58,7 +58,7 @@
   </div>
 
   <!-- 캘린더 컨테이너 -->
-  <div style="background:white; padding:14px 0 0 0; margin-bottom:0; flex:1; display:flex; flex-direction:column; position:relative;">
+  <div style="background:white; padding:14px 0 0 0; margin-bottom:0; flex:1; min-height:0; overflow:hidden; display:flex; flex-direction:column; position:relative;">
     
     <!-- 스와이프를 위한 숨김 링크 -->
     <%= link_to "", daily_memos_list_path(year: @prev_month.year, month: @prev_month.month), id: "prevMonthLink", style: "display:none;" %>
@@ -78,7 +78,7 @@
     </div>
 
     <!-- 달력 본체 영역 (스와이프 + 요일 + 그리드) -->
-    <div style="overflow-x:hidden; overflow-y:auto; background:white; flex:1; height:0; display:flex; flex-direction:column; position:relative; touch-action:pan-y; -webkit-overflow-scrolling:touch; overscroll-behavior:contain;">
+    <div style="overflow-x:hidden; overflow-y:auto; background:white; flex:1; min-height:0; display:flex; flex-direction:column; position:relative; touch-action:pan-y; -webkit-overflow-scrolling:touch; overscroll-behavior:contain;">
       <div id="calendarGrid" class="calendar-animate-in" style="flex:1; display:flex; flex-direction:column; width:100%; will-change:transform;">
         
         <!-- 요일 헤더 -->
