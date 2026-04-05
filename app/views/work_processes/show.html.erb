@@ -97,7 +97,7 @@
           <div style="font-size:15px; font-weight:800; color:#4b5563;"><%= @work_process.process_name %></div>
         </div>
 
-        <% vendor = Vendor.find_by(name: @work_process.vendor_name) %>
+        <% vendor = current_user.vendors.find_by(name: @work_process.vendor_name) %>
         <div style="background:#f3f4f6; border-radius:14px; padding:12px 14px;">
           <div style="font-size:13px; font-weight:800; color:#374151; margin-bottom:4px;">업체 정보</div>
           <div style="font-size:16px; font-weight:900; color:#111827; margin-bottom:6px;"><%= @work_process.vendor_name.presence || "미입력" %></div>

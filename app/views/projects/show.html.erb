@@ -57,7 +57,7 @@
         📍 <%= @project.address %>
       </div>
 
-      <% vendor = Vendor.find_by(name: @project.client_name) %>
+      <% vendor = current_user.vendors.find_by(name: @project.client_name) %>
       <div style="background:#f7f7f7; border-radius:12px; padding:12px 14px; color:#4b5563; font-size:15px; font-weight:600; display:flex; align-items:center; justify-content:space-between;">
         <div>
           👤 <%= @project.client_name %>

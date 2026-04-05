@@ -428,7 +428,7 @@
       </div>
     </div>
 
-    <% unread_count = Notification.where(status: "unread").count rescue 0 %>
+    <% unread_count = (current_user ? current_user.notifications.where(status: "unread").count : 0) rescue 0 %>
     <% current_path = request.path %>
 
     <% if logged_in? %>

@@ -2,7 +2,7 @@
   residential = ["철거", "확장", "샤시", "목공", "전기", "에어컨", "타일", "도기", "필름", "도배", "바닥", "돔천장", "탄성코트", "가구", "조명", "청소"]
   commercial = ["철거", "설비", "경량", "목공", "전기", "냉난방", "유리공사", "금속공사", "자동문", "페인트", "도배", "바닥", "가구", "간판", "사인", "조명", "청소"]
   
-  target_project = work_process.project || (params[:project_id].present? ? Project.find_by(id: params[:project_id]) : nil)
+  target_project = work_process.project || (params[:project_id].present? ? current_user.projects.find_by(id: params[:project_id]) : nil)
   preset_processes = target_project&.project_type == "commercial" ? commercial : residential
 %>
 
@@ -82,7 +82,7 @@
         <div id="areaExistingVendor" style="display:block;">
           <div style="position:relative;">
             <%= f.select :vendor_name,
-                options_for_select(Vendor.order(:name).map { |v| ["#{v.name} #{v.contact_name}".strip, v.name, { 'data-phone': v.phone }] }, work_process.vendor_name),
+                options_for_select(current_user.vendors.order(:name).map { |v| ["#{v.name} #{v.contact_name}".strip, v.name, { 'data-phone': v.phone }] }, work_process.vendor_name),
                 { prompt: "업체를 선택하세요" },
                 { id: "vendor_select_input", onchange: "updateExistingVendorPhone()", style: "width:100%; height:50px; border:1px solid #dcdcdc; border-radius:14px; padding:0 14px; font-size:16px; box-sizing:border-box; background:white; appearance:none;" } %>
             <div style="position:absolute; right:16px; top:50%; transform:translateY(-50%); pointer-events:none; font-size:14px; color:#9ca3af;">▼</div>

@@ -150,7 +150,7 @@ class AiImportsController < ApplicationController
 
       # Sync start_date / end_date for all affected work_processes
       affected_ids.uniq.each do |wp_id|
-        wp = WorkProcess.find(wp_id)
+        wp = @project.work_processes.find(wp_id)
         dates = wp.work_days.order(:work_date).pluck(:work_date)
         wp.update_columns(start_date: dates.first, end_date: dates.last) if dates.any?
       end

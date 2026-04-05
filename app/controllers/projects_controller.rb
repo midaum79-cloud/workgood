@@ -22,7 +22,7 @@ class ProjectsController < ApplicationController
       end
 
     @featured_project = @projects.first
-    @unread_notifications_count = Notification.where(status: "unread").count
+    @unread_notifications_count = current_user.notifications.where(status: "unread").count
 
     project_ids = @projects.pluck(:id)
     work_day_scope = WorkDay.includes(work_process: :project)
@@ -51,7 +51,7 @@ class ProjectsController < ApplicationController
 
   def manage
     @selected_status = params[:status]
-    @unread_notifications_count = Notification.where(status: "unread").count
+    @unread_notifications_count = current_user.notifications.where(status: "unread").count
 
     all_projects = current_user.projects
                                .includes(work_processes: :work_days)
@@ -85,7 +85,7 @@ class ProjectsController < ApplicationController
   end
 
   def monthly_payments
-    @unread_notifications_count = Notification.where(status: "unread").count
+    @unread_notifications_count = current_user.notifications.where(status: "unread").count
 
     # 기간 파라미터 (기본: 현재 월)
     if params[:start_date].present? && params[:end_date].present?
