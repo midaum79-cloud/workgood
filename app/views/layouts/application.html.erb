@@ -438,9 +438,8 @@
           <span>스케줄</span>
         <% end %>
 
-        <% if current_path == '/projects/calendar' %>
-          <% diary_active = current_path == daily_memos_list_path ? 'active' : '' %>
-          <%= link_to daily_memos_list_path, class: "bottom-nav-item #{diary_active}" do %>
+        <% if current_path == '/projects/calendar' || current_path == '/' %>
+          <%= link_to daily_memos_list_path, class: "bottom-nav-item" do %>
             <span class="bottom-nav-icon">📒</span>
             <span>다이어리</span>
           <% end %>
