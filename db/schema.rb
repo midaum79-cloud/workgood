@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_04_05_092446) do
+ActiveRecord::Schema[8.1].define(version: 2026_04_05_102010) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -124,6 +124,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_04_05_092446) do
     t.string "project_type"
     t.date "start_date"
     t.string "status"
+    t.boolean "tax_invoice_issued"
     t.datetime "updated_at", null: false
     t.bigint "user_id"
     t.text "work_description"

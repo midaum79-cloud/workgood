@@ -36,32 +36,53 @@
           <div style="font-size:22px; font-weight:900;"><%= number_with_delimiter(@total_collected) %>원</div>
         </div>
         <div>
-          <div style="font-size:11px; color:#fde68a; margin-bottom:4px;">3.3% 원천징수</div>
-          <div style="font-size:22px; font-weight:900; color:#fde68a;">△<%= number_with_delimiter(@withholding_tax) %>원</div>
+          <div style="font-size:11px; color:rgba(255,255,255,0.7); margin-bottom:4px;">총 세금</div>
+          <div style="font-size:22px; font-weight:900; color:#fde68a;">△<%= number_with_delimiter(@withholding_tax + @invoice_vat) %>원</div>
         </div>
       </div>
+
+      <% if @invoice_projects.any? %>
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:12px; padding-top:12px; border-top:1px solid rgba(255,255,255,0.15);">
+        <div style="background:rgba(255,255,255,0.1); border-radius:10px; padding:10px;">
+          <div style="font-size:10px; color:#c7d2fe; margin-bottom:3px;">일용근로 3.3%</div>
+          <div style="font-size:14px; font-weight:900; color:#fde68a;">△<%= number_with_delimiter(@withholding_tax) %>원</div>
+          <div style="font-size:10px; color:rgba(255,255,255,0.5); margin-top:2px;">수금 <%= number_with_delimiter(@regular_collected) %>원</div>
+        </div>
+        <div style="background:rgba(255,255,255,0.1); border-radius:10px; padding:10px;">
+          <div style="font-size:10px; color:#86efac; margin-bottom:3px;">🧾 세금계산서 VAT</div>
+          <div style="font-size:14px; font-weight:900; color:#86efac;">△<%= number_with_delimiter(@invoice_vat) %>원</div>
+          <div style="font-size:10px; color:rgba(255,255,255,0.5); margin-top:2px;">수금 <%= number_with_delimiter(@invoice_collected) %>원</div>
+        </div>
+      </div>
+      <% end %>
+
       <div style="margin-top:14px; padding-top:14px; border-top:1px solid rgba(255,255,255,0.15);">
         <div style="font-size:12px; color:rgba(255,255,255,0.7); margin-bottom:4px;">실수령액 (세후)</div>
         <div style="font-size:28px; font-weight:900; color:#4ade80;"><%= number_with_delimiter(@net_income) %>원</div>
       </div>
     </div>
 
-    <%# 요약 카드 3개 %>
-    <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px; margin-bottom:16px;">
+    <%# 요약 카드 %>
+    <div style="display:grid; grid-template-columns:1fr 1fr 1fr 1fr; gap:8px; margin-bottom:16px;">
       <div style="background:white; border-radius:14px; padding:12px; text-align:center; box-shadow:0 2px 6px rgba(0,0,0,0.04);">
         <div style="font-size:10px; font-weight:800; color:#6b7280; margin-bottom:4px;">총 견적</div>
-        <div style="font-size:14px; font-weight:900; color:#374151;"><%= number_with_delimiter(@total_estimate) %></div>
+        <div style="font-size:13px; font-weight:900; color:#374151;"><%= number_with_delimiter(@total_estimate) %></div>
         <div style="font-size:10px; color:#9ca3af;">원</div>
       </div>
       <div style="background:white; border-radius:14px; padding:12px; text-align:center; box-shadow:0 2px 6px rgba(0,0,0,0.04);">
         <div style="font-size:10px; font-weight:800; color:#dc2626; margin-bottom:4px;">미수금</div>
-        <div style="font-size:14px; font-weight:900; color:#dc2626;"><%= number_with_delimiter(@total_outstanding) %></div>
+        <div style="font-size:13px; font-weight:900; color:#dc2626;"><%= number_with_delimiter(@total_outstanding) %></div>
         <div style="font-size:10px; color:#9ca3af;">원</div>
       </div>
       <div style="background:white; border-radius:14px; padding:12px; text-align:center; box-shadow:0 2px 6px rgba(0,0,0,0.04);">
         <div style="font-size:10px; font-weight:800; color:#6b7280; margin-bottom:4px;">현장 수</div>
-        <div style="font-size:14px; font-weight:900; color:#374151;"><%= @projects.size %></div>
+        <div style="font-size:13px; font-weight:900; color:#374151;"><%= @projects.size %></div>
         <div style="font-size:10px; color:#9ca3af;">개</div>
+      </div>
+      <div style="background:white; border-radius:14px; padding:12px; text-align:center; box-shadow:0 2px 6px rgba(0,0,0,0.04);">
+        <div style="font-size:10px; font-weight:800; color:#16a34a; margin-bottom:4px;">🧾 계산서</div>
+        <div style="font-size:13px; font-weight:900; color:#16a34a;"><%= @invoice_projects.size %></div>
+        <div style="font-size:10px; color:#9ca3af;">건</div>
       </div>
     </div>
 
@@ -158,13 +179,19 @@
             <% mid = project.mid_payment.to_i %>
             <% collected = dep + mid %>
             <% out = [est - collected, 0].max %>
-            <% tax = (collected * 3.3 / 100).round %>
+            <% is_invoice = project.tax_invoice_issued? %>
+            <% tax = is_invoice ? (collected * 10.0 / 110).round : (collected * 3.3 / 100).round %>
             <% net = collected - tax %>
             <%= link_to project_path(project), style: "text-decoration:none;" do %>
               <div style="background:#f9fafb; border-radius:14px; padding:14px; border-left:4px solid <%= out > 0 ? '#ef4444' : '#22c55e' %>;">
                 <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:8px;">
                   <div>
-                    <div style="font-size:14px; font-weight:900; color:#111827;"><%= project.project_name %></div>
+                    <div style="display:flex; align-items:center; gap:6px;">
+                      <span style="font-size:14px; font-weight:900; color:#111827;"><%= project.project_name %></span>
+                      <% if is_invoice %>
+                        <span style="font-size:9px; font-weight:900; background:#dcfce7; color:#166534; padding:2px 6px; border-radius:6px;">🧾 계산서</span>
+                      <% end %>
+                    </div>
                     <div style="font-size:12px; color:#6b7280; font-weight:600; margin-top:1px;"><%= project.client_name %></div>
                   </div>
                   <div style="text-align:right;">
@@ -174,7 +201,7 @@
                 </div>
                 <div style="display:flex; justify-content:space-between; font-size:11px; font-weight:700; color:#9ca3af;">
                   <span>견적 <%= number_with_delimiter(est) %>원</span>
-                  <span>세금 △<%= number_with_delimiter(tax) %>원</span>
+                  <span><%= is_invoice ? 'VAT' : '3.3%' %> △<%= number_with_delimiter(tax) %>원</span>
                   <% if out > 0 %>
                     <span style="color:#dc2626;">미수 <%= number_with_delimiter(out) %>원</span>
                   <% else %>

@@ -13,15 +13,23 @@ class TaxReportsController < ApplicationController
       .where("EXTRACT(year FROM start_date) = ? OR EXTRACT(year FROM end_date) = ?", @year, @year)
       .order(start_date: :asc)
 
-    # 수입 집계 (계약금 + 중도금 기준, 단 완납일 경우 전체 견적금액을 수집으로 간주 가능, 그러나 여기서는 기존처럼 하되 미수금 처리만 변경)
+    # 수입 집계
     @total_estimate  = @projects.sum { |p| p.estimate_amount.to_i }
     @total_collected = @projects.sum { |p| p.payment_status == "완납" ? p.estimate_amount.to_i : (p.deposit_amount.to_i + p.mid_payment.to_i) }
     @total_outstanding = @projects.sum { |p| p.payment_status == "완납" ? 0 : [p.estimate_amount.to_i - (p.deposit_amount.to_i + p.mid_payment.to_i), 0].max }
 
-    # 3.3% 원천징수 계산 (수령액 기준)
+    # 세금계산서 vs 일용근로 분리
+    @invoice_projects = @projects.select { |p| p.tax_invoice_issued? }
+    @regular_projects = @projects.reject { |p| p.tax_invoice_issued? }
+
+    @invoice_collected = @invoice_projects.sum { |p| p.payment_status == "완납" ? p.estimate_amount.to_i : (p.deposit_amount.to_i + p.mid_payment.to_i) }
+    @regular_collected = @regular_projects.sum { |p| p.payment_status == "완납" ? p.estimate_amount.to_i : (p.deposit_amount.to_i + p.mid_payment.to_i) }
+
+    # 세금 계산: 일용근로 3.3% / 세금계산서 10% 부가세
     @tax_rate        = 3.3
-    @withholding_tax = (@total_collected * @tax_rate / 100).round
-    @net_income      = @total_collected - @withholding_tax
+    @withholding_tax = (@regular_collected * @tax_rate / 100).round
+    @invoice_vat     = (@invoice_collected * 10.0 / 110).round  # 부가세 = 공급가액의 10%, 총액의 10/110
+    @net_income      = @total_collected - @withholding_tax - @invoice_vat
 
     # 월별 수입 집계
     @monthly_stats = (1..12).map do |month|

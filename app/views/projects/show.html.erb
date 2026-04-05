@@ -173,6 +173,16 @@
           </div>
         </div>
 
+        <% if @project.tax_invoice_issued? %>
+        <div style="background:#f0fdf4; border:1px solid #bbf7d0; border-radius:14px; padding:12px; display:flex; align-items:center; gap:10px;">
+          <span style="font-size:20px;">🧾</span>
+          <div>
+            <div style="font-size:13px; font-weight:900; color:#166534;">세금계산서 발급</div>
+            <div style="font-size:11px; color:#6b7280; font-weight:600;">부가세 10% 포함 · 사업자 거래</div>
+          </div>
+        </div>
+        <% end %>
+
         <div style="background:#f9fafb; border-radius:14px; padding:14px;">
           <div style="font-size:12px; font-weight:800; color:#6b7280; margin-bottom:6px;">일한 사람 명단</div>
           <div style="font-size:14px; font-weight:700; color:#374151; line-height:1.6; white-space:pre-wrap;"><%= @project.worker_names.presence || "미입력" %></div>

@@ -658,6 +658,7 @@ class ProjectsController < ApplicationController
       :payment_status,
       :worker_names,
       :work_description,
+      :tax_invoice_issued,
       selected_process_names: [],
       photos: []
     )
