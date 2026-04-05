@@ -1,13 +1,16 @@
 class NotificationsController < ApplicationController
+  before_action :require_login
+
   def index
     # 1. 앱(마이페이지/알림함)에 들어왔을 때 자동으로 내일 일정 등 스마트 비서 알림 스캔 후 생성
     Notification.generate_smart_alerts(current_user) if current_user
 
     @current_tab = params[:tab].presence || "all"
 
-    # 2. 탭에 따른 카테고리 필터링
-    base_query = Notification.order(created_at: :desc)
-    
+    # 2. 현재 사용자의 프로젝트에 속한 알림만 조회 (보안: 타 사용자 알림 노출 방지)
+    user_project_ids = current_user.projects.pluck(:id)
+    base_query = Notification.where(project_id: user_project_ids).order(created_at: :desc)
+
     @notifications = case @current_tab
       when "schedule" then base_query.schedule
       when "finance" then base_query.finance
@@ -23,7 +26,9 @@ class NotificationsController < ApplicationController
   end
 
   def read
-    notification = Notification.find(params[:id])
+    # 본인 프로젝트의 알림만 읽음 처리 가능
+    user_project_ids = current_user.projects.pluck(:id)
+    notification = Notification.where(project_id: user_project_ids).find(params[:id])
     notification.update(status: "read")
     redirect_to notifications_path
   end
