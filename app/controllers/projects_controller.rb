@@ -2,6 +2,7 @@ class ProjectsController < ApplicationController
   before_action :require_login
   before_action :require_plan_for_project!, only: %i[new create]
   before_action :set_project, only: %i[show edit update destroy project_calendar project_calendar_panel]
+  before_action :require_premium_for_money!, only: %i[monthly_payments]
 
   def index
     @selected_status = params[:status].presence || '예정'
@@ -662,5 +663,11 @@ class ProjectsController < ApplicationController
       selected_process_names: [],
       photos: []
     )
+  end
+
+  def require_premium_for_money!
+    unless current_user.premium? || User::TESTING_PERIOD
+      redirect_to subscription_path, alert: "돈 관리는 프리미엄 요금제 전용 기능입니다. 💰"
+    end
   end
 end
