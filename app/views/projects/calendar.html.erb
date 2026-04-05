@@ -617,11 +617,12 @@ document.addEventListener('DOMContentLoaded', function() {
     CAROUSEL_STATE.currentYear = parseInt(panels[0].dataset.year);
     CAROUSEL_STATE.currentMonth = parseInt(panels[0].dataset.month);
 
-    // 깜빡임 방지: DOM 변경 동안 숨김
+    // 패널 제거 후 2개만 남음: [현재월, 다음월]
+    // translateX(0%)로 panel 0(현재월)을 표시해야 함
     track.style.visibility = 'hidden';
     panels[panels.length - 1].remove();
-    track.style.transform = 'translateX(' + BASE_OFFSET + '%)';
-    track.offsetHeight; // 강제 리플로우
+    track.style.transform = 'translateX(0%)';
+    track.offsetHeight;
     track.style.visibility = '';
 
     updateMonthLabel();
@@ -636,7 +637,12 @@ document.addEventListener('DOMContentLoaded', function() {
       newPanel.dataset.month = m;
       newPanel.style.cssText = 'width:33.333%; flex-shrink:0; display:flex; flex-direction:column;';
       newPanel.innerHTML = html;
+      // prepend 시 기존 패널이 밀리므로 transform도 동시에 업데이트
+      track.style.visibility = 'hidden';
       track.insertBefore(newPanel, track.firstChild);
+      track.style.transform = 'translateX(' + BASE_OFFSET + '%)';
+      track.offsetHeight;
+      track.style.visibility = '';
       rebindCellEvents();
     });
   }

@@ -294,7 +294,7 @@ document.addEventListener('DOMContentLoaded', function() {
     CAROUSEL_STATE.currentMonth = parseInt(panels[0].dataset.month);
     track.style.visibility = 'hidden';
     panels[panels.length - 1].remove();
-    track.style.transform = 'translateX(' + BASE_OFFSET + '%)';
+    track.style.transform = 'translateX(0%)';
     track.offsetHeight;
     track.style.visibility = '';
 
@@ -308,7 +308,11 @@ document.addEventListener('DOMContentLoaded', function() {
       np.dataset.month = m;
       np.style.cssText = 'width:33.333%; flex-shrink:0; display:flex; flex-direction:column;';
       np.innerHTML = html;
+      track.style.visibility = 'hidden';
       track.insertBefore(np, track.firstChild);
+      track.style.transform = 'translateX(' + BASE_OFFSET + '%)';
+      track.offsetHeight;
+      track.style.visibility = '';
     });
   }
 
