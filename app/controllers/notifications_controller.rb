@@ -7,9 +7,8 @@ class NotificationsController < ApplicationController
 
     @current_tab = params[:tab].presence || "all"
 
-    # 2. 현재 사용자의 프로젝트에 속한 알림만 조회 (보안: 타 사용자 알림 노출 방지)
-    user_project_ids = current_user.projects.pluck(:id)
-    base_query = Notification.where(project_id: user_project_ids).order(created_at: :desc)
+    # 2. 현재 사용자의 알림만 조회 (user_id 기반 정확한 격리)
+    base_query = current_user.notifications.order(created_at: :desc)
 
     @notifications = case @current_tab
       when "schedule" then base_query.schedule
@@ -26,9 +25,7 @@ class NotificationsController < ApplicationController
   end
 
   def read
-    # 본인 프로젝트의 알림만 읽음 처리 가능
-    user_project_ids = current_user.projects.pluck(:id)
-    notification = Notification.where(project_id: user_project_ids).find(params[:id])
+    notification = current_user.notifications.find(params[:id])
     notification.update(status: "read")
     redirect_to notifications_path
   end

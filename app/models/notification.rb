@@ -1,4 +1,5 @@
 class Notification < ApplicationRecord
+  belongs_to :user, optional: true
   belongs_to :project, optional: true
   belongs_to :work_process, optional: true
 
@@ -29,6 +30,7 @@ class Notification < ApplicationRecord
         message = "내일 #{project.client_name.presence || project.project_name} 현장 시공이 예정되어 있습니다.\n\n[현장 정보]\n- 주소: #{project.address.presence || '미등록'}\n- 공동현관: #{project.common_entrance_password.presence || '미등록'}\n- 세대현관: #{project.private_entrance_password.presence || '미등록'}\n\n*일정에 차질이 없도록 미리 준비해 주세요."
         
         Notification.create(
+          user_id: user.id,
           title: title,
           message: message,
           project_id: project.id,

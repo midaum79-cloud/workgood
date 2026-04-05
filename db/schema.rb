@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_04_05_102010) do
+ActiveRecord::Schema[8.1].define(version: 2026_04_06_000001) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -68,8 +68,10 @@ ActiveRecord::Schema[8.1].define(version: 2026_04_05_102010) do
     t.string "status"
     t.string "title"
     t.datetime "updated_at", null: false
+    t.bigint "user_id"
     t.bigint "work_process_id", null: false
     t.index ["project_id"], name: "index_notifications_on_project_id"
+    t.index ["user_id"], name: "index_notifications_on_user_id"
     t.index ["work_process_id"], name: "index_notifications_on_work_process_id"
   end
 
@@ -273,6 +275,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_04_05_102010) do
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
   add_foreign_key "daily_memos", "users"
   add_foreign_key "notifications", "projects"
+  add_foreign_key "notifications", "users"
   add_foreign_key "notifications", "work_processes"
   add_foreign_key "payments", "companies"
   add_foreign_key "payments", "sites"
