@@ -110,6 +110,10 @@ class User < ApplicationRecord
     premium?
   end
 
+  def can_use_daily_diary?
+    standard_or_above?
+  end
+
   def premium?
     subscription_plan == "premium"
   end

@@ -1,6 +1,6 @@
 class DailyMemosController < ApplicationController
   before_action :require_login
-  before_action :require_premium
+  before_action :require_standard_for_diary
 
   def index
     @calendar_year = (params[:year] || Date.current.year).to_i
@@ -57,9 +57,9 @@ class DailyMemosController < ApplicationController
 
   private
 
-  def require_premium
-    unless current_user.premium?
-      redirect_to subscription_path, alert: "일일 다이어리는 프리미엄 요금제 전용 기능입니다."
+  def require_standard_for_diary
+    unless current_user.can_use_daily_diary? || User::TESTING_PERIOD
+      redirect_to subscription_path, alert: "일일 다이어리는 스탠다드 이상 요금제에서 이용 가능합니다."
     end
   end
 end
