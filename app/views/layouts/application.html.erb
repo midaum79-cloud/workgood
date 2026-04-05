@@ -163,6 +163,24 @@
         }
       }
 
+      /* ========== iOS Capacitor 네이티브 앱 전용 ========== */
+      /* iOS Capacitor에서는 네이티브 셸이 safe area 처리하므로 CSS 이중 적용 방지 */
+      body.capacitor-ios .bottom-nav {
+        padding-bottom: 0;
+      }
+      body.capacitor-ios .safe-sticky-header {
+        padding-top: 14px !important;
+      }
+      body.capacitor-ios .drawer {
+        padding-top: 0;
+      }
+      body.capacitor-ios .drawer-menu {
+        padding-bottom: 0;
+      }
+      body.capacitor-ios .app-content {
+        padding-bottom: 64px;
+      }
+
       .bottom-nav-item {
         display: flex;
         flex-direction: column;
@@ -335,6 +353,18 @@
   </head>
 
   <body>
+    <script>
+      // iOS Capacitor 네이티브 앱 감지: safe-area가 네이티브 셸에서 이미 처리되므로 CSS에서 제거
+      (function() {
+        var isCapacitor = window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform();
+        var isIOS = /iPhone|iPad|iPod/.test(navigator.userAgent);
+        if (isCapacitor && isIOS) {
+          document.body.classList.add('capacitor-ios');
+        } else if (isCapacitor) {
+          document.body.classList.add('capacitor-android');
+        }
+      })();
+    </script>
     <!-- ===== SPLASH SCREEN ===== -->
     <div id="app-splash" style="
       position:fixed; inset:0; z-index:9999;
