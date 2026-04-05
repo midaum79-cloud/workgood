@@ -409,7 +409,7 @@ class ProjectsController < ApplicationController
       @projects_by_date[schedule.work_date] << schedule.project unless @projects_by_date[schedule.work_date].include?(schedule.project)
     end
 
-    render partial: 'projects/calendar_grid', layout: false
+    render partial: 'projects/calendar_grid', locals: { cell_min_height: '75px' }, layout: false
   end
 
   def show
