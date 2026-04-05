@@ -125,51 +125,7 @@
   </div>
 </div>
 
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-  var csrfToken = document.querySelector('meta[name="csrf-token"]').content;
-
-  // 날짜 셀 클릭 시 일정 토글
-  document.querySelectorAll('.carousel-panel').forEach(function(panel) {
-    panel.querySelectorAll('.calendar-date-cell').forEach(function(cell) {
-      cell.addEventListener('click', function(e) {
-        if (cell.dataset.isProcessing === "true") return;
-        
-        var dateStr = cell.dataset.date;
-        if (!dateStr) return;
-        
-        cell.dataset.isProcessing = "true";
-        cell.style.opacity = "0.5";
-
-        fetch('<%= project_path(@project) %>/toggle_schedule', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'X-CSRF-Token': csrfToken,
-            'Accept': 'application/json'
-          },
-          body: JSON.stringify({ date: dateStr })
-        })
-        .then(function(res) { return res.json(); })
-        .then(function(data) {
-          if (data.success) {
-            window.location.reload(); 
-          } else {
-            alert('에러가 발생했습니다: ' + (data.error || ''));
-            cell.dataset.isProcessing = "false";
-            cell.style.opacity = "1";
-          }
-        })
-        .catch(function(err) {
-          alert('네트워크 오류가 발생했습니다.');
-          cell.dataset.isProcessing = "false";
-          cell.style.opacity = "1";
-        });
-      });
-    });
-  });
-});
-</script>
+<!-- 프로젝트 캘린더: 날짜 셀 클릭 없음 (단독 현장 캘린더), 거래처명 칩은 현장 상세로 이동 -->
 
 <!-- 캐러셀 상태 -->
 <script>
