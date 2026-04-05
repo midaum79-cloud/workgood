@@ -1,4 +1,4 @@
-<div style="position:fixed; top:0; left:0; right:0; bottom:0; background:white; padding:0 0 64px 0; display:flex; flex-direction:column; box-sizing:border-box; overflow:hidden; z-index:10;">
+<div style="position:fixed; top:0; left:0; right:0; bottom:0; background:white; padding:0 0 calc(64px + env(safe-area-inset-bottom)) 0; display:flex; flex-direction:column; box-sizing:border-box; overflow:hidden; z-index:10;">
 
 <div style="background:white; padding:18px 20px 14px 20px; border-bottom:1px solid #ececec; z-index:50; flex-shrink:0;">
   <div style="display:flex; justify-content:space-between; align-items:center;">
@@ -88,7 +88,7 @@
             @projects_by_date = @prev_calendar[:projects_by_date]
             @selected_date = nil
           %>
-          <%= render partial: 'projects/calendar_grid', locals: { cell_min_height: '75px' } %>
+          <%= render partial: 'projects/calendar_grid', locals: { cell_min_height: '90px' } %>
           <% 
             @calendar_rows = saved_rows
             @calendar_month = saved_month
@@ -99,7 +99,7 @@
 
         <!-- 패널 1: 현재달 (활성) -->
         <div class="carousel-panel" data-year="<%= @calendar_year %>" data-month="<%= @calendar_month %>" style="width:33.333%; flex-shrink:0; display:flex; flex-direction:column;">
-          <%= render partial: 'projects/calendar_grid', locals: { cell_min_height: '75px' } %>
+          <%= render partial: 'projects/calendar_grid', locals: { cell_min_height: '90px' } %>
         </div>
 
         <!-- 패널 2: 다음달 -->
@@ -110,7 +110,7 @@
             @projects_by_date = @next_calendar[:projects_by_date]
             @selected_date = nil
           %>
-          <%= render partial: 'projects/calendar_grid', locals: { cell_min_height: '75px' } %>
+          <%= render partial: 'projects/calendar_grid', locals: { cell_min_height: '90px' } %>
           <% 
             @calendar_rows = saved_rows
             @calendar_month = saved_month
