@@ -252,8 +252,11 @@ document.addEventListener('DOMContentLoaded', function() {
     var panels = getPanels();
     CAROUSEL_STATE.currentYear = parseInt(panels[2].dataset.year);
     CAROUSEL_STATE.currentMonth = parseInt(panels[2].dataset.month);
+    track.style.visibility = 'hidden';
     panels[0].remove();
     track.style.transform = 'translateX(' + BASE_OFFSET + '%)';
+    track.offsetHeight;
+    track.style.visibility = '';
 
     updateMonthLabel();
 
@@ -290,8 +293,11 @@ document.addEventListener('DOMContentLoaded', function() {
     var panels = getPanels();
     CAROUSEL_STATE.currentYear = parseInt(panels[0].dataset.year);
     CAROUSEL_STATE.currentMonth = parseInt(panels[0].dataset.month);
+    track.style.visibility = 'hidden';
     panels[panels.length - 1].remove();
     track.style.transform = 'translateX(' + BASE_OFFSET + '%)';
+    track.offsetHeight;
+    track.style.visibility = '';
 
     updateMonthLabel();
 

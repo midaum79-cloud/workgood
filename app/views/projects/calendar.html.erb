@@ -568,13 +568,15 @@ document.addEventListener('DOMContentLoaded', function() {
     track.classList.remove('animating');
 
     var panels = getPanels();
-    var nextPanel = panels[2];
-    CAROUSEL_STATE.currentYear = parseInt(nextPanel.dataset.year);
-    CAROUSEL_STATE.currentMonth = parseInt(nextPanel.dataset.month);
+    CAROUSEL_STATE.currentYear = parseInt(panels[2].dataset.year);
+    CAROUSEL_STATE.currentMonth = parseInt(panels[2].dataset.month);
 
-    // 이전 패널(첫번째)을 제거하고, 새 다음달 패널을 끝에 추가
+    // 깜빡임 방지: DOM 변경 동안 숨김
+    track.style.visibility = 'hidden';
     panels[0].remove();
     track.style.transform = 'translateX(' + BASE_OFFSET + '%)';
+    track.offsetHeight; // 강제 리플로우
+    track.style.visibility = '';
 
     updateMonthLabel();
     rebindCellEvents();
@@ -613,13 +615,15 @@ document.addEventListener('DOMContentLoaded', function() {
     track.classList.remove('animating');
 
     var panels = getPanels();
-    var prevPanel = panels[0];
-    CAROUSEL_STATE.currentYear = parseInt(prevPanel.dataset.year);
-    CAROUSEL_STATE.currentMonth = parseInt(prevPanel.dataset.month);
+    CAROUSEL_STATE.currentYear = parseInt(panels[0].dataset.year);
+    CAROUSEL_STATE.currentMonth = parseInt(panels[0].dataset.month);
 
-    // 마지막 패널 제거
+    // 깜빡임 방지: DOM 변경 동안 숨김
+    track.style.visibility = 'hidden';
     panels[panels.length - 1].remove();
     track.style.transform = 'translateX(' + BASE_OFFSET + '%)';
+    track.offsetHeight; // 강제 리플로우
+    track.style.visibility = '';
 
     updateMonthLabel();
     rebindCellEvents();
