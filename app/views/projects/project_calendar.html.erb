@@ -135,7 +135,31 @@
     projectId: '<%= @project.id %>',
     panelUrl: '<%= project_calendar_panel_project_path(@project) %>'
   };
+  var TODAY_YEAR = <%= Date.current.year %>;
+  var TODAY_MONTH = <%= Date.current.month %>;
 </script>
+
+<!-- 오늘로 돌아가기 버튼 -->
+<div id="goTodayBtn" onclick="window.location.href='<%= project_calendar_project_path(@project) %>'" style="
+  display:none;
+  position:fixed;
+  bottom:100px;
+  left:50%;
+  transform:translateX(-50%);
+  z-index:40;
+  background:#111827;
+  color:white;
+  padding:10px 20px;
+  border-radius:999px;
+  font-size:13px;
+  font-weight:900;
+  box-shadow:0 4px 16px rgba(0,0,0,0.25);
+  cursor:pointer;
+  transition:opacity 0.3s, transform 0.3s;
+  white-space:nowrap;
+">
+  📅 오늘로
+</div>
 
 <style>
 #carouselTrack { transition: none; }
@@ -174,6 +198,12 @@
     var picker = document.querySelector('input[type="month"]');
     if (picker) {
       picker.value = CAROUSEL_STATE.currentYear + '-' + String(CAROUSEL_STATE.currentMonth).padStart(2, '0');
+    }
+    // 오늘로 버튼 표시/숨김
+    var todayBtn = document.getElementById('goTodayBtn');
+    if (todayBtn) {
+      var isCurrentMonth = (CAROUSEL_STATE.currentYear === TODAY_YEAR && CAROUSEL_STATE.currentMonth === TODAY_MONTH);
+      todayBtn.style.display = isCurrentMonth ? 'none' : 'block';
     }
   }
 
