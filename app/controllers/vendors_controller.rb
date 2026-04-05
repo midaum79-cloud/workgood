@@ -1,21 +1,22 @@
 class VendorsController < ApplicationController
+  before_action :require_login
   before_action :set_vendor, only: %i[show edit update destroy]
 
   def index
     @vendor_type = params[:vendor_type] || "company"
     @vendors =
       if @vendor_type == "individual"
-        Vendor.ordered.where(vendor_type: "individual")
+        current_user.vendors.ordered.where(vendor_type: "individual")
       else
-        Vendor.ordered.where(vendor_type: ["company", nil, ""])
+        current_user.vendors.ordered.where(vendor_type: ["company", nil, ""])
       end
-    @unread_notifications_count = Notification.where(status: "unread").count
+    @unread_notifications_count = current_user.notifications.where(status: "unread").count
   end
 
   def search
     query = params[:q].to_s.strip
     vendor_type = params[:vendor_type]
-    vendors = Vendor.ordered
+    vendors = current_user.vendors.ordered
 
     # vendor_type이 null인 기존 데이터도 '업체' 탭에서 표시
     if vendor_type == "company"
@@ -25,7 +26,7 @@ class VendorsController < ApplicationController
     end
 
     if query.present?
-      vendors = vendors.select { |v| chosung_match?(v.name, query) }
+      vendors = vendors.to_a.select { |v| chosung_match?(v.name, query) }
     end
 
     render json: vendors.map { |v|
@@ -43,14 +44,14 @@ class VendorsController < ApplicationController
   end
 
   def new
-    @vendor = Vendor.new(vendor_type: params[:vendor_type].presence || "company")
+    @vendor = current_user.vendors.build(vendor_type: params[:vendor_type].presence || "company")
   end
 
   def edit
   end
 
   def create
-    @vendor = Vendor.new(vendor_params)
+    @vendor = current_user.vendors.build(vendor_params)
     if @vendor.save
       redirect_path = @vendor.vendor_type.present? ? process_templates_path : vendors_path
       redirect_to redirect_path, notice: "거래처가 등록되었습니다."
@@ -78,7 +79,8 @@ class VendorsController < ApplicationController
   private
 
   def set_vendor
-    @vendor = Vendor.find(params[:id])
+    # 본인 거래처만 접근 가능
+    @vendor = current_user.vendors.find(params[:id])
   end
 
   def vendor_params

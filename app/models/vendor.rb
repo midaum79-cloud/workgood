@@ -1,4 +1,5 @@
 class Vendor < ApplicationRecord
+  belongs_to :user
   validates :name, presence: true
   scope :ordered, -> { order(name: :asc) }
   scope :companies, -> { where(vendor_type: "company").ordered }

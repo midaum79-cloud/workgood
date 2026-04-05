@@ -8,6 +8,7 @@ class User < ApplicationRecord
   has_many :web_push_subscriptions, dependent: :destroy
   has_many :daily_memos, dependent: :destroy
   has_many :notifications, dependent: :destroy
+  has_many :vendors, dependent: :destroy
 
   validates :email, presence: true, uniqueness: { case_sensitive: false }, format: { with: URI::MailTo::EMAIL_REGEXP }
   validates :name, presence: true
