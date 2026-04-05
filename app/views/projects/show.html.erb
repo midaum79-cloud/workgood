@@ -108,24 +108,24 @@
 
     <!-- 기본 기록 사항 -->
     <div style="background:white; border-radius:20px; padding:18px; box-shadow:0 2px 10px rgba(0,0,0,0.04);">
-      <div style="font-size:18px; font-weight:900; color:#111827; margin-bottom:16px;">💰 기본 기록 사항</div>
+      <div style="font-size:16px; font-weight:900; color:#111827; margin-bottom:14px;">💰 기본 기록 사항</div>
 
       <div style="display:flex; flex-direction:column; gap:10px;">
         <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
-          <div style="background:#f9fafb; border-radius:14px; padding:14px;">
-            <div style="font-size:12px; font-weight:800; color:#6b7280; margin-bottom:6px;">견적금액</div>
-            <div style="font-size:18px; font-weight:900; color:#111827;"><%= number_with_delimiter(@project.estimate_amount.to_i) %>원</div>
+          <div style="background:#f9fafb; border-radius:14px; padding:12px;">
+            <div style="font-size:11px; font-weight:800; color:#6b7280; margin-bottom:4px;">견적금액</div>
+            <div style="font-size:15px; font-weight:900; color:#111827;"><%= number_with_delimiter(@project.estimate_amount.to_i) %>원</div>
           </div>
-          <div style="background:#f9fafb; border-radius:14px; padding:14px;">
-            <div style="font-size:12px; font-weight:800; color:#6b7280; margin-bottom:6px;">계약금</div>
-            <div style="font-size:18px; font-weight:900; color:#111827;"><%= number_with_delimiter(@project.deposit_amount.to_i) %>원</div>
+          <div style="background:#f9fafb; border-radius:14px; padding:12px;">
+            <div style="font-size:11px; font-weight:800; color:#6b7280; margin-bottom:4px;">계약금</div>
+            <div style="font-size:15px; font-weight:900; color:#111827;"><%= number_with_delimiter(@project.deposit_amount.to_i) %>원</div>
           </div>
         </div>
 
         <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
-          <div style="background:#f9fafb; border-radius:14px; padding:14px;">
-            <div style="font-size:12px; font-weight:800; color:#6b7280; margin-bottom:6px;">중도금</div>
-            <div style="font-size:18px; font-weight:900; color:#111827;"><%= number_with_delimiter(@project.mid_payment.to_i) %>원</div>
+          <div style="background:#f9fafb; border-radius:14px; padding:12px;">
+            <div style="font-size:11px; font-weight:800; color:#6b7280; margin-bottom:4px;">중도금</div>
+            <div style="font-size:15px; font-weight:900; color:#111827;"><%= number_with_delimiter(@project.mid_payment.to_i) %>원</div>
           </div>
           <div style="background:#f9fafb; border-radius:14px; padding:14px;">
             <div style="font-size:12px; font-weight:800; color:#6b7280; margin-bottom:6px;">&nbsp;</div>
@@ -133,9 +133,9 @@
           </div>
         <% is_fully_paid = (@project.payment_status == '완납') %>
         <% balance = is_fully_paid ? 0 : [@project.estimate_amount.to_i - @project.deposit_amount.to_i - @project.mid_payment.to_i, 0].max %>
-        <div style="background:#fff7ed; border:1px solid #fed7aa; border-radius:14px; padding:14px; display:flex; justify-content:space-between; align-items:center;">
-          <div style="font-size:13px; font-weight:800; color:#ea580c;">💰 잔금</div>
-          <div style="font-size:20px; font-weight:900; color:#ea580c;">
+        <div style="background:#fff7ed; border:1px solid #fed7aa; border-radius:14px; padding:12px; display:flex; justify-content:space-between; align-items:center;">
+          <div style="font-size:12px; font-weight:800; color:#ea580c;">💰 잔금</div>
+          <div style="font-size:16px; font-weight:900; color:#ea580c;">
              <%= number_with_delimiter(balance) %>원
              <% if is_fully_paid && (@project.estimate_amount.to_i - @project.deposit_amount.to_i - @project.mid_payment.to_i) > 0 %>
                <span style="font-size:12px; font-weight:700; color:#9ca3af; margin-left:4px;">(완납처리)</span>
@@ -145,11 +145,11 @@
 
         <% is_fully_paid = @project.payment_status == '완납' %>
         <% outstanding = is_fully_paid ? 0 : [@project.estimate_amount.to_i - @project.deposit_amount.to_i - @project.mid_payment.to_i, 0].max %>
-        <div style="background:<%= outstanding > 0 ? '#fef2f2' : '#f0fdf4' %>; border-radius:14px; padding:14px; display:flex; justify-content:space-between; align-items:center;">
-          <div style="font-size:13px; font-weight:800; color:<%= outstanding > 0 ? '#dc2626' : '#16a34a' %>;">
+        <div style="background:<%= outstanding > 0 ? '#fef2f2' : '#f0fdf4' %>; border-radius:14px; padding:12px; display:flex; justify-content:space-between; align-items:center;">
+          <div style="font-size:12px; font-weight:800; color:<%= outstanding > 0 ? '#dc2626' : '#16a34a' %>;">
             <%= outstanding > 0 ? '⚠️ 미수금' : '✅ 완납' %>
           </div>
-          <div style="font-size:20px; font-weight:900; color:<%= outstanding > 0 ? '#dc2626' : '#16a34a' %>;">
+          <div style="font-size:16px; font-weight:900; color:<%= outstanding > 0 ? '#dc2626' : '#16a34a' %>;">
             <%= number_with_delimiter(outstanding) %>원
           </div>
         </div>
@@ -175,12 +175,12 @@
 
         <div style="background:#f9fafb; border-radius:14px; padding:14px;">
           <div style="font-size:12px; font-weight:800; color:#6b7280; margin-bottom:6px;">일한 사람 명단</div>
-          <div style="font-size:15px; font-weight:700; color:#374151; line-height:1.6; white-space:pre-wrap;"><%= @project.worker_names.presence || "미입력" %></div>
+          <div style="font-size:14px; font-weight:700; color:#374151; line-height:1.6; white-space:pre-wrap;"><%= @project.worker_names.presence || "미입력" %></div>
         </div>
 
         <div style="background:#f9fafb; border-radius:14px; padding:14px;">
           <div style="font-size:12px; font-weight:800; color:#6b7280; margin-bottom:6px;">일 내용</div>
-          <div style="font-size:15px; font-weight:700; color:#374151; line-height:1.6; white-space:pre-wrap;"><%= @project.work_description.presence || "미입력" %></div>
+          <div style="font-size:14px; font-weight:700; color:#374151; line-height:1.6; white-space:pre-wrap;"><%= @project.work_description.presence || "미입력" %></div>
         </div>
       </div>
     </div>
