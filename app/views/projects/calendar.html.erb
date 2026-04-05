@@ -105,6 +105,7 @@
             @selected_date = nil
           %>
           <%= render partial: 'projects/calendar_grid' %>
+          <%= render partial: 'projects/calendar_tips' %>
           <% 
             @calendar_rows = saved_rows
             @calendar_month = saved_month
@@ -116,72 +117,7 @@
         <!-- 패널 1: 현재달 (활성) -->
         <div class="carousel-panel" data-year="<%= @calendar_year %>" data-month="<%= @calendar_month %>" style="width:33.333%; min-height:100%; flex-shrink:0; display:flex; flex-direction:column;">
           <%= render partial: 'projects/calendar_grid' %>
-
-          <!-- 캘린더 사용 가이드 -->
-          <div style="padding:20px 16px 30px; background:linear-gradient(180deg, #f8fafc 0%, #f0f4ff 100%);">
-            <div style="text-align:center; margin-bottom:16px;">
-              <span style="font-size:13px; font-weight:900; color:#6366f1; background:#ede9fe; padding:5px 14px; border-radius:999px;">💡 캘린더 활용 TIP</span>
-            </div>
-
-            <div style="display:flex; flex-direction:column; gap:12px;">
-
-              <!-- TIP 1: 드래그 앤 드롭 -->
-              <div class="guide-card" style="display:flex; align-items:center; gap:14px; background:white; border-radius:16px; padding:14px 16px; box-shadow:0 2px 8px rgba(0,0,0,0.04); border:1px solid #e5e7eb; animation: guideSlideIn 0.5s ease-out both;">
-                <div style="font-size:28px; animation: guideBounce 2s ease-in-out infinite;">🖐️</div>
-                <div>
-                  <div style="font-size:14px; font-weight:900; color:#111827; margin-bottom:2px;">현장을 드래그해서 이동</div>
-                  <div style="font-size:12px; color:#6b7280; line-height:1.5;">거래처명을 길게 누른 후 원하는 날짜로<br>끌어다 놓으면 일정이 이동돼요</div>
-                </div>
-              </div>
-
-              <!-- TIP 2: 클릭하여 수정 -->
-              <div class="guide-card" style="display:flex; align-items:center; gap:14px; background:white; border-radius:16px; padding:14px 16px; box-shadow:0 2px 8px rgba(0,0,0,0.04); border:1px solid #e5e7eb; animation: guideSlideIn 0.5s ease-out 0.1s both;">
-                <div style="font-size:28px; animation: guidePulse 2s ease-in-out infinite;">👆</div>
-                <div>
-                  <div style="font-size:14px; font-weight:900; color:#111827; margin-bottom:2px;">거래처명 클릭 → 현장 수정</div>
-                  <div style="font-size:12px; color:#6b7280; line-height:1.5;">캘린더의 거래처 이름을 탭하면<br>해당 현장 상세 페이지로 이동해요</div>
-                </div>
-              </div>
-
-              <!-- TIP 3: 좌우 스와이프 -->
-              <div class="guide-card" style="display:flex; align-items:center; gap:14px; background:white; border-radius:16px; padding:14px 16px; box-shadow:0 2px 8px rgba(0,0,0,0.04); border:1px solid #e5e7eb; animation: guideSlideIn 0.5s ease-out 0.2s both;">
-                <div style="font-size:28px; animation: guideSwipe 2.5s ease-in-out infinite;">👈👉</div>
-                <div>
-                  <div style="font-size:14px; font-weight:900; color:#111827; margin-bottom:2px;">좌우 스와이프로 월 이동</div>
-                  <div style="font-size:12px; color:#6b7280; line-height:1.5;">캘린더를 좌우로 밀면<br>이전달/다음달로 빠르게 이동해요</div>
-                </div>
-              </div>
-
-              <!-- TIP 4: 날짜 클릭 -->
-              <div class="guide-card" style="display:flex; align-items:center; gap:14px; background:white; border-radius:16px; padding:14px 16px; box-shadow:0 2px 8px rgba(0,0,0,0.04); border:1px solid #e5e7eb; animation: guideSlideIn 0.5s ease-out 0.3s both;">
-                <div style="font-size:28px; animation: guidePulse 2.5s ease-in-out 0.5s infinite;">📅</div>
-                <div>
-                  <div style="font-size:14px; font-weight:900; color:#111827; margin-bottom:2px;">날짜 클릭 → 간편 현장 추가</div>
-                  <div style="font-size:12px; color:#6b7280; line-height:1.5;">빈 날짜를 탭하면 해당 날짜에<br>바로 현장을 추가할 수 있어요</div>
-                </div>
-              </div>
-
-            </div>
-          </div>
-          <style>
-            @keyframes guideSlideIn {
-              from { opacity:0; transform:translateY(12px); }
-              to { opacity:1; transform:translateY(0); }
-            }
-            @keyframes guideBounce {
-              0%, 100% { transform:translateY(0); }
-              50% { transform:translateY(-4px); }
-            }
-            @keyframes guidePulse {
-              0%, 100% { transform:scale(1); }
-              50% { transform:scale(1.15); }
-            }
-            @keyframes guideSwipe {
-              0%, 100% { transform:translateX(0); }
-              25% { transform:translateX(-5px); }
-              75% { transform:translateX(5px); }
-            }
-          </style>
+          <%= render partial: 'projects/calendar_tips' %>
         </div>
 
         <!-- 패널 2: 다음달 -->
@@ -193,6 +129,7 @@
             @selected_date = nil
           %>
           <%= render partial: 'projects/calendar_grid' %>
+          <%= render partial: 'projects/calendar_tips' %>
           <% 
             @calendar_rows = saved_rows
             @calendar_month = saved_month
@@ -638,12 +575,10 @@ document.addEventListener('DOMContentLoaded', function() {
     '<div style="font-size:28px;">📅</div><div><div style="font-size:14px; font-weight:900; color:#111827; margin-bottom:2px;">날짜 클릭 → 간편 현장 추가</div><div style="font-size:12px; color:#6b7280; line-height:1.5;">빈 날짜를 탭하면 해당 날짜에<br>바로 현장을 추가할 수 있어요</div></div></div>' +
     '</div></div>';
 
-  function appendGuideIfCurrentMonth(panel, year, month) {
-    if (year === TODAY_YEAR && month === TODAY_MONTH) {
-      var guide = document.createElement('div');
-      guide.innerHTML = GUIDE_HTML;
-      panel.appendChild(guide.firstChild);
-    }
+  function appendGuideToPanel(panel) {
+    var guide = document.createElement('div');
+    guide.innerHTML = GUIDE_HTML;
+    panel.appendChild(guide.firstChild);
   }
 
   function getPanels() {
@@ -728,7 +663,7 @@ document.addEventListener('DOMContentLoaded', function() {
       newPanel.dataset.month = m;
       newPanel.style.cssText = 'width:33.333%; min-height:100%; flex-shrink:0; display:flex; flex-direction:column;';
       newPanel.innerHTML = html;
-      appendGuideIfCurrentMonth(newPanel, y, m);
+      appendGuideToPanel(newPanel);
       track.appendChild(newPanel);
       rebindCellEvents();
     });
@@ -778,7 +713,7 @@ document.addEventListener('DOMContentLoaded', function() {
       newPanel.dataset.month = m;
       newPanel.style.cssText = 'width:33.333%; min-height:100%; flex-shrink:0; display:flex; flex-direction:column;';
       newPanel.innerHTML = html;
-      appendGuideIfCurrentMonth(newPanel, y, m);
+      appendGuideToPanel(newPanel);
       track.style.visibility = 'hidden';
       track.insertBefore(newPanel, track.firstChild);
       track.style.transform = 'translateX(' + BASE_OFFSET + '%)';
