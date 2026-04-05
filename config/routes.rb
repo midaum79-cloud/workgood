@@ -17,6 +17,7 @@ Rails.application.routes.draw do
   delete "logout", to: "sessions#destroy",    as: :logout
   get  "signup", to: "registrations#new",     as: :signup
   post "signup", to: "registrations#create"
+  delete "account", to: "registrations#destroy", as: :delete_account
 
   # Password reset
   get  "password_resets/new",        to: "password_resets#new",    as: :new_password_reset
@@ -43,7 +44,7 @@ Rails.application.routes.draw do
   # Subscription
   get   "subscription",        to: "subscriptions#index",  as: :subscription
   patch "subscription",        to: "subscriptions#update"
-  get   "subscription/verify", to: "subscriptions#verify", as: :verify_subscription
+  get   "subscription/verify_apple", to: "subscriptions#verify_apple", as: :verify_apple_subscription
   delete "subscription",       to: "subscriptions#cancel", as: :cancel_subscription
 
   # Widget Settings
@@ -89,12 +90,14 @@ Rails.application.routes.draw do
   resources :projects do
     member do
       get :project_calendar, path: 'calendar'
+      get :project_calendar_panel, path: 'calendar_panel'
       delete :purge_photo
       patch :update_payment
       post :add_photos
     end
     collection do
       get :calendar
+      get :calendar_panel
       get :manage
       get :archive
       get :monthly_payments

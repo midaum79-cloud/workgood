@@ -1,0 +1,79 @@
+<% @calendar_rows.each_with_index do |row_days, row_index| %>
+  <div style="flex:1; border-bottom:<%= row_index == @calendar_rows.length - 1 ? 'none' : '1px solid #f3f4f6' %>; display:flex; flex-direction:column;">
+    <div style="display:grid; grid-template-columns:repeat(7, 1fr);">
+      <% row_days.each do |day| %>
+        <% is_current_month = (day.month == @calendar_month) %>
+        <% is_selected = (day == @selected_date) %>
+        <% day_projects = @projects_by_date[day] || [] %>
+
+        <% date_text_color = if !is_current_month
+            '#9ca3af'
+          elsif day.sunday?
+            '#ef4444'
+          elsif day.saturday?
+            '#3b82f6'
+          else
+            '#111827'
+          end %>
+
+        <div class="calendar-date-cell"
+             data-date="<%= day.to_s %>"
+             style="
+              min-height:60px;
+              border-right:none;
+              padding:3px 2px 2px 2px;
+              box-sizing:border-box;
+              background:<%= is_selected ? '#f6e8b0' : 'white' %>;
+              display:flex;
+              flex-direction:column;
+              align-items:stretch;
+              cursor:pointer;
+              transition: background 0.2s;
+            ">
+          <div style="display:flex; justify-content:center; margin-bottom:2px;">
+            <span style="
+              display:inline-flex;
+              align-items:center;
+              justify-content:center;
+              width:24px;
+              height:24px;
+              border-radius:50%;
+              font-size:13px;
+              font-weight:900;
+              color:<%= is_selected ? 'white' : date_text_color %>;
+              background:<%= is_selected ? '#f59e0b' : 'transparent' %>;
+            "><%= format('%02d', day.day) %></span>
+          </div>
+
+          <% if is_current_month %>
+            <% day_projects.each do |proj| %>
+              <div class="schedule-chip"
+                   draggable="true"
+                   data-project-id="<%= proj.id %>"
+                   data-date="<%= day.to_s %>"
+                   onclick="window.location.href='<%= "/projects/#{proj.id}" %>'"
+                   style="
+                    font-size:9px;
+                    font-weight:800;
+                    color:<%= proj.theme_color_hex %>;
+                    background:<%= proj.theme_color_hex %>1a;
+                    border:1px solid <%= proj.theme_color_hex %>4d;
+                    border-radius:4px;
+                    padding:2px 3px;
+                    margin-bottom:1px;
+                    overflow:hidden;
+                    white-space:nowrap;
+                    text-overflow:ellipsis;
+                    cursor:grab;
+                    user-select:none;
+                    -webkit-user-select:none;
+                   ">
+                <%= proj.client_name.presence || proj.project_name %>
+              </div>
+            <% end %>
+          <% end %>
+        </div>
+      <% end %>
+    </div>
+  </div>
+<% end %>

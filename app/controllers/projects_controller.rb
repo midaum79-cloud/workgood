@@ -1,7 +1,7 @@
 class ProjectsController < ApplicationController
   before_action :require_login
   before_action :require_plan_for_project!, only: %i[new create]
-  before_action :set_project, only: %i[show edit update destroy project_calendar]
+  before_action :set_project, only: %i[show edit update destroy project_calendar project_calendar_panel]
 
   def index
     @selected_status = params[:status].presence || '예정'
@@ -216,6 +216,46 @@ class ProjectsController < ApplicationController
 
     # 선택 날짜에 해당하는 프로젝트 목록
     @selected_day_projects = @projects_by_date[@selected_date] || []
+
+    # 3패널 캐러셀용: 이전달/다음달 데이터
+    @prev_calendar = build_month_data(@prev_month, current_user.id, @selected_status)
+    @next_calendar = build_month_data(@next_month, current_user.id, @selected_status)
+  end
+
+  # AJAX: 특정 월의 캘린더 그리드 HTML 조각만 반환 (3패널 캐러셀용)
+  def calendar_panel
+    @selected_status = params[:status]
+    base_date = Date.new(params[:year].to_i, params[:month].to_i, 1)
+
+    @calendar_year = base_date.year
+    @calendar_month = base_date.month
+
+    month_first_day = Date.new(@calendar_year, @calendar_month, 1)
+    month_last_day = Date.new(@calendar_year, @calendar_month, -1)
+    calendar_start = month_first_day.beginning_of_week(:sunday)
+    calendar_end = month_last_day.end_of_week(:sunday)
+    all_days = (calendar_start..calendar_end).to_a
+    @calendar_rows = all_days.each_slice(7).to_a
+
+    @selected_date = params[:selected_date].present? ? Date.parse(params[:selected_date]) : Time.zone.today
+
+    schedules = ProjectSchedule
+      .joins(:project)
+      .where(projects: { user_id: current_user.id })
+      .where(work_date: calendar_start..calendar_end)
+      .includes(:project)
+
+    if @selected_status.present? && @selected_status != "all"
+      schedules = schedules.where(projects: { status: @selected_status })
+    end
+
+    @projects_by_date = {}
+    schedules.each do |schedule|
+      @projects_by_date[schedule.work_date] ||= []
+      @projects_by_date[schedule.work_date] << schedule.project unless @projects_by_date[schedule.work_date].include?(schedule.project)
+    end
+
+    render partial: 'projects/calendar_grid', layout: false
   end
 
   def move_schedule
@@ -332,6 +372,44 @@ class ProjectsController < ApplicationController
 
     # 선택 날짜에 해당하는 프로젝트 목록
     @selected_day_projects = @projects_by_date[@selected_date] || []
+
+    # 3패널 캐러셀용: 이전달/다음달 데이터
+    @prev_calendar = build_month_data_for_project(@prev_month, client_project_ids)
+    @next_calendar = build_month_data_for_project(@next_month, client_project_ids)
+  end
+
+  # AJAX: 프로젝트 캘린더 패널 HTML 조각 반환
+  def project_calendar_panel
+    @client_name = @project.client_name.presence || @project.project_name
+    @client_projects = current_user.projects.where(client_name: @client_name).order(:start_date)
+
+    base_date = Date.new(params[:year].to_i, params[:month].to_i, 1)
+
+    @calendar_year = base_date.year
+    @calendar_month = base_date.month
+
+    month_first_day = Date.new(@calendar_year, @calendar_month, 1)
+    month_last_day = Date.new(@calendar_year, @calendar_month, -1)
+    calendar_start = month_first_day.beginning_of_week(:sunday)
+    calendar_end = month_last_day.end_of_week(:sunday)
+    all_days = (calendar_start..calendar_end).to_a
+    @calendar_rows = all_days.each_slice(7).to_a
+
+    @selected_date = params[:selected_date].present? ? Date.parse(params[:selected_date]) : Time.zone.today
+
+    client_project_ids = @client_projects.pluck(:id)
+    schedules = ProjectSchedule
+      .where(project_id: client_project_ids)
+      .where(work_date: calendar_start..calendar_end)
+      .includes(:project)
+
+    @projects_by_date = {}
+    schedules.each do |schedule|
+      @projects_by_date[schedule.work_date] ||= []
+      @projects_by_date[schedule.work_date] << schedule.project unless @projects_by_date[schedule.work_date].include?(schedule.project)
+    end
+
+    render partial: 'projects/calendar_grid', layout: false
   end
 
   def show
@@ -504,6 +582,61 @@ class ProjectsController < ApplicationController
 
   def detail_address_present?
     params[:detail_address].present?
+  end
+
+  # 특정 월의 캘린더 데이터 빌드 (메인 캘린더용)
+  def build_month_data(base_date, user_id, selected_status)
+    year = base_date.year
+    month = base_date.month
+    month_first = Date.new(year, month, 1)
+    month_last = Date.new(year, month, -1)
+    cal_start = month_first.beginning_of_week(:sunday)
+    cal_end = month_last.end_of_week(:sunday)
+    days = (cal_start..cal_end).to_a
+    rows = days.each_slice(7).to_a
+
+    schedules = ProjectSchedule
+      .joins(:project)
+      .where(projects: { user_id: user_id })
+      .where(work_date: cal_start..cal_end)
+      .includes(:project)
+
+    if selected_status.present? && selected_status != "all"
+      schedules = schedules.where(projects: { status: selected_status })
+    end
+
+    pbd = {}
+    schedules.each do |s|
+      pbd[s.work_date] ||= []
+      pbd[s.work_date] << s.project unless pbd[s.work_date].include?(s.project)
+    end
+
+    { year: year, month: month, rows: rows, projects_by_date: pbd }
+  end
+
+  # 특정 월의 캘린더 데이터 빌드 (프로젝트 캘린더용)
+  def build_month_data_for_project(base_date, project_ids)
+    year = base_date.year
+    month = base_date.month
+    month_first = Date.new(year, month, 1)
+    month_last = Date.new(year, month, -1)
+    cal_start = month_first.beginning_of_week(:sunday)
+    cal_end = month_last.end_of_week(:sunday)
+    days = (cal_start..cal_end).to_a
+    rows = days.each_slice(7).to_a
+
+    schedules = ProjectSchedule
+      .where(project_id: project_ids)
+      .where(work_date: cal_start..cal_end)
+      .includes(:project)
+
+    pbd = {}
+    schedules.each do |s|
+      pbd[s.work_date] ||= []
+      pbd[s.work_date] << s.project unless pbd[s.work_date].include?(s.project)
+    end
+
+    { year: year, month: month, rows: rows, projects_by_date: pbd }
   end
 
   def project_params

@@ -132,5 +132,13 @@
       <% end %>
     </div>
 
+    <%# ── 회원 탈퇴 ── %>
+    <div style="margin-top:8px; text-align:center;">
+      <%= button_to delete_account_path, method: :delete, form: { onsubmit: "return confirm('정말 계정을 삭제하시겠습니까? 관련 데이터가 모두 삭제되며 복구할 수 없습니다.');" },
+          style: "background:none; border:none; color:#9ca3af; font-size:13px; font-weight:600; text-decoration:underline; cursor:pointer; font-family:inherit; padding:12px;" do %>
+        회원 탈퇴하기
+      <% end %>
+    </div>
+
   </div>
 </div>

@@ -17,6 +17,13 @@ class RegistrationsController < ApplicationController
     end
   end
 
+  def destroy
+    # 앱스토어 심사용: 계정 삭제 액션
+    current_user.destroy
+    session[:user_id] = nil
+    redirect_to root_path, notice: "계정이 정상적으로 삭제되었습니다."
+  end
+
   private
 
   def registration_params
