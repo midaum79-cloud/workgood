@@ -13,33 +13,9 @@
 .calendar-animate-in {
   animation: slideInRight 0.3s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
 }
-
-/* 다이어리 전용: app-content 스크롤 차단 */
-.app-content:has(#diaryRoot) {
-  overflow: hidden !important;
-  display: flex !important;
-  flex-direction: column !important;
-}
 </style>
 
-<script>
-(function() {
-  function applyDiaryLayout() {
-    var root = document.getElementById('diaryRoot');
-    if (!root) return;
-    var appContent = document.querySelector('.app-content');
-    if (appContent) {
-      appContent.style.overflow = 'hidden';
-      appContent.style.display = 'flex';
-      appContent.style.flexDirection = 'column';
-    }
-  }
-  document.addEventListener('DOMContentLoaded', applyDiaryLayout);
-  document.addEventListener('turbo:load', applyDiaryLayout);
-})();
-</script>
-
-<div id="diaryRoot" style="display:flex; flex-direction:column; flex:1; overflow:hidden; min-height:0; background:white;">
+<div id="diaryRoot" style="display:flex; flex-direction:column; height:calc(100dvh - 64px - env(safe-area-inset-bottom, 0px)); overflow:hidden; background:white;">
 
   <!-- 헤더 -->
   <div style="background:white; padding:18px 20px 14px 20px; border-bottom:1px solid #f0f0f0; position:sticky; top:0; z-index:30;">
