@@ -415,7 +415,9 @@
           var s = el.getAttribute('style') || '';
           var isSticky = s.includes('position:sticky') || s.includes('position: sticky');
           var isTop0   = s.includes('top:0') || s.includes('top: 0');
-          if (isSticky && isTop0 && !el.classList.contains('safe-sticky-header')) {
+          // fixed 루트 컨테이너 내부의 헤더는 제외 (이미 top: env(safe-area-inset-top) 적용됨)
+          var insideFixedRoot = el.closest('#calendarRoot, #diaryRoot, #projectCalendarRoot');
+          if (isSticky && isTop0 && !insideFixedRoot && !el.classList.contains('safe-sticky-header')) {
             el.classList.add('safe-sticky-header');
           }
         });
