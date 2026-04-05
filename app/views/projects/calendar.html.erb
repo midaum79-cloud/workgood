@@ -90,11 +90,11 @@
     </div>
 
     <!-- 3패널 캐러셀 컨테이너 -->
-    <div id="carouselViewport" style="overflow:hidden; background:white; flex:1; height:0; position:relative;">
-      <div id="carouselTrack" style="display:flex; width:300%; height:100%; transform:translateX(-33.333%); will-change:transform;">
+    <div id="carouselViewport" style="overflow-x:hidden; overflow-y:auto; background:white; flex:1; height:0; position:relative; -webkit-overflow-scrolling:touch; touch-action:pan-y;">
+      <div id="carouselTrack" style="display:flex; width:300%; min-height:100%; transform:translateX(-33.333%); will-change:transform;">
         
         <!-- 패널 0: 이전달 -->
-        <div class="carousel-panel" data-year="<%= @prev_calendar[:year] %>" data-month="<%= @prev_calendar[:month] %>" style="width:33.333%; height:100%; flex-shrink:0; overflow-y:auto; -webkit-overflow-scrolling:touch; display:flex; flex-direction:column;">
+        <div class="carousel-panel" data-year="<%= @prev_calendar[:year] %>" data-month="<%= @prev_calendar[:month] %>" style="width:33.333%; min-height:100%; flex-shrink:0; display:flex; flex-direction:column;">
           <% 
             saved_rows = @calendar_rows
             saved_month = @calendar_month
@@ -115,7 +115,7 @@
         </div>
 
         <!-- 패널 1: 현재달 (활성) -->
-        <div class="carousel-panel" data-year="<%= @calendar_year %>" data-month="<%= @calendar_month %>" style="width:33.333%; height:100%; flex-shrink:0; overflow-y:auto; -webkit-overflow-scrolling:touch; display:flex; flex-direction:column;">
+        <div class="carousel-panel" data-year="<%= @calendar_year %>" data-month="<%= @calendar_month %>" style="width:33.333%; min-height:100%; flex-shrink:0; display:flex; flex-direction:column;">
           <%= render partial: 'projects/calendar_grid' %>
 
           <!-- 캘린더 사용 가이드 -->
@@ -186,7 +186,7 @@
         </div>
 
         <!-- 패널 2: 다음달 -->
-        <div class="carousel-panel" data-year="<%= @next_calendar[:year] %>" data-month="<%= @next_calendar[:month] %>" style="width:33.333%; height:100%; flex-shrink:0; overflow-y:auto; -webkit-overflow-scrolling:touch; display:flex; flex-direction:column;">
+        <div class="carousel-panel" data-year="<%= @next_calendar[:year] %>" data-month="<%= @next_calendar[:month] %>" style="width:33.333%; min-height:100%; flex-shrink:0; display:flex; flex-direction:column;">
           <% 
             @calendar_rows = @next_calendar[:rows]
             @calendar_month = @next_calendar[:month]
@@ -606,17 +606,10 @@ document.addEventListener('DOMContentLoaded', function() {
 </script>
 
 <style>
-#carouselViewport { touch-action: pan-y; } /* 세로 스크롤 허용 */
+#carouselViewport { touch-action: pan-y; overflow-x:hidden; overflow-y:auto; } /* viewport가 세로 스크롤 담당 */
 #carouselTrack { transition: none; }
 #carouselTrack.animating { transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
-/* 패널: 세로 스크롤 허용 (Android 핵심) */
-.carousel-panel {
-  height: 100%;
-  overflow-y: auto;
-  -webkit-overflow-scrolling: touch;
-  touch-action: pan-y; /* Android에서 세로 스크롤 활성화 */
-  overscroll-behavior: contain;
-}
+.carousel-panel { min-height: 100%; flex-shrink: 0; }
 </style>
 
 <script>
@@ -720,8 +713,9 @@ document.addEventListener('DOMContentLoaded', function() {
     track.style.visibility = 'hidden';
     panels[0].remove();
     track.style.transform = 'translateX(' + BASE_OFFSET + '%)';
-    track.offsetHeight; // 강제 리플로우
+    track.offsetHeight;
     track.style.visibility = '';
+    viewport.scrollTop = 0; // 새 달로 이동 시 스크롤 초기화
 
     updateMonthLabel();
     rebindCellEvents();
@@ -733,7 +727,7 @@ document.addEventListener('DOMContentLoaded', function() {
       newPanel.className = 'carousel-panel';
       newPanel.dataset.year = y;
       newPanel.dataset.month = m;
-      newPanel.style.cssText = 'width:33.333%; height:100%; flex-shrink:0; overflow-y:auto; -webkit-overflow-scrolling:touch; display:flex; flex-direction:column;';
+      newPanel.style.cssText = 'width:33.333%; min-height:100%; flex-shrink:0; display:flex; flex-direction:column;';
       newPanel.innerHTML = html;
       appendGuideIfCurrentMonth(newPanel, y, m);
       track.appendChild(newPanel);
@@ -771,6 +765,7 @@ document.addEventListener('DOMContentLoaded', function() {
     track.style.transform = 'translateX(0%)';
     track.offsetHeight;
     track.style.visibility = '';
+    viewport.scrollTop = 0; // 새 달로 이동 시 스크롤 초기화
 
     updateMonthLabel();
     rebindCellEvents();
@@ -782,7 +777,7 @@ document.addEventListener('DOMContentLoaded', function() {
       newPanel.className = 'carousel-panel';
       newPanel.dataset.year = y;
       newPanel.dataset.month = m;
-      newPanel.style.cssText = 'width:33.333%; height:100%; flex-shrink:0; overflow-y:auto; -webkit-overflow-scrolling:touch; display:flex; flex-direction:column;';
+      newPanel.style.cssText = 'width:33.333%; min-height:100%; flex-shrink:0; display:flex; flex-direction:column;';
       newPanel.innerHTML = html;
       appendGuideIfCurrentMonth(newPanel, y, m);
       track.style.visibility = 'hidden';
