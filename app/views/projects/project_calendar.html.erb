@@ -1,4 +1,25 @@
-<div style="position:fixed; top:0; left:0; right:0; bottom:0; background:white; padding:0 0 calc(64px + env(safe-area-inset-bottom)) 0; display:flex; flex-direction:column; box-sizing:border-box; overflow:hidden; z-index:10;">
+<style>
+#projectCalendarRoot {
+  position: fixed;
+  top: env(safe-area-inset-top, 0px);
+  left: 0;
+  right: 0;
+  bottom: calc(58px + env(safe-area-inset-bottom, 0px));
+  display: flex;
+  flex-direction: column;
+  background: white;
+  z-index: 10;
+}
+@media (min-width: 480px) {
+  #projectCalendarRoot {
+    left: 50%;
+    transform: translateX(-50%);
+    width: 430px;
+    right: auto;
+  }
+}
+</style>
+<div id="projectCalendarRoot">
 
 <div style="background:white; padding:18px 20px 14px 20px; border-bottom:1px solid #ececec; z-index:50; flex-shrink:0;">
   <div style="display:flex; justify-content:space-between; align-items:center;">
@@ -73,7 +94,7 @@
     </div>
 
     <!-- 3패널 캐러셀 컨테이너 -->
-    <div id="carouselViewport" style="overflow-x:hidden; overflow-y:auto; background:white; flex:1; height:0; position:relative; touch-action:pan-y; -webkit-overflow-scrolling:touch;">
+    <div id="carouselViewport" style="overflow-x:hidden; overflow-y:auto; background:white; flex:1; min-height:0; position:relative; touch-action:pan-y; -webkit-overflow-scrolling:touch;">
       <div id="carouselTrack" style="display:flex; width:300%; min-height:100%; transform:translateX(-33.333%); will-change:transform;">
         
         <!-- 패널 0: 이전달 -->
