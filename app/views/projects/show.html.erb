@@ -157,17 +157,23 @@
         <div style="background:#f9fafb; border-radius:14px; padding:14px;">
           <div style="font-size:12px; font-weight:800; color:#6b7280; margin-bottom:8px;">결제여부</div>
           <div style="display:flex; flex-wrap:wrap; gap:6px;">
-            <% ['미결제', '계약금결제', '중도금결제', '잔금결제', '완납'].each do |status| %>
-              <% is_active = (@project.payment_status == status) %>
+            <% show_options = [
+              { label: '미결제', value: '미결제' },
+              { label: '계약금결제', value: '계약금결제' },
+              { label: '중도금결제', value: '중도금결제' },
+              { label: '잔금결제(완납)', value: '완납' }
+            ] %>
+            <% show_options.each do |opt| %>
+              <% is_active = (@project.payment_status == opt[:value]) %>
               <span style="
                 display:inline-flex; align-items:center; padding:8px 12px;
                 border-radius:10px; font-size:13px; font-weight:800;
-                border:1.5px solid <%= is_active ? (status == '완납' ? '#16a34a' : '#2563eb') : '#e5e7eb' %>;
-                background:<%= is_active ? (status == '완납' ? '#dcfce7' : '#dbeafe') : '#f3f4f6' %>;
-                color:<%= is_active ? (status == '완납' ? '#166534' : '#1d4ed8') : '#9ca3af' %>;
+                border:1.5px solid <%= is_active ? (opt[:value] == '완납' ? '#16a34a' : '#2563eb') : '#e5e7eb' %>;
+                background:<%= is_active ? (opt[:value] == '완납' ? '#dcfce7' : '#dbeafe') : '#f3f4f6' %>;
+                color:<%= is_active ? (opt[:value] == '완납' ? '#166534' : '#1d4ed8') : '#9ca3af' %>;
                 opacity:<%= is_active ? '1' : '0.5' %>;
               ">
-                <%= is_active ? '✓ ' : '' %><%= status %>
+                <%= is_active ? '✓ ' : '' %><%= opt[:label] %>
               </span>
             <% end %>
           </div>

@@ -184,15 +184,21 @@
           <div>
             <div style="font-size:13px; font-weight:800; color:#374151; margin-bottom:6px;">결제여부</div>
             <div style="display:flex; gap:8px; overflow-x:auto; padding-bottom:4px; -webkit-overflow-scrolling:touch;">
-              <% ['미결제', '계약금결제', '중도금결제', '잔금결제', '완납'].each do |status| %>
+              <% payment_options = [
+                { label: '미결제', value: '미결제' },
+                { label: '계약금결제', value: '계약금결제' },
+                { label: '중도금결제', value: '중도금결제' },
+                { label: '잔금결제(완납)', value: '완납' }
+              ] %>
+              <% payment_options.each do |opt| %>
                 <label style="cursor:pointer;">
-                  <%= form.radio_button :payment_status, status, style: "display:none;", id: "payment_status_#{status}" %>
+                  <%= form.radio_button :payment_status, opt[:value], style: "display:none;", id: "payment_status_#{opt[:value]}", checked: (@project.payment_status == opt[:value]) %>
                   <span onclick="this.previousElementSibling.click();"
                         class="payment-pill"
-                        data-status="<%= status %>"
+                        data-status="<%= opt[:value] %>"
                         style="display:inline-flex; align-items:center; padding:10px 12px; border-radius:12px; font-size:13px; font-weight:800; border:1.5px solid #d1d5db; color:#6b7280; background:white; cursor:pointer; white-space:nowrap;
-                        <%= @project.payment_status == status ? 'background:#2563eb; color:white; border-color:#2563eb;' : '' %>">
-                    <%= status %>
+                        <%= @project.payment_status == opt[:value] ? 'background:#2563eb; color:white; border-color:#2563eb;' : '' %>">
+                    <%= opt[:label] %>
                   </span>
                 </label>
               <% end %>
