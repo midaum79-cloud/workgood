@@ -1,24 +1,33 @@
 <style>
 .hide-scrollbar::-webkit-scrollbar { display: none; }
 .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+/* 캘린더 전용: app-content 스크롤 차단, 높이/패딩은 건드리지 않음 */
+.app-content:has(#calendarRoot) {
+  overflow: hidden !important;
+  display: flex !important;
+  flex-direction: column !important;
+}
 </style>
 
 <script>
-// 부모 .app-content의 스크롤을 차단하여 상단바 고정
-document.addEventListener('DOMContentLoaded', function() {
-  var appContent = document.querySelector('.app-content');
-  if (appContent) {
-    appContent.style.overflow = 'hidden';
-    appContent.style.height = '100dvh';
-    appContent.style.minHeight = '0';
-    appContent.style.paddingBottom = '0';
-    appContent.style.display = 'flex';
-    appContent.style.flexDirection = 'column';
+(function() {
+  function applyCalendarLayout() {
+    var root = document.getElementById('calendarRoot');
+    if (!root) return;
+    var appContent = document.querySelector('.app-content');
+    if (appContent) {
+      /* overflow만 제어 — height/paddingBottom은 절대 건드리지 않음 */
+      appContent.style.overflow = 'hidden';
+      appContent.style.display = 'flex';
+      appContent.style.flexDirection = 'column';
+    }
   }
-});
+  document.addEventListener('DOMContentLoaded', applyCalendarLayout);
+  document.addEventListener('turbo:load', applyCalendarLayout);
+})();
 </script>
 
-<div style="background:white; display:flex; flex-direction:column; flex:1; overflow:hidden;">
+<div id="calendarRoot" style="display:flex; flex-direction:column; flex:1; overflow:hidden; min-height:0;">
 
   <div style="background:white; padding:18px 20px 14px 20px; border-bottom:1px solid #f0f0f0; position:sticky; top:0; z-index:30;">
     <div style="display:flex; justify-content:space-between; align-items:center;">
