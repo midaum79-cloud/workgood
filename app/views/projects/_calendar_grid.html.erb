@@ -3,7 +3,7 @@
     <div style="display:grid; grid-template-columns:repeat(7, 1fr);">
       <% row_days.each do |day| %>
         <% is_current_month = (day.month == @calendar_month) %>
-        <% is_selected = (day == @selected_date) %>
+        <% is_today = (day == Date.current) %>
         <% day_projects = @projects_by_date[day] || [] %>
 
         <% date_text_color = if !is_current_month
@@ -23,7 +23,7 @@
               border-right:none;
               padding:3px 2px 2px 2px;
               box-sizing:border-box;
-              background:<%= is_selected ? '#f6e8b0' : 'white' %>;
+              background:white;
               display:flex;
               flex-direction:column;
               align-items:stretch;
@@ -40,8 +40,8 @@
               border-radius:50%;
               font-size:13px;
               font-weight:900;
-              color:<%= is_selected ? 'white' : date_text_color %>;
-              background:<%= is_selected ? '#f59e0b' : 'transparent' %>;
+              color:<%= is_today ? 'white' : date_text_color %>;
+              background:<%= is_today ? '#f59e0b' : 'transparent' %>;
             "><%= format('%02d', day.day) %></span>
           </div>
 
