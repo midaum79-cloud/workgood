@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_04_02_150343) do
+ActiveRecord::Schema[8.1].define(version: 2026_04_05_092446) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -199,12 +199,16 @@ ActiveRecord::Schema[8.1].define(version: 2026_04_02_150343) do
     t.string "evening_alert_time"
     t.boolean "is_active"
     t.text "memo"
+    t.boolean "morning_alert_enabled"
+    t.string "morning_alert_time"
     t.string "name"
     t.string "password_digest"
     t.datetime "password_reset_sent_at"
     t.string "password_reset_token"
     t.string "phone"
     t.string "provider"
+    t.integer "receivable_alert_days"
+    t.boolean "receivable_alert_enabled"
     t.string "role"
     t.datetime "subscription_expires_at"
     t.string "subscription_plan"

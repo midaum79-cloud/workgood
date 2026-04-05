@@ -57,6 +57,9 @@ Rails.application.routes.draw do
 
   # Notifications
   resources :notifications do
+    collection do
+      patch :update_settings
+    end
     member do
       post :read
     end

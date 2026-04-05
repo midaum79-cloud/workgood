@@ -7,7 +7,7 @@
       <div style="width:40px;"></div>
     </div>
     
-    <!-- 카테고리 탭 (전체 / 일정 / 정산) -->
+    <!-- 카테고리 탭 (전체 / 일정 / 정산 / 설정) -->
     <div style="display:flex; gap:16px;">
       <%= link_to "전체", notifications_path(tab: 'all'), 
           style: "padding-bottom:12px; font-size:15px; font-weight:800; text-decoration:none; color:#{@current_tab == 'all' ? '#111827' : '#9ca3af'}; border-bottom:3px solid #{@current_tab == 'all' ? '#111827' : 'transparent'};" %>
@@ -23,96 +23,279 @@
           <div style="position:absolute; top:-2px; right:-8px; width:6px; height:6px; background:#ef4444; border-radius:50%;"></div>
         <% end %>
       <% end %>
+      <%= link_to "⚙️ 설정", notifications_path(tab: 'settings'),
+          style: "padding-bottom:12px; font-size:15px; font-weight:800; text-decoration:none; color:#{@current_tab == 'settings' ? '#111827' : '#9ca3af'}; border-bottom:3px solid #{@current_tab == 'settings' ? '#111827' : 'transparent'};" %>
     </div>
   </div>
 
-  <% if @notifications.any? %>
-    <div style="display:flex; flex-direction:column; gap:12px; margin-bottom:30px;">
-      <% @notifications.each do |n| %>
-        <% 
-          card_link = n.link_url.presence || (n.project.present? ? project_path(n.project) : '#')
-          category_icon = case n.category
-                          when 'schedule' then '📅'
-                          when 'finance' then '💰'
-                          else '🔔'
-                          end
-        %>
-        
-        <div onclick="<%= "window.location.href='#{card_link}'" unless card_link == '#' %>" style="
-          background:<%= n.status == 'unread' ? '#eff6ff' : 'white' %>;
-          border-radius:18px;
-          padding:18px;
-          border:1px solid <%= n.status == 'unread' ? '#bfdbfe' : '#e5e7eb' %>;
-          box-shadow:0 2px 8px rgba(0,0,0,0.03);
-          cursor:<%= card_link == '#' ? 'default' : 'pointer' %>;
-          display:flex; flex-direction:column; gap:10px;
-          transition: transform 0.1s;
-        ">
-
-          <div style="display:flex; justify-content:space-between; align-items:flex-start;">
-            <div style="display:flex; gap:8px; align-items:center;">
-              <div style="font-size:18px;"><%= category_icon %></div>
-              <div style="font-size:16px; font-weight:900; color:#111827;">
-                <%= n.title %>
-              </div>
-            </div>
-
-            <% if n.status == "unread" %>
-              <span style="display:inline-block; padding:4px 8px; border-radius:8px; background:#ef4444; color:white; font-size:11px; font-weight:900;">
-                NEW
-              </span>
-            <% end %>
-          </div>
-
-          <div style="font-size:14px; color:#4b5563; line-height:1.5; white-space:pre-wrap;"><%= n.message %></div>
-
-          <div style="display:flex; justify-content:space-between; align-items:center; margin-top:4px;">
-            <div style="font-size:12px; color:#9ca3af; font-weight:700;">
-              <%= n.created_at.strftime("%m/%d %H:%M") %>
-            </div>
-            <% if card_link != '#' %>
-              <div style="font-size:12px; font-weight:800; color:#2563eb;">바로가기 →</div>
-            <% end %>
-          </div>
-
-        </div>
-      <% end %>
-    </div>
-  <% else %>
-    <div style="
-      background:white;
-      border-radius:18px;
-      padding:40px 20px;
-      text-align:center;
-      color:#9ca3af;
-      font-weight:700;
-      box-shadow:0 2px 8px rgba(0,0,0,0.04);
-      margin-bottom:30px;
-    ">
-      아직 받은 알림이 없습니다.
-    </div>
+  <% if notice %>
+    <div style="margin-bottom:14px; background:#dcfce7; color:#166534; border-radius:14px; padding:12px 16px; font-size:14px; font-weight:700;"><%= notice %></div>
   <% end %>
 
-  <!-- 프리미엄 위젯 설명 섹션 -->
-  <div style="background:linear-gradient(135deg, #1e1b4b, #312e81); border-radius:20px; padding:24px 20px; color:white; box-shadow:0 8px 20px rgba(49, 46, 129, 0.3);">
-    <div style="display:flex; align-items:center; gap:8px; margin-bottom:12px;">
-      <span style="background:#fef08a; color:#854d0e; font-size:11px; font-weight:900; padding:4px 8px; border-radius:6px;">PREMIUM</span>
-      <span style="font-size:16px; font-weight:900;">내 스마트폰을 완벽한 현장 컨트롤 타워로!</span>
-    </div>
-    
-    <div style="font-size:13px; color:#c7d2fe; line-height:1.6; margin-bottom:16px;">
-      프리미엄 위젯을 켜두시면 <strong>앱을 열지 않아도 다음과 같은 스마트 혜택</strong>을 바탕화면에서 즉시 누릴 수 있습니다!
-    </div>
+  <% if @current_tab == 'settings' %>
+    <!-- ========== 알림 설정 탭 ========== -->
+    <%= form_with url: update_settings_notifications_path, method: :patch, local: true do |f| %>
+      
+      <!-- 1. 아침 알림 설정 -->
+      <div style="background:white; border-radius:20px; overflow:hidden; margin-bottom:14px;">
+        <div style="padding:16px 18px; border-bottom:1px solid #f3f4f6; display:flex; align-items:center; gap:10px;">
+          <span style="font-size:18px;">🌅</span>
+          <span style="font-size:16px; font-weight:900; color:#111827;">아침 알림</span>
+          <span style="font-size:12px; color:#9ca3af; font-weight:600;">오늘 일정 안내</span>
+        </div>
+        <div style="padding:16px 18px;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
+            <div>
+              <div style="font-size:14px; font-weight:800; color:#111827;">오늘 일정 알림</div>
+              <div style="font-size:12px; color:#9ca3af; margin-top:2px;">설정 시간에 오늘 현장 일정을 알려드려요</div>
+            </div>
+            <label style="position:relative; display:inline-block; width:50px; height:28px; cursor:pointer;">
+              <%= f.check_box :morning_alert_enabled, name: "user[morning_alert_enabled]",
+                  checked: current_user.morning_alert_enabled,
+                  id: "morning_toggle",
+                  style: "opacity:0; width:0; height:0; position:absolute;",
+                  onchange: "toggleMorningUI(this.checked)" %>
+              <span id="morningTrack" style="position:absolute; top:0; left:0; right:0; bottom:0; background:<%= current_user.morning_alert_enabled ? '#f59e0b' : '#d1d5db' %>; border-radius:999px; transition:background 0.2s;"></span>
+              <span id="morningThumb" style="position:absolute; top:3px; left:<%= current_user.morning_alert_enabled ? '25px' : '3px' %>; width:22px; height:22px; background:white; border-radius:50%; transition:left 0.2s; box-shadow:0 1px 4px rgba(0,0,0,0.2);"></span>
+            </label>
+          </div>
+          <div id="morningTimeSelect" style="display:<%= current_user.morning_alert_enabled ? 'block' : 'none' %>;">
+            <label style="font-size:12px; font-weight:800; color:#6b7280; display:block; margin-bottom:8px;">알림 시간</label>
+            <div style="display:grid; grid-template-columns:repeat(4, 1fr); gap:8px;">
+              <% ["06:00", "07:00", "08:00", "09:00"].each do |time| %>
+                <% is_sel = (current_user.morning_alert_time || "07:00") == time %>
+                <label style="cursor:pointer;">
+                  <%= f.radio_button :morning_alert_time, time, name: "user[morning_alert_time]",
+                      checked: is_sel, style: "display:none;" %>
+                  <div onclick="selectTime(this)" style="text-align:center; padding:10px 4px; border-radius:12px; border:2px solid <%= is_sel ? '#f59e0b' : '#e5e7eb' %>; background:<%= is_sel ? '#fffbeb' : 'white' %>; font-size:13px; font-weight:<%= is_sel ? '900' : '600' %>; color:<%= is_sel ? '#f59e0b' : '#6b7280' %>;">
+                    <%= time.sub(":00", "시") %>
+                  </div>
+                </label>
+              <% end %>
+            </div>
+          </div>
+        </div>
+      </div>
 
-    <ul style="padding-left:18px; margin:0; font-size:13px; color:#e0e7ff; line-height:1.7;">
-      <li style="margin-bottom:6px;"><strong>[자동 일정]</strong> 캘린더에서 업체만 지정해두면 내일 일정(주소/비번)을 비서처럼 <strong>자동으로 스캔하여 발송!</strong></li>
-      <li style="margin-bottom:6px;"><strong>[정산 연동]</strong> 미수금 내역이나 결제 완납 정보를 <strong>즉시 푸시 알림</strong>으로 받아 빠른 정산 가능!</li>
-      <li style="margin-bottom:6px;"><strong>[노쇼 방지]</strong> 반장님과의 실시간 현장 소통 알림 추가 예정!</li>
-    </ul>
+      <!-- 2. 저녁 알림 설정 -->
+      <div style="background:white; border-radius:20px; overflow:hidden; margin-bottom:14px;">
+        <div style="padding:16px 18px; border-bottom:1px solid #f3f4f6; display:flex; align-items:center; gap:10px;">
+          <span style="font-size:18px;">🌙</span>
+          <span style="font-size:16px; font-weight:900; color:#111827;">저녁 알림</span>
+          <span style="font-size:12px; color:#9ca3af; font-weight:600;">내일 일정 안내</span>
+        </div>
+        <div style="padding:16px 18px;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
+            <div>
+              <div style="font-size:14px; font-weight:800; color:#111827;">내일 일정 알림</div>
+              <div style="font-size:12px; color:#9ca3af; margin-top:2px;">설정 시간에 내일 현장 일정을 알려드려요</div>
+            </div>
+            <label style="position:relative; display:inline-block; width:50px; height:28px; cursor:pointer;">
+              <%= f.check_box :evening_alert_enabled, name: "user[evening_alert_enabled]",
+                  checked: current_user.evening_alert_enabled,
+                  id: "evening_toggle",
+                  style: "opacity:0; width:0; height:0; position:absolute;",
+                  onchange: "toggleEveningUI(this.checked)" %>
+              <span id="eveningTrack" style="position:absolute; top:0; left:0; right:0; bottom:0; background:<%= current_user.evening_alert_enabled ? '#2563eb' : '#d1d5db' %>; border-radius:999px; transition:background 0.2s;"></span>
+              <span id="eveningThumb" style="position:absolute; top:3px; left:<%= current_user.evening_alert_enabled ? '25px' : '3px' %>; width:22px; height:22px; background:white; border-radius:50%; transition:left 0.2s; box-shadow:0 1px 4px rgba(0,0,0,0.2);"></span>
+            </label>
+          </div>
+          <div id="eveningTimeSelect" style="display:<%= current_user.evening_alert_enabled ? 'block' : 'none' %>;">
+            <label style="font-size:12px; font-weight:800; color:#6b7280; display:block; margin-bottom:8px;">알림 시간</label>
+            <div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:8px;">
+              <% ["17:00", "18:00", "19:00", "20:00", "21:00", "22:00"].each do |time| %>
+                <% is_sel = (current_user.evening_alert_time || "19:00") == time %>
+                <label style="cursor:pointer;">
+                  <%= f.radio_button :evening_alert_time, time, name: "user[evening_alert_time]",
+                      checked: is_sel, style: "display:none;" %>
+                  <div onclick="selectTime(this)" style="text-align:center; padding:10px 4px; border-radius:12px; border:2px solid <%= is_sel ? '#2563eb' : '#e5e7eb' %>; background:<%= is_sel ? '#eff6ff' : 'white' %>; font-size:13px; font-weight:<%= is_sel ? '900' : '600' %>; color:<%= is_sel ? '#2563eb' : '#6b7280' %>;">
+                    <%= time.sub(":00", "시") %>
+                  </div>
+                </label>
+              <% end %>
+            </div>
+          </div>
+        </div>
+      </div>
 
-    <button style="margin-top:20px; width:100%; display:block; padding:14px; background:white; color:#312e81; border:none; border-radius:12px; font-size:15px; font-weight:900; box-shadow:0 4px 6px rgba(0,0,0,0.1); cursor:pointer;">
-      프리미엄 위젯 설정 알아보기 →
-    </button>
-  </div>
+      <!-- 3. 미수금 알림 설정 -->
+      <div style="background:white; border-radius:20px; overflow:hidden; margin-bottom:14px;">
+        <div style="padding:16px 18px; border-bottom:1px solid #f3f4f6; display:flex; align-items:center; gap:10px;">
+          <span style="font-size:18px;">💰</span>
+          <span style="font-size:16px; font-weight:900; color:#111827;">미수금 알림</span>
+          <span style="font-size:12px; color:#9ca3af; font-weight:600;">정산 연동</span>
+        </div>
+        <div style="padding:16px 18px;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
+            <div>
+              <div style="font-size:14px; font-weight:800; color:#111827;">미수금 리마인더</div>
+              <div style="font-size:12px; color:#9ca3af; margin-top:2px;">완납되지 않은 현장의 미수금을 알려드려요</div>
+            </div>
+            <label style="position:relative; display:inline-block; width:50px; height:28px; cursor:pointer;">
+              <%= f.check_box :receivable_alert_enabled, name: "user[receivable_alert_enabled]",
+                  checked: current_user.receivable_alert_enabled,
+                  id: "receivable_toggle",
+                  style: "opacity:0; width:0; height:0; position:absolute;",
+                  onchange: "toggleReceivableUI(this.checked)" %>
+              <span id="receivableTrack" style="position:absolute; top:0; left:0; right:0; bottom:0; background:<%= current_user.receivable_alert_enabled ? '#10b981' : '#d1d5db' %>; border-radius:999px; transition:background 0.2s;"></span>
+              <span id="receivableThumb" style="position:absolute; top:3px; left:<%= current_user.receivable_alert_enabled ? '25px' : '3px' %>; width:22px; height:22px; background:white; border-radius:50%; transition:left 0.2s; box-shadow:0 1px 4px rgba(0,0,0,0.2);"></span>
+            </label>
+          </div>
+          <div id="receivableDaysSelect" style="display:<%= current_user.receivable_alert_enabled ? 'block' : 'none' %>;">
+            <label style="font-size:12px; font-weight:800; color:#6b7280; display:block; margin-bottom:8px;">미수금 알림 기간 (정산일 기준)</label>
+            <div style="display:grid; grid-template-columns:repeat(5, 1fr); gap:8px;">
+              <% [3, 5, 7, 14, 30].each do |days| %>
+                <% is_sel = (current_user.receivable_alert_days || 7) == days %>
+                <label style="cursor:pointer;">
+                  <%= f.radio_button :receivable_alert_days, days, name: "user[receivable_alert_days]",
+                      checked: is_sel, style: "display:none;" %>
+                  <div onclick="selectTime(this)" style="text-align:center; padding:10px 4px; border-radius:12px; border:2px solid <%= is_sel ? '#10b981' : '#e5e7eb' %>; background:<%= is_sel ? '#ecfdf5' : 'white' %>; font-size:13px; font-weight:<%= is_sel ? '900' : '600' %>; color:<%= is_sel ? '#10b981' : '#6b7280' %>;">
+                    <%= days %>일
+                  </div>
+                </label>
+              <% end %>
+            </div>
+            <div style="margin-top:10px; padding:10px 12px; background:#f0fdf4; border-radius:10px; font-size:12px; color:#166534; line-height:1.5;">
+              💡 정산일로부터 <strong><%= current_user.receivable_alert_days || 7 %>일</strong> 경과 후 미수금이 있으면 알림을 보내드려요. 완납된 현장은 제외됩니다.
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 저장 버튼 -->
+      <div style="margin-top:6px;">
+        <%= f.submit "알림 설정 저장",
+            style: "width:100%; height:52px; background:#111827; color:white; border:none; border-radius:16px; font-size:16px; font-weight:900; cursor:pointer; font-family:inherit; box-shadow:0 4px 12px rgba(0,0,0,0.15);" %>
+      </div>
+
+    <% end %>
+
+    <script>
+      function toggleMorningUI(checked) {
+        document.getElementById('morningTrack').style.background = checked ? '#f59e0b' : '#d1d5db';
+        document.getElementById('morningThumb').style.left = checked ? '25px' : '3px';
+        document.getElementById('morningTimeSelect').style.display = checked ? 'block' : 'none';
+      }
+      function toggleEveningUI(checked) {
+        document.getElementById('eveningTrack').style.background = checked ? '#2563eb' : '#d1d5db';
+        document.getElementById('eveningThumb').style.left = checked ? '25px' : '3px';
+        document.getElementById('eveningTimeSelect').style.display = checked ? 'block' : 'none';
+      }
+      function toggleReceivableUI(checked) {
+        document.getElementById('receivableTrack').style.background = checked ? '#10b981' : '#d1d5db';
+        document.getElementById('receivableThumb').style.left = checked ? '25px' : '3px';
+        document.getElementById('receivableDaysSelect').style.display = checked ? 'block' : 'none';
+      }
+      function selectTime(el) {
+        var parent = el.closest('div[style*="grid"]');
+        parent.querySelectorAll('div[onclick]').forEach(function(d) {
+          d.style.border = '2px solid #e5e7eb';
+          d.style.background = 'white';
+          d.style.fontWeight = '600';
+          d.style.color = '#6b7280';
+        });
+        var colors = { '🌅': ['#f59e0b','#fffbeb'], '🌙': ['#2563eb','#eff6ff'], '💰': ['#10b981','#ecfdf5'] };
+        var section = el.closest('div[style*="border-radius:20px"]');
+        var icon = section.querySelector('span[style*="font-size:18px"]').textContent.trim();
+        var c = colors[icon] || ['#2563eb','#eff6ff'];
+        el.style.border = '2px solid ' + c[0];
+        el.style.background = c[1];
+        el.style.fontWeight = '900';
+        el.style.color = c[0];
+        el.previousElementSibling.checked = true;
+      }
+    </script>
+
+  <% else %>
+    <!-- ========== 알림 목록 탭 ========== -->
+    <% if @notifications.any? %>
+      <div style="display:flex; flex-direction:column; gap:12px; margin-bottom:30px;">
+        <% @notifications.each do |n| %>
+          <% 
+            card_link = n.link_url.presence || (n.project.present? ? project_path(n.project) : '#')
+            category_icon = case n.category
+                            when 'schedule' then '📅'
+                            when 'finance' then '💰'
+                            else '🔔'
+                            end
+          %>
+          
+          <div onclick="<%= "window.location.href='#{card_link}'" unless card_link == '#' %>" style="
+            background:<%= n.status == 'unread' ? '#eff6ff' : 'white' %>;
+            border-radius:18px;
+            padding:18px;
+            border:1px solid <%= n.status == 'unread' ? '#bfdbfe' : '#e5e7eb' %>;
+            box-shadow:0 2px 8px rgba(0,0,0,0.03);
+            cursor:<%= card_link == '#' ? 'default' : 'pointer' %>;
+            display:flex; flex-direction:column; gap:10px;
+            transition: transform 0.1s;
+          ">
+
+            <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+              <div style="display:flex; gap:8px; align-items:center;">
+                <div style="font-size:18px;"><%= category_icon %></div>
+                <div style="font-size:16px; font-weight:900; color:#111827;">
+                  <%= n.title %>
+                </div>
+              </div>
+
+              <% if n.status == "unread" %>
+                <span style="display:inline-block; padding:4px 8px; border-radius:8px; background:#ef4444; color:white; font-size:11px; font-weight:900;">
+                  NEW
+                </span>
+              <% end %>
+            </div>
+
+            <div style="font-size:14px; color:#4b5563; line-height:1.5; white-space:pre-wrap;"><%= n.message %></div>
+
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-top:4px;">
+              <div style="font-size:12px; color:#9ca3af; font-weight:700;">
+                <%= n.created_at.strftime("%m/%d %H:%M") %>
+              </div>
+              <% if card_link != '#' %>
+                <div style="font-size:12px; font-weight:800; color:#2563eb;">바로가기 →</div>
+              <% end %>
+            </div>
+
+          </div>
+        <% end %>
+      </div>
+    <% else %>
+      <div style="
+        background:white;
+        border-radius:18px;
+        padding:40px 20px;
+        text-align:center;
+        color:#9ca3af;
+        font-weight:700;
+        box-shadow:0 2px 8px rgba(0,0,0,0.04);
+        margin-bottom:30px;
+      ">
+        아직 받은 알림이 없습니다.
+      </div>
+    <% end %>
+
+    <!-- 프리미엄 위젯 설명 섹션 -->
+    <div style="background:linear-gradient(135deg, #1e1b4b, #312e81); border-radius:20px; padding:24px 20px; color:white; box-shadow:0 8px 20px rgba(49, 46, 129, 0.3);">
+      <div style="display:flex; align-items:center; gap:8px; margin-bottom:12px;">
+        <span style="background:#fef08a; color:#854d0e; font-size:11px; font-weight:900; padding:4px 8px; border-radius:6px;">PREMIUM</span>
+        <span style="font-size:16px; font-weight:900;">내 스마트폰을 완벽한 현장 컨트롤 타워로!</span>
+      </div>
+      
+      <div style="font-size:13px; color:#c7d2fe; line-height:1.6; margin-bottom:16px;">
+        프리미엄 위젯을 켜두시면 <strong>앱을 열지 않아도 다음과 같은 스마트 혜택</strong>을 바탕화면에서 즉시 누릴 수 있습니다!
+      </div>
+
+      <ul style="padding-left:18px; margin:0; font-size:13px; color:#e0e7ff; line-height:1.7;">
+        <li style="margin-bottom:6px;"><strong>[자동 일정]</strong> 캘린더에서 업체만 지정해두면 내일 일정(주소/비번)을 비서처럼 <strong>자동으로 스캔하여 발송!</strong></li>
+        <li style="margin-bottom:6px;"><strong>[정산 연동]</strong> 미수금 내역이나 결제 완납 정보를 <strong>즉시 푸시 알림</strong>으로 받아 빠른 정산 가능!</li>
+        <li style="margin-bottom:6px;"><strong>[노쇼 방지]</strong> 반장님과의 실시간 현장 소통 알림 추가 예정!</li>
+      </ul>
+
+      <button style="margin-top:20px; width:100%; display:block; padding:14px; background:white; color:#312e81; border:none; border-radius:12px; font-size:15px; font-weight:900; box-shadow:0 4px 6px rgba(0,0,0,0.1); cursor:pointer;">
+        프리미엄 위젯 설정 알아보기 →
+      </button>
+    </div>
+  <% end %>
 
 </div>
