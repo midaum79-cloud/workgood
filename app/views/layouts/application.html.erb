@@ -438,10 +438,18 @@
           <span>스케줄</span>
         <% end %>
 
-        <% add_active = current_path == '/projects/new' ? 'active' : '' %>
-        <%= link_to new_project_path, class: "bottom-nav-item #{add_active}" do %>
-          <span class="bottom-nav-icon">➕</span>
-          <span>현장추가</span>
+        <% if current_path == '/projects/calendar' %>
+          <% diary_active = current_path == daily_memos_list_path ? 'active' : '' %>
+          <%= link_to daily_memos_list_path, class: "bottom-nav-item #{diary_active}" do %>
+            <span class="bottom-nav-icon">📒</span>
+            <span>다이어리</span>
+          <% end %>
+        <% else %>
+          <% add_active = current_path == '/projects/new' ? 'active' : '' %>
+          <%= link_to new_project_path, class: "bottom-nav-item #{add_active}" do %>
+            <span class="bottom-nav-icon">➕</span>
+            <span>현장추가</span>
+          <% end %>
         <% end %>
 
         <%= link_to calendar_projects_path, class: "bottom-nav-item #{current_path == '/' || current_path == '/projects/calendar' ? 'active' : ''}" do %>
