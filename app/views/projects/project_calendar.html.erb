@@ -27,10 +27,19 @@ body.capacitor-ios #projectCalendarRoot {
     var nav = document.querySelector('.bottom-nav');
     var root = document.getElementById('projectCalendarRoot');
     if (nav && root) {
-      root.style.bottom = nav.offsetHeight + 'px';
+      requestAnimationFrame(function() {
+        root.style.bottom = nav.offsetHeight + 'px';
+      });
     }
   }
-  document.addEventListener('DOMContentLoaded', syncProjectCalendarBottom);
+  document.addEventListener('DOMContentLoaded', function() {
+    syncProjectCalendarBottom();
+    setTimeout(syncProjectCalendarBottom, 100);
+  });
+  document.addEventListener('turbo:load', function() {
+    syncProjectCalendarBottom();
+    setTimeout(syncProjectCalendarBottom, 100);
+  });
   window.addEventListener('resize', syncProjectCalendarBottom);
 </script>
 <div id="projectCalendarRoot">

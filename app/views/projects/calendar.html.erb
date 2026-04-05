@@ -25,15 +25,23 @@ body.capacitor-ios #calendarRoot {
 }
 </style>
 <script>
-  // 하단 nav의 실제 높이를 측정하여 calendarRoot bottom에 적용
   function syncCalendarBottom() {
     var nav = document.querySelector('.bottom-nav');
     var root = document.getElementById('calendarRoot');
     if (nav && root) {
-      root.style.bottom = nav.offsetHeight + 'px';
+      requestAnimationFrame(function() {
+        root.style.bottom = nav.offsetHeight + 'px';
+      });
     }
   }
-  document.addEventListener('DOMContentLoaded', syncCalendarBottom);
+  document.addEventListener('DOMContentLoaded', function() {
+    syncCalendarBottom();
+    setTimeout(syncCalendarBottom, 100);
+  });
+  document.addEventListener('turbo:load', function() {
+    syncCalendarBottom();
+    setTimeout(syncCalendarBottom, 100);
+  });
   window.addEventListener('resize', syncCalendarBottom);
 </script>
 

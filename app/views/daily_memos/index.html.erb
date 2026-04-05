@@ -42,10 +42,19 @@ body.capacitor-ios #diaryRoot {
     var nav = document.querySelector('.bottom-nav');
     var root = document.getElementById('diaryRoot');
     if (nav && root) {
-      root.style.bottom = nav.offsetHeight + 'px';
+      requestAnimationFrame(function() {
+        root.style.bottom = nav.offsetHeight + 'px';
+      });
     }
   }
-  document.addEventListener('DOMContentLoaded', syncDiaryBottom);
+  document.addEventListener('DOMContentLoaded', function() {
+    syncDiaryBottom();
+    setTimeout(syncDiaryBottom, 100);
+  });
+  document.addEventListener('turbo:load', function() {
+    syncDiaryBottom();
+    setTimeout(syncDiaryBottom, 100);
+  });
   window.addEventListener('resize', syncDiaryBottom);
 </script>
 
