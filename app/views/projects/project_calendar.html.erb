@@ -74,7 +74,7 @@
 
     <!-- 3패널 캐러셀 컨테이너 -->
     <div id="carouselViewport" style="overflow:hidden; background:white; flex:1; display:flex; flex-direction:column; position:relative; touch-action:pan-y;">
-      <div id="carouselTrack" style="display:flex; width:300%; transform:translateX(-33.333%); will-change:transform;">
+      <div id="carouselTrack" style="display:flex; width:300%; height:100%; transform:translateX(-33.333%); will-change:transform;">
         
         <!-- 패널 0: 이전달 -->
         <div class="carousel-panel" data-year="<%= @prev_calendar[:year] %>" data-month="<%= @prev_calendar[:month] %>" style="width:33.333%; flex-shrink:0; display:flex; flex-direction:column;">
@@ -182,9 +182,10 @@ document.addEventListener('DOMContentLoaded', function() {
 </script>
 
 <style>
-.carousel-panel { min-height: 200px; }
-#carouselTrack { transition: none; }
+#carouselViewport { min-height: 0; }
+#carouselTrack { transition: none; min-height: 0; }
 #carouselTrack.animating { transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+.carousel-panel { min-height: 0; height: 100%; }
 </style>
 
 <script>
