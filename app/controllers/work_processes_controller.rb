@@ -1,4 +1,5 @@
 class WorkProcessesController < ApplicationController
+  before_action :require_login
   before_action :set_work_process, only: %i[show edit update destroy]
   before_action :create_or_find_vendor, only: %i[create update]
 
@@ -7,11 +8,17 @@ class WorkProcessesController < ApplicationController
 
   def new
     @work_process = WorkProcess.new
-    @projects = Project.order(created_at: :desc)
+    @projects = current_user.projects.order(created_at: :desc)
   end
 
   def create
     @work_process = WorkProcess.new(work_process_params)
+
+    # 현재 사용자의 프로젝트만 허용
+    unless current_user.projects.exists?(@work_process.project_id)
+      return redirect_to projects_path, alert: "접근 권한이 없습니다."
+    end
+
     assign_default_position(@work_process)
 
     if @work_process.save
@@ -19,7 +26,7 @@ class WorkProcessesController < ApplicationController
       @work_process.sync_work_days!(Array(selected_dates).reject(&:blank?)) if selected_dates.present?
       redirect_to project_path(@work_process.project), notice: "공정이 등록되었습니다."
     else
-      @projects = Project.order(created_at: :desc)
+      @projects = current_user.projects.order(created_at: :desc)
       render :new, status: :unprocessable_entity
     end
   end
@@ -29,7 +36,6 @@ class WorkProcessesController < ApplicationController
 
   def update
     if @work_process.update(work_process_params)
-      # Sync dates separately — even if this fails, the main update already succeeded
       selected_dates = params.dig(:work_process, :selected_dates)
       if selected_dates.present?
         begin
@@ -75,7 +81,12 @@ class WorkProcessesController < ApplicationController
   private
 
   def set_work_process
-    @work_process = WorkProcess.find(params[:id])
+    # 현재 사용자의 프로젝트에 속한 공정만 접근 가능
+    @work_process = WorkProcess.joins(:project)
+                               .where(projects: { user_id: current_user.id })
+                               .find(params[:id])
+  rescue ActiveRecord::RecordNotFound
+    redirect_to projects_path, alert: "접근 권한이 없습니다."
   end
 
   def work_process_params
@@ -108,21 +119,19 @@ class WorkProcessesController < ApplicationController
     wp_params = params[:work_process]
     return unless wp_params
 
-    # Handle the "new vendor" mode
     if wp_params[:vendor_input_method] == "new"
       new_name = wp_params[:new_vendor_name]&.strip
-      
+
       if new_name.present?
-        # Create or update vendor if it doesn't exist
-        vendor = Vendor.find_by(name: new_name)
+        # 현재 사용자의 거래처에서만 검색, 없으면 생성
+        vendor = current_user.vendors.find_by(name: new_name)
         unless vendor
-          vendor = Vendor.create!(
+          vendor = current_user.vendors.create!(
             name: new_name,
             contact_name: wp_params[:new_vendor_contact_name]&.strip,
             phone: wp_params[:new_vendor_phone]&.strip
           )
         end
-        # Map the freshly created/found vendor to the normal vendor_name property
         wp_params[:vendor_name] = new_name
       end
     end

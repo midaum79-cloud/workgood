@@ -86,8 +86,10 @@ class WorkProcess < ApplicationRecord
 
   def create_start_notification_if_date_present
     return if start_date.blank?
+    return unless project&.user.present?
 
     Notification.create(
+      user: project.user,
       title: "공정 시작 예정",
       message: "#{process_name} 공정이 곧 시작됩니다.",
       status: "unread",

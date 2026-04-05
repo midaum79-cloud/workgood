@@ -538,6 +538,7 @@ class ProjectsController < ApplicationController
     if @project.update(payment_status: params[:payment_status])
       if params[:payment_status] == "완납"
         Notification.create!(
+          user: current_user,
           project: @project,
           title: "입금 확인 완료",
           message: "#{@project.project_name} 현장의 잔금이 성공적으로 입금되었습니다! 수고하셨습니다 👏",

@@ -1,13 +1,15 @@
 class ProcessTemplatesController < ApplicationController
+  before_action :require_login
+
   def index
     ProcessTemplate.seed_defaults! unless ProcessTemplate.where(is_default: true).exists?
     @residential_templates = ProcessTemplate.residential
     @commercial_templates  = ProcessTemplate.commercial
     @templates             = ProcessTemplate.ordered
     @new_template          = ProcessTemplate.new
-    # 거래처 관리용
-    @company_vendors    = Vendor.companies
-    @individual_vendors = Vendor.individuals
+    # 거래처 관리용 - 현재 사용자 소유만
+    @company_vendors    = current_user.vendors.companies
+    @individual_vendors = current_user.vendors.individuals
   end
 
   def create
