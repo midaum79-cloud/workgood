@@ -161,7 +161,7 @@
     // 딥링크 수신 리스너: OAuth 완료 후 앱으로 복귀 (Android용)
     if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.App) {
       window.Capacitor.Plugins.App.addListener('appUrlOpen', function(event) {
-        // ilmeori://auth/callback?token=xxx
+        // workgood://auth/callback?token=xxx
         var url = event.url || '';
         var tokenMatch = url.match(/[?&]token=([^&]+)/);
         if (tokenMatch && tokenMatch[1]) {

@@ -14,7 +14,7 @@ class OmniauthCallbacksController < ApplicationController
         # 일회용 로그인 토큰 생성 → 앱으로 딥링크 복귀
         token = SecureRandom.hex(32)
         Rails.cache.write("app_login_token:#{token}", user.id, expires_in: 60.seconds)
-        @deep_link = "ilmeori://auth/callback?token=#{token}"
+        @deep_link = "workgood://auth/callback?token=#{token}"
 
         # nonce가 있으면 저장 (iOS 폴링용)
         nonce = origin.match(/nonce=([^&]+)/)&.captures&.first

@@ -3,7 +3,7 @@
   "appName": "일잘러",
   "webDir": "www",
   "server": {
-    "url": "https://ilmeori.onrender.com",
+    "url": "https://workgood.co.kr",
     "cleartext": false
   },
   "plugins": {
