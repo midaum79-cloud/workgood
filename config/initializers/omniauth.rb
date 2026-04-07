@@ -18,6 +18,19 @@ begin
 
     # Apple Sign In
     if ENV["APPLE_CLIENT_ID"].present? && ENV["APPLE_TEAM_ID"].present?
+      apple_pem = ENV["APPLE_PRIVATE_KEY"]
+      if apple_pem.present?
+        # Handle different newline encodings from env vars
+        apple_pem = apple_pem.gsub("\\n", "\n")
+        # Ensure proper PEM header/footer
+        unless apple_pem.include?("-----BEGIN")
+          apple_pem = "-----BEGIN PRIVATE KEY-----\n#{apple_pem.strip}\n-----END PRIVATE KEY-----"
+        end
+        Rails.logger.info "[OmniAuth] Apple PEM key loaded (#{apple_pem.bytesize} bytes, starts with: #{apple_pem[0..30]})"
+      else
+        Rails.logger.error "[OmniAuth] APPLE_PRIVATE_KEY is empty!"
+      end
+
       provider :apple,
         ENV["APPLE_CLIENT_ID"],
         "",
@@ -25,7 +38,7 @@ begin
           scope: "email name",
           team_id: ENV["APPLE_TEAM_ID"],
           key_id: ENV["APPLE_KEY_ID"],
-          pem: ENV["APPLE_PRIVATE_KEY"]&.gsub("\\n", "\n")
+          pem: apple_pem
         }
       Rails.logger.info "[OmniAuth] Apple Sign In enabled"
     else
