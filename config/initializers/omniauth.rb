@@ -47,7 +47,8 @@ begin
           scope: "email name",
           team_id: ENV["APPLE_TEAM_ID"],
           key_id: ENV["APPLE_KEY_ID"],
-          pem: apple_pem
+          pem: apple_pem,
+          authorized_client_ids: [ENV["APPLE_CLIENT_ID"], "com.workgood.app"]
         }
       Rails.logger.info "[OmniAuth] Apple Sign In enabled (client_id=#{ENV['APPLE_CLIENT_ID']}, team_id=#{ENV['APPLE_TEAM_ID']}, key_id=#{ENV['APPLE_KEY_ID']})"
     else
