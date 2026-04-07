@@ -30,6 +30,9 @@ Rails.application.routes.draw do
   # OmniAuth (Google)
   get  "/auth/google_oauth2/callback", to: "omniauth_callbacks#google_oauth2"
   post "/auth/google_oauth2/callback", to: "omniauth_callbacks#google_oauth2"
+  # OmniAuth (Apple)
+  get  "/auth/apple/callback", to: "omniauth_callbacks#apple"
+  post "/auth/apple/callback", to: "omniauth_callbacks#apple"
   get  "/auth/failure",                to: "omniauth_callbacks#failure"
   get  "/auth/token_login",            to: "omniauth_callbacks#token_login"
   get  "/auth/check_login",            to: "omniauth_callbacks#check_login"

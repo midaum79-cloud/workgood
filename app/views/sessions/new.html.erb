@@ -60,6 +60,12 @@
       Google 계정으로 로그인
     </a>
 
+    <%# Apple Login Button %>
+    <a id="apple-login-btn" href="/auth/apple" style="width:100%; display:flex; align-items:center; justify-content:center; gap:10px; height:54px; background:#000000; color:#ffffff; border:none; border-radius:14px; font-size:15px; font-weight:700; cursor:pointer; font-family:inherit; text-decoration:none; box-shadow:0 2px 12px rgba(0,0,0,0.3); transition:all 0.2s; margin-top:12px;" onmouseover="this.style.boxShadow='0 4px 20px rgba(0,0,0,0.45)'; this.style.background='#1a1a1a'" onmouseout="this.style.boxShadow='0 2px 12px rgba(0,0,0,0.3)'; this.style.background='#000000'">
+      <svg width="20" height="20" viewBox="0 0 256 315"><path d="M213.803 167.03c.442 47.58 41.74 63.413 42.197 63.615-.35 1.116-6.599 22.563-21.757 44.716-13.104 19.153-26.705 38.235-48.13 38.63-21.05.388-27.82-12.483-51.888-12.483-24.061 0-31.582 12.088-51.51 12.871-20.68.783-36.428-20.71-49.64-39.793C7.228 234.11-10.834 174.716 15.896 134.495c13.303-20.003 37.072-32.67 62.87-33.003 20.303-.388 39.453 13.65 51.853 13.65 12.394 0 35.66-16.891 60.103-14.415 10.234.427 38.958 4.136 57.384 31.152-1.484.927-34.255 19.998-33.888 59.647l-.415.504zM174.24 50.199c10.98-13.29 18.368-31.786 16.342-50.199-15.804.642-34.928 10.527-46.28 23.816-10.16 11.761-19.043 30.582-16.65 48.63 17.621 1.371 35.608-8.956 46.588-22.247" fill="#fff"/></svg>
+      Apple로 로그인
+    </a>
+
     <div style="margin-top:24px; text-align:center;">
       <%= link_to signup_path, style: "display:inline-flex; align-items:center; gap:8px; font-size:16px; color:rgba(255,255,255,0.6); text-decoration:none; font-weight:700; transition:color 0.2s;", onmouseover: "this.style.color='rgba(255,255,255,0.9)'", onmouseout: "this.style.color='rgba(255,255,255,0.6)'" do %>
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="22" y1="11" x2="16" y2="11"/></svg>
@@ -100,63 +106,58 @@
   ];
   var isInApp = new RegExp(inAppPatterns.join('|'), 'i').test(ua);
 
-  // ── Google 로그인: Capacitor 앱 또는 Android WebView에서 외부 브라우저로 열기 ──
-  if (isCapacitor || isAndroidWebView) {
-    var isIOS = /iPhone|iPad|iPod/i.test(ua);
-    var googleBtn = document.getElementById('google-login-btn');
-    if (googleBtn) {
-      googleBtn.addEventListener('click', function(e) {
-        e.preventDefault();
-        // nonce 생성 (iOS 폴링용)
-        var nonce = Math.random().toString(36).substr(2) + Date.now().toString(36);
-        // origin 파라미터에 source=app과 nonce를 포함
-        var oauthUrl = window.location.origin + '/auth/google_oauth2?origin=' + encodeURIComponent(window.location.origin + '?source=app&nonce=' + nonce);
-        console.log('[일잘러] Google login clicked, nonce:', nonce, 'oauthUrl:', oauthUrl);
+  // ── OAuth 로그인: Capacitor 앱 또는 Android WebView에서 외부 브라우저로 열기 ──
+  function setupOAuthButton(btnId, authPath) {
+    var btn = document.getElementById(btnId);
+    if (!btn) return;
+    btn.addEventListener('click', function(e) {
+      e.preventDefault();
+      var nonce = Math.random().toString(36).substr(2) + Date.now().toString(36);
+      var oauthUrl = window.location.origin + authPath + '?origin=' + encodeURIComponent(window.location.origin + '?source=app&nonce=' + nonce);
+      console.log('[일잘러] ' + btnId + ' clicked, nonce:', nonce, 'oauthUrl:', oauthUrl);
 
-        try {
-          if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.Browser && window.Capacitor.Plugins.Browser.open) {
-            console.log('[일잘러] Using Capacitor Browser plugin');
-            window.Capacitor.Plugins.Browser.open({ url: oauthUrl });
-          } else {
-            console.log('[일잘러] Browser plugin not available, using location.href');
-            window.location.href = oauthUrl;
-            return;
-          }
-        } catch(err) {
-          console.error('[일잘러] Google login error:', err);
+      try {
+        if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.Browser && window.Capacitor.Plugins.Browser.open) {
+          console.log('[일잘러] Using Capacitor Browser plugin');
+          window.Capacitor.Plugins.Browser.open({ url: oauthUrl });
+        } else {
+          console.log('[일잘러] Browser plugin not available, using location.href');
           window.location.href = oauthUrl;
           return;
         }
+      } catch(err) {
+        console.error('[일잘러] ' + btnId + ' error:', err);
+        window.location.href = oauthUrl;
+        return;
+      }
 
-        // 폴링: OAuth 완료될 때까지 서버에 토큰 존재 여부 확인
-        var pollCount = 0;
-        var maxPoll = 60; // 최대 2분
-        var pollInterval = setInterval(function() {
-          pollCount++;
-          if (pollCount > maxPoll) {
-            clearInterval(pollInterval);
-            return;
-          }
-          fetch('/auth/check_login?nonce=' + nonce)
-            .then(function(r) { return r.json(); })
-            .then(function(data) {
-              if (data.token) {
-                clearInterval(pollInterval);
-                console.log('[일잘러] Token received via polling, closing browser');
-                // 외부 브라우저 닫기
-                try {
-                  if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.Browser) {
-                    window.Capacitor.Plugins.Browser.close();
-                  }
-                } catch(e) { console.log('[일잘러] Browser close error:', e); }
-                // WebView에서 세션 생성
-                window.location.href = window.location.origin + '/auth/token_login?token=' + data.token;
-              }
-            })
-            .catch(function(err) { console.log('[일잘러] Poll error:', err); });
-        }, 2000);
-      });
-    }
+      var pollCount = 0;
+      var maxPoll = 60;
+      var pollInterval = setInterval(function() {
+        pollCount++;
+        if (pollCount > maxPoll) { clearInterval(pollInterval); return; }
+        fetch('/auth/check_login?nonce=' + nonce)
+          .then(function(r) { return r.json(); })
+          .then(function(data) {
+            if (data.token) {
+              clearInterval(pollInterval);
+              console.log('[일잘러] Token received via polling, closing browser');
+              try {
+                if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.Browser) {
+                  window.Capacitor.Plugins.Browser.close();
+                }
+              } catch(e) { console.log('[일잘러] Browser close error:', e); }
+              window.location.href = window.location.origin + '/auth/token_login?token=' + data.token;
+            }
+          })
+          .catch(function(err) { console.log('[일잘러] Poll error:', err); });
+      }, 2000);
+    });
+  }
+
+  if (isCapacitor || isAndroidWebView) {
+    setupOAuthButton('google-login-btn', '/auth/google_oauth2');
+    setupOAuthButton('apple-login-btn', '/auth/apple');
 
     // 딥링크 수신 리스너: OAuth 완료 후 앱으로 복귀 (Android용)
     if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.App) {
@@ -180,6 +181,8 @@
   if (isInApp && !isCapacitor && !isAndroidWebView) {
     var googleBtn2 = document.getElementById('google-login-btn');
     if (googleBtn2) googleBtn2.style.display = 'none';
+    var appleBtn2 = document.getElementById('apple-login-btn');
+    if (appleBtn2) appleBtn2.style.display = 'none';
 
     var notice = document.getElementById('inapp-notice');
     if (notice) notice.style.display = 'block';

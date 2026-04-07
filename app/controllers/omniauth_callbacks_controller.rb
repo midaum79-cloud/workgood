@@ -1,5 +1,5 @@
 class OmniauthCallbacksController < ApplicationController
-  skip_before_action :verify_authenticity_token, only: :google_oauth2
+  skip_before_action :verify_authenticity_token, only: [:google_oauth2, :apple]
 
   def google_oauth2
     auth = request.env["omniauth.auth"]
@@ -26,6 +26,34 @@ class OmniauthCallbacksController < ApplicationController
       else
         session[:user_id] = user.id
         redirect_to root_path, notice: "Google 로그인 성공!"
+      end
+    else
+      redirect_to login_path, alert: "로그인 실패. 다시 시도해주세요."
+    end
+  end
+
+  def apple
+    auth = request.env["omniauth.auth"]
+    user = User.find_or_create_from_omniauth(auth)
+
+    if user.persisted?
+      origin = request.env["omniauth.origin"] || ""
+      from_app = origin.include?("source=app")
+
+      if from_app
+        token = SecureRandom.hex(32)
+        Rails.cache.write("app_login_token:#{token}", user.id, expires_in: 60.seconds)
+        @deep_link = "ilmeori://auth/callback?token=#{token}"
+
+        nonce = origin.match(/nonce=([^&]+)/)&.captures&.first
+        if nonce
+          Rails.cache.write("app_login_nonce:#{nonce}", token, expires_in: 120.seconds)
+        end
+
+        render "omniauth_callbacks/app_redirect", layout: false
+      else
+        session[:user_id] = user.id
+        redirect_to root_path, notice: "Apple 로그인 성공!"
       end
     else
       redirect_to login_path, alert: "로그인 실패. 다시 시도해주세요."
