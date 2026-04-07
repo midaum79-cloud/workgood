@@ -26,7 +26,16 @@ begin
         unless apple_pem.include?("-----BEGIN")
           apple_pem = "-----BEGIN PRIVATE KEY-----\n#{apple_pem.strip}\n-----END PRIVATE KEY-----"
         end
-        Rails.logger.info "[OmniAuth] Apple PEM key loaded (#{apple_pem.bytesize} bytes, starts with: #{apple_pem[0..30]})"
+        Rails.logger.info "[OmniAuth] Apple PEM key loaded (#{apple_pem.bytesize} bytes)"
+
+        # Validate the key at boot time
+        begin
+          test_key = OpenSSL::PKey::EC.new(apple_pem)
+          Rails.logger.info "[OmniAuth] Apple EC key valid! Group: #{test_key.group.curve_name}"
+        rescue => key_err
+          Rails.logger.error "[OmniAuth] Apple EC key INVALID: #{key_err.message}"
+          Rails.logger.error "[OmniAuth] PEM content dump: #{apple_pem.inspect}"
+        end
       else
         Rails.logger.error "[OmniAuth] APPLE_PRIVATE_KEY is empty!"
       end
@@ -40,7 +49,7 @@ begin
           key_id: ENV["APPLE_KEY_ID"],
           pem: apple_pem
         }
-      Rails.logger.info "[OmniAuth] Apple Sign In enabled"
+      Rails.logger.info "[OmniAuth] Apple Sign In enabled (client_id=#{ENV['APPLE_CLIENT_ID']}, team_id=#{ENV['APPLE_TEAM_ID']}, key_id=#{ENV['APPLE_KEY_ID']})"
     else
       Rails.logger.warn "[OmniAuth] APPLE_CLIENT_ID/TEAM_ID not set — Apple login disabled"
     end
@@ -50,5 +59,6 @@ begin
   OmniAuth.config.silence_get_warning = true
 rescue => e
   Rails.logger.error "[OmniAuth] Init error: #{e.message}"
+  Rails.logger.error "[OmniAuth] Backtrace: #{e.backtrace&.first(5)&.join("\n")}"
 end
 

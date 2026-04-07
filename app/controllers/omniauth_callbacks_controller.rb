@@ -86,8 +86,12 @@ class OmniauthCallbacksController < ApplicationController
   end
 
   def failure
+    error = request.env['omniauth.error']
     Rails.logger.error "[OmniAuth] Auth failure: message=#{params[:message]}, strategy=#{params[:strategy]}, origin=#{params[:origin]}"
-    Rails.logger.error "[OmniAuth] Full error: #{request.env['omniauth.error']&.message}" if request.env['omniauth.error']
+    if error
+      Rails.logger.error "[OmniAuth] Error class: #{error.class}, message: #{error.message}"
+      Rails.logger.error "[OmniAuth] Backtrace:\n#{error.backtrace&.first(15)&.join("\n")}"
+    end
     redirect_to login_path, alert: "인증 실패: #{params[:message]}"
   end
 end
