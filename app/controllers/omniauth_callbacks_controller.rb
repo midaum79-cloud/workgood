@@ -43,7 +43,7 @@ class OmniauthCallbacksController < ApplicationController
       if from_app
         token = SecureRandom.hex(32)
         Rails.cache.write("app_login_token:#{token}", user.id, expires_in: 60.seconds)
-        @deep_link = "ilmeori://auth/callback?token=#{token}"
+        @deep_link = "workgood://auth/callback?token=#{token}"
 
         nonce = origin.match(/nonce=([^&]+)/)&.captures&.first
         if nonce
@@ -86,6 +86,8 @@ class OmniauthCallbacksController < ApplicationController
   end
 
   def failure
+    Rails.logger.error "[OmniAuth] Auth failure: message=#{params[:message]}, strategy=#{params[:strategy]}, origin=#{params[:origin]}"
+    Rails.logger.error "[OmniAuth] Full error: #{request.env['omniauth.error']&.message}" if request.env['omniauth.error']
     redirect_to login_path, alert: "인증 실패: #{params[:message]}"
   end
 end

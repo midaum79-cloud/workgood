@@ -24,22 +24,38 @@ class User < ApplicationRecord
 
   # ── Google OAuth ──────────────────────────────────────────────────────
   def self.find_or_create_from_omniauth(auth)
-    find_or_initialize_by(email: auth.info.email.downcase).tap do |user|
-      user.provider = auth.provider
-      user.uid      = auth.uid
-      user.name     = auth.info.name.presence || auth.info.email.split("@").first
-      user.subscription_plan ||= "standard"
-      user.subscription_expires_at ||= 1.month.from_now
-      # OAuth users get a random secure password they never need to use
-      unless user.persisted?
-        generated_password = SecureRandom.hex(24)
-        user.password = generated_password
-        user.password_confirmation = generated_password
+    email = auth.info.email&.downcase&.strip
+    uid   = auth.uid
+    provider = auth.provider
+
+    # Apple은 첫 로그인 이후 email을 안 줄 수 있으므로 uid로 먼저 찾기
+    user = find_by(provider: provider, uid: uid) if uid.present?
+    user ||= find_by(email: email) if email.present?
+    user ||= new
+
+    user.tap do |u|
+      u.provider = provider
+      u.uid      = uid
+      u.email    = email if email.present? && (u.email.blank? || !u.persisted?)
+      # Apple은 email 없이 올 수 있으므로 더미 이메일 생성
+      u.email  ||= "#{provider}_#{uid}@oauth.workgood.co.kr"
+      # Apple name 처리: first_name + last_name 조합
+      apple_name = if auth.info.first_name.present? || auth.info.last_name.present?
+        [auth.info.first_name, auth.info.last_name].compact.join(" ")
       end
-      user.save!
+      u.name = apple_name.presence || auth.info.name.presence || u.name.presence || u.email.split("@").first
+      u.subscription_plan ||= "standard"
+      u.subscription_expires_at ||= 1.month.from_now
+      # OAuth users get a random secure password they never need to use
+      unless u.persisted?
+        generated_password = SecureRandom.hex(24)
+        u.password = generated_password
+        u.password_confirmation = generated_password
+      end
+      u.save!
     end
   rescue => e
-    Rails.logger.error "OmniAuth user creation failed: #{e.message}"
+    Rails.logger.error "OmniAuth user creation failed: #{e.message} | #{e.backtrace&.first(3)&.join(' | ')}"
     nil
   end
 
