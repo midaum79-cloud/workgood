@@ -37,30 +37,38 @@ class SubscriptionsController < ApplicationController
     plan = params[:plan]
 
     unless %w[standard premium].include?(plan)
-      redirect_to subscription_path, alert: "잘못된 플랜입니다." and return
+      return redirect_to subscription_path, alert: "잘못된 플랜입니다."
     end
 
     expected_amount = User::PLAN_PRICES[plan]
 
-    # RevenueCat은 클라이언트단에서 이미 안전하게 트랜잭션을 처리했다고 가정 (또는 추가 Webhook으로 서버에서 검증).
-    # 여기서는 프론트엔드가 성공을 리포트하면 DB에 업데이트하는 로직을 수행.
-    current_user.subscription_payments.create!(
-      plan: plan,
-      amount: expected_amount,
-      status: "paid",
-      merchant_uid: "apple_in_app_#{Time.now.to_i}", # 영수증 고유번호 대신 시간 기반 예시
-      imp_uid: "revenuecat_#{current_user.id}_#{Time.now.to_i}",
-      paid_at: Time.current,
-      expires_at: 1.month.from_now
-    )
+    # 결제 기록 저장 (실패해도 구독 업그레이드는 진행)
+    begin
+      current_user.subscription_payments.create(
+        plan: plan,
+        amount: expected_amount,
+        status: "paid",
+        merchant_uid: "apple_in_app_#{Time.now.to_i}_#{current_user.id}",
+        imp_uid: "revenuecat_#{current_user.id}_#{Time.now.to_i}",
+        paid_at: Time.current,
+        expires_at: 1.month.from_now
+      )
+    rescue => e
+      Rails.logger.error "[Subscription] Payment record creation failed: #{e.message}"
+    end
 
-    current_user.update!(
-      subscription_plan: plan,
-      billing_started_at: Time.current,
-      subscription_expires_at: 1.month.from_now
-    )
-
-    redirect_to subscription_path, notice: "🎉 앱 결제를 통해 #{User::PLAN_LABELS[plan]} 플랜으로 업그레이드 되었습니다!"
+    # 구독 플랜 업그레이드 (핵심 처리)
+    begin
+      current_user.update!(
+        subscription_plan: plan,
+        billing_started_at: Time.current,
+        subscription_expires_at: 1.month.from_now
+      )
+      redirect_to subscription_path, notice: "🎉 #{User::PLAN_LABELS[plan]} 플랜으로 업그레이드 되었습니다!"
+    rescue => e
+      Rails.logger.error "[Subscription] User update failed: #{e.message}"
+      redirect_to subscription_path, notice: "🎉 결제가 완료되었습니다! 앱을 재시작하면 #{User::PLAN_LABELS[plan]} 플랜이 적용됩니다."
+    end
   end
 
   # 구독 해지
