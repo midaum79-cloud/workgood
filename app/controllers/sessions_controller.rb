@@ -4,9 +4,18 @@ class SessionsController < ApplicationController
   end
 
   def create
-    user = User.find_by(email: params[:email].to_s.downcase.strip)
+    email = params[:email].to_s.strip.downcase
+    password = params[:password].to_s
 
-    if user&.authenticate(params[:password])
+    # 빈 값 체크
+    if email.blank? || password.blank?
+      flash.now[:alert] = "이메일과 비밀번호를 입력해주세요."
+      return render :new, status: :unprocessable_entity
+    end
+
+    user = User.find_by(email: email)
+
+    if user&.authenticate(password)
       session[:user_id] = user.id
       redirect_to session.delete(:return_to) || root_path, notice: "환영합니다, #{user.name}님!"
     else

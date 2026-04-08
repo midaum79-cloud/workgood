@@ -3,20 +3,22 @@ class OmniauthCallbacksController < ApplicationController
 
   def google_oauth2
     auth = request.env["omniauth.auth"]
+    unless auth
+      Rails.logger.error "[OmniAuth] Google auth data is nil"
+      return redirect_to login_path, alert: "인증 정보를 받지 못했습니다. 다시 시도해주세요."
+    end
+
     user = User.find_or_create_from_omniauth(auth)
 
-    if user.persisted?
-      # 앱에서 온 요청인지 확인 (OmniAuth state 또는 origin 파라미터)
+    if user&.persisted?
       origin = request.env["omniauth.origin"] || ""
       from_app = origin.include?("source=app")
 
       if from_app
-        # 일회용 로그인 토큰 생성 → 앱으로 딥링크 복귀
         token = SecureRandom.hex(32)
         Rails.cache.write("app_login_token:#{token}", user.id, expires_in: 60.seconds)
         @deep_link = "workgood://auth/callback?token=#{token}"
 
-        # nonce가 있으면 저장 (iOS 폴링용)
         nonce = origin.match(/nonce=([^&]+)/)&.captures&.first
         if nonce
           Rails.cache.write("app_login_nonce:#{nonce}", token, expires_in: 120.seconds)
@@ -30,13 +32,22 @@ class OmniauthCallbacksController < ApplicationController
     else
       redirect_to login_path, alert: "로그인 실패. 다시 시도해주세요."
     end
+  rescue => e
+    Rails.logger.error "[OmniAuth] Google callback error: #{e.class} - #{e.message}"
+    Rails.logger.error "[OmniAuth] Backtrace: #{e.backtrace&.first(5)&.join("\n")}"
+    redirect_to login_path, alert: "Google 로그인 중 오류가 발생했습니다. 다시 시도해주세요."
   end
 
   def apple
     auth = request.env["omniauth.auth"]
+    unless auth
+      Rails.logger.error "[OmniAuth] Apple auth data is nil"
+      return redirect_to login_path, alert: "Apple 인증 정보를 받지 못했습니다. 다시 시도해주세요."
+    end
+
     user = User.find_or_create_from_omniauth(auth)
 
-    if user.persisted?
+    if user&.persisted?
       origin = request.env["omniauth.origin"] || ""
       from_app = origin.include?("source=app")
 
@@ -58,6 +69,10 @@ class OmniauthCallbacksController < ApplicationController
     else
       redirect_to login_path, alert: "로그인 실패. 다시 시도해주세요."
     end
+  rescue => e
+    Rails.logger.error "[OmniAuth] Apple callback error: #{e.class} - #{e.message}"
+    Rails.logger.error "[OmniAuth] Backtrace: #{e.backtrace&.first(5)&.join("\n")}"
+    redirect_to login_path, alert: "Apple 로그인 중 오류가 발생했습니다. 다시 시도해주세요."
   end
 
   # 앱에서 딥링크로 받은 토큰을 검증하고 세션 생성
