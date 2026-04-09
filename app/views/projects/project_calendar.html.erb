@@ -10,9 +10,7 @@
   background: white;
   z-index: 10;
 }
-body.capacitor-ios #projectCalendarRoot {
-  top: 0;
-}
+
 @media (min-width: 480px) {
   #projectCalendarRoot {
     left: 50%;
@@ -369,14 +367,21 @@ body.capacitor-ios #projectCalendarRoot {
     var dx = e.touches[0].clientX - swipeStartX;
     var dy = e.touches[0].clientY - swipeStartY;
 
-    if (!hasMoved && Math.abs(dy) > Math.abs(dx)) {
-      isSwiping = false;
-      return;
+    if (!hasMoved) {
+      if (Math.abs(dx) > 5 || Math.abs(dy) > 5) {
+        if (Math.abs(dy) > Math.abs(dx)) {
+          isSwiping = false;
+          return;
+        } else {
+          hasMoved = true;
+        }
+      } else {
+        return;
+      }
     }
 
-    if (Math.abs(dx) > 10) {
-      hasMoved = true;
-      e.preventDefault();
+    if (hasMoved) {
+      if (e.cancelable) e.preventDefault();
       var vpWidth = viewport.offsetWidth;
       var pxToPct = (dx / vpWidth) * 100;
       var shiftPct = pxToPct / 3;
