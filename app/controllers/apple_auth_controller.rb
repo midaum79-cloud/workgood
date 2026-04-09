@@ -149,6 +149,6 @@ class AppleAuthController < ApplicationController
   end
 
   def apple_redirect_uri
-    "https://workgood.co.kr/apple_auth/callback"
+    "https://www.workgood.co.kr/apple_auth/callback"
   end
 end
