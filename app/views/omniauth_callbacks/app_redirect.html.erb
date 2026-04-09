@@ -36,7 +36,7 @@
 <body>
   <div class="container">
     <div class="spinner"></div>
-    <h2>✅ Google 로그인 성공!</h2>
+    <h2>✅ 로그인 성공!</h2>
     <p>앱으로 돌아가는 중...</p>
     <a class="btn" href="<%= @deep_link %>" id="return-btn" style="display:none;">앱으로 돌아가기</a>
     <a class="btn" href="<%= @web_fallback || "/auth/token_login?token=#{@deep_link.split('token=').last}" %>" id="web-btn" style="display:none; margin-top:10px; background:#374151;">웹에서 계속하기</a>
