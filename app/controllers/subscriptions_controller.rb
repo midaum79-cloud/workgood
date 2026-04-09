@@ -1,6 +1,6 @@
 class SubscriptionsController < ApplicationController
   before_action :require_login
-  skip_before_action :verify_authenticity_token, only: [:verify]
+  skip_before_action :verify_authenticity_token, only: [ :verify ]
 
   def index
     @current_plan = current_user.subscription_plan

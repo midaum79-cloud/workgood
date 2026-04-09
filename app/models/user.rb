@@ -41,7 +41,7 @@ class User < ApplicationRecord
       u.email  ||= "#{provider}_#{uid}@oauth.workgood.co.kr"
       # Apple name 처리: first_name + last_name 조합
       apple_name = if auth.info.first_name.present? || auth.info.last_name.present?
-        [auth.info.first_name, auth.info.last_name].compact.join(" ")
+        [ auth.info.first_name, auth.info.last_name ].compact.join(" ")
       end
       u.name = apple_name.presence || auth.info.name.presence || u.name.presence || u.email.split("@").first
       u.subscription_plan ||= "standard"
@@ -77,7 +77,7 @@ class User < ApplicationRecord
 
   def trial_days_remaining
     return 0 unless trial?
-    [(subscription_expires_at.to_date - Date.current).to_i, 0].max
+    [ (subscription_expires_at.to_date - Date.current).to_i, 0 ].max
   end
 
   def plan_limit
@@ -96,7 +96,7 @@ class User < ApplicationRecord
   def ai_imports_remaining
     return "무제한" if premium?
     return 0 if free?
-    [10 - (ai_imports_count || 0), 0].max
+    [ 10 - (ai_imports_count || 0), 0 ].max
   end
 
   # ── 기능 권한 (플랜별 차별화) ──────────────────────────────────────

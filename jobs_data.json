@@ -1,0 +1,465 @@
+{
+  "total_count": 5,
+  "jobs": [
+    {
+      "id": 70411046775,
+      "run_id": 24132119443,
+      "workflow_name": "CI",
+      "head_branch": "main",
+      "run_url": "https://api.github.com/repos/midaum79-cloud/workgood/actions/runs/24132119443",
+      "run_attempt": 1,
+      "node_id": "CR_kwDORtA5ks8AAAAQZNNPdw",
+      "head_sha": "a627842640d6f27f898df0a46c522a7ee31aae5e",
+      "url": "https://api.github.com/repos/midaum79-cloud/workgood/actions/jobs/70411046775",
+      "html_url": "https://github.com/midaum79-cloud/workgood/actions/runs/24132119443/job/70411046775",
+      "status": "completed",
+      "conclusion": "failure",
+      "created_at": "2026-04-08T11:05:49Z",
+      "started_at": "2026-04-08T11:05:53Z",
+      "completed_at": "2026-04-08T11:06:44Z",
+      "name": "test",
+      "steps": [
+        {
+          "name": "Set up job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 1,
+          "started_at": "2026-04-08T11:05:54Z",
+          "completed_at": "2026-04-08T11:05:55Z"
+        },
+        {
+          "name": "Initialize containers",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 2,
+          "started_at": "2026-04-08T11:05:55Z",
+          "completed_at": "2026-04-08T11:06:18Z"
+        },
+        {
+          "name": "Install packages",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 3,
+          "started_at": "2026-04-08T11:06:18Z",
+          "completed_at": "2026-04-08T11:06:28Z"
+        },
+        {
+          "name": "Checkout code",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 4,
+          "started_at": "2026-04-08T11:06:28Z",
+          "completed_at": "2026-04-08T11:06:29Z"
+        },
+        {
+          "name": "Set up Ruby",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 5,
+          "started_at": "2026-04-08T11:06:29Z",
+          "completed_at": "2026-04-08T11:06:34Z"
+        },
+        {
+          "name": "Run tests",
+          "status": "completed",
+          "conclusion": "failure",
+          "number": 6,
+          "started_at": "2026-04-08T11:06:34Z",
+          "completed_at": "2026-04-08T11:06:40Z"
+        },
+        {
+          "name": "Post Checkout code",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 11,
+          "started_at": "2026-04-08T11:06:40Z",
+          "completed_at": "2026-04-08T11:06:40Z"
+        },
+        {
+          "name": "Stop containers",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 12,
+          "started_at": "2026-04-08T11:06:40Z",
+          "completed_at": "2026-04-08T11:06:41Z"
+        },
+        {
+          "name": "Complete job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 13,
+          "started_at": "2026-04-08T11:06:41Z",
+          "completed_at": "2026-04-08T11:06:41Z"
+        }
+      ],
+      "check_run_url": "https://api.github.com/repos/midaum79-cloud/workgood/check-runs/70411046775",
+      "labels": [
+        "ubuntu-latest"
+      ],
+      "runner_id": 1000002702,
+      "runner_name": "GitHub Actions 1000002702",
+      "runner_group_id": 0,
+      "runner_group_name": "GitHub Actions"
+    },
+    {
+      "id": 70411046815,
+      "run_id": 24132119443,
+      "workflow_name": "CI",
+      "head_branch": "main",
+      "run_url": "https://api.github.com/repos/midaum79-cloud/workgood/actions/runs/24132119443",
+      "run_attempt": 1,
+      "node_id": "CR_kwDORtA5ks8AAAAQZNNPnw",
+      "head_sha": "a627842640d6f27f898df0a46c522a7ee31aae5e",
+      "url": "https://api.github.com/repos/midaum79-cloud/workgood/actions/jobs/70411046815",
+      "html_url": "https://github.com/midaum79-cloud/workgood/actions/runs/24132119443/job/70411046815",
+      "status": "completed",
+      "conclusion": "failure",
+      "created_at": "2026-04-08T11:05:49Z",
+      "started_at": "2026-04-08T11:05:52Z",
+      "completed_at": "2026-04-08T11:06:06Z",
+      "name": "scan_ruby",
+      "steps": [
+        {
+          "name": "Set up job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 1,
+          "started_at": "2026-04-08T11:05:53Z",
+          "completed_at": "2026-04-08T11:05:53Z"
+        },
+        {
+          "name": "Checkout code",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 2,
+          "started_at": "2026-04-08T11:05:53Z",
+          "completed_at": "2026-04-08T11:05:54Z"
+        },
+        {
+          "name": "Set up Ruby",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 3,
+          "started_at": "2026-04-08T11:05:54Z",
+          "completed_at": "2026-04-08T11:05:57Z"
+        },
+        {
+          "name": "Scan for common Rails security vulnerabilities using static analysis",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 4,
+          "started_at": "2026-04-08T11:05:57Z",
+          "completed_at": "2026-04-08T11:06:04Z"
+        },
+        {
+          "name": "Scan for known security vulnerabilities in gems used",
+          "status": "completed",
+          "conclusion": "failure",
+          "number": 5,
+          "started_at": "2026-04-08T11:06:04Z",
+          "completed_at": "2026-04-08T11:06:05Z"
+        },
+        {
+          "name": "Post Checkout code",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 10,
+          "started_at": "2026-04-08T11:06:05Z",
+          "completed_at": "2026-04-08T11:06:05Z"
+        },
+        {
+          "name": "Complete job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 11,
+          "started_at": "2026-04-08T11:06:05Z",
+          "completed_at": "2026-04-08T11:06:05Z"
+        }
+      ],
+      "check_run_url": "https://api.github.com/repos/midaum79-cloud/workgood/check-runs/70411046815",
+      "labels": [
+        "ubuntu-latest"
+      ],
+      "runner_id": 1000002704,
+      "runner_name": "GitHub Actions 1000002704",
+      "runner_group_id": 0,
+      "runner_group_name": "GitHub Actions"
+    },
+    {
+      "id": 70411046833,
+      "run_id": 24132119443,
+      "workflow_name": "CI",
+      "head_branch": "main",
+      "run_url": "https://api.github.com/repos/midaum79-cloud/workgood/actions/runs/24132119443",
+      "run_attempt": 1,
+      "node_id": "CR_kwDORtA5ks8AAAAQZNNPsQ",
+      "head_sha": "a627842640d6f27f898df0a46c522a7ee31aae5e",
+      "url": "https://api.github.com/repos/midaum79-cloud/workgood/actions/jobs/70411046833",
+      "html_url": "https://github.com/midaum79-cloud/workgood/actions/runs/24132119443/job/70411046833",
+      "status": "completed",
+      "conclusion": "failure",
+      "created_at": "2026-04-08T11:05:49Z",
+      "started_at": "2026-04-08T11:05:51Z",
+      "completed_at": "2026-04-08T11:06:05Z",
+      "name": "lint",
+      "steps": [
+        {
+          "name": "Set up job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 1,
+          "started_at": "2026-04-08T11:05:52Z",
+          "completed_at": "2026-04-08T11:05:53Z"
+        },
+        {
+          "name": "Checkout code",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 2,
+          "started_at": "2026-04-08T11:05:53Z",
+          "completed_at": "2026-04-08T11:05:54Z"
+        },
+        {
+          "name": "Set up Ruby",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 3,
+          "started_at": "2026-04-08T11:05:54Z",
+          "completed_at": "2026-04-08T11:05:58Z"
+        },
+        {
+          "name": "Prepare RuboCop cache",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 4,
+          "started_at": "2026-04-08T11:05:58Z",
+          "completed_at": "2026-04-08T11:06:00Z"
+        },
+        {
+          "name": "Lint code for consistent style",
+          "status": "completed",
+          "conclusion": "failure",
+          "number": 5,
+          "started_at": "2026-04-08T11:06:00Z",
+          "completed_at": "2026-04-08T11:06:02Z"
+        },
+        {
+          "name": "Post Prepare RuboCop cache",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 9,
+          "started_at": "2026-04-08T11:06:02Z",
+          "completed_at": "2026-04-08T11:06:03Z"
+        },
+        {
+          "name": "Post Checkout code",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 10,
+          "started_at": "2026-04-08T11:06:03Z",
+          "completed_at": "2026-04-08T11:06:03Z"
+        },
+        {
+          "name": "Complete job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 11,
+          "started_at": "2026-04-08T11:06:03Z",
+          "completed_at": "2026-04-08T11:06:03Z"
+        }
+      ],
+      "check_run_url": "https://api.github.com/repos/midaum79-cloud/workgood/check-runs/70411046833",
+      "labels": [
+        "ubuntu-latest"
+      ],
+      "runner_id": 1000002703,
+      "runner_name": "GitHub Actions 1000002703",
+      "runner_group_id": 0,
+      "runner_group_name": "GitHub Actions"
+    },
+    {
+      "id": 70411046834,
+      "run_id": 24132119443,
+      "workflow_name": "CI",
+      "head_branch": "main",
+      "run_url": "https://api.github.com/repos/midaum79-cloud/workgood/actions/runs/24132119443",
+      "run_attempt": 1,
+      "node_id": "CR_kwDORtA5ks8AAAAQZNNPsg",
+      "head_sha": "a627842640d6f27f898df0a46c522a7ee31aae5e",
+      "url": "https://api.github.com/repos/midaum79-cloud/workgood/actions/jobs/70411046834",
+      "html_url": "https://github.com/midaum79-cloud/workgood/actions/runs/24132119443/job/70411046834",
+      "status": "completed",
+      "conclusion": "failure",
+      "created_at": "2026-04-08T11:05:49Z",
+      "started_at": "2026-04-08T11:05:53Z",
+      "completed_at": "2026-04-08T11:06:01Z",
+      "name": "scan_js",
+      "steps": [
+        {
+          "name": "Set up job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 1,
+          "started_at": "2026-04-08T11:05:53Z",
+          "completed_at": "2026-04-08T11:05:54Z"
+        },
+        {
+          "name": "Checkout code",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 2,
+          "started_at": "2026-04-08T11:05:54Z",
+          "completed_at": "2026-04-08T11:05:56Z"
+        },
+        {
+          "name": "Set up Ruby",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 3,
+          "started_at": "2026-04-08T11:05:56Z",
+          "completed_at": "2026-04-08T11:05:59Z"
+        },
+        {
+          "name": "Scan for security vulnerabilities in JavaScript dependencies",
+          "status": "completed",
+          "conclusion": "failure",
+          "number": 4,
+          "started_at": "2026-04-08T11:05:59Z",
+          "completed_at": "2026-04-08T11:05:59Z"
+        },
+        {
+          "name": "Post Checkout code",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 8,
+          "started_at": "2026-04-08T11:05:59Z",
+          "completed_at": "2026-04-08T11:05:59Z"
+        },
+        {
+          "name": "Complete job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 9,
+          "started_at": "2026-04-08T11:05:59Z",
+          "completed_at": "2026-04-08T11:05:59Z"
+        }
+      ],
+      "check_run_url": "https://api.github.com/repos/midaum79-cloud/workgood/check-runs/70411046834",
+      "labels": [
+        "ubuntu-latest"
+      ],
+      "runner_id": 1000002701,
+      "runner_name": "GitHub Actions 1000002701",
+      "runner_group_id": 0,
+      "runner_group_name": "GitHub Actions"
+    },
+    {
+      "id": 70411046852,
+      "run_id": 24132119443,
+      "workflow_name": "CI",
+      "head_branch": "main",
+      "run_url": "https://api.github.com/repos/midaum79-cloud/workgood/actions/runs/24132119443",
+      "run_attempt": 1,
+      "node_id": "CR_kwDORtA5ks8AAAAQZNNPxA",
+      "head_sha": "a627842640d6f27f898df0a46c522a7ee31aae5e",
+      "url": "https://api.github.com/repos/midaum79-cloud/workgood/actions/jobs/70411046852",
+      "html_url": "https://github.com/midaum79-cloud/workgood/actions/runs/24132119443/job/70411046852",
+      "status": "completed",
+      "conclusion": "failure",
+      "created_at": "2026-04-08T11:05:49Z",
+      "started_at": "2026-04-08T11:05:52Z",
+      "completed_at": "2026-04-08T11:06:46Z",
+      "name": "system-test",
+      "steps": [
+        {
+          "name": "Set up job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 1,
+          "started_at": "2026-04-08T11:05:53Z",
+          "completed_at": "2026-04-08T11:05:55Z"
+        },
+        {
+          "name": "Initialize containers",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 2,
+          "started_at": "2026-04-08T11:05:55Z",
+          "completed_at": "2026-04-08T11:06:18Z"
+        },
+        {
+          "name": "Install packages",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 3,
+          "started_at": "2026-04-08T11:06:18Z",
+          "completed_at": "2026-04-08T11:06:30Z"
+        },
+        {
+          "name": "Checkout code",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 4,
+          "started_at": "2026-04-08T11:06:30Z",
+          "completed_at": "2026-04-08T11:06:32Z"
+        },
+        {
+          "name": "Set up Ruby",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 5,
+          "started_at": "2026-04-08T11:06:32Z",
+          "completed_at": "2026-04-08T11:06:37Z"
+        },
+        {
+          "name": "Run System Tests",
+          "status": "completed",
+          "conclusion": "failure",
+          "number": 6,
+          "started_at": "2026-04-08T11:06:37Z",
+          "completed_at": "2026-04-08T11:06:42Z"
+        },
+        {
+          "name": "Keep screenshots from failed system tests",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 7,
+          "started_at": "2026-04-08T11:06:42Z",
+          "completed_at": "2026-04-08T11:06:42Z"
+        },
+        {
+          "name": "Post Checkout code",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 13,
+          "started_at": "2026-04-08T11:06:42Z",
+          "completed_at": "2026-04-08T11:06:42Z"
+        },
+        {
+          "name": "Stop containers",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 14,
+          "started_at": "2026-04-08T11:06:42Z",
+          "completed_at": "2026-04-08T11:06:44Z"
+        },
+        {
+          "name": "Complete job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 15,
+          "started_at": "2026-04-08T11:06:44Z",
+          "completed_at": "2026-04-08T11:06:44Z"
+        }
+      ],
+      "check_run_url": "https://api.github.com/repos/midaum79-cloud/workgood/check-runs/70411046852",
+      "labels": [
+        "ubuntu-latest"
+      ],
+      "runner_id": 1000002700,
+      "runner_name": "GitHub Actions 1000002700",
+      "runner_group_id": 0,
+      "runner_group_name": "GitHub Actions"
+    }
+  ]
+}

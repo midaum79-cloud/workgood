@@ -1,9 +1,9 @@
-require 'json/jwt'
-require 'net/http'
-require 'uri'
+require "json/jwt"
+require "net/http"
+require "uri"
 
 class AppleAuthController < ApplicationController
-  skip_before_action :verify_authenticity_token, only: [:callback]
+  skip_before_action :verify_authenticity_token, only: [ :callback ]
 
   # GET /auth/apple → Apple 로그인 페이지로 리다이렉트
   def redirect
@@ -15,14 +15,14 @@ class AppleAuthController < ApplicationController
     params_hash = {
       client_id:     apple_client_id,
       redirect_uri:  apple_redirect_uri,
-      response_type: 'code id_token',
-      response_mode: 'form_post',
-      scope:         'name email',
+      response_type: "code id_token",
+      response_mode: "form_post",
+      scope:         "name email",
       state:         state,
       nonce:         nonce
     }
 
-    query = params_hash.map { |k, v| "#{k}=#{URI.encode_www_form_component(v.to_s)}" }.join('&')
+    query = params_hash.map { |k, v| "#{k}=#{URI.encode_www_form_component(v.to_s)}" }.join("&")
     redirect_to "https://appleid.apple.com/auth/authorize?#{query}", allow_other_host: true
   end
 
@@ -53,9 +53,9 @@ class AppleAuthController < ApplicationController
     if params[:user].present?
       begin
         user_data = JSON.parse(params[:user])
-        first = user_data.dig('name', 'firstName').to_s
-        last  = user_data.dig('name', 'lastName').to_s
-        apple_name = [first, last].reject(&:empty?).join(' ')
+        first = user_data.dig("name", "firstName").to_s
+        last  = user_data.dig("name", "lastName").to_s
+        apple_name = [ first, last ].reject(&:empty?).join(" ")
       rescue => e
         Rails.logger.warn "[AppleAuth] Failed to parse user name: #{e.message}"
       end
@@ -66,22 +66,22 @@ class AppleAuthController < ApplicationController
     email = user_info[:email]
     email ||= "apple_#{uid}@oauth.workgood.co.kr"
 
-    user = User.find_by(provider: 'apple', uid: uid)
+    user = User.find_by(provider: "apple", uid: uid)
     user ||= User.find_by(email: email) if email.present?
     user ||= User.new
 
     unless user.persisted?
-      user.provider = 'apple'
+      user.provider = "apple"
       user.uid      = uid
       user.email    = email
-      user.name     = apple_name.presence || email.split('@').first
-      user.subscription_plan    = 'standard'
+      user.name     = apple_name.presence || email.split("@").first
+      user.subscription_plan    = "standard"
       user.subscription_expires_at = 1.month.from_now
       generated_password = SecureRandom.hex(24)
       user.password = generated_password
       user.password_confirmation = generated_password
     else
-      user.provider = 'apple'
+      user.provider = "apple"
       user.uid      = uid
       user.name     = apple_name if apple_name.present? && !user.persisted?
     end
@@ -120,10 +120,10 @@ class AppleAuthController < ApplicationController
   end
 
   def apple_client_id
-    ENV['APPLE_CLIENT_ID']
+    ENV["APPLE_CLIENT_ID"]
   end
 
   def apple_redirect_uri
-    'https://workgood.co.kr/auth/apple/callback'
+    "https://workgood.co.kr/auth/apple/callback"
   end
 end

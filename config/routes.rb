@@ -43,7 +43,7 @@ Rails.application.routes.draw do
   get  "app_settings",                        to: "app_settings#index",               as: :app_settings
   patch "app_settings/profile",               to: "app_settings#update_profile",      as: :update_profile_app_settings
   patch "app_settings/password",              to: "app_settings#update_password",     as: :update_password_app_settings
-  patch "app_settings/notifications",         to: "app_settings#update_notifications",as: :update_notifications_app_settings
+  patch "app_settings/notifications",         to: "app_settings#update_notifications", as: :update_notifications_app_settings
 
   # Subscription
   get   "subscription",        to: "subscriptions#index",  as: :subscription
@@ -76,7 +76,7 @@ Rails.application.routes.draw do
     end
   end
 
-  resources :web_push_subscriptions, only: [:create] do
+  resources :web_push_subscriptions, only: [ :create ] do
     collection do
       delete :destroy # Use endpoint as param
     end
@@ -88,7 +88,7 @@ Rails.application.routes.draw do
       get :search
     end
   end
-  resources :process_templates, only: [:index, :create, :destroy] do
+  resources :process_templates, only: [ :index, :create, :destroy ] do
     member do
       post :move_up
       post :move_down
@@ -96,8 +96,8 @@ Rails.application.routes.draw do
   end
   resources :projects do
     member do
-      get :project_calendar, path: 'calendar'
-      get :project_calendar_panel, path: 'calendar_panel'
+      get :project_calendar, path: "calendar"
+      get :project_calendar_panel, path: "calendar_panel"
       delete :purge_photo
       patch :update_payment
       post :add_photos

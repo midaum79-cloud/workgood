@@ -1,5 +1,5 @@
 class OmniauthCallbacksController < ApplicationController
-  skip_before_action :verify_authenticity_token, only: [:google_oauth2, :apple]
+  skip_before_action :verify_authenticity_token, only: [ :google_oauth2, :apple ]
 
   def google_oauth2
     auth = request.env["omniauth.auth"]
@@ -101,7 +101,7 @@ class OmniauthCallbacksController < ApplicationController
   end
 
   def failure
-    error = request.env['omniauth.error']
+    error = request.env["omniauth.error"]
     Rails.logger.error "[OmniAuth] Auth failure: message=#{params[:message]}, strategy=#{params[:strategy]}, origin=#{params[:origin]}"
     if error
       Rails.logger.error "[OmniAuth] Error class: #{error.class}, message: #{error.message}"
@@ -110,4 +110,3 @@ class OmniauthCallbacksController < ApplicationController
     redirect_to login_path, alert: "인증 실패: #{params[:message]}"
   end
 end
-
