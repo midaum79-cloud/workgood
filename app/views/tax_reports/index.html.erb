@@ -21,10 +21,57 @@
           <% end %>
         </select>
       </form>
-      <%= link_to download_tax_report_path(year: @year),
-          style: "display:flex; align-items:center; gap:6px; padding:12px 16px; background:linear-gradient(135deg, #059669, #10b981); color:white; border-radius:12px; font-size:14px; font-weight:900; text-decoration:none; white-space:nowrap; box-shadow:0 2px 8px rgba(5,150,105,0.3);" do %>
+      <button type="button" onclick="downloadCsv(this)"
+          style="display:flex; align-items:center; gap:6px; padding:12px 16px; background:linear-gradient(135deg, #059669, #10b981); color:white; border:none; border-radius:12px; font-size:14px; font-weight:900; cursor:pointer; box-shadow:0 2px 8px rgba(5,150,105,0.3);">
         📥 CSV 다운로드
-      <% end %>
+      </button>
+
+      <script>
+        function downloadCsv(btn) {
+          if (btn.disabled) return;
+          btn.disabled = true;
+          var originalText = btn.innerHTML;
+          btn.innerHTML = '⏳ 준비 중...';
+
+          fetch('<%= download_tax_report_path(year: @year) %>')
+            .then(function(res) { return res.blob(); })
+            .then(function(blob) {
+              var file = new File([blob], "<%= @year %>년_세금정산_리포트.csv", { type: "text/csv" });
+              
+              // 1) iOS WebView 및 최신 모바일 브라우저용 네이티브 공유 (파일에 저장 등)
+              if (navigator.canShare && navigator.canShare({ files: [file] })) {
+                navigator.share({
+                  files: [file],
+                  title: '<%= @year %>년 세금 정산 리포트',
+                }).catch(function(e) {
+                  console.log("Share cancelled or failed", e);
+                }).finally(function() {
+                  btn.disabled = false;
+                  btn.innerHTML = originalText;
+                });
+              } else {
+                // 2) 데스크톱 및 웹 환경 HTML5 다운로드 폴백
+                var url = URL.createObjectURL(blob);
+                var a = document.createElement("a");
+                a.style.display = 'none';
+                a.href = url;
+                a.download = "<%= @year %>년_세금정산_리포트.csv";
+                document.body.appendChild(a);
+                a.click();
+                setTimeout(function() { URL.revokeObjectURL(url); a.remove(); }, 100);
+                
+                btn.disabled = false;
+                btn.innerHTML = originalText;
+              }
+            })
+            .catch(function(err) {
+              console.error(err);
+              alert("다운로드 중 오류가 발생했습니다.");
+              btn.disabled = false;
+              btn.innerHTML = originalText;
+            });
+        }
+      </script>
     </div>
 
     <%# 프리미엄 배지 %>
