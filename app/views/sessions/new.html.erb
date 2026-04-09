@@ -61,7 +61,7 @@
     </a>
 
     <%# Apple Login Button %>
-    <a id="apple-login-btn" href="/auth/apple" style="width:100%; display:flex; align-items:center; justify-content:center; gap:10px; height:54px; background:#ffffff; color:#000000; border:1px solid #d1d5db; border-radius:14px; font-size:15px; font-weight:700; cursor:pointer; font-family:inherit; text-decoration:none; box-shadow:0 2px 12px rgba(0,0,0,0.08); transition:all 0.2s; margin-top:12px;" onmouseover="this.style.boxShadow='0 4px 20px rgba(0,0,0,0.15)'; this.style.background='#f5f5f5'" onmouseout="this.style.boxShadow='0 2px 12px rgba(0,0,0,0.08)'; this.style.background='#ffffff'">
+    <a id="apple-login-btn" href="/apple_auth" style="width:100%; display:flex; align-items:center; justify-content:center; gap:10px; height:54px; background:#ffffff; color:#000000; border:1px solid #d1d5db; border-radius:14px; font-size:15px; font-weight:700; cursor:pointer; font-family:inherit; text-decoration:none; box-shadow:0 2px 12px rgba(0,0,0,0.08); transition:all 0.2s; margin-top:12px;" onmouseover="this.style.boxShadow='0 4px 20px rgba(0,0,0,0.15)'; this.style.background='#f5f5f5'" onmouseout="this.style.boxShadow='0 2px 12px rgba(0,0,0,0.08)'; this.style.background='#ffffff'">
       <svg width="20" height="20" viewBox="0 0 256 315"><path d="M213.803 167.03c.442 47.58 41.74 63.413 42.197 63.615-.35 1.116-6.599 22.563-21.757 44.716-13.104 19.153-26.705 38.235-48.13 38.63-21.05.388-27.82-12.483-51.888-12.483-24.061 0-31.582 12.088-51.51 12.871-20.68.783-36.428-20.71-49.64-39.793C7.228 234.11-10.834 174.716 15.896 134.495c13.303-20.003 37.072-32.67 62.87-33.003 20.303-.388 39.453 13.65 51.853 13.65 12.394 0 35.66-16.891 60.103-14.415 10.234.427 38.958 4.136 57.384 31.152-1.484.927-34.255 19.998-33.888 59.647l-.415.504zM174.24 50.199c10.98-13.29 18.368-31.786 16.342-50.199-15.804.642-34.928 10.527-46.28 23.816-10.16 11.761-19.043 30.582-16.65 48.63 17.621 1.371 35.608-8.956 46.588-22.247" fill="#000"/></svg>
       Apple로 로그인
     </a>
@@ -157,7 +157,7 @@
 
   if (isCapacitor || isAndroidWebView) {
     setupOAuthButton('google-login-btn', '/auth/google_oauth2');
-    setupOAuthButton('apple-login-btn', '/auth/apple');
+    setupOAuthButton('apple-login-btn', '/apple_auth');
 
     // 딥링크 수신 리스너: OAuth 완료 후 앱으로 복귀 (Android용)
     if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.App) {
