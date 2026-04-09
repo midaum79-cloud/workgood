@@ -141,6 +141,8 @@
           .then(function(data) {
             if (data.token) {
               clearInterval(pollInterval);
+              if (window.oauthTokenHandled) return;
+              window.oauthTokenHandled = true;
               console.log('[일잘러] Token received via polling, closing browser');
               try {
                 if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.Browser) {
@@ -166,6 +168,8 @@
         var url = event.url || '';
         var tokenMatch = url.match(/[?&]token=([^&]+)/);
         if (tokenMatch && tokenMatch[1]) {
+          if (window.oauthTokenHandled) return;
+          window.oauthTokenHandled = true;
           // Chrome Custom Tabs 닫기
           if (window.Capacitor.Plugins.Browser) {
             window.Capacitor.Plugins.Browser.close();

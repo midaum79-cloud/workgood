@@ -81,7 +81,9 @@ class OmniauthCallbacksController < ApplicationController
     user_id = Rails.cache.read("app_login_token:#{token}")
 
     if user_id
-      Rails.cache.delete("app_login_token:#{token}")
+      # 딥링크와 폴링이 동시에 요청될 때 발생하는 Race Condition 차단
+      # 즉시 삭제하지 않고 60초 캐시 만료로 자연 소멸되도록 유지
+      # Rails.cache.delete("app_login_token:#{token}")
       session[:user_id] = user_id
       redirect_to root_path
     else
