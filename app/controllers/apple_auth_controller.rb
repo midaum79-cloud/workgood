@@ -7,11 +7,15 @@ class AppleAuthController < ApplicationController
 
   # GET /auth/apple → Apple 로그인 페이지로 리다이렉트
   def redirect
-    state = SecureRandom.hex(16)
+    base_state = SecureRandom.hex(16)
+    if params[:origin].present?
+      state = "#{base_state}|#{Base64.urlsafe_encode64(params[:origin])}"
+    else
+      state = base_state
+    end
     nonce = SecureRandom.hex(16)
     session[:apple_state] = state
     session[:apple_nonce] = nonce
-    session[:apple_origin] = params[:origin] if params[:origin].present?
 
     params_hash = {
       client_id:     apple_client_id,
@@ -90,7 +94,16 @@ class AppleAuthController < ApplicationController
     if user.save
       Rails.logger.info "[AppleAuth] User saved: id=#{user.id}"
       
-      origin = session.delete(:apple_origin) || ""
+      state_str = params[:state].to_s
+      origin = ""
+      if state_str.include?("|")
+        encoded_origin = state_str.split("|").last
+        begin
+          origin = Base64.urlsafe_decode64(encoded_origin)
+        rescue
+        end
+      end
+      
       from_app = origin.include?("source=app")
 
       if from_app
