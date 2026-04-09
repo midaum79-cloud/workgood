@@ -16,7 +16,7 @@
 
 #diaryRoot {
   position: fixed;
-  top: env(safe-area-inset-top, 0px);
+  top: 0;
   left: 0;
   right: 0;
   bottom: 58px;
@@ -59,7 +59,7 @@
 <div id="diaryRoot">
 
   <!-- 헤더 -->
-  <div style="background:white; padding:18px 20px 14px 20px; border-bottom:1px solid #f0f0f0; position:sticky; top:0; z-index:30;">
+  <div class="safe-sticky-header" style="background:white; padding:18px 20px 14px 20px; border-bottom:1px solid #f0f0f0; position:sticky; top:0; z-index:30;">
     <div style="display:flex; justify-content:space-between; align-items:center;">
       <div style="font-size:24px; color:#111827; font-weight:900; cursor:pointer;" onclick="openDrawer()">☰</div>
       
@@ -174,15 +174,20 @@
     var dx = e.touches[0].clientX - swipeStartX;
     var dy = e.touches[0].clientY - swipeStartY;
     
-    // 세로 스크롤이 더 크면 스와이프 인식 취소
-    if (!hasMoved && Math.abs(dy) > Math.abs(dx)) {
-      isSwiping = false;
-      return;
+    if (!hasMoved) {
+      if (Math.abs(dx) > 5 || Math.abs(dy) > 5) {
+        if (Math.abs(dy) > Math.abs(dx)) {
+          isSwiping = false;
+          return;
+        } else {
+          hasMoved = true;
+        }
+      } else {
+        return;
+      }
     }
     
-    // 약간의 움직임이 있을 때 가로 스와이프로 판단
-    if (Math.abs(dx) > 10) {
-      hasMoved = true;
+    if (hasMoved) {
       if (e.cancelable) e.preventDefault(); // 스크롤(뒤로가기 제스처 등) 방지
       // 저항감(0.9)
       grid.style.transform = 'translateX(' + (dx * 0.9) + 'px)';
