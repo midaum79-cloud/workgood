@@ -1,6 +1,7 @@
 Rails.application.routes.draw do
   get "pages/guide"
   get  "daily_memos",        to: "daily_memos#index",  as: :daily_memos_list
+  get  "daily_memos/panel",  to: "daily_memos#panel",  as: :daily_memos_panel
   get  "daily_memos/show",   to: "daily_memos#show",   as: :daily_memo
   post "daily_memos/update", to: "daily_memos#update",  as: :update_daily_memo
   get "announcements", to: "announcements#index", as: :announcements

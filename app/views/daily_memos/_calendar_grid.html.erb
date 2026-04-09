@@ -1,0 +1,33 @@
+<div style="display:grid; grid-template-columns:repeat(7, 1fr); flex:1; align-content:start;">
+  <% @calendar_rows.flatten.compact.each do |date| %>
+    <%
+      is_current_month = date.month == @calendar_month
+      is_today = date == Date.today
+      memo = @memos_by_date[date]
+      
+      # 텍스트 컬러 지정
+      text_color = if !is_current_month; '#d1d5db'
+                   elsif date.wday == 0; '#ef4444' # 일
+                   elsif date.wday == 6; '#3b82f6' # 토
+                   else; '#111827' end
+      
+      bg_color = is_today ? "#eff6ff" : "transparent"
+    %>
+    
+    <%= link_to daily_memo_path(memo_date: date), style: "text-decoration:none; color:inherit; display:flex; flex-direction:column; align-items:center; background:#{bg_color}; border-right:#{date.wday == 6 ? 'none' : '1px solid #f0f0f0'}; border-bottom:1px solid #f0f0f0; padding:10px 2px; height:108px; position:relative;" do %>
+      
+      <!-- 날짜 번호 -->
+      <div style="font-size:18px; font-weight:900; margin-bottom:8px; color:<%= text_color %>;">
+        <%= date.day %>
+      </div>
+      
+      <!-- 메모 표시 영역 -->
+      <% if memo.present? %>
+         <div style="width:100%; padding:0 4px; font-size:10px; font-weight:700; color:#374151; line-height:1.25; text-align:center; display:-webkit-box; -webkit-line-clamp:4; -webkit-box-orient:vertical; overflow:hidden; word-break:keep-all;">
+           <%= memo.content %>
+         </div>
+      <% end %>
+
+    <% end %>
+  <% end %>
+</div>
