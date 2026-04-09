@@ -36,7 +36,7 @@
       <div style="font-size:12px; font-weight:700; color:rgba(255,255,255,0.6); margin-bottom:6px;">현재 요금제</div>
       <div style="display:flex; justify-content:space-between; align-items:center;">
         <div style="font-size:26px; font-weight:900;"><%= current_user.plan_label %> 플랜</div>
-        <div style="font-size:14px; font-weight:800; color:#4ade80;">현장 무제한</div>
+        <div style="font-size:14px; font-weight:800; color:#4ade80;"><%= current_user.plan_limit == Float::INFINITY ? "현장 무제한" : "현장 최대 #{current_user.plan_limit}개" %></div>
       </div>
       <div style="font-size:13px; color:rgba(255,255,255,0.6); margin-top:6px;">
         공사현장 <%= @project_count %>개 사용 중
@@ -51,7 +51,7 @@
 
     <%# Plans Section %>
     <div style="font-size:16px; font-weight:900; color:#111827; margin-bottom:6px;">요금제 선택</div>
-    <div style="font-size:13px; font-weight:600; color:#9ca3af; margin-bottom:16px;">모든 플랜은 현장 등록 무제한! 💪</div>
+    <div style="font-size:13px; font-weight:600; color:#9ca3af; margin-bottom:16px;">플랜별 현장 등록 개수 상이 💪</div>
 
     <div style="display:flex; flex-direction:column; gap:14px;">
 
@@ -61,7 +61,7 @@
         <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:14px;">
           <div>
             <div style="font-size:18px; font-weight:900; color:#374151;">🟢 무료 플랜</div>
-            <div style="font-size:13px; color:#6b7280; font-weight:700; margin-top:3px;">일정만 깔끔하게</div>
+            <div style="font-size:13px; color:#6b7280; font-weight:700; margin-top:3px;">현장 10개 · 가볍게 일정만</div>
           </div>
           <div style="text-align:right;">
             <div style="font-size:24px; font-weight:900; color:#111827;">₩0</div>
@@ -71,7 +71,7 @@
         <div style="margin-bottom:14px;">
           <div style="font-size:11px; font-weight:800; color:#9ca3af; margin-bottom:8px; letter-spacing:0.5px;">📅 일정 관리</div>
           <div style="font-size:13px; color:#374151; font-weight:600; line-height:2;">
-            ✅ 현장 등록 <strong>무제한</strong><br>
+            ✅ 현장 등록 <strong>최대 10개</strong><br>
             ✅ 캘린더 일정 관리<br>
             ✅ 거래처 관리<br>
             ✅ 견적/계약금 입력
@@ -106,10 +106,10 @@
         <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:14px;">
           <div>
             <div style="font-size:18px; font-weight:900; color:#1d4ed8;">🔵 스탠다드</div>
-            <div style="font-size:13px; color:#60a5fa; font-weight:700; margin-top:3px;">돈 흐름을 한눈에</div>
+            <div style="font-size:13px; color:#60a5fa; font-weight:700; margin-top:3px;">현장 20개 · 돈 흐름을 한눈에</div>
           </div>
           <div style="text-align:right;">
-            <div style="font-size:24px; font-weight:900; color:#111827;">₩4,900</div>
+            <div style="font-size:24px; font-weight:900; color:#111827;">₩4,400</div>
             <div style="font-size:11px; color:#9ca3af; font-weight:600;">/월</div>
           </div>
         </div>
@@ -125,6 +125,7 @@
         <div style="margin-bottom:10px;">
           <div style="font-size:11px; font-weight:800; color:#9ca3af; margin-bottom:8px; letter-spacing:0.5px;">📅 일정 관리</div>
           <div style="font-size:13px; color:#374151; font-weight:600; line-height:2;">
+            ✅ 현장 등록 <strong>최대 20개</strong><br>
             ✅ 무료 플랜 전체 포함
           </div>
         </div>
@@ -158,8 +159,8 @@
         <% if is_current %>
           <div style="text-align:center; padding:13px; background:#dbeafe; border-radius:14px; font-size:15px; font-weight:800; color:#2563eb;">현재 플랜</div>
         <% else %>
-          <button onclick="requestPayment('standard', 4900)" style="width:100%; padding:14px; background:#2563eb; color:white; border:none; border-radius:14px; font-size:16px; font-weight:900; cursor:pointer; font-family:inherit; box-shadow:0 4px 12px rgba(37,99,235,0.3);">
-            스탠다드 시작 · ₩4,900/월
+          <button onclick="requestPayment('standard', 4400)" style="width:100%; padding:14px; background:#2563eb; color:white; border:none; border-radius:14px; font-size:16px; font-weight:900; cursor:pointer; font-family:inherit; box-shadow:0 4px 12px rgba(37,99,235,0.3);">
+            스탠다드 시작 · ₩4,400/월
           </button>
         <% end %>
       </div>
@@ -179,7 +180,7 @@
         <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:14px;">
           <div>
             <div style="font-size:18px; font-weight:900; color:white;">🟣 프리미엄</div>
-            <div style="font-size:13px; color:#a5b4fc; font-weight:700; margin-top:3px;">세금 걱정까지 끝</div>
+            <div style="font-size:13px; color:#a5b4fc; font-weight:700; margin-top:3px;">현장 무제한 · 세금 걱정까지 끝</div>
           </div>
           <div style="text-align:right;">
             <div style="font-size:24px; font-weight:900; color:white;">₩9,900</div>
@@ -198,6 +199,7 @@
         <div style="margin-bottom:10px;">
           <div style="font-size:11px; font-weight:800; color:rgba(255,255,255,0.5); margin-bottom:8px; letter-spacing:0.5px;">📅 일정 + 📓 다이어리 + 💰 돈 관리</div>
           <div style="font-size:13px; color:rgba(255,255,255,0.85); font-weight:600; line-height:2;">
+            ✅ 현장 등록 <strong>무제한</strong><br>
             ✅ 스탠다드 전체 포함
           </div>
         </div>
@@ -325,8 +327,8 @@
           <tbody>
             <tr style="border-bottom:1px solid #f3f4f6;">
               <td style="padding:10px 6px; font-weight:700; color:#374151;">현장 등록</td>
-              <td style="text-align:center; font-weight:800; color:#16a34a;">무제한</td>
-              <td style="text-align:center; font-weight:800; color:#16a34a;">무제한</td>
+              <td style="text-align:center; font-weight:800; color:#374151;">10개</td>
+              <td style="text-align:center; font-weight:800; color:#2563eb;">20개</td>
               <td style="text-align:center; font-weight:800; color:#16a34a;">무제한</td>
             </tr>
             <tr style="border-bottom:1px solid #f3f4f6;">
@@ -401,7 +403,7 @@
         💳 <strong>구독 및 결제 안내</strong>
       </div>
       <div style="font-size:12px; color:#374151; line-height:1.8; margin-top:10px;">
-        • <strong>구독 상품:</strong> 일잘러 스탠다드 (₩4,900/월), 일잘러 프리미엄 (₩9,900/월)<br>
+        • <strong>구독 상품:</strong> 일잘러 스탠다드 (₩4,400/월), 일잘러 프리미엄 (₩9,900/월)<br>
         • <strong>구독 기간:</strong> 1개월 단위 자동 갱신<br>
         • <strong>결제:</strong> 구매 확인 시 Apple ID 계정으로 청구됩니다.<br>
         • <strong>자동 갱신:</strong> 현재 구독 기간 종료 최소 24시간 전에 자동 갱신이 해제되지 않으면 구독이 자동으로 갱신됩니다.<br>
