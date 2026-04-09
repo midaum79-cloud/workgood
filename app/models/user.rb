@@ -20,7 +20,7 @@ class User < ApplicationRecord
   PLAN_LABELS  = { "free" => "무료", "standard" => "스탠다드", "premium" => "프리미엄" }.freeze
 
   # ⚠️ 테스트 기간: 모든 사용자 프리미엄 처리 (요금제 완성 후 false로 변경)
-  TESTING_PERIOD = true
+  TESTING_PERIOD = false
 
   # ── Google OAuth ──────────────────────────────────────────────────────
   def self.find_or_create_from_omniauth(auth)
