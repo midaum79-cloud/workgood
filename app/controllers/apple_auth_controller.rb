@@ -11,6 +11,7 @@ class AppleAuthController < ApplicationController
     nonce = SecureRandom.hex(16)
     session[:apple_state] = state
     session[:apple_nonce] = nonce
+    session[:apple_origin] = params[:origin] if params[:origin].present?
 
     params_hash = {
       client_id:     apple_client_id,
@@ -88,11 +89,28 @@ class AppleAuthController < ApplicationController
 
     if user.save
       Rails.logger.info "[AppleAuth] User saved: id=#{user.id}"
-      session[:user_id] = user.id
-      redirect_to root_path, notice: "Apple 로그인 성공!"
+      
+      origin = session.delete(:apple_origin) || ""
+      from_app = origin.include?("source=app")
+
+      if from_app
+        token = SecureRandom.hex(32)
+        Rails.cache.write("app_login_token:#{token}", user.id, expires_in: 60.seconds)
+        @deep_link = "workgood://auth/callback?token=#{token}"
+
+        app_nonce = origin.match(/nonce=([^&]+)/)&.captures&.first
+        if app_nonce
+          Rails.cache.write("app_login_nonce:#{app_nonce}", token, expires_in: 120.seconds)
+        end
+
+        render "omniauth_callbacks/app_redirect", layout: false
+      else
+        session[:user_id] = user.id
+        redirect_to root_path, notice: "Apple 로그인 성공!"
+      end
     else
       Rails.logger.error "[AppleAuth] User save failed: #{user.errors.full_messages}"
-      redirect_to login_path, alert: "로그인 처리 중 오류가 발생했습니다."
+      redirect_to login_path, alert: "가입 처리 중 오류가 발생했습니다: #{user.errors.full_messages.join(', ')}"
     end
 
   rescue => e
@@ -106,9 +124,16 @@ class AppleAuthController < ApplicationController
   def extract_user_from_id_token(id_token_str)
     return nil if id_token_str.blank?
 
-    # JWT 디코딩 (검증 없이 - Apple의 공개키로 검증은 선택적)
-    decoded = JSON::JWT.decode(id_token_str, :skip_verification)
-    Rails.logger.info "[AppleAuth] id_token decoded: sub=#{decoded[:sub]}, email=#{decoded[:email]}"
+    parts = id_token_str.split('.')
+    return nil unless parts.length >= 2
+
+    # JWT payload is the second part, base64url encoded
+    payload_base64 = parts[1]
+    # Add padding if necessary
+    payload_base64 += '=' * (4 - payload_base64.length % 4) if payload_base64.length % 4 != 0
+    
+    decoded = JSON.parse(Base64.urlsafe_decode64(payload_base64)).with_indifferent_access
+    Rails.logger.info "[AppleAuth] id_token decoded via Base64: sub=#{decoded[:sub]}, email=#{decoded[:email]}"
 
     {
       uid:   decoded[:sub],
