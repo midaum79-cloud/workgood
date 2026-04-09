@@ -166,14 +166,15 @@
 
       <%# ===== PREMIUM ===== %>
       <% is_current = @current_plan == "premium" %>
-      <div style="background:linear-gradient(135deg, #1e1b4b 0%, #312e81 100%); border-radius:20px; padding:20px; border:2px solid <%= is_current ? '#818cf8' : '#6366f1' %>; position:relative; overflow:hidden; box-shadow:0 8px 32px rgba(99,102,241,0.3);">
-        <div style="position:absolute; top:-30px; right:-30px; width:120px; height:120px; border-radius:50%; background:rgba(255,255,255,0.05);"></div>
-        <div style="position:absolute; bottom:-20px; left:-20px; width:80px; height:80px; border-radius:50%; background:rgba(255,255,255,0.03);"></div>
-
+      <div style="position:relative;">
         <%# 프리미엄 추천 뱃지 %>
-        <div style="position:absolute; top:-10px; left:16px; background:linear-gradient(135deg, #f59e0b, #ef4444); color:white; font-size:11px; font-weight:900; padding:5px 14px; border-radius:999px; box-shadow:0 2px 8px rgba(239,68,68,0.4);">
+        <div style="position:absolute; top:-10px; left:16px; background:linear-gradient(135deg, #f59e0b, #ef4444); color:white; font-size:11px; font-weight:900; padding:5px 14px; border-radius:999px; box-shadow:0 2px 8px rgba(239,68,68,0.4); z-index:10;">
           🔥 추천
         </div>
+
+        <div style="background:linear-gradient(135deg, #1e1b4b 0%, #312e81 100%); border-radius:20px; padding:20px; border:2px solid <%= is_current ? '#818cf8' : '#6366f1' %>; position:relative; overflow:hidden; box-shadow:0 8px 32px rgba(99,102,241,0.3);">
+          <div style="position:absolute; top:-30px; right:-30px; width:120px; height:120px; border-radius:50%; background:rgba(255,255,255,0.05);"></div>
+          <div style="position:absolute; bottom:-20px; left:-20px; width:80px; height:80px; border-radius:50%; background:rgba(255,255,255,0.03);"></div>
 
         <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:14px;">
           <div>
@@ -252,6 +253,7 @@
             </button>
           <% end %>
         </div>
+      </div>
       </div>
 
     </div>
