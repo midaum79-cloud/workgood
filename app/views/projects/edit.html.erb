@@ -8,7 +8,7 @@
     </div>
   </div>
 
-  <%= form_with(model: @project, local: true) do |form| %>
+  <%= form_with(model: @project, local: true, id: "editProjectForm") do |form| %>
     <% if @project.errors.any? %>
       <div style="background:#fee2e2; color:#b91c1c; padding:14px; border-radius:14px; margin-bottom:16px; font-size:14px; font-weight:700;">
         입력 내용을 확인해주세요.
@@ -139,11 +139,13 @@
           <div>
             <div style="font-size:13px; font-weight:800; color:#374151; margin-bottom:6px;">견적금액</div>
             <div style="position:relative;">
-              <%= form.number_field :estimate_amount,
+              <%= form.text_field :estimate_amount,
                   id: "edit_estimate_amount",
+                  class: "amount-input",
+                  pattern: "[0-9,]*", inputmode: "numeric",
                   placeholder: "견적금액을 입력하세요",
                   style: "width:100%; padding:14px 16px 14px 16px; border:1px solid #dcdfe4; border-radius:12px; font-size:16px; box-sizing:border-box; background:white;",
-                  min: 0 %>
+                  value: @project.estimate_amount.present? ? number_with_delimiter(@project.estimate_amount) : "" %>
               <span style="position:absolute; right:14px; top:50%; transform:translateY(-50%); font-size:14px; color:#9ca3af; font-weight:700;">원</span>
             </div>
           </div>
@@ -151,11 +153,13 @@
           <div>
             <div style="font-size:13px; font-weight:800; color:#374151; margin-bottom:6px;">계약금</div>
             <div style="position:relative;">
-              <%= form.number_field :deposit_amount,
+              <%= form.text_field :deposit_amount,
                   id: "edit_deposit_amount",
+                  class: "amount-input",
+                  pattern: "[0-9,]*", inputmode: "numeric",
                   placeholder: "계약금이 있다면 입력하세요",
                   style: "width:100%; padding:14px 16px 14px 16px; border:1px solid #dcdfe4; border-radius:12px; font-size:16px; box-sizing:border-box; background:white;",
-                  min: 0 %>
+                  value: @project.deposit_amount.present? ? number_with_delimiter(@project.deposit_amount) : "" %>
               <span style="position:absolute; right:14px; top:50%; transform:translateY(-50%); font-size:14px; color:#9ca3af; font-weight:700;">원</span>
             </div>
           </div>
@@ -163,11 +167,13 @@
           <div>
             <div style="font-size:13px; font-weight:800; color:#374151; margin-bottom:6px;">중도금</div>
             <div style="position:relative;">
-              <%= form.number_field :mid_payment,
+              <%= form.text_field :mid_payment,
                   id: "edit_mid_payment",
+                  class: "amount-input",
+                  pattern: "[0-9,]*", inputmode: "numeric",
                   placeholder: "중도금이 있다면 입력하세요",
-                  style: "width:100%; padding:14px 16px; border:1px solid #dcdfe4; border-radius:12px; font-size:16px; box-sizing:border-box; background:white;",
-                  min: 0 %>
+                  style: "width:100%; padding:14px 16px 14px 16px; border:1px solid #dcdfe4; border-radius:12px; font-size:16px; box-sizing:border-box; background:white;",
+                  value: @project.mid_payment.present? ? number_with_delimiter(@project.mid_payment) : "" %>
               <span style="position:absolute; right:14px; top:50%; transform:translateY(-50%); font-size:14px; color:#9ca3af; font-weight:700;">원</span>
             </div>
           </div>
@@ -477,11 +483,31 @@
       updateBalance();
     });
   });
+  // 금액 천단위 콤마
+  document.querySelectorAll('.amount-input').forEach(function(input) {
+    input.addEventListener('input', function(e) {
+      var start = this.selectionStart;
+      var originalLength = this.value.length;
+      var numText = this.value.replace(/[^0-9]/g, '');
+      var formatted = numText ? parseInt(numText, 10).toLocaleString() : '';
+      this.value = formatted;
+      var diff = this.value.length - originalLength;
+      this.setSelectionRange(start + diff, start + diff);
+      updateBalance();
+    });
+  });
+
+  document.getElementById('editProjectForm').addEventListener('submit', function() {
+    document.querySelectorAll('.amount-input').forEach(function(input) {
+      input.value = input.value.replace(/,/g, '');
+    });
+  });
+
   // 잔금 자동 계산
   function updateBalance() {
-    var est = parseInt(document.getElementById('edit_estimate_amount').value) || 0;
-    var dep = parseInt(document.getElementById('edit_deposit_amount').value) || 0;
-    var mid = parseInt(document.getElementById('edit_mid_payment').value) || 0;
+    var est = parseInt((document.getElementById('edit_estimate_amount').value || "0").replace(/,/g, '')) || 0;
+    var dep = parseInt((document.getElementById('edit_deposit_amount').value || "0").replace(/,/g, '')) || 0;
+    var mid = parseInt((document.getElementById('edit_mid_payment').value || "0").replace(/,/g, '')) || 0;
     var bal = Math.max(est - dep - mid, 0);
 
     var isFullyPaid = document.getElementById('payment_status_완납') && document.getElementById('payment_status_완납').checked;
