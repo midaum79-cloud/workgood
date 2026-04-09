@@ -838,17 +838,19 @@
       else if (dayOfWeek === 6) cell.style.color = '#2563eb';
       else cell.style.color = '#374151';
 
-      if (dateStr === todayStr) {
-        cell.style.fontWeight = '900';
+      if (dateStr === todayStr && !selectedDates[dateStr]) {
+        cell.innerHTML = '<span style="display:inline-flex; align-items:center; justify-content:center; width:28px; height:28px; border-radius:50%; background:#fef08a; color:#854d0e; font-weight:900; margin:-6px 0;">' + d + '</span>';
+      } else {
+        if (dateStr === todayStr) {
+          cell.style.fontWeight = '900';
+        }
+        if (selectedDates[dateStr]) {
+          cell.style.background = '#2563eb';
+          cell.style.color = 'white';
+          cell.style.fontWeight = '900';
+        }
+        cell.textContent = d;
       }
-
-      if (selectedDates[dateStr]) {
-        cell.style.background = '#2563eb';
-        cell.style.color = 'white';
-        cell.style.fontWeight = '900';
-      }
-
-      cell.textContent = d;
 
       cell.addEventListener('click', (function(ds) {
         return function() { toggleDate(ds); };
