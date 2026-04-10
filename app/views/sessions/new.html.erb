@@ -221,14 +221,14 @@
       AppleSignIn.signIn({
         scopes: ['EMAIL', 'FULL_NAME']
       }).then(function(result) {
-        console.log('[일잘러] Apple Sign-In 성공, identityToken 수신');
-        var idToken = result.identityToken;
+        console.log('[일잘러] Apple Sign-In 성공, idToken 수신:', result);
+        var idToken = result.idToken;
         var givenName = (result.name && result.name.givenName) || (result.givenName || '');
         var familyName = (result.name && result.name.familyName) || (result.familyName || '');
         var fullName = [familyName, givenName].filter(function(n) { return n; }).join(' ');
 
         if (!idToken) {
-          console.error('[일잘러] identityToken이 없음');
+          console.error('[일잘러] idToken이 없음');
           btn.innerHTML = originalText;
           btn.style.opacity = '1';
           btn.style.pointerEvents = 'auto';
