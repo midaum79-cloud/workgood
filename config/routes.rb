@@ -38,6 +38,8 @@ Rails.application.routes.draw do
   get  "/auth/failure",                to: "omniauth_callbacks#failure"
   get  "/auth/token_login",            to: "omniauth_callbacks#token_login"
   get  "/auth/check_login",            to: "omniauth_callbacks#check_login"
+  # Native Apple Sign-In (iOS 앱 네이티브 모달)
+  post "/auth/native_apple",           to: "native_apple_auth#create"
 
 
   # App Settings
@@ -49,7 +51,7 @@ Rails.application.routes.draw do
   # Subscription
   get   "subscription",        to: "subscriptions#index",  as: :subscription
   patch "subscription",        to: "subscriptions#update"
-  get   "subscription/verify_apple", to: "subscriptions#verify_apple", as: :verify_apple_subscription
+  get   "subscription/verify_mobile", to: "subscriptions#verify_mobile", as: :verify_mobile_subscription
   delete "subscription",       to: "subscriptions#cancel", as: :cancel_subscription
 
   # Widget Settings

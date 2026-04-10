@@ -158,8 +158,19 @@
   }
 
   if (isCapacitor || isAndroidWebView) {
+    // iOS 감지
+    var isIOS = /iPhone|iPad|iPod/i.test(ua);
+
+    // Google 로그인: 항상 외부 브라우저 방식 (iOS/Android 동일)
     setupOAuthButton('google-login-btn', '/auth/google_oauth2');
-    setupOAuthButton('apple-login-btn', '/apple_auth');
+
+    // Apple 로그인: iOS에서는 네이티브 모달, Android에서는 외부 브라우저
+    if (isIOS && window.Capacitor && window.Capacitor.Plugins) {
+      setupNativeAppleSignIn();
+    } else {
+      // Android: 기존 외부 브라우저 방식
+      setupOAuthButton('apple-login-btn', '/apple_auth');
+    }
 
     // 딥링크 수신 리스너: OAuth 완료 후 앱으로 복귀 (Android용)
     if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.App) {
@@ -179,6 +190,88 @@
         }
       });
     }
+  }
+
+  // ── iOS 네이티브 Apple Sign-In (하단 모달) ──
+  function setupNativeAppleSignIn() {
+    var btn = document.getElementById('apple-login-btn');
+    if (!btn) return;
+
+    btn.addEventListener('click', function(e) {
+      e.preventDefault();
+      console.log('[일잘러] Native Apple Sign-In 시작');
+
+      // 버튼 비활성화 + 로딩 표시
+      btn.style.opacity = '0.6';
+      btn.style.pointerEvents = 'none';
+      var originalText = btn.innerHTML;
+      btn.innerHTML = '<div style="width:20px;height:20px;border:2px solid #ccc;border-top:2px solid #333;border-radius:50%;animation:spin 0.8s linear infinite;"></div> 로그인 중...';
+
+      // Capacitor AppleSignIn 플러그인 호출
+      var AppleSignIn = window.Capacitor.Plugins.AppleSignIn;
+      if (!AppleSignIn) {
+        console.error('[일잘러] AppleSignIn plugin not available');
+        btn.innerHTML = originalText;
+        btn.style.opacity = '1';
+        btn.style.pointerEvents = 'auto';
+        alert('Apple 로그인을 사용할 수 없습니다. 앱을 업데이트해주세요.');
+        return;
+      }
+
+      AppleSignIn.signIn({
+        scopes: ['email', 'name']
+      }).then(function(result) {
+        console.log('[일잘러] Apple Sign-In 성공, identityToken 수신');
+        var idToken = result.identityToken;
+        var givenName = (result.givenName || '');
+        var familyName = (result.familyName || '');
+        var fullName = [familyName, givenName].filter(function(n) { return n; }).join(' ');
+
+        if (!idToken) {
+          console.error('[일잘러] identityToken이 없음');
+          btn.innerHTML = originalText;
+          btn.style.opacity = '1';
+          btn.style.pointerEvents = 'auto';
+          alert('Apple 인증 정보를 받지 못했습니다. 다시 시도해주세요.');
+          return;
+        }
+
+        // 서버로 identityToken 전송
+        return fetch(window.location.origin + '/auth/native_apple', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            id_token: idToken,
+            name: fullName || null
+          })
+        });
+      }).then(function(response) {
+        if (!response) return;
+        return response.json().then(function(data) {
+          if (response.ok && data.token) {
+            console.log('[일잘러] 서버 토큰 수신, 로그인 완료');
+            window.location.href = window.location.origin + '/auth/token_login?token=' + data.token;
+          } else {
+            console.error('[일잘러] 서버 응답 오류:', data);
+            btn.innerHTML = originalText;
+            btn.style.opacity = '1';
+            btn.style.pointerEvents = 'auto';
+            alert('로그인 처리 중 오류가 발생했습니다. 다시 시도해주세요.');
+          }
+        });
+      }).catch(function(err) {
+        console.error('[일잘러] Apple Sign-In 오류:', err);
+        btn.innerHTML = originalText;
+        btn.style.opacity = '1';
+        btn.style.pointerEvents = 'auto';
+        // 사용자가 취소한 경우 조용히 무시
+        if (err && err.message && err.message.indexOf('cancel') !== -1) {
+          console.log('[일잘러] 사용자가 Apple 로그인 취소');
+          return;
+        }
+        alert('Apple 로그인 중 오류가 발생했습니다. 다시 시도해주세요.');
+      });
+    });
   }
 
   // ── 일반 인앱 브라우저(네이버, 카카오 등): 기존 로직 ──
