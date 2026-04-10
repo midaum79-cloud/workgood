@@ -219,12 +219,12 @@
       }
 
       AppleSignIn.signIn({
-        scopes: ['email', 'name']
+        scopes: ['EMAIL', 'FULL_NAME']
       }).then(function(result) {
         console.log('[일잘러] Apple Sign-In 성공, identityToken 수신');
         var idToken = result.identityToken;
-        var givenName = (result.givenName || '');
-        var familyName = (result.familyName || '');
+        var givenName = (result.name && result.name.givenName) || (result.givenName || '');
+        var familyName = (result.name && result.name.familyName) || (result.familyName || '');
         var fullName = [familyName, givenName].filter(function(n) { return n; }).join(' ');
 
         if (!idToken) {
