@@ -119,7 +119,7 @@ class Api::WidgetController < ApplicationController
 
       project.project_schedules.each do |ps|
         item = {
-          process: "메인 일정",
+          process: project.work_description.presence || "현장 일정",
           project: project.project_name,
           color: project.theme_color_hex
         }

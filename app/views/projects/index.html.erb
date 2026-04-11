@@ -154,7 +154,7 @@
                   <div>
                     <div style="font-size:17px; font-weight:900; color:#111827; margin-bottom:4px;"><%= project.client_name.presence || project.project_name %></div>
                     <div style="font-size:14px; font-weight:700; color:#6b7280; margin-bottom:2px;">📍 <%= project.address.presence || "주소 미입력" %></div>
-                    <div style="font-size:13px; font-weight:700; color:#9ca3af;"><%= project.work_description.presence || "메인 스케줄" %></div>
+                    <div style="font-size:13px; font-weight:700; color:#9ca3af;"><%= project.work_description %></div>
                   </div>
                 </div>
                 <div style="padding:6px 10px; border-radius:999px; font-size:12px; font-weight:800; background:#fef3c7; color:#92400e; white-space:nowrap;"><%= project.status %></div>
@@ -232,7 +232,7 @@
                   <div>
                     <div style="font-size:17px; font-weight:900; color:#111827; margin-bottom:4px;"><%= project.client_name.presence || project.project_name %></div>
                     <div style="font-size:14px; font-weight:700; color:#6b7280; margin-bottom:2px;">📍 <%= project.address.presence || "주소 미입력" %></div>
-                    <div style="font-size:13px; font-weight:700; color:#9ca3af;"><%= project.work_description.presence || "메인 스케줄" %></div>
+                    <div style="font-size:13px; font-weight:700; color:#9ca3af;"><%= project.work_description %></div>
                   </div>
                 </div>
                 <div style="padding:6px 10px; border-radius:999px; font-size:12px; font-weight:800; background:#f3f4f6; color:#4b5563; white-space:nowrap;"><%= project.status %></div>
