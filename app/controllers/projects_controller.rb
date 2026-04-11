@@ -5,7 +5,7 @@ class ProjectsController < ApplicationController
   before_action :require_premium_for_money!, only: %i[monthly_payments]
 
   def index
-    @selected_status = params[:status].presence || '예정'
+    @selected_status = params[:status].presence || 'all'
     @view_mode = params[:view_mode].presence || "month"
 
     all_projects = current_user.projects
