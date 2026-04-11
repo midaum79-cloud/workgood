@@ -24,10 +24,11 @@ class ProjectsController < ApplicationController
     @featured_project = @projects.first
     @unread_notifications_count = current_user.notifications.where(status: "unread").count
 
-    project_ids = @projects.pluck(:id)
+    # 위젯은 현재 선택된 탭(예정/진행중)과 무관하게 사용자의 모든 프로젝트 일정을 보여줘야 합니다.
+    all_project_ids = all_projects.map(&:id)
     work_day_scope = WorkDay.includes(work_process: :project)
                             .joins(:work_process)
-                            .where(work_processes: { project_id: project_ids })
+                            .where(work_processes: { project_id: all_project_ids })
 
     today_work_days = work_day_scope.select { |wd| wd.work_date == Time.zone.today }
 
@@ -37,7 +38,7 @@ class ProjectsController < ApplicationController
       .sort_by { |process| [ process.position || 9999, process.id || 0 ] }
 
     @today_schedules = ProjectSchedule
-      .where(project_id: project_ids, work_date: Time.zone.today)
+      .where(project_id: all_project_ids, work_date: Time.zone.today)
       .includes(:project)
 
     tomorrow_work_days = work_day_scope.select { |wd| wd.work_date == Time.zone.tomorrow }
@@ -48,7 +49,7 @@ class ProjectsController < ApplicationController
       .sort_by { |process| [ process.position || 9999, process.id || 0 ] }
 
     @tomorrow_schedules = ProjectSchedule
-      .where(project_id: project_ids, work_date: Time.zone.tomorrow)
+      .where(project_id: all_project_ids, work_date: Time.zone.tomorrow)
       .includes(:project)
 
     @ending_soon_processes = []
