@@ -397,12 +397,12 @@
       </button>
     </div>
 
-    <%# Apple 필수 구독 안내 (Guideline 3.1.2c) %>
+    <%# 모바일 필수 구독 안내 (Guideline / Play Policy) %>
     <div style="margin-top:16px; background:#f0f9ff; border-radius:14px; padding:16px;">
       <div style="font-size:13px; font-weight:700; color:#0c4a6e; line-height:1.7;">
         💳 <strong>구독 및 결제 안내</strong>
       </div>
-      <div style="font-size:12px; color:#374151; line-height:1.8; margin-top:10px;">
+      <div id="subscription-store-notice" style="font-size:12px; color:#374151; line-height:1.8; margin-top:10px;">
         • <strong>구독 상품:</strong> 일잘러 스탠다드 (₩4,400/월), 일잘러 프리미엄 (₩9,900/월)<br>
         • <strong>구독 기간:</strong> 1개월 단위 자동 갱신<br>
         • <strong>결제:</strong> 구매 확인 시 Apple ID 계정으로 청구됩니다.<br>
@@ -440,7 +440,13 @@
       const Purchases = window.Capacitor.Plugins.Purchases;
       if (!Purchases || purchasesReady) return;
 
-      const RC_API_KEY = "<%= ENV['REVENUECAT_APPLE_API_KEY'] || 'appl_YOUR_KEY_HERE' %>";
+      let RC_API_KEY;
+      if (window.Capacitor.getPlatform() === 'android') {
+        RC_API_KEY = "<%= ENV['REVENUECAT_GOOGLE_API_KEY'] || 'goog_YOUR_KEY_HERE' %>";
+      } else {
+        RC_API_KEY = "<%= ENV['REVENUECAT_APPLE_API_KEY'] || 'appl_YOUR_KEY_HERE' %>";
+      }
+
       await Purchases.configure({
         apiKey: RC_API_KEY,
         appUserID: "<%= current_user.id %>"
@@ -491,10 +497,10 @@
         customerInfo.entitlements.active[plan];
 
       if (hasEntitlement) {
-        window.location.href = `/subscription/verify_apple?plan=${plan}`;
+        window.location.href = `/subscription/verify_mobile?plan=${plan}`;
       } else {
         // 엔타이틀먼트가 없어도 verify 요청 (RevenueCat Webhook으로 처리될 수 있음)
-        window.location.href = `/subscription/verify_apple?plan=${plan}`;
+        window.location.href = `/subscription/verify_mobile?plan=${plan}`;
       }
 
     } catch (e) {
@@ -503,7 +509,7 @@
       
       // 애플 샌드박스 환경 등에서 일시적인 RevenueCat 검증 오류가 발생하더라도
       // 결제가 승인된 상태일 수 있으므로 검증 페이지로 이동시켜 정상 처리되게 함 (Apple 심사 반려 방지)
-      window.location.href = `/subscription/verify_apple?plan=${plan}`;
+      window.location.href = `/subscription/verify_mobile?plan=${plan}`;
     }
   }
 
@@ -528,7 +534,7 @@
 
       if (activePlans.length > 0) {
         const restoredPlan = activePlans.includes('premium') ? 'premium' : 'standard';
-        window.location.href = `/subscription/verify_apple?plan=${restoredPlan}`;
+        window.location.href = `/subscription/verify_mobile?plan=${restoredPlan}`;
       } else {
         alert("복원할 구매 내역이 없습니다.\n이전에 구독하신 내역이 없거나 만료되었습니다.");
       }
@@ -538,7 +544,32 @@
     }
   }
 
+  function applyStoreNotice() {
+    if (!window.Capacitor || !window.Capacitor.isNativePlatform()) return;
+    const platform = window.Capacitor.getPlatform();
+    const noticeEl = document.getElementById('subscription-store-notice');
+    if (!noticeEl) return;
+
+    if (platform === 'android') {
+      noticeEl.innerHTML = `
+        • <strong>구독 상품:</strong> 일잘러 스탠다드 (₩4,400/월), 일잘러 프리미엄 (₩9,900/월)<br>
+        • <strong>구독 기간:</strong> 1개월 단위 자동 갱신<br>
+        • <strong>결제:</strong> 구매 확인 시 Google Play 계정으로 청구됩니다.<br>
+        • <strong>자동 갱신:</strong> 현재 구독 기간 종료 최소 24시간 전에 자동 갱신이 해제되지 않으면 구독이 자동으로 갱신됩니다.<br>
+        • <strong>갱신 요금:</strong> 현재 구독 기간 종료 전 24시간 이내에 갱신 요금이 청구됩니다.<br>
+        • <strong>구독 관리:</strong> 구독은 구매 후 기기의 [Play 스토어 > 우측 상단 프로필 > 결제 및 구독] 메뉴에서 관리 및 해지할 수 있습니다.<br>
+        • <strong>무료 체험:</strong> 무료 체험 기간이 제공되는 경우, 미사용분은 구독 구매 시 소멸됩니다.
+      `;
+    }
+  }
+
   // 페이지 로드 시 RevenueCat 초기화
-  document.addEventListener('DOMContentLoaded', initPurchases);
-  document.addEventListener('capacitorReady', initPurchases);
+  document.addEventListener('DOMContentLoaded', () => {
+    initPurchases();
+    setTimeout(applyStoreNotice, 500); // capacitor 초기화 지연 대기
+  });
+  document.addEventListener('capacitorReady', () => {
+    initPurchases();
+    applyStoreNotice();
+  });
 </script>

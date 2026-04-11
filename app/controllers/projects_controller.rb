@@ -36,12 +36,20 @@ class ProjectsController < ApplicationController
       .uniq
       .sort_by { |process| [ process.position || 9999, process.id || 0 ] }
 
+    @today_schedules = ProjectSchedule
+      .where(project_id: project_ids, work_date: Time.zone.today)
+      .includes(:project)
+
     tomorrow_work_days = work_day_scope.select { |wd| wd.work_date == Time.zone.tomorrow }
 
     @tomorrow_work_processes = tomorrow_work_days
       .map(&:work_process)
       .uniq
       .sort_by { |process| [ process.position || 9999, process.id || 0 ] }
+
+    @tomorrow_schedules = ProjectSchedule
+      .where(project_id: project_ids, work_date: Time.zone.tomorrow)
+      .includes(:project)
 
     @ending_soon_processes = []
 

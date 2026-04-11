@@ -45,8 +45,7 @@ class NativeAppleAuthController < ApplicationController
       user.uid      = uid
       user.email    = email
       user.name     = apple_name.presence || email.split("@").first
-      user.subscription_plan    = "standard"
-      user.subscription_expires_at = 1.month.from_now
+      user.subscription_plan    = "free"
       generated_password = SecureRandom.hex(24)
       user.password = generated_password
       user.password_confirmation = generated_password

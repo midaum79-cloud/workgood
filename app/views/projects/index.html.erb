@@ -124,7 +124,7 @@
       <% end %>
     <% end %>
 
-    <% if @today_work_processes.any? %>
+    <% if @today_work_processes.any? || @today_schedules.any? %>
       <div style="display:flex; flex-direction:column; gap:10px;">
         <% @today_work_processes.each do |process| %>
           <%= link_to work_process_path(process), style: "text-decoration:none; color:inherit;" do %>
@@ -139,6 +139,25 @@
                   </div>
                 </div>
                 <div style="padding:6px 10px; border-radius:999px; font-size:12px; font-weight:800; background:#fef3c7; color:#92400e; white-space:nowrap;"><%= process.status %></div>
+              </div>
+            </div>
+          <% end %>
+        <% end %>
+
+        <% @today_schedules.each do |schedule| %>
+          <% project = schedule.project %>
+          <%= link_to project_path(project), style: "text-decoration:none; color:inherit;" do %>
+            <div style="border:1px solid #ececec; border-radius:16px; padding:14px 16px;">
+              <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:10px;">
+                <div style="display:flex; align-items:flex-start; gap:10px;">
+                  <div style="width:10px; height:10px; min-width:10px; border-radius:50%; background:<%= project.theme_color_hex %>; margin-top:6px;"></div>
+                  <div>
+                    <div style="font-size:17px; font-weight:900; color:#111827; margin-bottom:4px;"><%= project.client_name.presence || project.project_name %></div>
+                    <div style="font-size:14px; font-weight:700; color:#6b7280; margin-bottom:2px;">📍 <%= project.address.presence || "주소 미입력" %></div>
+                    <div style="font-size:13px; font-weight:700; color:#9ca3af;"><%= project.work_description.presence || "메인 스케줄" %></div>
+                  </div>
+                </div>
+                <div style="padding:6px 10px; border-radius:999px; font-size:12px; font-weight:800; background:#fef3c7; color:#92400e; white-space:nowrap;"><%= project.status %></div>
               </div>
             </div>
           <% end %>
@@ -183,7 +202,7 @@
       <% end %>
     <% end %>
 
-    <% if @tomorrow_work_processes.any? %>
+    <% if @tomorrow_work_processes.any? || @tomorrow_schedules.any? %>
       <div style="display:flex; flex-direction:column; gap:10px;">
         <% @tomorrow_work_processes.each do |process| %>
           <%= link_to work_process_path(process), style: "text-decoration:none; color:inherit;" do %>
@@ -198,6 +217,25 @@
                   </div>
                 </div>
                 <div style="padding:6px 10px; border-radius:999px; font-size:12px; font-weight:800; background:#f3f4f6; color:#4b5563; white-space:nowrap;"><%= process.status %></div>
+              </div>
+            </div>
+          <% end %>
+        <% end %>
+
+        <% @tomorrow_schedules.each do |schedule| %>
+          <% project = schedule.project %>
+          <%= link_to project_path(project), style: "text-decoration:none; color:inherit;" do %>
+            <div style="border:1px solid #ececec; border-radius:16px; padding:14px 16px;">
+              <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:10px;">
+                <div style="display:flex; align-items:flex-start; gap:10px;">
+                  <div style="width:10px; height:10px; min-width:10px; border-radius:50%; background:<%= project.theme_color_hex %>; margin-top:6px;"></div>
+                  <div>
+                    <div style="font-size:17px; font-weight:900; color:#111827; margin-bottom:4px;"><%= project.client_name.presence || project.project_name %></div>
+                    <div style="font-size:14px; font-weight:700; color:#6b7280; margin-bottom:2px;">📍 <%= project.address.presence || "주소 미입력" %></div>
+                    <div style="font-size:13px; font-weight:700; color:#9ca3af;"><%= project.work_description.presence || "메인 스케줄" %></div>
+                  </div>
+                </div>
+                <div style="padding:6px 10px; border-radius:999px; font-size:12px; font-weight:800; background:#f3f4f6; color:#4b5563; white-space:nowrap;"><%= project.status %></div>
               </div>
             </div>
           <% end %>

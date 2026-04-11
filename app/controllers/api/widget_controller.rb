@@ -116,6 +116,16 @@ class Api::WidgetController < ApplicationController
           tomorrow_items << item if wd.work_date == tomorrow
         end
       end
+
+      project.project_schedules.each do |ps|
+        item = {
+          process: "메인 일정",
+          project: project.project_name,
+          color: project.theme_color_hex
+        }
+        today_items << item if ps.work_date == today
+        tomorrow_items << item if ps.work_date == tomorrow
+      end
     end
 
     today_items.uniq!

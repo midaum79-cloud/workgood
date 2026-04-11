@@ -16,6 +16,7 @@
     "@capacitor/cli": "^8.2.0",
     "@capacitor/core": "^8.2.0",
     "@capacitor/ios": "^8.2.0",
+    "@capawesome/capacitor-apple-sign-in": "^0.1.0",
     "@revenuecat/purchases-capacitor": "^12.3.1"
   }
 }

@@ -32,8 +32,8 @@ class SubscriptionsController < ApplicationController
     redirect_to subscription_path, alert: "결제가 필요합니다."
   end
 
-  # Apple In-App Purchase (RevenueCat) 결제 후 승인 처리
-  def verify_apple
+  # Apple/Google In-App Purchase (RevenueCat) 결제 후 승인 처리
+  def verify_mobile
     plan = params[:plan]
 
     unless %w[standard premium].include?(plan)
@@ -48,7 +48,7 @@ class SubscriptionsController < ApplicationController
         plan: plan,
         amount: expected_amount,
         status: "paid",
-        merchant_uid: "apple_in_app_#{Time.now.to_i}_#{current_user.id}",
+        merchant_uid: "mobile_in_app_#{Time.now.to_i}_#{current_user.id}",
         imp_uid: "revenuecat_#{current_user.id}_#{Time.now.to_i}",
         paid_at: Time.current,
         expires_at: 1.month.from_now

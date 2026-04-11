@@ -44,8 +44,7 @@ class User < ApplicationRecord
         [ auth.info.first_name, auth.info.last_name ].compact.join(" ")
       end
       u.name = apple_name.presence || auth.info.name.presence || u.name.presence || u.email.split("@").first
-      u.subscription_plan ||= "standard"
-      u.subscription_expires_at ||= 1.month.from_now
+      u.subscription_plan ||= "free"
       # OAuth users get a random secure password they never need to use
       unless u.persisted?
         generated_password = SecureRandom.hex(24)
