@@ -1,0 +1,272 @@
+<div style="min-height:100vh; background:#f5f5f5; padding-bottom:env(safe-area-inset-bottom);">
+  <%# Header %>
+  <div style="background:white; padding:18px 20px 14px 20px; border-bottom:1px solid #ececec; position:sticky; top:0; z-index:30;" class="safe-sticky-header">
+    <div style="display:flex; justify-content:space-between; align-items:center;">
+      <a href="<%= my_account_path %>" style="font-size:24px; color:#111827; font-weight:900; text-decoration:none;">←</a>
+      <div style="font-size:20px; font-weight:900; color:#111827;">비즈니스 서류 지갑</div>
+      <div style="width:24px;"></div>
+    </div>
+  </div>
+
+  <div style="padding:16px;">
+    <div style="background:white; border-radius:20px; padding:20px; box-shadow:0 2px 10px rgba(0,0,0,0.02); margin-top:2px;">
+      <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:16px;">
+        <div>
+          <div style="font-size:16px; font-weight:900; color:#111827; display:flex; align-items:center; gap:6px;">
+            <span>💼</span> 내 비즈니스 팩
+          </div>
+          <div style="font-size:12px; color:#6b7280; font-weight:600; margin-top:4px;">명함, 사업자, 일반/사업자 통장 사본을 등록하세요.</div>
+        </div>
+        <span style="background:#fef08a; color:#854d0e; font-size:10px; font-weight:900; padding:4px 8px; border-radius:99px;">PREMIUM</span>
+      </div>
+
+        <% if current_user.premium? %>
+        <% if notice.present? %><p style="color: green; margin-bottom: 12px; text-align:center; font-size:13px; font-weight:700;"><%= notice %></p><% end %>
+        <% if alert.present? %><p style="color: red; margin-bottom: 12px; text-align:center; font-size:13px; font-weight:700;"><%= alert %></p><% end %>
+
+        <!-- 숨김 삭제 폼 -->
+        <form id="delete-doc-form" action="" method="post" style="display:none;">
+          <input type="hidden" name="_method" value="delete">
+          <%= hidden_field_tag :authenticity_token, form_authenticity_token %>
+        </form>
+        <script>
+          function submitDeleteDocument(type) {
+            if (confirm("정말로 삭제하시겠습니까?")) {
+              const form = document.getElementById('delete-doc-form');
+              form.action = '/my_account/documents/' + type;
+              form.submit();
+            }
+          }
+        </script>
+
+        <%= form_with model: current_user, url: update_my_account_documents_path, method: :patch, local: true, html: { multipart: true } do |f| %>
+          <div style="display:flex; flex-direction:column; gap:12px; margin-bottom:16px;">
+            <% [
+              { key: :business_card, label: '🪪 명함' },
+              { key: :business_registration, label: '📜 사업자등록증' },
+              { key: :bankbook_copy, label: '💰 일반 통장 사본' },
+              { key: :business_bankbook_copy, label: '🏦 사업자 통장 사본' }
+            ].each do |doc| %>
+              <div style="background:#f9fafb; border:1px solid #e5e7eb; border-radius:12px; padding:12px; display:flex; flex-direction:column; gap:12px;">
+                <div style="display:flex; align-items:center; justify-content:space-between;">
+                  <div>
+                    <div style="font-size:13px; font-weight:800; color:#374151;"><%= doc[:label] %></div>
+                    <div style="font-size:11px; color:#9ca3af; margin-top:2px;">
+                      <% if current_user.public_send("#{doc[:key]}_b64").present? %>
+                        <span style="color:#10b981; font-weight:700;">✅ 등록됨</span>
+                      <% else %>
+                        미등록
+                      <% end %>
+                    </div>
+                  </div>
+                  <div style="display:flex; align-items:center; gap:8px;">
+                    <%= f.file_field doc[:key], accept: "image/*", style: "font-size:12px; width:140px; color:#6b7280;", class: "auto-png-convert" %>
+                    
+                    <% if current_user.public_send("#{doc[:key]}_b64").present? %>
+                      <button type="button" onclick="submitDeleteDocument('<%= doc[:key] %>')" style="background:#ef4444; color:white; border:none; padding:6px 12px; border-radius:8px; font-size:12px; font-weight:800; display:inline-block; cursor:pointer;">삭제</button>
+                    <% end %>
+                  </div>
+                </div>
+
+                <% if current_user.public_send("#{doc[:key]}_b64").present? %>
+                  <div style="width:100%; border-radius:8px; overflow:hidden; border:1px solid #e5e7eb; background:white;">
+                    <%= image_tag "data:image/png;base64,#{current_user.public_send("#{doc[:key]}_b64")}", style: "width:100%; height:auto; display:block;", alt: doc[:label] %>
+                  </div>
+                <% end %>
+              </div>
+            <% end %>
+          </div>
+          
+          <div style="display:flex; gap:8px;">
+            <%= f.submit "서류 저장/업데이트", style: "flex:1; background:#2563eb; color:white; border:none; padding:16px; border-radius:14px; font-size:14px; font-weight:800; cursor:pointer;" %>
+            
+            <% if current_user.document_share_token.present? %>
+              <button type="button" onclick="document.getElementById('shareModal').style.display='flex';" style="flex:1; background:linear-gradient(135deg, #10b981, #059669); color:white; border:none; padding:16px; border-radius:14px; font-size:14px; font-weight:800; cursor:pointer; box-shadow:0 4px 12px rgba(16,185,129,0.3);">
+                🔗 문자로 복사·공유
+              </button>
+            <% end %>
+          </div>
+        <% end %>
+
+        <% if current_user.document_share_token.present? %>
+          <!-- 공유 옵션 모달 -->
+          <div id="shareModal" style="display:none; position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.5); z-index:9999; align-items:center; justify-content:center; padding:20px;">
+            <div style="background:white; border-radius:24px; padding:24px; max-width:380px; width:100%; box-shadow:0 20px 60px rgba(0,0,0,0.3);">
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+                <div style="font-size:18px; font-weight:900; color:#111827;">📨 공유할 서류 선택</div>
+                <button type="button" onclick="document.getElementById('shareModal').style.display='none'" style="background:none; border:none; font-size:20px; cursor:pointer; color:#9ca3af;">&times;</button>
+              </div>
+              <div style="font-size:13px; color:#6b7280; font-weight:600; margin-bottom:20px; line-height:1.5;">
+                상대방에게 보낼 항목만 체크하세요.
+              </div>
+              
+              <div style="display:flex; flex-direction:column; gap:12px; margin-bottom:24px;">
+                <label for="check_card" style="display:flex; align-items:center; gap:12px; font-size:15px; font-weight:700; color:#374151; cursor:pointer; padding:12px; background:#f9fafb; border-radius:12px; border:1px solid #e5e7eb; -webkit-tap-highlight-color: transparent;">
+                  <input type="checkbox" id="check_card" value="card" <%= "checked" if current_user.business_card_b64.present? %> <%= "disabled" unless current_user.business_card_b64.present? %> style="appearance:checkbox; -webkit-appearance:checkbox; accent-color:#2563eb; width:22px; height:22px; cursor:pointer; margin:0;">
+                  <span>🪪 명함</span>
+                  <%= '<span style="margin-left:auto; font-size:11px; color:#ef4444;">미등록</span>'.html_safe unless current_user.business_card_b64.present? %>
+                </label>
+                <label for="check_reg" style="display:flex; align-items:center; gap:12px; font-size:15px; font-weight:700; color:#374151; cursor:pointer; padding:12px; background:#f9fafb; border-radius:12px; border:1px solid #e5e7eb; -webkit-tap-highlight-color: transparent;">
+                  <input type="checkbox" id="check_reg" value="reg" <%= "checked" if current_user.business_registration_b64.present? %> <%= "disabled" unless current_user.business_registration_b64.present? %> style="appearance:checkbox; -webkit-appearance:checkbox; accent-color:#2563eb; width:22px; height:22px; cursor:pointer; margin:0;">
+                  <span>📜 사업자등록증</span>
+                  <%= '<span style="margin-left:auto; font-size:11px; color:#ef4444;">미등록</span>'.html_safe unless current_user.business_registration_b64.present? %>
+                </label>
+                <label for="check_bank" style="display:flex; align-items:center; gap:12px; font-size:15px; font-weight:700; color:#374151; cursor:pointer; padding:12px; background:#f9fafb; border-radius:12px; border:1px solid #e5e7eb; -webkit-tap-highlight-color: transparent;">
+                  <input type="checkbox" id="check_bank" value="bank" <%= "checked" if current_user.bankbook_copy_b64.present? %> <%= "disabled" unless current_user.bankbook_copy_b64.present? %> style="appearance:checkbox; -webkit-appearance:checkbox; accent-color:#2563eb; width:22px; height:22px; cursor:pointer; margin:0;">
+                  <span>💰 일반 통장 사본</span>
+                  <%= '<span style="margin-left:auto; font-size:11px; color:#ef4444;">미등록</span>'.html_safe unless current_user.bankbook_copy_b64.present? %>
+                </label>
+                <label for="check_biz_bank" style="display:flex; align-items:center; gap:12px; font-size:15px; font-weight:700; color:#374151; cursor:pointer; padding:12px; background:#f9fafb; border-radius:12px; border:1px solid #e5e7eb; -webkit-tap-highlight-color: transparent;">
+                  <input type="checkbox" id="check_biz_bank" value="biz_bank" <%= "checked" if current_user.business_bankbook_copy_b64.present? %> <%= "disabled" unless current_user.business_bankbook_copy_b64.present? %> style="appearance:checkbox; -webkit-appearance:checkbox; accent-color:#2563eb; width:22px; height:22px; cursor:pointer; margin:0;">
+                  <span>🏦 사업자 통장 사본</span>
+                  <%= '<span style="margin-left:auto; font-size:11px; color:#ef4444;">미등록</span>'.html_safe unless current_user.business_bankbook_copy_b64.present? %>
+                </label>
+              </div>
+              
+              <button type="button" onclick="executeShare('<%= current_user.document_share_token %>')" style="width:100%; padding:14px; background:#2563eb; color:white; border:none; border-radius:14px; font-size:15px; font-weight:900; cursor:pointer; font-family:inherit;">
+                선택한 서류 링크 복사
+              </button>
+            </div>
+          </div>
+          
+            <script>
+            function showShareSuccess() {
+              const toast = document.getElementById('shareSuccessToast');
+              if (toast) {
+                toast.style.display = 'flex';
+                toast.style.opacity = '1';
+                setTimeout(() => {
+                  toast.style.opacity = '0';
+                  setTimeout(() => { toast.style.display = 'none'; }, 300);
+                }, 2000);
+              }
+            }
+
+            function executeShare(token) {
+              const selectedKeys = [];
+              const selectedNames = [];
+              
+              if (document.getElementById('check_card').checked) { selectedKeys.push('card'); selectedNames.push('명함'); }
+              if (document.getElementById('check_reg').checked) { selectedKeys.push('reg'); selectedNames.push('사업자등록증'); }
+              if (document.getElementById('check_bank').checked) { selectedKeys.push('bank'); selectedNames.push('일반통장'); }
+              if (document.getElementById('check_biz_bank').checked) { selectedKeys.push('biz_bank'); selectedNames.push('사업자통장'); }
+              
+              if (selectedKeys.length === 0) {
+                alert("공유할 서류를 1개 이상 선택해주세요.");
+                return;
+              }
+              
+              const shareUrl = 'https://www.workgood.co.kr/d/' + token + '?docs=' + selectedKeys.join(',') + '&v=4';
+              const dynamicText = '안녕하세요, 요청하신 ' + selectedNames.join(', ') + ' 보내드립니다.';
+              
+              if (navigator.share) {
+                navigator.share({
+                  title: '일잘러 - 서류 안내',
+                  text: dynamicText,
+                  url: shareUrl
+                }).then(() => {
+                  document.getElementById('shareModal').style.display='none';
+                  showShareSuccess();
+                }).catch((e) => {});
+              } else if (navigator.clipboard) {
+                navigator.clipboard.writeText(dynamicText + '\n' + shareUrl).then(() => {
+                  document.getElementById('shareModal').style.display='none';
+                  showShareSuccess();
+                });
+              } else {
+                alert("공유 기능이 지원되지 않는 브라우저입니다.");
+              }
+            }
+          </script>
+
+          <!-- Share Success Toast Overlay -->
+          <div id="shareSuccessToast" style="display:none; position:fixed; top:50%; left:50%; transform:translate(-50%, -50%); background:rgba(17, 24, 39, 0.9); color:white; padding:24px 32px; border-radius:20px; z-index:10000; flex-direction:column; align-items:center; opacity:0; transition:opacity 0.3s ease; box-shadow:0 20px 40px rgba(0,0,0,0.2);">
+            <div style="font-size:48px; margin-bottom:12px;">✅</div>
+            <div style="font-size:16px; font-weight:900;">공유가 완료되었습니다!</div>
+          </div>
+        <% end %>
+      <% else %>
+        <div style="background:#f3f4f6; border-radius:12px; padding:30px 20px; text-align:center;">
+          <div style="font-size:32px; margin-bottom:12px;">🔒</div>
+          <div style="font-size:15px; font-weight:800; color:#4b5563; margin-bottom:8px;">프리미엄 요금제 전용 기능입니다.</div>
+          <div style="font-size:13px; color:#6b7280; font-weight:600; line-height:1.5; margin-bottom:20px;">명함, 사업자, 통장사본 이미지를 이곳에 1회만 저장해두고, 언제든 문자로 손쉽게 하나로 묶어 전송할 수 있습니다.</div>
+          <%= link_to subscription_path, style: "display:inline-block; background:#312e81; color:white; padding:12px 24px; border-radius:12px; font-weight:800; text-decoration:none; font-size:14px;" do %>
+            요금제 알아보기
+          <% end %>
+        </div>
+      <% end %>
+    </div>
+  </div>
+
+  <script>
+    // 파일 업로드 시 브라우저 단에서 PNG로 자동 변환 및 리사이징
+    document.addEventListener("turbo:load", function() {
+      setTimeout(function() {
+        document.querySelectorAll('.auto-png-convert').forEach(function(input) {
+          if(input.dataset.pngConvertBounded) return;
+          input.dataset.pngConvertBounded = "true";
+          
+          input.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            if (!file.type.startsWith('image/')) return;
+            
+            const submitBtn = input.closest('form').querySelector('input[type="submit"]');
+            if (submitBtn) {
+              submitBtn.dataset.originalText = submitBtn.value;
+              submitBtn.value = "이미지 변환 중...";
+              submitBtn.disabled = true;
+              submitBtn.style.opacity = '0.7';
+            }
+            
+            const img = new Image();
+            img.onload = function() {
+              const canvas = document.createElement('canvas');
+              let width = img.width;
+              let height = img.height;
+              const max = 1600;
+              
+              if (width > max || height > max) {
+                if (width > height) {
+                  height = Math.round(height * max / width);
+                  width = max;
+                } else {
+                  width = Math.round(width * max / height);
+                  height = max;
+                }
+              }
+              
+              canvas.width = width;
+              canvas.height = height;
+              const ctx = canvas.getContext('2d');
+              ctx.drawImage(img, 0, 0, width, height);
+              
+              canvas.toBlob(function(blob) {
+                const newFileName = file.name.replace(/\.[^/.]+$/, "") + ".png";
+                const newFile = new File([blob], newFileName, { type: "image/png" });
+                
+                const dt = new DataTransfer();
+                dt.items.add(newFile);
+                input.files = dt.files;
+                
+                if (submitBtn) {
+                  submitBtn.value = submitBtn.dataset.originalText;
+                  submitBtn.disabled = false;
+                  submitBtn.style.opacity = '1';
+                }
+              }, "image/png", 1.0);
+            };
+            img.onerror = function() {
+              if (submitBtn) {
+                submitBtn.value = submitBtn.dataset.originalText;
+                submitBtn.disabled = false;
+                submitBtn.style.opacity = '1';
+              }
+            };
+            img.src = URL.createObjectURL(file);
+          });
+        });
+      }, 100);
+    });
+  </script>
+</div>

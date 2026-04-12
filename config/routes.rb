@@ -6,6 +6,10 @@ Rails.application.routes.draw do
   post "daily_memos/update", to: "daily_memos#update",  as: :update_daily_memo
   get "announcements", to: "announcements#index", as: :announcements
   get "my_account",    to: "my_account#show",     as: :my_account
+  get "my_account/documents", to: "my_account#documents", as: :my_account_documents
+  patch "my_account/documents", to: "my_account#update_documents", as: :update_my_account_documents
+  delete "my_account/documents/:type", to: "my_account#delete_document", as: :delete_my_account_document
+  get "/d/:token", to: "shared_documents#show", as: :shared_document
 
   # 프리미엄: 세금 관리
   get  "tax_report",          to: "tax_reports#index",  as: :tax_report

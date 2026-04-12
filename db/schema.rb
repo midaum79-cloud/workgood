@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_04_06_000002) do
+ActiveRecord::Schema[8.1].define(version: 2026_04_12_150500) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -193,10 +193,15 @@ ActiveRecord::Schema[8.1].define(version: 2026_04_06_000002) do
 
   create_table "users", force: :cascade do |t|
     t.integer "ai_imports_count"
+    t.text "bankbook_copy_b64"
     t.string "billing_key"
     t.datetime "billing_started_at"
+    t.text "business_bankbook_copy_b64"
+    t.text "business_card_b64"
+    t.text "business_registration_b64"
     t.datetime "created_at", null: false
     t.string "customer_uid"
+    t.string "document_share_token"
     t.string "email"
     t.boolean "evening_alert_enabled"
     t.string "evening_alert_time"
@@ -218,6 +223,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_04_06_000002) do
     t.string "team_name"
     t.string "uid"
     t.datetime "updated_at", null: false
+    t.index ["document_share_token"], name: "index_users_on_document_share_token", unique: true
     t.index ["email"], name: "index_users_on_email", unique: true
   end
 

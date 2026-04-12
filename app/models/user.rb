@@ -10,6 +10,8 @@ class User < ApplicationRecord
   has_many :notifications, dependent: :destroy
   has_many :vendors, dependent: :destroy
 
+  has_secure_token :document_share_token
+
   validates :email, presence: true, uniqueness: { case_sensitive: false }, format: { with: URI::MailTo::EMAIL_REGEXP }
   validates :name, presence: true
 
