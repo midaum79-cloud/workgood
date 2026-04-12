@@ -5,7 +5,7 @@ class ProjectsController < ApplicationController
   before_action :require_premium_for_money!, only: %i[monthly_payments]
 
   def index
-    @selected_status = params[:status].presence || 'all'
+    @selected_status = params[:status].presence || "all"
     @view_mode = params[:view_mode].presence || "month"
 
     all_projects = current_user.projects
@@ -13,7 +13,7 @@ class ProjectsController < ApplicationController
                                .order(created_at: :desc)
 
     @projects =
-      if @selected_status == 'all'
+      if @selected_status == "all"
         all_projects
       elsif %w[진행중 예정 완료].include?(@selected_status)
         all_projects.select { |p| p.effective_status == @selected_status }
@@ -87,7 +87,7 @@ class ProjectsController < ApplicationController
       .map do |year, projects_in_year|
         months = projects_in_year.group_by { |p| p.end_date.month }
           .sort_by { |month, _| month } # month ascending
-        [year, months]
+        [ year, months ]
       end
 
     @selected_year = params[:year]&.to_i || @grouped.first&.first || Date.current.year
@@ -114,7 +114,7 @@ class ProjectsController < ApplicationController
 
     @total_estimate = @projects.sum { |p| p.estimate_amount.to_i }
     @total_collected = @projects.sum { |p| p.payment_status == "완납" ? p.estimate_amount.to_i : (p.deposit_amount.to_i + p.mid_payment.to_i) }
-    @total_outstanding = @projects.sum { |p| p.payment_status == "완납" ? 0 : [p.estimate_amount.to_i - (p.deposit_amount.to_i + p.mid_payment.to_i), 0].max }
+    @total_outstanding = @projects.sum { |p| p.payment_status == "완납" ? 0 : [ p.estimate_amount.to_i - (p.deposit_amount.to_i + p.mid_payment.to_i), 0 ].max }
 
     # 미수금 현장 (완납 제외)
     @outstanding_projects = @projects.reject { |p| p.payment_status == "완납" }
@@ -127,7 +127,7 @@ class ProjectsController < ApplicationController
         count: projs.size,
         estimate: projs.sum { |p| p.estimate_amount.to_i },
         collected: projs.sum { |p| p.payment_status == "완납" ? p.estimate_amount.to_i : (p.deposit_amount.to_i + p.mid_payment.to_i) },
-        outstanding: projs.sum { |p| p.payment_status == "완납" ? 0 : [p.estimate_amount.to_i - p.deposit_amount.to_i - p.mid_payment.to_i, 0].max }
+        outstanding: projs.sum { |p| p.payment_status == "완납" ? 0 : [ p.estimate_amount.to_i - p.deposit_amount.to_i - p.mid_payment.to_i, 0 ].max }
       }
     end.sort_by { |v| -v[:estimate] }
 
@@ -219,7 +219,7 @@ class ProjectsController < ApplicationController
     @calendar_row_heights = {}
     @calendar_rows.each_with_index do |row_days, row_index|
       max_count = row_days.map { |d| (@projects_by_date[d] || []).length }.max || 0
-      @calendar_row_heights[row_index] = [max_count * 20, 0].max
+      @calendar_row_heights[row_index] = [ max_count * 20, 0 ].max
     end
 
     @calendar_projects = @projects_by_date.values.flatten.uniq
@@ -265,7 +265,7 @@ class ProjectsController < ApplicationController
       @projects_by_date[schedule.work_date] << schedule.project unless @projects_by_date[schedule.work_date].include?(schedule.project)
     end
 
-    render partial: 'projects/calendar_grid', layout: false
+    render partial: "projects/calendar_grid", layout: false
   end
 
   def move_schedule
@@ -375,7 +375,7 @@ class ProjectsController < ApplicationController
     @calendar_row_heights = {}
     @calendar_rows.each_with_index do |row_days, row_index|
       max_count = row_days.map { |d| (@projects_by_date[d] || []).length }.max || 0
-      @calendar_row_heights[row_index] = [max_count * 20, 0].max
+      @calendar_row_heights[row_index] = [ max_count * 20, 0 ].max
     end
 
     @projects = @client_projects
@@ -419,7 +419,7 @@ class ProjectsController < ApplicationController
       @projects_by_date[schedule.work_date] << schedule.project unless @projects_by_date[schedule.work_date].include?(schedule.project)
     end
 
-    render partial: 'projects/calendar_grid', locals: { cell_min_height: '75px' }, layout: false
+    render partial: "projects/calendar_grid", locals: { cell_min_height: "75px" }, layout: false
   end
 
   def show

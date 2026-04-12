@@ -35,7 +35,7 @@ class DailyMemosController < ApplicationController
     @calendar_rows = data[:rows]
     @memos_by_date = data[:memos_by_date]
 
-    render partial: 'daily_memos/calendar_grid', layout: false
+    render partial: "daily_memos/calendar_grid", layout: false
   end
 
   def show
@@ -74,7 +74,7 @@ class DailyMemosController < ApplicationController
 
     memos_in_range = current_user.daily_memos
       .where(memo_date: start_date..end_date)
-      .where.not(content: [nil, ''])
+      .where.not(content: [ nil, "" ])
 
     {
       year: base_date.year,

@@ -79,8 +79,8 @@ class NativeAppleAuthController < ApplicationController
   # Apple의 공개키로 identityToken(JWT) 서명을 검증하고 payload 반환
   def verify_apple_identity_token(id_token)
     # 1. JWT 헤더에서 kid 추출
-    header_segment = id_token.split('.').first
-    header_segment += '=' * (4 - header_segment.length % 4) if header_segment.length % 4 != 0
+    header_segment = id_token.split(".").first
+    header_segment += "=" * (4 - header_segment.length % 4) if header_segment.length % 4 != 0
     header = JSON.parse(Base64.urlsafe_decode64(header_segment))
     kid = header["kid"]
     alg = header["alg"]
@@ -99,14 +99,14 @@ class NativeAppleAuthController < ApplicationController
     rsa_key = build_rsa_key(key_data)
 
     # 4. JWT payload 디코딩 및 검증
-    payload_segment = id_token.split('.')[1]
-    payload_segment += '=' * (4 - payload_segment.length % 4) if payload_segment.length % 4 != 0
+    payload_segment = id_token.split(".")[1]
+    payload_segment += "=" * (4 - payload_segment.length % 4) if payload_segment.length % 4 != 0
     payload = JSON.parse(Base64.urlsafe_decode64(payload_segment)).with_indifferent_access
 
     # 5. 서명 검증
-    header_and_payload = id_token.split('.')[0..1].join('.')
-    signature_segment = id_token.split('.')[2]
-    signature_segment += '=' * (4 - signature_segment.length % 4) if signature_segment.length % 4 != 0
+    header_and_payload = id_token.split(".")[0..1].join(".")
+    signature_segment = id_token.split(".")[2]
+    signature_segment += "=" * (4 - signature_segment.length % 4) if signature_segment.length % 4 != 0
     signature = Base64.urlsafe_decode64(signature_segment)
 
     unless rsa_key.verify("SHA256", signature, header_and_payload)

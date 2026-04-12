@@ -11,10 +11,10 @@ class NotificationsController < ApplicationController
     base_query = current_user.notifications.order(created_at: :desc)
 
     @notifications = case @current_tab
-      when "schedule" then base_query.schedule
-      when "finance" then base_query.finance
-      when "settings" then []  # 설정 탭은 알림 목록 없음
-      else base_query
+    when "schedule" then base_query.schedule
+    when "finance" then base_query.finance
+    when "settings" then []  # 설정 탭은 알림 목록 없음
+    else base_query
     end.to_a
 
     # 3. 알림함 진입(혹은 개별 탭 진입) 시 해당 탭 알림들은 자동 읽음 처리
@@ -32,7 +32,7 @@ class NotificationsController < ApplicationController
 
   def update_settings
     current_user.update(notification_settings_params)
-    redirect_to notifications_path(tab: 'settings'), notice: "알림 설정이 저장되었습니다."
+    redirect_to notifications_path(tab: "settings"), notice: "알림 설정이 저장되었습니다."
   end
 
   private

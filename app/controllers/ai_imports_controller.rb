@@ -71,18 +71,18 @@ class AiImportsController < ApplicationController
 
       # 3. Direct API Call using Net::HTTP
       uri = URI("https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=#{ENV['GEMINI_API_KEY']}")
-      request = Net::HTTP::Post.new(uri, 'Content-Type' => 'application/json')
-      
+      request = Net::HTTP::Post.new(uri, "Content-Type" => "application/json")
+
       api_parts = [ { "text" => prompt } ]
 
       files.first(3).each do |file|
         mime_type = file.content_type
         base64_image = Base64.strict_encode64(file.read)
-        api_parts << { 
-          "inlineData" => { 
-            "mimeType" => mime_type, 
-            "data" => base64_image 
-          } 
+        api_parts << {
+          "inlineData" => {
+            "mimeType" => mime_type,
+            "data" => base64_image
+          }
         }
       end
 
@@ -97,7 +97,7 @@ class AiImportsController < ApplicationController
       end
 
       parsed_response = JSON.parse(response.body)
-      
+
       if response.code.to_i != 200
         raise "Gemini API Error: #{parsed_response.dig('error', 'message')}"
       end
@@ -106,8 +106,8 @@ class AiImportsController < ApplicationController
       raw_json = parsed_response.dig("candidates", 0, "content", "parts", 0, "text") || "[]"
 
       # Clean up potential markdown formatting
-      clean_json = raw_json.sub(/\A```json\s*/, '').sub(/\s*```\z/, '').strip
-      
+      clean_json = raw_json.sub(/\A```json\s*/, "").sub(/\s*```\z/, "").strip
+
 
       parsed_data = JSON.parse(clean_json)
 

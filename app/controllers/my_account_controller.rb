@@ -11,14 +11,14 @@ class MyAccountController < ApplicationController
   def update_documents
     if current_user.premium?
       user_params = params.fetch(:user, {}).permit(:business_card, :business_registration, :bankbook_copy, :business_bankbook_copy)
-      
+
       current_user.update(business_card_b64: Base64.strict_encode64(user_params[:business_card].read)) if user_params[:business_card].present?
       current_user.update(business_registration_b64: Base64.strict_encode64(user_params[:business_registration].read)) if user_params[:business_registration].present?
       current_user.update(bankbook_copy_b64: Base64.strict_encode64(user_params[:bankbook_copy].read)) if user_params[:bankbook_copy].present?
       current_user.update(business_bankbook_copy_b64: Base64.strict_encode64(user_params[:business_bankbook_copy].read)) if user_params[:business_bankbook_copy].present?
-      
+
       current_user.regenerate_document_share_token if current_user.document_share_token.blank?
-      
+
       redirect_to my_account_documents_path, notice: "비즈니스 문서를 성공적으로 업데이트했습니다."
     else
       redirect_to my_account_documents_path, alert: "비즈니스 서류 지갑 및 공유 기능은 프리미엄 요금제 전용입니다."

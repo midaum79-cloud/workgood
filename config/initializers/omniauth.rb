@@ -15,7 +15,6 @@ begin
     else
       Rails.logger.warn "[OmniAuth] GOOGLE_CLIENT_ID/SECRET not set — Google login disabled"
     end
-
   end
 
   OmniAuth.config.allowed_request_methods = [ :post, :get ]

@@ -19,16 +19,16 @@ class Notification < ApplicationRecord
     user.projects.includes(:project_schedules).each do |project|
       if project.project_schedules.any? { |s| s.work_date == tomorrow }
         title = "📅 내일(#{tomorrow.strftime('%m/%d')}) 시공 일정 안내"
-        
+
         # 중복 생성 방지
         next if Notification.exists?(
           project_id: project.id,
           category: "schedule",
           title: title
         )
-        
+
         message = "내일 #{project.client_name.presence || project.project_name} 현장 시공이 예정되어 있습니다.\n\n[현장 정보]\n- 주소: #{project.address.presence || '미등록'}\n- 공동현관: #{project.common_entrance_password.presence || '미등록'}\n- 세대현관: #{project.private_entrance_password.presence || '미등록'}\n\n*일정에 차질이 없도록 미리 준비해 주세요."
-        
+
         Notification.create(
           user_id: user.id,
           title: title,

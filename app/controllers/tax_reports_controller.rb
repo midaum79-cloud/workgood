@@ -16,7 +16,7 @@ class TaxReportsController < ApplicationController
     # 수입 집계
     @total_estimate  = @projects.sum { |p| p.estimate_amount.to_i }
     @total_collected = @projects.sum { |p| p.payment_status == "완납" ? p.estimate_amount.to_i : (p.deposit_amount.to_i + p.mid_payment.to_i) }
-    @total_outstanding = @projects.sum { |p| p.payment_status == "완납" ? 0 : [p.estimate_amount.to_i - (p.deposit_amount.to_i + p.mid_payment.to_i), 0].max }
+    @total_outstanding = @projects.sum { |p| p.payment_status == "완납" ? 0 : [ p.estimate_amount.to_i - (p.deposit_amount.to_i + p.mid_payment.to_i), 0 ].max }
 
     # 세금계산서 vs 일용근로 분리
     @invoice_projects = @projects.select { |p| p.tax_invoice_issued? }
@@ -64,17 +64,17 @@ class TaxReportsController < ApplicationController
 
     csv_data = CSV.generate(encoding: "UTF-8") do |csv|
       # 헤더
-      csv << ["#{year}년 종합소득세 정산 리포트", "", "", "", "", "", "", ""]
-      csv << ["생성일: #{Date.current}", "", "", "", "", "", "", ""]
+      csv << [ "#{year}년 종합소득세 정산 리포트", "", "", "", "", "", "", "" ]
+      csv << [ "생성일: #{Date.current}", "", "", "", "", "", "", "" ]
       csv << []
-      csv << ["현장명", "거래처", "시작일", "종료일", "견적금액", "계약금", "중도금", "수금합계", "미수금", "결제상태", "원천징수(3.3%)", "실수령액"]
+      csv << [ "현장명", "거래처", "시작일", "종료일", "견적금액", "계약금", "중도금", "수금합계", "미수금", "결제상태", "원천징수(3.3%)", "실수령액" ]
 
       projects.each do |p|
         est       = p.estimate_amount.to_i
         dep       = p.deposit_amount.to_i
         mid       = p.mid_payment.to_i
         collected = dep + mid
-        outstanding = [est - collected, 0].max
+        outstanding = [ est - collected, 0 ].max
         tax       = (collected * tax_rate / 100).round
         net       = collected - tax
 
@@ -97,7 +97,7 @@ class TaxReportsController < ApplicationController
       csv << []
       total_collected = projects.sum(:deposit_amount).to_i + projects.sum(:mid_payment).to_i
       total_tax = (total_collected * tax_rate / 100).round
-      csv << ["합계", "", "", "", projects.sum(:estimate_amount).to_i, "", "", total_collected, "", "", total_tax, total_collected - total_tax]
+      csv << [ "합계", "", "", "", projects.sum(:estimate_amount).to_i, "", "", total_collected, "", "", total_tax, total_collected - total_tax ]
     end
 
     # BOM 추가 (엑셀 한글 인코딩)
@@ -112,7 +112,7 @@ class TaxReportsController < ApplicationController
     project = current_user.projects.find_by(id: project_id)
 
     if project
-      outstanding = [project.estimate_amount.to_i - project.deposit_amount.to_i - project.mid_payment.to_i, 0].max
+      outstanding = [ project.estimate_amount.to_i - project.deposit_amount.to_i - project.mid_payment.to_i, 0 ].max
       Notification.create!(
         user: current_user,
         project: project,

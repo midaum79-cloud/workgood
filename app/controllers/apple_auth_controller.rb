@@ -92,7 +92,7 @@ class AppleAuthController < ApplicationController
 
     if user.save
       Rails.logger.info "[AppleAuth] User saved: id=#{user.id}"
-      
+
       state_str = params[:state].to_s
       origin = ""
       if state_str.include?("|")
@@ -102,7 +102,7 @@ class AppleAuthController < ApplicationController
         rescue
         end
       end
-      
+
       from_app = origin.include?("source=app")
 
       if from_app
@@ -136,14 +136,14 @@ class AppleAuthController < ApplicationController
   def extract_user_from_id_token(id_token_str)
     return nil if id_token_str.blank?
 
-    parts = id_token_str.split('.')
+    parts = id_token_str.split(".")
     return nil unless parts.length >= 2
 
     # JWT payload is the second part, base64url encoded
     payload_base64 = parts[1]
     # Add padding if necessary
-    payload_base64 += '=' * (4 - payload_base64.length % 4) if payload_base64.length % 4 != 0
-    
+    payload_base64 += "=" * (4 - payload_base64.length % 4) if payload_base64.length % 4 != 0
+
     decoded = JSON.parse(Base64.urlsafe_decode64(payload_base64)).with_indifferent_access
     Rails.logger.info "[AppleAuth] id_token decoded via Base64: sub=#{decoded[:sub]}, email=#{decoded[:email]}"
 

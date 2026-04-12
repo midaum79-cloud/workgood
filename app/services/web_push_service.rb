@@ -9,7 +9,7 @@ class WebPushService
         icon: icon,
         badge: "/icon-192.png",
         data: { path: path },
-        vibrate: [200, 100, 200],
+        vibrate: [ 200, 100, 200 ],
         requireInteraction: false
       }
     }.to_json

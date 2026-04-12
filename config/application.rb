@@ -8,10 +8,10 @@ Bundler.require(*Rails.groups)
 
 module Workgood
   class Application < Rails::Application
-    if File.exist?(Rails.root.join('.env'))
-      File.readlines(Rails.root.join('.env')).each do |line|
-        key, value = line.strip.split('=', 2)
-        ENV[key] = value.gsub(/\A['"]+|['"]+\z/, '') if key.present? && value.present? && !line.start_with?('#')
+    if File.exist?(Rails.root.join(".env"))
+      File.readlines(Rails.root.join(".env")).each do |line|
+        key, value = line.strip.split("=", 2)
+        ENV[key] = value.gsub(/\A['"]+|['"]+\z/, "") if key.present? && value.present? && !line.start_with?("#")
       end
     end
 

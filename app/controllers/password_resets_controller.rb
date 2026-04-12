@@ -71,7 +71,7 @@ class PasswordResetsController < ApplicationController
   # POST /password_resets/phone_reset
   def phone_reset
     email = params[:email].to_s.strip.downcase
-    phone = params[:phone].to_s.strip.gsub(/[^0-9]/, '')
+    phone = params[:phone].to_s.strip.gsub(/[^0-9]/, "")
     password = params[:password]
     password_confirmation = params[:password_confirmation]
 
@@ -83,7 +83,7 @@ class PasswordResetsController < ApplicationController
       return
     end
 
-    stored_phone = @user.phone.to_s.gsub(/[^0-9]/, '')
+    stored_phone = @user.phone.to_s.gsub(/[^0-9]/, "")
     unless stored_phone.present? && stored_phone == phone
       flash.now[:alert] = "이메일과 전화번호가 일치하지 않습니다."
       render :phone, status: :unprocessable_entity

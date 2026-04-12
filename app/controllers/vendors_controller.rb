@@ -8,7 +8,7 @@ class VendorsController < ApplicationController
       if @vendor_type == "individual"
         current_user.vendors.ordered.where(vendor_type: "individual")
       else
-        current_user.vendors.ordered.where(vendor_type: ["company", nil, ""])
+        current_user.vendors.ordered.where(vendor_type: [ "company", nil, "" ])
       end
     @unread_notifications_count = current_user.notifications.where(status: "unread").count
   end
@@ -20,7 +20,7 @@ class VendorsController < ApplicationController
 
     # vendor_type이 null인 기존 데이터도 '업체' 탭에서 표시
     if vendor_type == "company"
-      vendors = vendors.where(vendor_type: [nil, "", "company"])
+      vendors = vendors.where(vendor_type: [ nil, "", "company" ])
     elsif vendor_type.present?
       vendors = vendors.where(vendor_type: vendor_type)
     end

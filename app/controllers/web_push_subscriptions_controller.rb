@@ -20,7 +20,7 @@ class WebPushSubscriptionsController < ApplicationController
 
   def destroy
     subscription = current_user.web_push_subscriptions.find_by(endpoint: params[:endpoint])
-    
+
     if subscription&.destroy
       render json: { success: true }, status: :ok
     else
@@ -31,6 +31,6 @@ class WebPushSubscriptionsController < ApplicationController
   private
 
   def subscription_params
-    params.require(:subscription).permit(:endpoint, keys: [:p256dh, :auth])
+    params.require(:subscription).permit(:endpoint, keys: [ :p256dh, :auth ])
   end
 end

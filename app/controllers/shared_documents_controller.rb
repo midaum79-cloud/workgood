@@ -2,7 +2,7 @@ class SharedDocumentsController < ApplicationController
   # Require no login, as this is a public link
   def show
     @user = User.find_by!(document_share_token: params[:token])
-    
+
     # Hide typical app navigation
     @hide_nav = true
     @is_shared_page = true
