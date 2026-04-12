@@ -446,7 +446,7 @@
     <% unread_count = (current_user ? current_user.notifications.where(status: "unread").count : 0) rescue 0 %>
     <% current_path = request.path %>
 
-    <% if logged_in? %>
+    <% if logged_in? && !@hide_nav %>
     <nav class="bottom-nav">
       <div class="bottom-nav-inner">
         <%= link_to projects_path, class: "bottom-nav-item #{current_path.start_with?('/projects') && current_path != '/projects/calendar' && current_path != '/projects/new' ? 'active' : ''}" do %>
@@ -475,7 +475,7 @@
     </nav>
     <% end %>
 
-    <% if logged_in? %>
+    <% if logged_in? && !@hide_nav %>
     <div class="drawer-overlay" id="drawerOverlay" onclick="closeDrawer()"></div>
     <div class="drawer" id="mainDrawer">
       <!-- Drawer Header -->
