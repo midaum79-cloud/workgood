@@ -1,14 +1,15 @@
-<div style="background:#2563eb; padding:env(safe-area-inset-top, 0) 0 0 0; position:sticky; top:0; z-index:50;">
-  <div style="height:56px; display:flex; align-items:center; justify-content:space-between; padding:0 20px;">
-    <div style="flex:1;">
-      <%= link_to "←", "javascript:history.back()", style: "color:white; font-size:24px; text-decoration:none; display:inline-block; margin-top:-2px;" %>
-    </div>
-    <div style="color:white; font-size:18px; font-weight:800;">일용근로 계산기</div>
-    <div style="flex:1; text-align:right;">
-      <span style="font-size:10px; font-weight:800; background:#fde68a; color:#78350f; padding:2px 8px; border-radius:999px;">PREMIUM</span>
+<div style="min-height:100vh; min-height:100dvh; background:#f8fafc; padding-bottom:env(safe-area-inset-bottom);">
+  <div class="safe-sticky-header" style="background:#2563eb; position:sticky; top:0; z-index:50;">
+    <div style="height:56px; display:flex; align-items:center; justify-content:space-between; padding:0 20px;">
+      <div style="flex:1;">
+        <%= link_to "←", "javascript:history.back()", style: "color:white; font-size:24px; text-decoration:none; display:inline-block; margin-top:-2px;" %>
+      </div>
+      <div style="color:white; font-size:18px; font-weight:800;">일용근로 계산기</div>
+      <div style="flex:1; text-align:right;">
+        <span style="font-size:10px; font-weight:800; background:#fde68a; color:#78350f; padding:2px 8px; border-radius:999px;">PREMIUM</span>
+      </div>
     </div>
   </div>
-</div>
 
 <div style="padding:24px 20px; max-width:430px; margin:0 auto;">
   <!-- 안내 문구 -->
@@ -192,4 +193,5 @@
   document.addEventListener('DOMContentLoaded', initDailyWorkerTaxCalc);
   initDailyWorkerTaxCalc();
 </script>
+</div>
 
