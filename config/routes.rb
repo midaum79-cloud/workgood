@@ -58,6 +58,11 @@ Rails.application.routes.draw do
   get   "subscription/verify_mobile", to: "subscriptions#verify_mobile", as: :verify_mobile_subscription
   delete "subscription",       to: "subscriptions#cancel", as: :cancel_subscription
 
+  resources :receipts, only: [:index, :new, :create, :destroy] do
+    collection do
+      post :analyze
+    end
+  end
   # Widget Settings
   get "widget_settings", to: "widget_settings#index", as: :widget_settings
 

@@ -1,0 +1,17 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  user: one
+  receipt_date: 2026-04-12
+  amount: 1
+  store_name: MyString
+  category: MyString
+  memo: MyText
+
+two:
+  user: two
+  receipt_date: 2026-04-12
+  amount: 1
+  store_name: MyString
+  category: MyString
+  memo: MyText

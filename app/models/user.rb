@@ -9,6 +9,7 @@ class User < ApplicationRecord
   has_many :daily_memos, dependent: :destroy
   has_many :notifications, dependent: :destroy
   has_many :vendors, dependent: :destroy
+  has_many :receipts, dependent: :destroy
 
   has_secure_token :document_share_token
 

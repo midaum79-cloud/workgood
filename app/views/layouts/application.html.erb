@@ -581,6 +581,10 @@
           <span class="drawer-item-icon" style="opacity:0.8;">🧮</span> 일용근로 계산기
           <span style="margin-left:auto; font-size:10px; font-weight:800; background:#fef3c7; color:#92400e; padding:2px 8px; border-radius:999px;">PREMIUM</span>
         <% end %>
+        <%= link_to receipts_path, class: "drawer-item", onclick: "closeDrawer()", style: "background:#fefce8;" do %>
+          <span class="drawer-item-icon">📸</span> AI 영수증 관리
+          <span style="margin-left:auto; font-size:10px; font-weight:800; background:#fef3c7; color:#92400e; padding:2px 8px; border-radius:999px;">PREMIUM</span>
+        <% end %>
         <%= link_to my_account_documents_path, class: "drawer-item", onclick: "closeDrawer()", style: "background:#fdf2f8;" do %>
           <span class="drawer-item-icon">💼</span> 내 비즈니스 팩(서류)
           <span style="margin-left:auto; font-size:10px; font-weight:800; background:#fce7f3; color:#be185d; padding:2px 8px; border-radius:999px;">PREMIUM</span>

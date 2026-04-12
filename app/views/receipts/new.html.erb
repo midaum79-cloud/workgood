@@ -1,0 +1,150 @@
+<% content_for :title, "새 영수증 등록" %>
+
+<div class="top-header" style="background:white; padding:18px 20px 14px 20px; border-bottom:1px solid #ececec; position:sticky; top:0; z-index:30;">
+  <div style="display:flex; justify-content:space-between; align-items:center;">
+    <div style="display:flex; align-items:center; gap:8px;">
+      <a href="javascript:history.back()" style="color:#1f2937; text-decoration:none;">
+        <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
+      </a>
+      <div style="font-size:20px; font-weight:900; color:#111827;">새 영수증 등록</div>
+    </div>
+  </div>
+</div>
+
+<div style="padding:20px; padding-bottom:80px;">
+  <!-- 안내 영역 -->
+  <div id="instructionArea" style="text-align:center; padding:40px 20px;">
+    <div style="font-size:48px; margin-bottom:16px;">📸</div>
+    <h3 style="font-size:18px; font-weight:800; color:#111827; margin-bottom:8px;">영수증을 촬영해주세요</h3>
+    <p style="font-size:14px; color:#6b7280; line-height:1.5;">카메라로 영수증을 찍으면 AI가<br>자동으로 내용을 분석하여 입력합니다.</p>
+    
+    <button onclick="document.getElementById('receipt_image_file').click()" style="margin-top:24px; background:#be185d; color:white; border:none; padding:16px 24px; font-size:16px; font-weight:700; border-radius:12px; width:100%; display:flex; align-items:center; justify-content:center; gap:8px; cursor:pointer;">
+      <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+      사진 촬영하기
+    </button>
+  </div>
+
+  <!-- 로딩 영역 -->
+  <div id="loadingArea" style="display:none; text-align:center; padding:80px 20px;">
+    <div class="spinner" style="margin:0 auto 24px auto; width:48px; height:48px; border:4px solid #f3f4f6; border-top:4px solid #be185d; border-radius:50%; animation:spin 1s linear infinite;"></div>
+    <h3 style="font-size:18px; font-weight:800; color:#111827; margin-bottom:8px;">AI가 영수증을 분석 중입니다...</h3>
+    <p style="font-size:14px; color:#6b7280;">잠시만 기다려주세요 (약 3~5초 소요)</p>
+  </div>
+
+  <style>
+    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+  </style>
+
+  <!-- 입력 폼 영역 -->
+  <div id="formArea" style="display:none;">
+    <%= form_with model: @receipt, local: true, html: { multipart: true, id: "receiptForm" } do |f| %>
+      <input type="file" id="receipt_image_file" name="receipt[image]" accept="image/*" capture="environment" style="display:none;">
+      
+      <div style="background:#f9fafb; border-radius:12px; padding:16px; margin-bottom:24px; text-align:center;">
+        <img id="imagePreview" src="" style="max-width:100%; max-height:200px; border-radius:8px; object-fit:contain; display:none; margin:0 auto;">
+      </div>
+
+      <div class="form-group" style="margin-bottom:20px;">
+        <label style="display:block; font-size:14px; font-weight:700; color:#374151; margin-bottom:8px;">결제일자</label>
+        <%= f.date_field :receipt_date, class: "form-input", style: "width:100%; padding:14px; border:1px solid #d1d5db; border-radius:10px; font-size:16px;", required: true %>
+      </div>
+
+      <div class="form-group" style="margin-bottom:20px;">
+        <label style="display:block; font-size:14px; font-weight:700; color:#374151; margin-bottom:8px;">총 결제금액</label>
+        <div style="position:relative;">
+          <%= f.number_field :amount, class: "form-input", style: "width:100%; padding:14px 40px 14px 14px; border:1px solid #d1d5db; border-radius:10px; font-size:16px; text-align:right;", required: true %>
+          <span style="position:absolute; right:14px; top:50%; transform:translateY(-50%); color:#6b7280; font-weight:600;">원</span>
+        </div>
+      </div>
+
+      <div class="form-group" style="margin-bottom:20px;">
+        <label style="display:block; font-size:14px; font-weight:700; color:#374151; margin-bottom:8px;">결제처 (상호명)</label>
+        <%= f.text_field :store_name, class: "form-input", style: "width:100%; padding:14px; border:1px solid #d1d5db; border-radius:10px; font-size:16px;" %>
+      </div>
+
+      <div class="form-group" style="margin-bottom:20px;">
+        <label style="display:block; font-size:14px; font-weight:700; color:#374151; margin-bottom:8px;">카테고리</label>
+        <%= f.select :category, options_for_select(["식대", "자재비", "공구", "주유비", "기타"]), {}, class: "form-input", style: "width:100%; padding:14px; border:1px solid #d1d5db; border-radius:10px; font-size:16px; background:white; -webkit-appearance: none;" %>
+      </div>
+
+      <div class="form-group" style="margin-bottom:32px;">
+        <label style="display:block; font-size:14px; font-weight:700; color:#374151; margin-bottom:8px;">메모 (선택)</label>
+        <%= f.text_area :memo, class: "form-input", style: "width:100%; padding:14px; border:1px solid #d1d5db; border-radius:10px; font-size:16px;", rows: 3, placeholder: "누구랑 밥 먹었는지, 어느 현장인지 등 메모" %>
+      </div>
+
+      <button type="submit" style="width:100%; background:#111827; color:white; border:none; padding:18px; font-size:18px; font-weight:800; border-radius:12px; cursor:pointer; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);">
+        영수증 저장하기
+      </button>
+    <% end %>
+  </div>
+</div>
+
+<script>
+  let eventBound = false;
+
+  document.addEventListener('turbo:load', function() {
+    initCameraFeature();
+  });
+
+  function initCameraFeature() {
+    const fileInput = document.getElementById('receipt_image_file');
+    if (!fileInput || eventBound) return;
+    
+    eventBound = true;
+
+    fileInput.addEventListener('change', function(e) {
+      if (this.files && this.files[0]) {
+        const file = this.files[0];
+        
+        // 미리보기 렌더링
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          document.getElementById('imagePreview').src = e.target.result;
+          document.getElementById('imagePreview').style.display = 'block';
+        }
+        reader.readAsDataURL(file);
+
+        // UI 상태 전환
+        document.getElementById('instructionArea').style.display = 'none';
+        document.getElementById('loadingArea').style.display = 'block';
+        document.getElementById('formArea').style.display = 'none';
+
+        // 서버로 바디에 담아 전송
+        const formData = new FormData();
+        formData.append('file', file);
+
+        const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+
+        fetch('/receipts/analyze', {
+          method: 'POST',
+          headers: {
+            'X-CSRF-Token': csrfToken,
+            'Accept': 'application/json'
+          },
+          body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+          document.getElementById('loadingArea').style.display = 'none';
+          document.getElementById('formArea').style.display = 'block';
+
+          if (data.success && data.data) {
+            const result = data.data;
+            if (result.date) document.getElementById('receipt_receipt_date').value = result.date;
+            if (result.amount) document.getElementById('receipt_amount').value = result.amount;
+            if (result.store_name) document.getElementById('receipt_store_name').value = result.store_name;
+            if (result.category) document.getElementById('receipt_category').value = result.category;
+          } else {
+            alert(data.error || '표면 인식이 어렵습니다. 직접 내용을 채워주세요.');
+          }
+        })
+        .catch(error => {
+          console.error('Error:', error);
+          document.getElementById('loadingArea').style.display = 'none';
+          document.getElementById('formArea').style.display = 'block';
+          alert('영수증 분석 중 네트워크 오류가 발생했습니다. 직접 입력해주세요.');
+        });
+      }
+    });
+  }
+</script>
