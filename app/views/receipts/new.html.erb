@@ -96,54 +96,79 @@
       if (this.files && this.files[0]) {
         const file = this.files[0];
         
-        // 미리보기 렌더링
-        const reader = new FileReader();
-        reader.onload = function(e) {
-          document.getElementById('imagePreview').src = e.target.result;
-          document.getElementById('imagePreview').style.display = 'block';
+        // 미리보기 렌더링 (메모리 절약을 위해 URL.createObjectURL 사용 - WebView 튕김 방지)
+        const objectUrl = URL.createObjectURL(file);
+        const imgPreview = document.getElementById('imagePreview');
+        imgPreview.src = objectUrl;
+        imgPreview.style.display = 'block';
+
+        imgPreview.onload = function() {
+          URL.revokeObjectURL(objectUrl); // 메모리 해제
         }
-        reader.readAsDataURL(file);
 
         // UI 상태 전환
         document.getElementById('instructionArea').style.display = 'none';
         document.getElementById('loadingArea').style.display = 'block';
         document.getElementById('formArea').style.display = 'none';
 
-        // 서버로 바디에 담아 전송
-        const formData = new FormData();
-        formData.append('file', file);
-
-        const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
-
-        fetch('/receipts/analyze', {
-          method: 'POST',
-          headers: {
-            'X-CSRF-Token': csrfToken,
-            'Accept': 'application/json'
-          },
-          body: formData
-        })
-        .then(response => response.json())
-        .then(data => {
-          document.getElementById('loadingArea').style.display = 'none';
-          document.getElementById('formArea').style.display = 'block';
-
-          if (data.success && data.data) {
-            const result = data.data;
-            if (result.date) document.getElementById('receipt_receipt_date').value = result.date;
-            if (result.amount) document.getElementById('receipt_amount').value = result.amount;
-            if (result.store_name) document.getElementById('receipt_store_name').value = result.store_name;
-            if (result.category) document.getElementById('receipt_category').value = result.category;
-          } else {
-            alert(data.error || '표면 인식이 어렵습니다. 직접 내용을 채워주세요.');
+        // 캔버스를 활용해 이미지 리사이징 (폭 1200px 제한) 압축 시도 (네트워크 지연 및 메모리 초과 방지)
+        const img = new Image();
+        img.src = objectUrl;
+        img.onload = function() {
+          const canvas = document.createElement('canvas');
+          let width = img.width;
+          let height = img.height;
+          const MAX_WIDTH = 1200;
+          
+          if (width > MAX_WIDTH) {
+            height = Math.round((height * MAX_WIDTH) / width);
+            width = MAX_WIDTH;
           }
-        })
-        .catch(error => {
-          console.error('Error:', error);
-          document.getElementById('loadingArea').style.display = 'none';
-          document.getElementById('formArea').style.display = 'block';
-          alert('영수증 분석 중 네트워크 오류가 발생했습니다. 직접 입력해주세요.');
-        });
+          
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0, width, height);
+          
+          // 압축된 Blob 객체 생성 후 서버로 전송
+          canvas.toBlob(function(blob) {
+            const formData = new FormData();
+            // blob을 file로 변경 (Gemini가 처리할 수 있게)
+            formData.append('file', blob, 'receipt.jpg');
+
+            const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+
+            fetch('/receipts/analyze', {
+              method: 'POST',
+              headers: {
+                'X-CSRF-Token': csrfToken,
+                'Accept': 'application/json'
+              },
+              body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+              document.getElementById('loadingArea').style.display = 'none';
+              document.getElementById('formArea').style.display = 'block';
+
+              if (data.success && data.data) {
+                const result = data.data;
+                if (result.date) document.getElementById('receipt_receipt_date').value = result.date;
+                if (result.amount) document.getElementById('receipt_amount').value = result.amount;
+                if (result.store_name) document.getElementById('receipt_store_name').value = result.store_name;
+                if (result.category) document.getElementById('receipt_category').value = result.category;
+              } else {
+                alert(data.error || '표면 인식이 어렵습니다. 직접 내용을 채워주세요.');
+              }
+            })
+            .catch(error => {
+              console.error('Error:', error);
+              document.getElementById('loadingArea').style.display = 'none';
+              document.getElementById('formArea').style.display = 'block';
+              alert('영수증 분석 중 서버 응답 시간이 초과되거나 네트워크 오류가 발생했습니다. 직접 입력해주세요.');
+            });
+          }, 'image/jpeg', 0.8); 
+        };
       }
     });
   }
