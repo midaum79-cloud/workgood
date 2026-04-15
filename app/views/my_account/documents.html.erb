@@ -38,6 +38,61 @@
         </script>
 
         <%= form_with model: current_user, url: update_my_account_documents_path, method: :patch, local: true, html: { multipart: true } do |f| %>
+          
+          <!-- 통장 명함 자동 생성기 -->
+          <div style="background:#f0f9ff; border:1px solid #bae6fd; border-radius:16px; padding:16px; margin-bottom:20px; box-shadow:0 4px 12px rgba(14,165,233,0.1);">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+              <div style="font-size:15px; font-weight:900; color:#0369a1; display:flex; align-items:center; gap:6px;">
+                💳 스마트 통장 명함 생성기
+              </div>
+            </div>
+            <div style="font-size:12px; color:#0284c7; font-weight:600; margin-bottom:16px; line-height:1.5;">
+              계좌번호를 입력하면 신뢰감을 주는 멋진 통장 명함이 즉시 생성됩니다. 저장 버튼을 누를 필요 없이 바로 <strong>'공유하기'</strong>만 누르면 카톡에 결제 정보가 완벽하게 복사됩니다!
+            </div>
+
+            <!-- Inputs -->
+            <div style="display:grid; grid-template-columns:1fr; gap:10px; margin-bottom:16px;">
+              <%= f.select :bank_name, options_for_select(['신한은행', '국민은행', '우리은행', '하나은행', '농협은행', '기업은행', '카카오뱅크', '토스뱅크', '케이뱅크', '새마을금고', '우체국', '기타'], current_user.bank_name), {prompt: '은행을 선택하세요'}, {id: 'bankNameInput', style: "width:100%; padding:14px; border-radius:12px; border:1px solid #cbd5e1; font-weight:800; font-size:14px; color:#1e293b;", required: true} %>
+              <%= f.text_field :bank_account_number, id: 'bankAccountInput', placeholder: "계좌번호 (예: 110-123-456789)", style: "width:100%; padding:14px; border-radius:12px; border:1px solid #cbd5e1; font-weight:800; font-size:14px; color:#1e293b;", value: current_user.bank_account_number %>
+              <%= f.text_field :bank_account_holder, id: 'bankHolderInput', placeholder: "예금주 성함", style: "width:100%; padding:14px; border-radius:12px; border:1px solid #cbd5e1; font-weight:800; font-size:14px; color:#1e293b;", value: current_user.bank_account_holder %>
+            </div>
+
+            <!-- Preview Card -->
+            <div id="bankCardElement" style="position:relative; width:100%; aspect-ratio:1.586; border-radius:16px; background:linear-gradient(135deg, #2563eb, #1e3a8a); color:white; padding:24px; box-shadow:0 10px 25px rgba(0,0,0,0.15); overflow:hidden; margin-bottom:16px; display:flex; flex-direction:column; justify-content:space-between; box-sizing:border-box; transition: all 0.3s ease;">
+              <!-- Background pattern -->
+              <div style="position:absolute; top:-50px; right:-50px; width:150px; height:150px; background:rgba(255,255,255,0.1); border-radius:50%;"></div>
+              <div style="position:absolute; bottom:-30px; left:-30px; width:100px; height:100px; background:rgba(255,255,255,0.05); border-radius:50%;"></div>
+              <div style="position:absolute; top:40%; right:10%; width:60px; height:60px; background:rgba(255,255,255,0.08); border-radius:12px; transform:rotate(15deg);"></div>
+              
+              <div style="position:relative; z-index:1; display:flex; justify-content:space-between; align-items:flex-start;">
+                <div id="cardBankName" style="font-size:20px; font-weight:900; letter-spacing:-0.5px; text-shadow:0 1px 3px rgba(0,0,0,0.1);"><%= current_user.bank_name.presence || '신한은행' %></div>
+                <div style="font-size:24px; filter:drop-shadow(0 2px 4px rgba(0,0,0,0.1));">💳</div>
+              </div>
+
+              <div style="position:relative; z-index:1; margin-top:auto;">
+                <div id="cardAccountNumber" style="font-size:22px; font-weight:800; letter-spacing:1px; margin-bottom:12px; font-family:'Courier New', Courier, monospace; text-shadow:0 2px 4px rgba(0,0,0,0.2);"><%= current_user.bank_account_number.presence || '110-123-456789' %></div>
+                <div style="display:flex; justify-content:space-between; align-items:flex-end;">
+                  <div style="display:flex; flex-direction:column;">
+                    <span style="font-size:10px; opacity:0.8; font-weight:700; margin-bottom:2px; letter-spacing:0.5px;">ACCOUNT HOLDER</span>
+                    <span id="cardHolderName" style="font-size:16px; font-weight:900; letter-spacing:1px; text-shadow:0 1px 3px rgba(0,0,0,0.1);"><%= current_user.bank_account_holder.presence || '김일잘' %></span>
+                  </div>
+                  <div style="font-size:9px; font-weight:800; opacity:0.8; text-align:right; line-height:1.2; text-shadow:0 1px 2px rgba(0,0,0,0.1);">
+                    스마트한 현장 관리<br>일잘러 앱
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div style="display:flex; gap:8px;">
+              <button type="button" onclick="generateAndShareBankCard()" id="shareBankCardBtn" style="flex:1; background:#0f172a; color:white; border:none; padding:16px; border-radius:12px; font-size:15px; font-weight:900; cursor:pointer; box-shadow:0 6px 16px rgba(15,23,42,0.3); display:flex; justify-content:center; align-items:center; gap:8px; transition:transform 0.1s;">
+                <span>🚀 명함 이미지 + 텍스트 카톡 공유하기</span>
+              </button>
+            </div>
+            <div id="cardShareStatus" style="text-align:center; margin-top:12px; font-size:13px; font-weight:800; color:#10b981; display:none; background:#d1fae5; padding:8px; border-radius:8px;">
+              ✅ 명함이 성공적으로 전송/복사 되었습니다!
+            </div>
+          </div>
           <div style="display:flex; flex-direction:column; gap:12px; margin-bottom:16px;">
             <% [
               { key: :business_card, label: '🪪 명함' },
@@ -185,6 +240,135 @@
         <% end %>
     </div>
   </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+  <script>
+    // 통장 명함 실시간 생성 로직
+    document.addEventListener("turbo:load", function() {
+      const bankColors = {
+        '신한은행': ['#0046FF', '#002E9D', 'white', 'rgba(0,0,0,0.2)'],
+        '국민은행': ['#FFCC00', '#F5A623', '#334155', 'none'],
+        '우리은행': ['#0067AC', '#004B80', 'white', 'rgba(0,0,0,0.2)'],
+        '하나은행': ['#008485', '#00595A', 'white', 'rgba(0,0,0,0.2)'],
+        '농협은행': ['#008D62', '#005C40', 'white', 'rgba(0,0,0,0.2)'],
+        '기업은행': ['#1B4D98', '#113366', 'white', 'rgba(0,0,0,0.2)'],
+        '카카오뱅크': ['#FEE500', '#E5CE00', '#111827', 'none'],
+        '토스뱅크': ['#3182F6', '#1E4DB7', 'white', 'rgba(0,0,0,0.1)'],
+        '케이뱅크': ['#000000', '#222222', 'white', 'none'],
+        '새마을금고': ['#116238', '#0A3D22', 'white', 'rgba(0,0,0,0.2)'],
+        '우체국': ['#FF4A00', '#CC3B00', 'white', 'rgba(0,0,0,0.2)'],
+        '기타': ['#475569', '#1e293b', 'white', 'rgba(0,0,0,0.2)']
+      };
+
+      const nameInput = document.getElementById('bankNameInput');
+      const accountInput = document.getElementById('bankAccountInput');
+      const holderInput = document.getElementById('bankHolderInput');
+      const cardEl = document.getElementById('bankCardElement');
+      
+      function updateCard() {
+        if(!cardEl || !nameInput) return;
+        const bName = nameInput.value || '신한은행';
+        const colors = bankColors[bName] || bankColors['기타'];
+        
+        document.getElementById('cardBankName').textContent = nameInput.value || '은행명';
+        document.getElementById('cardAccountNumber').textContent = accountInput.value || '110-123-456789';
+        document.getElementById('cardHolderName').textContent = holderInput.value || '김일잘';
+
+        cardEl.style.background = `linear-gradient(135deg, ${colors[0]}, ${colors[1]})`;
+        cardEl.style.color = colors[2];
+        document.getElementById('cardAccountNumber').style.textShadow = colors[3];
+      }
+
+      if(nameInput) {
+        nameInput.addEventListener('change', updateCard);
+        accountInput.addEventListener('input', updateCard);
+        holderInput.addEventListener('input', updateCard);
+        updateCard(); // 초기화
+      }
+    });
+
+    async function generateAndShareBankCard() {
+      const btn = document.getElementById('shareBankCardBtn');
+      const status = document.getElementById('cardShareStatus');
+      const cardEl = document.getElementById('bankCardElement');
+      const bankName = document.getElementById('bankNameInput').value;
+      const bankAcc = document.getElementById('bankAccountInput').value;
+      const bankHolder = document.getElementById('bankHolderInput').value;
+
+      if (!bankName || !bankAcc) {
+        alert("은행명과 계좌번호를 먼저 입력해주세요.");
+        if(!bankName) document.getElementById('bankNameInput').focus();
+        else document.getElementById('bankAccountInput').focus();
+        return;
+      }
+
+      // 공유 전 폼 자동 저장 트리거
+      const updateForm = btn.closest('form');
+      if (updateForm) {
+        const formData = new FormData(updateForm);
+        fetch(updateForm.action, {
+          method: updateForm.method.toUpperCase(),
+          body: formData,
+          headers: { 'Accept': 'text/vnd.turbo-stream.html, text/html' }
+        });
+      }
+
+      btn.disabled = true;
+      const originalText = btn.innerHTML;
+      btn.innerHTML = '⏳ 명함 이미지 구워내는 중...';
+      btn.style.transform = 'scale(0.98)';
+
+      try {
+        const canvas = await html2canvas(cardEl, {
+          scale: 4, 
+          backgroundColor: null,
+          logging: false
+        });
+
+        canvas.toBlob(async function(blob) {
+          const file = new File([blob], 'bank_card.png', { type: 'image/png' });
+          const textMsg = `[일잘러 정산 계좌안내]\n${bankName} ${bankAcc} ${bankHolder}`;
+
+          if (navigator.canShare && navigator.canShare({ files: [file] })) {
+            await navigator.share({
+              title: '결제 계좌 안내',
+              text: textMsg,
+              files: [file]
+            });
+            showSuccess();
+          } else if (navigator.share) {
+            await navigator.share({
+              title: '결제 계좌 안내',
+              text: textMsg
+            });
+            showSuccess();
+          } else {
+             navigator.clipboard.writeText(textMsg);
+             const url = URL.createObjectURL(blob);
+             const a = document.createElement('a');
+             a.href = url;
+             a.download = 'bank_card.png';
+             a.click();
+             alert("계좌 정보가 클립보드에 복사되었고 이미지가 다운로드 되었습니다.");
+             showSuccess();
+          }
+        }, 'image/png', 1.0);
+      } catch (e) {
+        alert("일시적인 오류로 이미지를 생성하지 못했습니다.");
+      } finally {
+        setTimeout(() => {
+          btn.disabled = false;
+          btn.innerHTML = originalText;
+          btn.style.transform = 'scale(1)';
+        }, 800);
+      }
+
+      function showSuccess() {
+        status.style.display = 'block';
+        setTimeout(() => { status.style.display = 'none'; }, 5000);
+      }
+    }
+  </script>
 
   <script>
     // 파일 업로드 시 브라우저 단에서 PNG로 자동 변환 및 리사이징
