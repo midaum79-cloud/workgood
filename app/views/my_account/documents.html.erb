@@ -117,10 +117,10 @@
               </div>
               <!-- 입력 폼 -->
               <div style="display:grid; grid-template-columns:1fr; gap:10px; margin-bottom:16px;">
-                <input type="text" id="bcTeamInput" placeholder="업체명 (예: 업체명)" style="width:100%; padding:14px; border-radius:12px; border:1px solid #cbd5e1; font-weight:800; font-size:14px; color:#1e293b;" value="<%= current_user.team_name %>">
-                <input type="text" id="bcRoleInput" placeholder="직책 (예: 직책)" style="width:100%; padding:14px; border-radius:12px; border:1px solid #cbd5e1; font-weight:800; font-size:14px; color:#1e293b;" value="<%= current_user.role %>">
-                <input type="text" id="bcNameInput" placeholder="성함 (예: 일잘러)" style="width:100%; padding:14px; border-radius:12px; border:1px solid #cbd5e1; font-weight:800; font-size:14px; color:#1e293b;" value="<%= current_user.name %>">
-                <input type="text" id="bcPhoneInput" placeholder="전화번호 (예: 010-1234-5678)" style="width:100%; padding:14px; border-radius:12px; border:1px solid #cbd5e1; font-weight:800; font-size:14px; color:#1e293b;" value="<%= current_user.phone %>">
+                <input type="text" id="bcTeamInput" oninput="updateBizCard()" placeholder="업체명 (예: 업체명)" style="width:100%; padding:14px; border-radius:12px; border:1px solid #cbd5e1; font-weight:800; font-size:14px; color:#1e293b;" value="">
+                <input type="text" id="bcRoleInput" oninput="updateBizCard()" placeholder="직책 (예: 직책)" style="width:100%; padding:14px; border-radius:12px; border:1px solid #cbd5e1; font-weight:800; font-size:14px; color:#1e293b;" value="">
+                <input type="text" id="bcNameInput" oninput="updateBizCard()" placeholder="성함 (예: 일잘러)" style="width:100%; padding:14px; border-radius:12px; border:1px solid #cbd5e1; font-weight:800; font-size:14px; color:#1e293b;" value="">
+                <input type="text" id="bcPhoneInput" oninput="updateBizCard()" placeholder="전화번호 (예: 010-1234-5678)" style="width:100%; padding:14px; border-radius:12px; border:1px solid #cbd5e1; font-weight:800; font-size:14px; color:#1e293b;" value="">
               </div>
 
               <!-- 템플릿 선택 -->
@@ -521,41 +521,37 @@
       }
     }
 
-    document.addEventListener("turbo:load", function() {
+    // 전역 함수로 분리하여 HTML oninput에서 즉시 호출되게 함
+    function updateBizCard() {
       const bTeamInfo = document.getElementById('bcTeamInput');
       const bRoleInfo = document.getElementById('bcRoleInput');
       const bNameInfo = document.getElementById('bcNameInput');
       const bPhoneInfo = document.getElementById('bcPhoneInput');
+      if(!bTeamInfo) return;
       
-      function updateBizCard() {
-        if(!bTeamInfo) return;
-        
-        document.getElementById('bcA_Team').textContent = bTeamInfo.value || '업체명';
-        document.getElementById('bcB_Team').textContent = bTeamInfo.value || '업체명';
-        
-        document.getElementById('bcA_Role').textContent = bRoleInfo.value || '직책';
-        document.getElementById('bcB_Role').textContent = bRoleInfo.value || '직책';
-        
-        const nameVal = bNameInfo.value || '일잘러';
-        document.getElementById('bcA_Name').textContent = nameVal;
-        
-        if(nameVal.length >= 2) {
-          const firstChar = nameVal.substring(0, 1);
-          const restChar = nameVal.substring(1);
-          document.getElementById('bcB_Name').innerHTML = '<strong>' + firstChar + '</strong>' + restChar;
-        } else {
-          document.getElementById('bcB_Name').innerHTML = '<strong>' + nameVal + '</strong>';
-        }
-        
-        document.getElementById('bcA_Phone').textContent = bPhoneInfo.value || '010-1234-5678';
-        document.getElementById('bcB_Phone').textContent = bPhoneInfo.value || '010-1234-5678';
+      document.getElementById('bcA_Team').textContent = bTeamInfo.value || '업체명';
+      document.getElementById('bcB_Team').textContent = bTeamInfo.value || '업체명';
+      
+      document.getElementById('bcA_Role').textContent = bRoleInfo.value || '직책';
+      document.getElementById('bcB_Role').textContent = bRoleInfo.value || '직책';
+      
+      const nameVal = bNameInfo.value || '일잘러';
+      document.getElementById('bcA_Name').textContent = nameVal;
+      
+      if(nameVal.length >= 2) {
+        const firstChar = nameVal.substring(0, 1);
+        const restChar = nameVal.substring(1);
+        document.getElementById('bcB_Name').innerHTML = '<strong>' + firstChar + '</strong>' + restChar;
+      } else {
+        document.getElementById('bcB_Name').innerHTML = '<strong>' + nameVal + '</strong>';
       }
+      
+      document.getElementById('bcA_Phone').textContent = bPhoneInfo.value || '010-1234-5678';
+      document.getElementById('bcB_Phone').textContent = bPhoneInfo.value || '010-1234-5678';
+    }
 
-      if(bTeamInfo) {
-        bTeamInfo.addEventListener('input', updateBizCard);
-        bRoleInfo.addEventListener('input', updateBizCard);
-        bNameInfo.addEventListener('input', updateBizCard);
-        bPhoneInfo.addEventListener('input', updateBizCard);
+    document.addEventListener("turbo:load", function() {
+      if(document.getElementById('bcTeamInput')) {
         updateBizCard();
       }
     });
@@ -625,34 +621,30 @@
       }
     }
 
+    async function showImageForDownload(cardEl, bgColor) {
+      document.getElementById('imageDownloadModal').style.display = 'flex';
+      document.getElementById('downloadedImagePreview').src = '';
+      try {
+        const canvas = await html2canvas(cardEl, { scale: 4, backgroundColor: bgColor, logging: false });
+        const imgData = canvas.toDataURL('image/png');
+        document.getElementById('downloadedImagePreview').src = imgData;
+      } catch(e) {
+        alert("일시적인 오류로 저장 팝업을 열지 못했습니다.");
+        document.getElementById('imageDownloadModal').style.display = 'none';
+      }
+    }
+
     async function downloadBankCardImage() {
       const btn = document.getElementById('downloadBankCardBtn');
       const cardEl = document.getElementById('bankCardElement');
       btn.disabled = true;
       const originalText = btn.innerHTML;
-      btn.innerHTML = '⏳ 저장 중...';
-      try {
-        const canvas = await html2canvas(cardEl, { scale: 4, backgroundColor: null, logging: false });
-        canvas.toBlob(function(blob) {
-          const url = URL.createObjectURL(blob);
-          const a = document.createElement('a');
-          a.href = url;
-          a.download = 'bank_card.png';
-          a.click();
-          setTimeout(() => URL.revokeObjectURL(url), 100);
-          const status = document.getElementById('cardShareStatus');
-          if(status) {
-            status.innerHTML = '✅ 기기에 이미지가 저장되었습니다!';
-            status.style.display = 'block';
-            setTimeout(() => { status.style.display = 'none'; }, 5000);
-          }
-        }, 'image/png', 1.0);
-      } catch(e) {
-        alert("일시적인 오류로 저장하지 못했습니다.");
-      } finally {
-        btn.disabled = false;
-        btn.innerHTML = originalText;
-      }
+      btn.innerHTML = '⏳ 굽는 중...';
+      
+      await showImageForDownload(cardEl, null);
+      
+      btn.disabled = false;
+      btn.innerHTML = originalText;
     }
 
     function copyBankCardText() {
@@ -679,29 +671,12 @@
       const cardEl = document.getElementById('bcTemplate' + currentBcTemplate);
       btn.disabled = true;
       const originalText = btn.innerHTML;
-      btn.innerHTML = '⏳ 저장 중...';
-      try {
-        const canvas = await html2canvas(cardEl, { scale: 4, backgroundColor: currentBcTemplate === 'A' ? '#111827' : '#ffffff', logging: false });
-        canvas.toBlob(function(blob) {
-          const url = URL.createObjectURL(blob);
-          const a = document.createElement('a');
-          a.href = url;
-          a.download = 'biz_card.png';
-          a.click();
-          setTimeout(() => URL.revokeObjectURL(url), 100);
-          const status = document.getElementById('bcShareStatus');
-          if(status) {
-            status.innerHTML = '✅ 갤러리(사진첩)에 명함이 저장되었습니다!';
-            status.style.display = 'block';
-            setTimeout(() => { status.style.display = 'none'; }, 5000);
-          }
-        }, 'image/png', 1.0);
-      } catch(e) {
-        alert("일시적인 오류로 저장하지 못했습니다.");
-      } finally {
-        btn.disabled = false;
-        btn.innerHTML = originalText;
-      }
+      btn.innerHTML = '⏳ 굽는 중...';
+      
+      await showImageForDownload(cardEl, currentBcTemplate === 'A' ? '#111827' : '#ffffff');
+      
+      btn.disabled = false;
+      btn.innerHTML = originalText;
     }
 
     function copyBizCardText() {
@@ -790,5 +765,16 @@
         });
       }, 100);
     });
+    });
   </script>
+
+  <!-- 이미지 다운로드용 모달 -->
+  <div id="imageDownloadModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); z-index:9999; justify-content:center; align-items:center; flex-direction:column;">
+    <div style="background:white; padding:12px 20px; border-radius:12px; font-weight:800; font-size:15px; margin-bottom:16px; color:#1e293b; display:flex; flex-direction:column; align-items:center; gap:4px; text-align:center; box-shadow:0 10px 25px rgba(0,0,0,0.5);">
+      <span style="font-size:18px;">👇 밑의 이미지를 길게 꾹 눌러주세요 👇</span>
+      <span style="color:#3b82f6; font-size:13px; margin-top:4px;">'사진 앱에 저장' (또는 이미지 저장) 선택</span>
+    </div>
+    <img id="downloadedImagePreview" src="" style="max-width:90%; max-height:60vh; border-radius:12px; box-shadow:0 10px 25px rgba(0,0,0,0.5); border:1px solid rgba(255,255,255,0.2);">
+    <button onclick="document.getElementById('imageDownloadModal').style.display='none'" style="margin-top:24px; background:#475569; color:white; border:1px solid #64748b; padding:12px 32px; border-radius:99px; font-weight:900; font-size:16px; cursor:pointer; box-shadow:0 4px 12px rgba(0,0,0,0.3);">닫기</button>
+  </div>
 </div>
