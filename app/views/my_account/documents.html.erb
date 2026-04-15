@@ -17,10 +17,8 @@
           </div>
           <div style="font-size:12px; color:#6b7280; font-weight:600; margin-top:4px;">명함, 사업자, 일반/사업자 통장 사본을 등록하세요.</div>
         </div>
-        <span style="background:#fef08a; color:#854d0e; font-size:10px; font-weight:900; padding:4px 8px; border-radius:99px;">PREMIUM</span>
+        <span style="background:#dbeafe; color:#1e40af; font-size:10px; font-weight:900; padding:4px 8px; border-radius:99px;">FREE ✨</span>
       </div>
-
-        <% if current_user.premium? %>
         <% if notice.present? %><p style="color: green; margin-bottom: 12px; text-align:center; font-size:13px; font-weight:700;"><%= notice %></p><% end %>
         <% if alert.present? %><p style="color: red; margin-bottom: 12px; text-align:center; font-size:13px; font-weight:700;"><%= alert %></p><% end %>
 
@@ -185,16 +183,6 @@
             <div style="font-size:16px; font-weight:900;">공유가 완료되었습니다!</div>
           </div>
         <% end %>
-      <% else %>
-        <div style="background:#f3f4f6; border-radius:12px; padding:30px 20px; text-align:center;">
-          <div style="font-size:32px; margin-bottom:12px;">🔒</div>
-          <div style="font-size:15px; font-weight:800; color:#4b5563; margin-bottom:8px;">프리미엄 요금제 전용 기능입니다.</div>
-          <div style="font-size:13px; color:#6b7280; font-weight:600; line-height:1.5; margin-bottom:20px;">명함, 사업자, 통장사본 이미지를 이곳에 1회만 저장해두고, 언제든 문자로 손쉽게 하나로 묶어 전송할 수 있습니다.</div>
-          <%= link_to subscription_path, style: "display:inline-block; background:#312e81; color:white; padding:12px 24px; border-radius:12px; font-weight:800; text-decoration:none; font-size:14px;" do %>
-            요금제 알아보기
-          <% end %>
-        </div>
-      <% end %>
     </div>
   </div>
 
