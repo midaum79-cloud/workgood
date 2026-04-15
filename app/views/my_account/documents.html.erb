@@ -52,7 +52,7 @@
 
             <!-- Inputs -->
             <div style="display:grid; grid-template-columns:1fr; gap:10px; margin-bottom:16px;">
-              <%= f.select :bank_name, options_for_select(['신한은행', '국민은행', '우리은행', '하나은행', '농협은행', '기업은행', '카카오뱅크', '토스뱅크', '케이뱅크', '새마을금고', '우체국', '기타'], current_user.bank_name), {prompt: '은행을 선택하세요'}, {id: 'bankNameInput', style: "width:100%; padding:14px; border-radius:12px; border:1px solid #cbd5e1; font-weight:800; font-size:14px; color:#1e293b;", required: true} %>
+              <%= f.select :bank_name, options_for_select(['신한은행', '국민은행', '우리은행', '하나은행', '농협은행', 'IBK기업은행', 'KDB산업은행', '수협은행', '카카오뱅크', '토스뱅크', '케이뱅크', '새마을금고', '우체국', '신협', '저축은행', '산림조합', '씨티은행', 'SC제일은행', '대구은행', '부산은행', '광주은행', '제주은행', '전북은행', '경남은행', '기타'], current_user.bank_name), {prompt: '은행을 선택하세요'}, {id: 'bankNameInput', style: "width:100%; padding:14px; border-radius:12px; border:1px solid #cbd5e1; font-weight:800; font-size:14px; color:#1e293b;", required: true} %>
               <%= f.text_field :bank_account_number, id: 'bankAccountInput', placeholder: "계좌번호 (예: 110-123-456789)", style: "width:100%; padding:14px; border-radius:12px; border:1px solid #cbd5e1; font-weight:800; font-size:14px; color:#1e293b;", value: current_user.bank_account_number %>
               <%= f.text_field :bank_account_holder, id: 'bankHolderInput', placeholder: "예금주 성함", style: "width:100%; padding:14px; border-radius:12px; border:1px solid #cbd5e1; font-weight:800; font-size:14px; color:#1e293b;", value: current_user.bank_account_holder %>
             </div>
@@ -345,12 +345,26 @@
         '우리은행': ['#0067AC', '#004B80', 'white', 'rgba(0,0,0,0.2)'],
         '하나은행': ['#008485', '#00595A', 'white', 'rgba(0,0,0,0.2)'],
         '농협은행': ['#008D62', '#005C40', 'white', 'rgba(0,0,0,0.2)'],
+        'IBK기업은행': ['#1B4D98', '#113366', 'white', 'rgba(0,0,0,0.2)'],
         '기업은행': ['#1B4D98', '#113366', 'white', 'rgba(0,0,0,0.2)'],
+        'KDB산업은행': ['#0033A1', '#00226D', 'white', 'rgba(0,0,0,0.2)'],
+        '수협은행': ['#0082C5', '#005988', 'white', 'rgba(0,0,0,0.2)'],
         '카카오뱅크': ['#FEE500', '#E5CE00', '#111827', 'none'],
         '토스뱅크': ['#3182F6', '#1E4DB7', 'white', 'rgba(0,0,0,0.1)'],
         '케이뱅크': ['#000000', '#222222', 'white', 'none'],
         '새마을금고': ['#116238', '#0A3D22', 'white', 'rgba(0,0,0,0.2)'],
         '우체국': ['#FF4A00', '#CC3B00', 'white', 'rgba(0,0,0,0.2)'],
+        '신협': ['#005AAA', '#003D73', 'white', 'rgba(0,0,0,0.2)'],
+        '저축은행': ['#E74C3C', '#C0392B', 'white', 'rgba(0,0,0,0.2)'],
+        '산림조합': ['#27AE60', '#1D8348', 'white', 'rgba(0,0,0,0.2)'],
+        '씨티은행': ['#002B49', '#00192A', 'white', 'rgba(0,0,0,0.2)'],
+        'SC제일은행': ['#5B2B82', '#3D1B57', 'white', 'rgba(0,0,0,0.2)'],
+        '대구은행': ['#008B3E', '#005F2B', 'white', 'rgba(0,0,0,0.2)'],
+        '부산은행': ['#D51820', '#A91119', 'white', 'rgba(0,0,0,0.2)'],
+        '광주은행': ['#FFB600', '#D69800', '#111827', 'none'],
+        '제주은행': ['#003F98', '#002A67', 'white', 'rgba(0,0,0,0.2)'],
+        '전북은행': ['#12285E', '#0B183A', 'white', 'rgba(0,0,0,0.2)'],
+        '경남은행': ['#ED1C24', '#BB131A', 'white', 'rgba(0,0,0,0.2)'],
         '기타': ['#475569', '#1e293b', 'white', 'rgba(0,0,0,0.2)']
       };
 
