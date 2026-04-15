@@ -73,7 +73,7 @@
                 <div id="cardAccountNumber" style="font-size:22px; font-weight:800; letter-spacing:1px; margin-bottom:12px; font-family:'Courier New', Courier, monospace; text-shadow:0 2px 4px rgba(0,0,0,0.2);"><%= current_user.bank_account_number.presence || '110-123-456789' %></div>
                 <div style="display:flex; justify-content:space-between; align-items:flex-end;">
                   <div style="display:flex; flex-direction:column;">
-                    <span style="font-size:10px; opacity:0.8; font-weight:700; margin-bottom:2px; letter-spacing:0.5px;">ACCOUNT HOLDER</span>
+                    <span style="font-size:10px; opacity:0.8; font-weight:700; margin-bottom:2px; letter-spacing:0.5px;">성함</span>
                     <span id="cardHolderName" style="font-size:16px; font-weight:900; letter-spacing:1px; text-shadow:0 1px 3px rgba(0,0,0,0.1);"><%= current_user.bank_account_holder.presence || '김일잘' %></span>
                   </div>
                   <div style="font-size:9px; font-weight:800; opacity:0.8; text-align:right; line-height:1.2; text-shadow:0 1px 2px rgba(0,0,0,0.1);">
@@ -117,9 +117,9 @@
               </div>
               <!-- 입력 폼 -->
               <div style="display:grid; grid-template-columns:1fr; gap:10px; margin-bottom:16px;">
-                <input type="text" id="bcTeamInput" placeholder="상호/소속 (예: 목수연합)" style="width:100%; padding:14px; border-radius:12px; border:1px solid #cbd5e1; font-weight:800; font-size:14px; color:#1e293b;" value="<%= current_user.team_name %>">
-                <input type="text" id="bcRoleInput" placeholder="직함 (예: 내장목공 반장)" style="width:100%; padding:14px; border-radius:12px; border:1px solid #cbd5e1; font-weight:800; font-size:14px; color:#1e293b;" value="<%= current_user.role %>">
-                <input type="text" id="bcNameInput" placeholder="이름 (예: 김목수)" style="width:100%; padding:14px; border-radius:12px; border:1px solid #cbd5e1; font-weight:800; font-size:14px; color:#1e293b;" value="<%= current_user.name %>">
+                <input type="text" id="bcTeamInput" placeholder="업체명 (예: 업체명)" style="width:100%; padding:14px; border-radius:12px; border:1px solid #cbd5e1; font-weight:800; font-size:14px; color:#1e293b;" value="<%= current_user.team_name %>">
+                <input type="text" id="bcRoleInput" placeholder="직책 (예: 직책)" style="width:100%; padding:14px; border-radius:12px; border:1px solid #cbd5e1; font-weight:800; font-size:14px; color:#1e293b;" value="<%= current_user.role %>">
+                <input type="text" id="bcNameInput" placeholder="성함 (예: 성함)" style="width:100%; padding:14px; border-radius:12px; border:1px solid #cbd5e1; font-weight:800; font-size:14px; color:#1e293b;" value="<%= current_user.name %>">
                 <input type="text" id="bcPhoneInput" placeholder="전화번호 (예: 010-1234-5678)" style="width:100%; padding:14px; border-radius:12px; border:1px solid #cbd5e1; font-weight:800; font-size:14px; color:#1e293b;" value="<%= current_user.phone %>">
               </div>
 
@@ -136,12 +136,12 @@
                   <div style="position:absolute; top:0; left:0; width:8px; height:100%; background:#eab308;"></div>
                   <div style="display:flex; flex-direction:column; justify-content:space-between; height:100%; padding-left:12px;">
                     <div>
-                      <div id="bcA_Team" style="font-size:15px; font-weight:900; color:#eab308; letter-spacing:1px; margin-bottom:4px;"><%= current_user.team_name.presence || '목수연합' %></div>
+                      <div id="bcA_Team" style="font-size:15px; font-weight:900; color:#eab308; letter-spacing:1px; margin-bottom:4px;"><%= current_user.team_name.presence || '업체명' %></div>
                     </div>
                     <div style="margin-top:auto; margin-bottom:auto;">
                       <div style="display:flex; align-items:baseline; gap:8px; margin-bottom:8px;">
-                        <div id="bcA_Name" style="font-size:26px; font-weight:900; letter-spacing:2px;"><%= current_user.name.presence || '김목수' %></div>
-                        <div id="bcA_Role" style="font-size:15px; font-weight:700; color:#9ca3af;"><%= current_user.role.presence || '내장목공 반장' %></div>
+                        <div id="bcA_Name" style="font-size:26px; font-weight:900; letter-spacing:2px;"><%= current_user.name.presence || '성함' %></div>
+                        <div id="bcA_Role" style="font-size:15px; font-weight:700; color:#9ca3af;"><%= current_user.role.presence || '직책' %></div>
                       </div>
                     </div>
                     <div style="display:flex; justify-content:space-between; align-items:flex-end;">
@@ -156,11 +156,11 @@
                   <div style="position:absolute; bottom:-40px; right:-40px; width:150px; height:150px; border-radius:50%; background:#f8fafc; border:2px solid #f1f5f9;"></div>
                   <div style="position:relative; z-index:1; display:flex; flex-direction:column; justify-content:space-between; height:100%; text-align:right;">
                     <div>
-                      <div id="bcB_Team" style="font-size:12px; font-weight:800; color:#64748b; letter-spacing:2px;"><%= current_user.team_name.presence || '목수연합' %></div>
+                      <div id="bcB_Team" style="font-size:12px; font-weight:800; color:#64748b; letter-spacing:2px;"><%= current_user.team_name.presence || '업체명' %></div>
                     </div>
                     <div style="margin-top:auto; margin-bottom:auto; padding-right:10px; border-right:4px solid #111827;">
-                      <div id="bcB_Name" style="font-size:28px; font-weight:300; letter-spacing:-1px; color:#0f172a; margin-bottom:4px;"><strong><%= (current_user.name.presence || '김목수').chars.first %></strong><%= (current_user.name.presence || '김목수').chars.drop(1).join %></div>
-                      <div id="bcB_Role" style="font-size:14px; font-weight:600; color:#475569;"><%= current_user.role.presence || '내장목공 반장' %></div>
+                      <div id="bcB_Name" style="font-size:28px; font-weight:300; letter-spacing:-1px; color:#0f172a; margin-bottom:4px;"><strong><%= (current_user.name.presence || '성함').chars.first %></strong><%= (current_user.name.presence || '성함').chars.drop(1).join %></div>
+                      <div id="bcB_Role" style="font-size:14px; font-weight:600; color:#475569;"><%= current_user.role.presence || '직책' %></div>
                     </div>
                     <div style="display:flex; justify-content:space-between; align-items:flex-end;">
                       <div style="font-size:9px; font-weight:800; color:#cbd5e1; text-align:left;">스마트한 현장 관리<br>일잘러 앱</div>
@@ -530,13 +530,13 @@
       function updateBizCard() {
         if(!bTeamInfo) return;
         
-        document.getElementById('bcA_Team').textContent = bTeamInfo.value || '목수연합';
-        document.getElementById('bcB_Team').textContent = bTeamInfo.value || '목수연합';
+        document.getElementById('bcA_Team').textContent = bTeamInfo.value || '업체명';
+        document.getElementById('bcB_Team').textContent = bTeamInfo.value || '업체명';
         
-        document.getElementById('bcA_Role').textContent = bRoleInfo.value || '내장목공 반장';
-        document.getElementById('bcB_Role').textContent = bRoleInfo.value || '내장목공 반장';
+        document.getElementById('bcA_Role').textContent = bRoleInfo.value || '직책';
+        document.getElementById('bcB_Role').textContent = bRoleInfo.value || '직책';
         
-        const nameVal = bNameInfo.value || '김목수';
+        const nameVal = bNameInfo.value || '성함';
         document.getElementById('bcA_Name').textContent = nameVal;
         
         if(nameVal.length >= 2) {
