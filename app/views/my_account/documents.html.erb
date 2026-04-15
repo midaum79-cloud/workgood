@@ -93,6 +93,100 @@
               ✅ 명함이 성공적으로 전송/복사 되었습니다!
             </div>
           </div>
+          
+          <!-- 프리미엄 명함 자동 생성기 -->
+          <div style="background:#fdf4ff; border:1px solid #f5d0fe; border-radius:16px; padding:16px; margin-bottom:20px; box-shadow:0 4px 12px rgba(217,70,239,0.1);">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+              <div style="font-size:15px; font-weight:900; color:#a21caf; display:flex; align-items:center; gap:6px;">
+                ✨ 프리미엄 명함 자동 생성기
+              </div>
+              <span style="background:#fce7f3; color:#be185d; font-size:10px; font-weight:900; padding:4px 8px; border-radius:99px;">PREMIUM 👑</span>
+            </div>
+            
+            <% if current_user.premium? %>
+              <div style="font-size:12px; color:#c026d3; font-weight:600; margin-bottom:16px; line-height:1.5;">
+                직함 등 정보만 입력하면 인쇄소 부럽지 않은 세련된 명함이 뚝딱! 이미지를 다운받아 카톡으로 나눠주세요.
+              </div>
+              <!-- 입력 폼 -->
+              <div style="display:grid; grid-template-columns:1fr; gap:10px; margin-bottom:16px;">
+                <input type="text" id="bcTeamInput" placeholder="상호/소속 (예: 목수연합)" style="width:100%; padding:14px; border-radius:12px; border:1px solid #cbd5e1; font-weight:800; font-size:14px; color:#1e293b;" value="<%= current_user.team_name %>">
+                <input type="text" id="bcRoleInput" placeholder="직함 (예: 내장목공 반장)" style="width:100%; padding:14px; border-radius:12px; border:1px solid #cbd5e1; font-weight:800; font-size:14px; color:#1e293b;" value="<%= current_user.role %>">
+                <input type="text" id="bcNameInput" placeholder="이름 (예: 김목수)" style="width:100%; padding:14px; border-radius:12px; border:1px solid #cbd5e1; font-weight:800; font-size:14px; color:#1e293b;" value="<%= current_user.name %>">
+                <input type="text" id="bcPhoneInput" placeholder="전화번호 (예: 010-1234-5678)" style="width:100%; padding:14px; border-radius:12px; border:1px solid #cbd5e1; font-weight:800; font-size:14px; color:#1e293b;" value="<%= current_user.phone %>">
+              </div>
+
+              <!-- 템플릿 선택 -->
+              <div style="display:flex; gap:8px; margin-bottom:16px;">
+                <button type="button" onclick="setBcTemplate('A')" id="btnTplA" style="flex:1; padding:10px; background:#4c1d95; color:white; border:none; border-radius:8px; font-size:12px; font-weight:800; cursor:pointer; font-family:inherit;">[도안 A] 신뢰감 현장형</button>
+                <button type="button" onclick="setBcTemplate('B')" id="btnTplB" style="flex:1; padding:10px; background:#f1f5f9; color:#475569; border:1px solid #cbd5e1; border-radius:8px; font-size:12px; font-weight:800; cursor:pointer; font-family:inherit;">[도안 B] 세련된 건축형</button>
+              </div>
+
+              <!-- Preview Card Container -->
+              <div id="bcPreviewWrap" style="margin-bottom:16px;">
+                <!-- Template A (현장형) -->
+                <div id="bcTemplateA" style="position:relative; width:100%; aspect-ratio:1.8; border-radius:10px; background:#111827; color:white; padding:24px; box-shadow:0 10px 25px rgba(0,0,0,0.15); box-sizing:border-box; overflow:hidden;">
+                  <div style="position:absolute; top:0; left:0; width:8px; height:100%; background:#eab308;"></div>
+                  <div style="display:flex; flex-direction:column; justify-content:space-between; height:100%; padding-left:12px;">
+                    <div>
+                      <div id="bcA_Team" style="font-size:15px; font-weight:900; color:#eab308; letter-spacing:1px; margin-bottom:4px;"><%= current_user.team_name.presence || '목수연합' %></div>
+                    </div>
+                    <div style="margin-top:auto; margin-bottom:auto;">
+                      <div style="display:flex; align-items:baseline; gap:8px; margin-bottom:8px;">
+                        <div id="bcA_Name" style="font-size:26px; font-weight:900; letter-spacing:2px;"><%= current_user.name.presence || '김목수' %></div>
+                        <div id="bcA_Role" style="font-size:15px; font-weight:700; color:#9ca3af;"><%= current_user.role.presence || '내장목공 반장' %></div>
+                      </div>
+                    </div>
+                    <div style="display:flex; justify-content:space-between; align-items:flex-end;">
+                      <div id="bcA_Phone" style="font-size:16px; font-weight:800; letter-spacing:1px; color:#f3f4f6;"><%= current_user.phone.presence || '010-1234-5678' %></div>
+                      <div style="font-size:9px; font-weight:800; opacity:0.6; text-align:right;">스마트한 현장 관리<br>일잘러 앱</div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Template B (디자인형) -->
+                <div id="bcTemplateB" style="display:none; position:relative; width:100%; aspect-ratio:1.8; border-radius:10px; background:#ffffff; color:#111827; padding:24px; box-shadow:0 10px 25px rgba(0,0,0,0.05); box-sizing:border-box; overflow:hidden; border:1px solid #f1f5f9;">
+                  <div style="position:absolute; bottom:-40px; right:-40px; width:150px; height:150px; border-radius:50%; background:#f8fafc; border:2px solid #f1f5f9;"></div>
+                  <div style="position:relative; z-index:1; display:flex; flex-direction:column; justify-content:space-between; height:100%; text-align:right;">
+                    <div>
+                      <div id="bcB_Team" style="font-size:12px; font-weight:800; color:#64748b; letter-spacing:2px;"><%= current_user.team_name.presence || '목수연합' %></div>
+                    </div>
+                    <div style="margin-top:auto; margin-bottom:auto; padding-right:10px; border-right:4px solid #111827;">
+                      <div id="bcB_Name" style="font-size:28px; font-weight:300; letter-spacing:-1px; color:#0f172a; margin-bottom:4px;"><strong><%= (current_user.name.presence || '김목수').chars.first %></strong><%= (current_user.name.presence || '김목수').chars.drop(1).join %></div>
+                      <div id="bcB_Role" style="font-size:14px; font-weight:600; color:#475569;"><%= current_user.role.presence || '내장목공 반장' %></div>
+                    </div>
+                    <div style="display:flex; justify-content:space-between; align-items:flex-end;">
+                      <div style="font-size:9px; font-weight:800; color:#cbd5e1; text-align:left;">스마트한 현장 관리<br>일잘러 앱</div>
+                      <div id="bcB_Phone" style="font-size:15px; font-weight:700; color:#334155;"><%= current_user.phone.presence || '010-1234-5678' %></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Action Buttons -->
+              <div style="display:flex; gap:8px;">
+                <button type="button" onclick="generateAndShareBizCard()" id="shareBizCardBtn" style="flex:1; background:#c026d3; color:white; border:none; padding:16px; border-radius:12px; font-size:15px; font-weight:900; cursor:pointer; box-shadow:0 6px 16px rgba(192,38,211,0.3); display:flex; justify-content:center; align-items:center; gap:8px; transition:transform 0.1s; font-family:inherit;">
+                  <span>🪪 스마트 명함 생성 및 카톡 공유하기</span>
+                </button>
+              </div>
+              <div id="bcShareStatus" style="text-align:center; margin-top:12px; font-size:13px; font-weight:800; color:#a21caf; display:none; background:#fdf4ff; padding:8px; border-radius:8px;">
+                ✅ 명함이 성공적으로 출력/공유 되었습니다!
+              </div>
+
+            <% else %>
+              <!-- 비통과 유저 업셀 메시지 -->
+              <div style="display:flex; flex-direction:column; align-items:center; padding:24px 16px; background:rgba(255,255,255,0.7); border-radius:12px; border:1px dashed #f0abfc;">
+                <div style="font-size:32px; margin-bottom:12px; filter:grayscale(1) opacity(0.5);">🪪</div>
+                <div style="font-size:14px; font-weight:800; color:#86198f; text-align:center; margin-bottom:8px;">
+                  프리미엄 요금제를 이용하고<br>고급 명함 2종을 평생 무료로 찍어내세요!
+                </div>
+                <div style="font-size:12px; color:#a21caf; text-align:center; margin-bottom:16px;">
+                  인쇄소 갈 필요 없이 즉시 발급 가능한 고품격 명함.<br>문자나 카톡 전송 시 브랜드 가치가 확 올라갑니다.
+                </div>
+                <%= link_to "👑 프리미엄 플랜 구독하기", subscriptions_path, style: "background:#86198f; color:white; padding:12px 24px; border-radius:8px; font-size:13px; font-weight:800; text-decoration:none;" %>
+              </div>
+            <% end %>
+          </div>
+
           <div style="display:flex; flex-direction:column; gap:12px; margin-bottom:16px;">
             <% [
               { key: :business_card, label: '🪪 명함' },
@@ -363,6 +457,138 @@
         }, 800);
       }
 
+      function showSuccess() {
+        status.style.display = 'block';
+        setTimeout(() => { status.style.display = 'none'; }, 5000);
+      }
+    }
+
+    let currentBcTemplate = 'A';
+    
+    function setBcTemplate(type) {
+      currentBcTemplate = type;
+      if(type === 'A') {
+        document.getElementById('bcTemplateA').style.display = 'block';
+        document.getElementById('bcTemplateB').style.display = 'none';
+        document.getElementById('btnTplA').style.background = '#4c1d95';
+        document.getElementById('btnTplA').style.color = 'white';
+        document.getElementById('btnTplA').style.border = 'none';
+        
+        document.getElementById('btnTplB').style.background = '#f1f5f9';
+        document.getElementById('btnTplB').style.color = '#475569';
+        document.getElementById('btnTplB').style.border = '1px solid #cbd5e1';
+      } else {
+        document.getElementById('bcTemplateA').style.display = 'none';
+        document.getElementById('bcTemplateB').style.display = 'block';
+        
+        document.getElementById('btnTplB').style.background = '#4c1d95';
+        document.getElementById('btnTplB').style.color = 'white';
+        document.getElementById('btnTplB').style.border = 'none';
+        
+        document.getElementById('btnTplA').style.background = '#f1f5f9';
+        document.getElementById('btnTplA').style.color = '#475569';
+        document.getElementById('btnTplA').style.border = '1px solid #cbd5e1';
+      }
+    }
+
+    document.addEventListener("turbo:load", function() {
+      const bTeamInfo = document.getElementById('bcTeamInput');
+      const bRoleInfo = document.getElementById('bcRoleInput');
+      const bNameInfo = document.getElementById('bcNameInput');
+      const bPhoneInfo = document.getElementById('bcPhoneInput');
+      
+      function updateBizCard() {
+        if(!bTeamInfo) return;
+        
+        document.getElementById('bcA_Team').textContent = bTeamInfo.value || '목수연합';
+        document.getElementById('bcB_Team').textContent = bTeamInfo.value || '목수연합';
+        
+        document.getElementById('bcA_Role').textContent = bRoleInfo.value || '내장목공 반장';
+        document.getElementById('bcB_Role').textContent = bRoleInfo.value || '내장목공 반장';
+        
+        const nameVal = bNameInfo.value || '김목수';
+        document.getElementById('bcA_Name').textContent = nameVal;
+        
+        if(nameVal.length >= 2) {
+          const firstChar = nameVal.substring(0, 1);
+          const restChar = nameVal.substring(1);
+          document.getElementById('bcB_Name').innerHTML = '<strong>' + firstChar + '</strong>' + restChar;
+        } else {
+          document.getElementById('bcB_Name').innerHTML = '<strong>' + nameVal + '</strong>';
+        }
+        
+        document.getElementById('bcA_Phone').textContent = bPhoneInfo.value || '010-1234-5678';
+        document.getElementById('bcB_Phone').textContent = bPhoneInfo.value || '010-1234-5678';
+      }
+
+      if(bTeamInfo) {
+        bTeamInfo.addEventListener('input', updateBizCard);
+        bRoleInfo.addEventListener('input', updateBizCard);
+        bNameInfo.addEventListener('input', updateBizCard);
+        bPhoneInfo.addEventListener('input', updateBizCard);
+        updateBizCard();
+      }
+    });
+
+    async function generateAndShareBizCard() {
+      const btn = document.getElementById('shareBizCardBtn');
+      const status = document.getElementById('bcShareStatus');
+      const cardEl = document.getElementById('bcTemplate' + currentBcTemplate);
+      
+      const tName = document.getElementById('bcNameInput').value;
+      const tRole = document.getElementById('bcRoleInput').value;
+      const tPhone = document.getElementById('bcPhoneInput').value;
+
+      btn.disabled = true;
+      const originalText = btn.innerHTML;
+      btn.innerHTML = '⏳ 명함 제작소 자동 출력 중...';
+      btn.style.transform = 'scale(0.98)';
+
+      try {
+        const canvas = await html2canvas(cardEl, {
+          scale: 4, 
+          backgroundColor: currentBcTemplate === 'A' ? '#111827' : '#ffffff',
+          logging: false
+        });
+
+        canvas.toBlob(async function(blob) {
+          const file = new File([blob], 'biz_card.png', { type: 'image/png' });
+          const textMsg = `[현장 전문가 명함]\n이름: ${tName}\n직함: ${tRole}\n전화: ${tPhone}`;
+
+          if (navigator.canShare && navigator.canShare({ files: [file] })) {
+            await navigator.share({
+              title: '모바일 명함',
+              text: textMsg,
+              files: [file]
+            });
+            showSuccess();
+          } else if (navigator.share) {
+            await navigator.share({
+              title: '모바일 명함',
+              text: textMsg
+            });
+            showSuccess();
+          } else {
+             navigator.clipboard.writeText(textMsg);
+             const url = URL.createObjectURL(blob);
+             const a = document.createElement('a');
+             a.href = url;
+             a.download = 'biz_card.png';
+             a.click();
+             alert("명함 정보가 복사되었고 이미지가 다운로드 되었습니다.");
+             showSuccess();
+          }
+        }, 'image/png', 1.0);
+      } catch (e) {
+        alert("일시적인 오류로 이미지를 생성하지 못했습니다.");
+      } finally {
+        setTimeout(() => {
+          btn.disabled = false;
+          btn.innerHTML = originalText;
+          btn.style.transform = 'scale(1)';
+        }, 800);
+      }
+      
       function showSuccess() {
         status.style.display = 'block';
         setTimeout(() => { status.style.display = 'none'; }, 5000);
