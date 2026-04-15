@@ -84,10 +84,18 @@
             </div>
 
             <!-- Action Buttons -->
-            <div style="display:flex; gap:8px;">
-              <button type="button" onclick="generateAndShareBankCard()" id="shareBankCardBtn" style="flex:1; background:#0f172a; color:white; border:none; padding:16px; border-radius:12px; font-size:15px; font-weight:900; cursor:pointer; box-shadow:0 6px 16px rgba(15,23,42,0.3); display:flex; justify-content:center; align-items:center; gap:8px; transition:transform 0.1s;">
-                <span>🚀 명함 이미지 + 텍스트 카톡 공유하기</span>
+            <div style="display:flex; flex-direction:column; gap:8px;">
+              <button type="button" onclick="generateAndShareBankCard()" id="shareBankCardBtn" style="width:100%; background:#0f172a; color:white; border:none; padding:16px; border-radius:12px; font-size:15px; font-weight:900; cursor:pointer; box-shadow:0 6px 16px rgba(15,23,42,0.3); display:flex; justify-content:center; align-items:center; gap:8px; transition:transform 0.1s;">
+                <span>🚀 기본 공유 (이미지+안내문 등)</span>
               </button>
+              <div style="display:flex; gap:8px;">
+                <button type="button" onclick="downloadBankCardImage()" id="downloadBankCardBtn" style="flex:1; background:#f1f5f9; color:#334155; border:1px solid #cbd5e1; padding:12px; border-radius:10px; font-size:13px; font-weight:800; cursor:pointer; display:flex; justify-content:center; align-items:center; gap:6px;">
+                  <span>💾 갤러리/사진첩 저장</span>
+                </button>
+                <button type="button" onclick="copyBankCardText()" id="copyBankCardTextBtn" style="flex:1; background:#f1f5f9; color:#334155; border:1px solid #cbd5e1; padding:12px; border-radius:10px; font-size:13px; font-weight:800; cursor:pointer; display:flex; justify-content:center; align-items:center; gap:6px;">
+                  <span>📋 텍스트만 복사</span>
+                </button>
+              </div>
             </div>
             <div id="cardShareStatus" style="text-align:center; margin-top:12px; font-size:13px; font-weight:800; color:#10b981; display:none; background:#d1fae5; padding:8px; border-radius:8px;">
               ✅ 명함이 성공적으로 전송/복사 되었습니다!
@@ -163,10 +171,18 @@
               </div>
 
               <!-- Action Buttons -->
-              <div style="display:flex; gap:8px;">
-                <button type="button" onclick="generateAndShareBizCard()" id="shareBizCardBtn" style="flex:1; background:#c026d3; color:white; border:none; padding:16px; border-radius:12px; font-size:15px; font-weight:900; cursor:pointer; box-shadow:0 6px 16px rgba(192,38,211,0.3); display:flex; justify-content:center; align-items:center; gap:8px; transition:transform 0.1s; font-family:inherit;">
-                  <span>🪪 스마트 명함 생성 및 카톡 공유하기</span>
+              <div style="display:flex; flex-direction:column; gap:8px;">
+                <button type="button" onclick="generateAndShareBizCard()" id="shareBizCardBtn" style="width:100%; background:#c026d3; color:white; border:none; padding:16px; border-radius:12px; font-size:15px; font-weight:900; cursor:pointer; box-shadow:0 6px 16px rgba(192,38,211,0.3); display:flex; justify-content:center; align-items:center; gap:8px; transition:transform 0.1s; font-family:inherit;">
+                  <span>🚀 기본 공유 (이미지+안내문 등)</span>
                 </button>
+                <div style="display:flex; gap:8px;">
+                  <button type="button" onclick="downloadBizCardImage()" id="downloadBizCardBtn" style="flex:1; background:#fdf4ff; color:#a21caf; border:1px solid #f0abfc; padding:12px; border-radius:10px; font-size:13px; font-weight:800; cursor:pointer; display:flex; justify-content:center; align-items:center; gap:6px;">
+                    <span>💾 사진첩(앨범)에 저장</span>
+                  </button>
+                  <button type="button" onclick="copyBizCardText()" id="copyBizCardTextBtn" style="flex:1; background:#fdf4ff; color:#a21caf; border:1px solid #f0abfc; padding:12px; border-radius:10px; font-size:13px; font-weight:800; cursor:pointer; display:flex; justify-content:center; align-items:center; gap:6px;">
+                    <span>📋 텍스트만 복사</span>
+                  </button>
+                </div>
               </div>
               <div id="bcShareStatus" style="text-align:center; margin-top:12px; font-size:13px; font-weight:800; color:#a21caf; display:none; background:#fdf4ff; padding:8px; border-radius:8px;">
                 ✅ 명함이 성공적으로 출력/공유 되었습니다!
@@ -607,6 +623,100 @@
         status.style.display = 'block';
         setTimeout(() => { status.style.display = 'none'; }, 5000);
       }
+    }
+
+    async function downloadBankCardImage() {
+      const btn = document.getElementById('downloadBankCardBtn');
+      const cardEl = document.getElementById('bankCardElement');
+      btn.disabled = true;
+      const originalText = btn.innerHTML;
+      btn.innerHTML = '⏳ 저장 중...';
+      try {
+        const canvas = await html2canvas(cardEl, { scale: 4, backgroundColor: null, logging: false });
+        canvas.toBlob(function(blob) {
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = 'bank_card.png';
+          a.click();
+          setTimeout(() => URL.revokeObjectURL(url), 100);
+          const status = document.getElementById('cardShareStatus');
+          if(status) {
+            status.innerHTML = '✅ 기기에 이미지가 저장되었습니다!';
+            status.style.display = 'block';
+            setTimeout(() => { status.style.display = 'none'; }, 5000);
+          }
+        }, 'image/png', 1.0);
+      } catch(e) {
+        alert("일시적인 오류로 저장하지 못했습니다.");
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = originalText;
+      }
+    }
+
+    function copyBankCardText() {
+      const bankName = document.getElementById('bankNameInput').value;
+      const bankAcc = document.getElementById('bankAccountInput').value;
+      const bankHolder = document.getElementById('bankHolderInput').value;
+      if (!bankName || !bankAcc) {
+        alert("은행명과 계좌번호를 먼저 입력해주세요.");
+        return;
+      }
+      const textMsg = `[일잘러 정산 계좌안내]\n${bankName} ${bankAcc} ${bankHolder}`;
+      navigator.clipboard.writeText(textMsg).then(() => {
+        const status = document.getElementById('cardShareStatus');
+        if(status) {
+          status.innerHTML = '✅ 텍스트가 복사되었습니다!';
+          status.style.display = 'block';
+          setTimeout(() => { status.style.display = 'none'; }, 5000);
+        }
+      });
+    }
+
+    async function downloadBizCardImage() {
+      const btn = document.getElementById('downloadBizCardBtn');
+      const cardEl = document.getElementById('bcTemplate' + currentBcTemplate);
+      btn.disabled = true;
+      const originalText = btn.innerHTML;
+      btn.innerHTML = '⏳ 저장 중...';
+      try {
+        const canvas = await html2canvas(cardEl, { scale: 4, backgroundColor: currentBcTemplate === 'A' ? '#111827' : '#ffffff', logging: false });
+        canvas.toBlob(function(blob) {
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = 'biz_card.png';
+          a.click();
+          setTimeout(() => URL.revokeObjectURL(url), 100);
+          const status = document.getElementById('bcShareStatus');
+          if(status) {
+            status.innerHTML = '✅ 갤러리(사진첩)에 명함이 저장되었습니다!';
+            status.style.display = 'block';
+            setTimeout(() => { status.style.display = 'none'; }, 5000);
+          }
+        }, 'image/png', 1.0);
+      } catch(e) {
+        alert("일시적인 오류로 저장하지 못했습니다.");
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = originalText;
+      }
+    }
+
+    function copyBizCardText() {
+      const tName = document.getElementById('bcNameInput').value;
+      const tRole = document.getElementById('bcRoleInput').value;
+      const tPhone = document.getElementById('bcPhoneInput').value;
+      const textMsg = `[현장 전문가 명함]\n이름: ${tName}\n직함: ${tRole}\n전화: ${tPhone}`;
+      navigator.clipboard.writeText(textMsg).then(() => {
+        const status = document.getElementById('bcShareStatus');
+        if(status) {
+          status.innerHTML = '✅ 텍스트가 복사되었습니다!';
+          status.style.display = 'block';
+          setTimeout(() => { status.style.display = 'none'; }, 5000);
+        }
+      });
     }
   </script>
 
