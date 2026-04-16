@@ -103,15 +103,36 @@
 </div>
 
 <script>
-  function forceDownload(filename) {
+  async function forceDownload(filename) {
     const src = document.getElementById('downloadedImagePreview').src;
+    
+    // 모바일 기기 (특히 iOS Safari) 에서는 다운로드보다는 Share API(이미지 저장 옵션 제공)가 훨씬 안정적임
+    try {
+      const res = await fetch(src);
+      const blob = await res.blob();
+      const file = new File([blob], filename, { type: 'image/png' });
+      
+      if (navigator.canShare && navigator.canShare({ files: [file] })) {
+        await navigator.share({
+          files: [file],
+          title: '명함 이미지 저장',
+          text: '발급된 이미지입니다. (이미지 저장 버튼을 누르세요)'
+        });
+        document.getElementById('imageDownloadModal').style.display='none';
+        return;
+      }
+    } catch (e) {
+      console.log('Share API fallback', e);
+    }
+
+    // Fallback: 일반 다운로드 (안드로이드 크롬이나 PC 브라우저)
     const a = document.createElement('a');
     a.href = src;
     a.download = filename;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
-    alert('다운로드가 시작되었습니다.\n(갤러리나 다운로드 폴더를 확인해 주세요)');
+    alert('기본 다운로드가 실행되었습니다.\n(갤러리 혹은 다운로드 폴더를 확인해 주세요)');
   }
 </script>
 
