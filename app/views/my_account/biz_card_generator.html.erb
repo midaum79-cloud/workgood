@@ -1,3 +1,15 @@
+<style>
+  /* 화면 가로넘침 방지를 위한 전역 박스 사이징 강제 */
+  #bcFormWrap * { box-sizing: border-box !important; }
+  input, button, label, select { max-width: 100%; box-sizing: border-box !important; }
+  /* 안드로이드 웹뷰에서 이미지 길게 누르기(다운로드)를 허용하기 위한 CSS */
+  img#downloadedImagePreview {
+    -webkit-touch-callout: default !important;
+    -webkit-user-select: auto !important;
+    user-select: auto !important;
+    pointer-events: auto !important;
+  }
+</style>
 <div style="min-height:100vh; background:#f5f5f5; padding-bottom:env(safe-area-inset-bottom);">
   <div style="background:white; padding:18px 20px 14px 20px; border-bottom:1px solid #ececec; position:sticky; top:0; z-index:30;" class="safe-sticky-header">
     <div style="display:flex; justify-content:space-between; align-items:center;">
@@ -121,7 +133,7 @@
       <button onclick="document.getElementById('imageDownloadModal').style.display='none';" style="margin-top:10px; padding:6px 12px; border-radius:8px; background:#e2e8f0; border:none; font-weight:bold; cursor:pointer;">닫기</button>
     </div>
     
-    <img id="downloadedImagePreview" src="" style="max-width:90%; max-height:50vh; border-radius:12px; border:1px solid rgba(255,255,255,0.2);">
+    <img id="downloadedImagePreview" src="" style="max-width:90%; max-height:50vh; border-radius:12px; border:1px solid rgba(255,255,255,0.2); -webkit-touch-callout: default !important; user-select: auto !important; pointer-events: auto !important;">
     
     <div style="display:flex; gap:10px; margin-top:20px; width:90%; max-width:320px;">
       <button onclick="shareImage('business_card.png', '명함 이미지 저장', '일잘러에서 명함이 전송되었습니다 클릭해서 저장하기를 누르세요')" style="flex:1; background:#0f172a; color:white; border:none; padding:16px 0; border-radius:14px; font-weight:900; font-size:14px; cursor:pointer; box-shadow:0 6px 16px rgba(15,23,42,0.4); display:flex; flex-direction:column; align-items:center; gap:4px;">
