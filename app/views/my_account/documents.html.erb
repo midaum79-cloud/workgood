@@ -117,10 +117,10 @@
               </div>
               <!-- 입력 폼 -->
               <div style="display:grid; grid-template-columns:1fr; gap:10px; margin-bottom:16px;">
-                <input type="text" id="bcTeamInput" oninput="updateBizCard()" placeholder="업체명 (예: 업체명)" style="width:100%; padding:14px; border-radius:12px; border:1px solid #cbd5e1; font-weight:800; font-size:14px; color:#1e293b;" value="">
-                <input type="text" id="bcRoleInput" oninput="updateBizCard()" placeholder="직책 (예: 직책)" style="width:100%; padding:14px; border-radius:12px; border:1px solid #cbd5e1; font-weight:800; font-size:14px; color:#1e293b;" value="">
-                <input type="text" id="bcNameInput" oninput="updateBizCard()" placeholder="성함 (예: 일잘러)" style="width:100%; padding:14px; border-radius:12px; border:1px solid #cbd5e1; font-weight:800; font-size:14px; color:#1e293b;" value="">
-                <input type="text" id="bcPhoneInput" oninput="updateBizCard()" placeholder="전화번호 (예: 010-1234-5678)" style="width:100%; padding:14px; border-radius:12px; border:1px solid #cbd5e1; font-weight:800; font-size:14px; color:#1e293b;" value="">
+                <input type="text" id="bcTeamInput" placeholder="업체명 (예: 업체명)" style="width:100%; padding:14px; border-radius:12px; border:1px solid #cbd5e1; font-weight:800; font-size:14px; color:#1e293b;" value="<%= current_user.team_name %>">
+                <input type="text" id="bcRoleInput" placeholder="직책 (예: 직책)" style="width:100%; padding:14px; border-radius:12px; border:1px solid #cbd5e1; font-weight:800; font-size:14px; color:#1e293b;" value="<%= current_user.role %>">
+                <input type="text" id="bcNameInput" placeholder="성함 (예: 일잘러)" style="width:100%; padding:14px; border-radius:12px; border:1px solid #cbd5e1; font-weight:800; font-size:14px; color:#1e293b;" value="<%= current_user.name.to_s.match?(/^[a-z0-9]{10}$/) ? '' : current_user.name %>">
+                <input type="text" id="bcPhoneInput" placeholder="전화번호 (예: 010-1234-5678)" style="width:100%; padding:14px; border-radius:12px; border:1px solid #cbd5e1; font-weight:800; font-size:14px; color:#1e293b;" value="<%= current_user.phone %>">
               </div>
 
               <!-- 템플릿 선택 -->
@@ -521,37 +521,41 @@
       }
     }
 
-    // 전역 함수로 분리하여 HTML oninput에서 즉시 호출되게 함
-    function updateBizCard() {
+    document.addEventListener("turbo:load", function() {
       const bTeamInfo = document.getElementById('bcTeamInput');
       const bRoleInfo = document.getElementById('bcRoleInput');
       const bNameInfo = document.getElementById('bcNameInput');
       const bPhoneInfo = document.getElementById('bcPhoneInput');
-      if(!bTeamInfo) return;
       
-      document.getElementById('bcA_Team').textContent = bTeamInfo.value || '업체명';
-      document.getElementById('bcB_Team').textContent = bTeamInfo.value || '업체명';
-      
-      document.getElementById('bcA_Role').textContent = bRoleInfo.value || '직책';
-      document.getElementById('bcB_Role').textContent = bRoleInfo.value || '직책';
-      
-      const nameVal = bNameInfo.value || '일잘러';
-      document.getElementById('bcA_Name').textContent = nameVal;
-      
-      if(nameVal.length >= 2) {
-        const firstChar = nameVal.substring(0, 1);
-        const restChar = nameVal.substring(1);
-        document.getElementById('bcB_Name').innerHTML = '<strong>' + firstChar + '</strong>' + restChar;
-      } else {
-        document.getElementById('bcB_Name').innerHTML = '<strong>' + nameVal + '</strong>';
+      function updateBizCard() {
+        if(!bTeamInfo) return;
+        
+        document.getElementById('bcA_Team').textContent = bTeamInfo.value || '업체명';
+        document.getElementById('bcB_Team').textContent = bTeamInfo.value || '업체명';
+        
+        document.getElementById('bcA_Role').textContent = bRoleInfo.value || '직책';
+        document.getElementById('bcB_Role').textContent = bRoleInfo.value || '직책';
+        
+        const nameVal = bNameInfo.value || '일잘러';
+        document.getElementById('bcA_Name').textContent = nameVal;
+        
+        if(nameVal.length >= 2) {
+          const firstChar = nameVal.substring(0, 1);
+          const restChar = nameVal.substring(1);
+          document.getElementById('bcB_Name').innerHTML = '<strong>' + firstChar + '</strong>' + restChar;
+        } else {
+          document.getElementById('bcB_Name').innerHTML = '<strong>' + nameVal + '</strong>';
+        }
+        
+        document.getElementById('bcA_Phone').textContent = bPhoneInfo.value || '010-1234-5678';
+        document.getElementById('bcB_Phone').textContent = bPhoneInfo.value || '010-1234-5678';
       }
-      
-      document.getElementById('bcA_Phone').textContent = bPhoneInfo.value || '010-1234-5678';
-      document.getElementById('bcB_Phone').textContent = bPhoneInfo.value || '010-1234-5678';
-    }
 
-    document.addEventListener("turbo:load", function() {
-      if(document.getElementById('bcTeamInput')) {
+      if(bTeamInfo) {
+        bTeamInfo.addEventListener('input', updateBizCard);
+        bRoleInfo.addEventListener('input', updateBizCard);
+        bNameInfo.addEventListener('input', updateBizCard);
+        bPhoneInfo.addEventListener('input', updateBizCard);
         updateBizCard();
       }
     });
@@ -680,9 +684,9 @@
     }
 
     function copyBizCardText() {
-      const tName = document.getElementById('bcNameInput').value;
-      const tRole = document.getElementById('bcRoleInput').value;
-      const tPhone = document.getElementById('bcPhoneInput').value;
+      const tName = document.getElementById('bcNameInput').value || '일잘러';
+      const tRole = document.getElementById('bcRoleInput').value || '직책';
+      const tPhone = document.getElementById('bcPhoneInput').value || '010-1234-5678';
       const textMsg = `[현장 전문가 명함]\n이름: ${tName}\n직함: ${tRole}\n전화: ${tPhone}`;
       navigator.clipboard.writeText(textMsg).then(() => {
         const status = document.getElementById('bcShareStatus');
