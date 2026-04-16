@@ -29,8 +29,18 @@
       <!-- 입력 폼 -->
       <div style="display:grid; grid-template-columns:1fr; gap:10px; margin-bottom:16px;">
         <input type="text" id="bcTeamInput" placeholder="업체명 (예: 업체명)" style="width:100%; padding:14px; border-radius:12px; border:1px solid #cbd5e1; font-weight:800; font-size:14px; color:#1e293b;" value="<%= current_user.team_name %>">
-        <input type="text" id="bcRoleInput" placeholder="직책 (예: 반장)" style="width:100%; padding:14px; border-radius:12px; border:1px solid #cbd5e1; font-weight:800; font-size:14px; color:#1e293b;" value="<%= current_user.role %>">
-        <input type="text" id="bcNameInput" placeholder="성함 (예: 김현장)" data-original-name="<%= current_user.name %>" style="width:100%; padding:14px; border-radius:12px; border:1px solid #cbd5e1; font-weight:800; font-size:14px; color:#1e293b;" value="<%= current_user.name %>">
+        
+        <!-- 로고 이미지 업로드 -->
+        <label for="bcLogoInput" style="display:flex; align-items:center; justify-content:center; gap:8px; width:100%; padding:14px; border-radius:12px; border:1px dashed #cbd5e1; font-weight:800; font-size:14px; color:#64748b; background:#f8fafc; cursor:pointer;">
+          <svg style="width:16px; fill:#64748b;" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path d="M448 80c8.8 0 16 7.2 16 16V415.8l-5-6.5-136-176c-4.5-5.9-11.6-9.3-19-9.3s-14.4 3.4-19 9.3L202 340.7l-30.5-42.7C167 291.7 159.8 288 152 288s-15 3.7-19.5 10.1l-80 112L48 416V96c0-8.8 7.2-16 16-16H448zM64 32C28.7 32 0 60.7 0 96V416c0 35.3 28.7 64 64 64H448c35.3 0 64-28.7 64-64V96c0-35.3-28.7-64-64-64H64zm80 192a48 48 0 1 0 0-96 48 48 0 1 0 0 96z"/></svg>
+          <span id="bcLogoLabel">업체 로고 첨부 (선택)</span>
+        </label>
+        <input type="file" id="bcLogoInput" accept="image/*" style="display:none;">
+
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+          <input type="text" id="bcRoleInput" placeholder="직책 (예: 반장)" style="width:100%; padding:14px; border-radius:12px; border:1px solid #cbd5e1; font-weight:800; font-size:14px; color:#1e293b;" value="<%= current_user.role %>">
+          <input type="text" id="bcNameInput" placeholder="성함 (예: 김현장)" style="width:100%; padding:14px; border-radius:12px; border:1px solid #cbd5e1; font-weight:800; font-size:14px; color:#1e293b;" value="<%= current_user.name %>">
+        </div>
         <input type="text" id="bcPhoneInput" placeholder="전화번호 (예: 010-1234-5678)" style="width:100%; padding:14px; border-radius:12px; border:1px solid #cbd5e1; font-weight:800; font-size:14px; color:#1e293b;" value="<%= current_user.phone %>">
       </div>
 
@@ -43,35 +53,42 @@
       <!-- Preview Card Container -->
       <div id="bcPreviewWrap" style="margin-bottom:16px;">
         <!-- Template A -->
-        <div id="bcTemplateA" style="position:relative; width:100%; aspect-ratio:1.8; border-radius:10px; background:#111827; color:white; padding:24px; box-shadow:0 10px 25px rgba(0,0,0,0.15); box-sizing:border-box; overflow:hidden;">
+        <div id="bcTemplateA" style="position:relative; width:100%; aspect-ratio:1.8; border-radius:10px; background:#111827; color:white; box-shadow:0 10px 25px rgba(0,0,0,0.15); box-sizing:border-box; overflow:hidden;">
           <div style="position:absolute; top:0; left:0; width:8px; height:100%; background:#eab308;"></div>
-          <div style="display:flex; flex-direction:column; justify-content:space-between; height:100%; padding-left:12px;">
-            <div><div id="bcA_Team" style="font-size:15px; font-weight:900; color:#eab308; letter-spacing:1px; margin-bottom:4px;"><%= current_user.team_name.presence || '업체명' %></div></div>
-            <div style="margin-top:auto; margin-bottom:auto;">
-              <div style="display:flex; align-items:baseline; gap:8px; margin-bottom:8px;">
-                <div id="bcA_Name" style="font-size:26px; font-weight:900; letter-spacing:2px;"><%= current_user.name.presence || '김현장' %></div>
-                <div id="bcA_Role" style="font-size:15px; font-weight:700; color:#9ca3af;"><%= current_user.role.presence || '반장' %></div>
-              </div>
-            </div>
-            <div style="display:flex; justify-content:space-between; align-items:flex-end;">
-              <div id="bcA_Phone" style="font-size:16px; font-weight:800; letter-spacing:1px; color:#f3f4f6;"><%= current_user.phone.presence || '010-1234-5678' %></div>
-              <div style="font-size:9px; font-weight:800; opacity:0.6; text-align:right;">스마트한 현장 관리<br>일잘러 앱</div>
-            </div>
+          
+          <div style="position:absolute; top:24px; left:28px; display:flex; align-items:center; gap:8px;">
+            <img id="bcA_LogoImg" src="" style="display:none; max-width:60px; max-height:24px; object-fit:contain; border-radius:2px;">
+            <div id="bcA_Team" style="font-size:15px; font-weight:900; color:#eab308; letter-spacing:1px;"><%= current_user.team_name.presence || '업체명' %></div>
+          </div>
+
+          <div style="position:absolute; top:50%; left:28px; transform:translateY(-50%); display:flex; align-items:baseline; gap:8px;">
+            <div id="bcA_Name" style="font-size:26px; font-weight:900; letter-spacing:2px;"><%= current_user.name.presence || '김현장' %></div>
+            <div id="bcA_Role" style="font-size:15px; font-weight:700; color:#9ca3af;"><%= current_user.role.presence || '반장' %></div>
+          </div>
+
+          <div style="position:absolute; bottom:24px; left:28px; width:calc(100% - 52px); display:flex; justify-content:space-between; align-items:flex-end;">
+            <div id="bcA_Phone" style="font-size:16px; font-weight:800; letter-spacing:1px; color:#f3f4f6;"><%= current_user.phone.presence || '010-1234-5678' %></div>
+            <div style="font-size:9px; font-weight:800; opacity:0.6; text-align:right;">스마트한 현장 관리<br>일잘러 앱</div>
           </div>
         </div>
+        
         <!-- Template B -->
-        <div id="bcTemplateB" style="display:none; position:relative; width:100%; aspect-ratio:1.8; border-radius:10px; background:#ffffff; color:#111827; padding:24px; box-shadow:0 10px 25px rgba(0,0,0,0.05); box-sizing:border-box; overflow:hidden; border:1px solid #f1f5f9;">
+        <div id="bcTemplateB" style="display:none; position:relative; width:100%; aspect-ratio:1.8; border-radius:10px; background:#ffffff; color:#111827; box-shadow:0 10px 25px rgba(0,0,0,0.05); box-sizing:border-box; overflow:hidden; border:1px solid #f1f5f9;">
           <div style="position:absolute; bottom:-40px; right:-40px; width:150px; height:150px; border-radius:50%; background:#f8fafc; border:2px solid #f1f5f9;"></div>
-          <div style="position:relative; z-index:1; display:flex; flex-direction:column; justify-content:space-between; height:100%; text-align:right;">
-            <div><div id="bcB_Team" style="font-size:12px; font-weight:800; color:#64748b; letter-spacing:2px;"><%= current_user.team_name.presence || '업체명' %></div></div>
-            <div style="margin-top:auto; margin-bottom:auto; padding-right:10px; border-right:4px solid #111827;">
-              <div id="bcB_Name" style="font-size:28px; font-weight:300; letter-spacing:-1px; color:#0f172a; margin-bottom:4px;"><strong><%= (current_user.name.presence || '김현장').chars.first %></strong><%= (current_user.name.presence || '김현장').chars.drop(1).join %></div>
-              <div id="bcB_Role" style="font-size:14px; font-weight:600; color:#475569;"><%= current_user.role.presence || '반장' %></div>
-            </div>
-            <div style="display:flex; justify-content:space-between; align-items:flex-end;">
-              <div style="font-size:9px; font-weight:800; color:#cbd5e1; text-align:left;">스마트한 현장 관리<br>일잘러 앱</div>
-              <div id="bcB_Phone" style="font-size:15px; font-weight:700; color:#334155;"><%= current_user.phone.presence || '010-1234-5678' %></div>
-            </div>
+          
+          <div style="position:absolute; top:24px; right:24px; display:flex; align-items:center; gap:8px; flex-direction:row-reverse;">
+            <div id="bcB_Team" style="font-size:12px; font-weight:800; color:#64748b; letter-spacing:2px;"><%= current_user.team_name.presence || '업체명' %></div>
+            <img id="bcB_LogoImg" src="" style="display:none; max-width:60px; max-height:24px; object-fit:contain; border-radius:2px;">
+          </div>
+
+          <div style="position:absolute; top:50%; right:24px; transform:translateY(-50%); padding-right:10px; border-right:4px solid #111827; text-align:right;">
+            <div id="bcB_Name" style="font-size:28px; font-weight:300; letter-spacing:-1px; color:#0f172a; margin-bottom:2px;"><strong><%= (current_user.name.presence || '김현장').chars.first %></strong><%= (current_user.name.presence || '김현장').chars.drop(1).join %></div>
+            <div id="bcB_Role" style="font-size:14px; font-weight:600; color:#475569;"><%= current_user.role.presence || '반장' %></div>
+          </div>
+
+          <div style="position:absolute; bottom:24px; left:24px; right:24px; display:flex; justify-content:space-between; align-items:flex-end;">
+            <div style="font-size:9px; font-weight:800; color:#cbd5e1; text-align:left; z-index:2;">스마트한 현장 관리<br>일잘러 앱</div>
+            <div id="bcB_Phone" style="font-size:15px; font-weight:700; color:#334155; z-index:2;"><%= current_user.phone.presence || '010-1234-5678' %></div>
           </div>
         </div>
       </div>
@@ -181,6 +198,7 @@
     const bRoleInfo = document.getElementById('bcRoleInput');
     const bNameInfo = document.getElementById('bcNameInput');
     const bPhoneInfo = document.getElementById('bcPhoneInput');
+    const logoInput = document.getElementById('bcLogoInput');
     
     // 이전에 이벤트가 바인딩되었는지 확인하여 중복 방지
     if(!bTeamInfo || bTeamInfo.dataset.initialized) return;
@@ -203,6 +221,24 @@
       
       document.getElementById('bcA_Phone').textContent = bPhoneInfo.value || '010-1234-5678';
       document.getElementById('bcB_Phone').textContent = bPhoneInfo.value || '010-1234-5678';
+    }
+
+    if(logoInput) {
+      logoInput.addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        if (file) {
+          document.getElementById('bcLogoLabel').textContent = file.name;
+          const reader = new FileReader();
+          reader.onload = function(evt) {
+            const resultUrl = evt.target.result;
+            const logoA = document.getElementById('bcA_LogoImg');
+            const logoB = document.getElementById('bcB_LogoImg');
+            if(logoA) { logoA.src = resultUrl; logoA.style.display = 'block'; }
+            if(logoB) { logoB.src = resultUrl; logoB.style.display = 'block'; }
+          };
+          reader.readAsDataURL(file);
+        }
+      });
     }
 
     bTeamInfo.addEventListener('input', updateBizCard);
