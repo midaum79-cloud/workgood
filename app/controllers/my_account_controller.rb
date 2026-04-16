@@ -9,18 +9,15 @@ class MyAccountController < ApplicationController
   end
 
   def update_documents
-    user_params = params.fetch(:user, {}).permit(:business_card, :business_registration, :bankbook_copy, :business_bankbook_copy, :bank_name, :bank_account_number, :bank_account_holder)
+    user_params = params.fetch(:user, {}).permit(:business_card, :business_registration, :bankbook_copy, :business_bankbook_copy, :bank_name, :bank_account_number, :bank_account_holder, :team_name, :role, :name, :phone, :address)
 
     current_user.update(business_card_b64: Base64.strict_encode64(user_params[:business_card].read)) if user_params[:business_card].present?
     current_user.update(business_registration_b64: Base64.strict_encode64(user_params[:business_registration].read)) if user_params[:business_registration].present?
     current_user.update(bankbook_copy_b64: Base64.strict_encode64(user_params[:bankbook_copy].read)) if user_params[:bankbook_copy].present?
     current_user.update(business_bankbook_copy_b64: Base64.strict_encode64(user_params[:business_bankbook_copy].read)) if user_params[:business_bankbook_copy].present?
 
-    current_user.update(
-      bank_name: user_params[:bank_name],
-      bank_account_number: user_params[:bank_account_number],
-      bank_account_holder: user_params[:bank_account_holder]
-    ) if user_params[:bank_name].present? || user_params[:bank_account_number].present? || user_params[:bank_account_holder].present?
+    text_attrs = user_params.except(:business_card, :business_registration, :bankbook_copy, :business_bankbook_copy).to_h
+    current_user.update(text_attrs) if text_attrs.present?
 
     current_user.regenerate_document_share_token if current_user.document_share_token.blank?
 
@@ -41,8 +38,8 @@ class MyAccountController < ApplicationController
   end
 
   def increment_biz_card_gen
-    if current_user.premium? || current_user.biz_card_generations_count.to_i < 10
-      current_user.increment!(:biz_card_generations_count) unless current_user.premium?
+    if current_user.biz_card_generations_count.to_i < 10
+      current_user.increment!(:biz_card_generations_count)
       render json: { success: true }
     else
       render json: { success: false, limit_reached: true }
@@ -53,8 +50,8 @@ class MyAccountController < ApplicationController
   end
 
   def increment_bank_card_gen
-    if current_user.premium? || current_user.bank_card_generations_count.to_i < 10
-      current_user.increment!(:bank_card_generations_count) unless current_user.premium?
+    if current_user.bank_card_generations_count.to_i < 10
+      current_user.increment!(:bank_card_generations_count)
       render json: { success: true }
     else
       render json: { success: false, limit_reached: true }

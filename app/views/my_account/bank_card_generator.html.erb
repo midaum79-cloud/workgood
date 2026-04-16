@@ -14,15 +14,11 @@
           스마트통장 이미지 생성기
         </div>
         <span style="background:#bae6fd; color:#0369a1; font-size:10px; font-weight:900; padding:4px 8px; border-radius:99px;">
-          <% if current_user.premium? %>
-            무제한 👑
-          <% else %>
-            남은 횟수: <%= [10 - current_user.bank_card_generations_count.to_i, 0].max %>회
-          <% end %>
+          남은 횟수: <%= [10 - current_user.bank_card_generations_count.to_i, 0].max %>회
         </span>
       </div>
       <div style="font-size:12px; color:#0284c7; font-weight:600; margin-bottom:16px; line-height:1.5;">
-        계좌번호를 입력하면 신뢰감을 주는 스마트 통장 명함이 즉시 생성됩니다. 앱 내 이미지를 다운받아 보내세요. 평생 10회 무료 제공됩니다 (프리미엄은 무제한)
+        계좌번호를 입력하면 신뢰감을 주는 스마트 통장 명함이 즉시 생성됩니다. 앱 내 이미지를 다운받아 보내세요. 평생 10회 무료 제공됩니다.
       </div>
 
       <!-- Inputs -->
@@ -60,7 +56,7 @@
       <!-- Action Buttons -->
       <div style="display:flex; flex-direction:column; gap:8px;">
         <button type="button" onclick="generateImageWithLimit()" id="downloadBankCardBtn" style="width:100%; background:#0f172a; color:white; border:none; padding:16px; border-radius:12px; font-size:15px; font-weight:900; cursor:pointer; box-shadow:0 6px 16px rgba(15,23,42,0.3); display:flex; justify-content:center; align-items:center; gap:8px;">
-          <span>💾 사진 앱에 저장 (다운로드)</span>
+          <span>💾 명함공유 및 저장</span>
         </button>
       </div>
     </div>
@@ -98,7 +94,7 @@
         await navigator.share({
           files: [file],
           title: '스마트통장 이미지 저장',
-          text: '발급된 이미지입니다. (이미지 저장 버튼을 누르세요)'
+          text: '일잘러에서 명함이 전송되었습니다 클릭해서 저장하기를 누르세요'
         });
         document.getElementById('imageDownloadModal').style.display='none';
         return;

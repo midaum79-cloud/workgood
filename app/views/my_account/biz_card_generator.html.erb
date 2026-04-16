@@ -14,21 +14,17 @@
           고급 명함 메이커
         </div>
         <span style="background:#fce7f3; color:#be185d; font-size:10px; font-weight:900; padding:4px 8px; border-radius:99px;">
-          <% if current_user.premium? %>
-            무제한 👑
-          <% else %>
-            남은 횟수: <%= [10 - current_user.biz_card_generations_count.to_i, 0].max %>회
-          <% end %>
+          남은 횟수: <%= [10 - current_user.biz_card_generations_count.to_i, 0].max %>회
         </span>
       </div>
       
       <div style="font-size:12px; color:#c026d3; font-weight:600; margin-bottom:16px; line-height:1.5;">
-        직함 등 정보만 입력하면 인쇄소 부럽지 않은 세련된 명함이 뚝딱! 이미지를 다운받아 카톡으로 나눠주세요. 평생 10회 무료 제공됩니다 (프리미엄은 무제한)
+        직함 등 정보만 입력하면 인쇄소 부럽지 않은 세련된 명함이 뚝딱! 이미지를 다운받아 카톡으로 나눠주세요. 평생 10회 무료 제공됩니다.
       </div>
 
       <!-- 입력 폼 -->
       <div style="display:grid; grid-template-columns:1fr; gap:10px; margin-bottom:16px;">
-        <input type="text" id="bcTeamInput" placeholder="업체명 (예: 업체명)" style="width:100%; padding:14px; border-radius:12px; border:1px solid #cbd5e1; font-weight:800; font-size:14px; color:#1e293b;" value="<%= current_user.team_name %>">
+        <input type="text" id="bcTeamInput" placeholder="업체명을 입력하세요" style="width:100%; padding:14px; border-radius:12px; border:1px solid #cbd5e1; font-weight:800; font-size:14px; color:#1e293b;" value="<%= current_user.team_name %>">
         
         <!-- 로고 이미지 업로드 -->
         <label for="bcLogoInput" style="display:flex; align-items:center; justify-content:center; gap:8px; width:100%; padding:14px; border-radius:12px; border:1px dashed #cbd5e1; font-weight:800; font-size:14px; color:#64748b; background:#f8fafc; cursor:pointer;">
@@ -38,10 +34,15 @@
         <input type="file" id="bcLogoInput" accept="image/*" style="display:none;">
 
         <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
-          <input type="text" id="bcRoleInput" placeholder="직책 (예: 반장)" style="width:100%; padding:14px; border-radius:12px; border:1px solid #cbd5e1; font-weight:800; font-size:14px; color:#1e293b;" value="<%= current_user.role %>">
-          <input type="text" id="bcNameInput" placeholder="성함 (예: 김현장)" style="width:100%; padding:14px; border-radius:12px; border:1px solid #cbd5e1; font-weight:800; font-size:14px; color:#1e293b;" value="<%= current_user.name %>">
+          <input type="text" id="bcRoleInput" placeholder="직책을 입력하세요" style="width:100%; padding:14px; border-radius:12px; border:1px solid #cbd5e1; font-weight:800; font-size:14px; color:#1e293b;" value="<%= current_user.role %>">
+          <input type="text" id="bcNameInput" placeholder="성함을 입력하세요" style="width:100%; padding:14px; border-radius:12px; border:1px solid #cbd5e1; font-weight:800; font-size:14px; color:#1e293b;" value="<%= current_user.name %>">
         </div>
-        <input type="text" id="bcPhoneInput" placeholder="전화번호 (예: 010-1234-5678)" style="width:100%; padding:14px; border-radius:12px; border:1px solid #cbd5e1; font-weight:800; font-size:14px; color:#1e293b;" value="<%= current_user.phone %>">
+        <input type="text" id="bcPhoneInput" placeholder="전화번호를 입력하세요" style="width:100%; padding:14px; border-radius:12px; border:1px solid #cbd5e1; font-weight:800; font-size:14px; color:#1e293b;" value="<%= current_user.phone %>">
+        
+        <div style="display:flex; gap:8px;">
+          <input type="text" id="bcAddressInput" placeholder="주소를 입력하세요 (선택)" style="flex:1; padding:14px; border-radius:12px; border:1px solid #cbd5e1; font-weight:800; font-size:14px; color:#1e293b;" value="<%= current_user.address %>" onclick="execDaumPostcode()">
+          <button type="button" onclick="execDaumPostcode()" style="background:#f8fafc; color:#64748b; border:1px solid #cbd5e1; border-radius:12px; padding:0 16px; font-weight:800; cursor:pointer; font-size:14px; white-space:nowrap;">주소 검색</button>
+        </div>
       </div>
 
       <!-- 템플릿 선택 -->
@@ -67,7 +68,13 @@
           </div>
 
           <div style="position:absolute; bottom:24px; left:28px; width:calc(100% - 52px); display:flex; justify-content:space-between; align-items:flex-end;">
-            <div id="bcA_Phone" style="font-size:16px; font-weight:800; letter-spacing:1px; color:#f3f4f6;"><%= current_user.phone.presence || '010-1234-5678' %></div>
+            <div style="display:flex; flex-direction:column; gap:6px;">
+              <div id="bcA_Address_Container" style="display:none; align-items:flex-end; gap:6px;">
+                <svg style="width:10px; height:10px; fill:#9ca3af; margin-bottom:2px;" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"><path d="M215.7 499.2C267 435 384 279.4 384 192C384 86 298 0 192 0S0 86 0 192c0 87.4 117 243 168.3 307.2c12.3 15.3 35.1 15.3 47.4 0zM192 128a64 64 0 1 1 0 128 64 64 0 1 1 0-128z"/></svg>
+                <div id="bcA_Address" style="font-size:10px; font-weight:600; color:#d1d5db; max-width:180px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;"><%= current_user.address %></div>
+              </div>
+              <div id="bcA_Phone" style="font-size:16px; font-weight:800; letter-spacing:1px; color:#f3f4f6;"><%= current_user.phone.presence || '전화번호' %></div>
+            </div>
             <div style="font-size:9px; font-weight:800; opacity:0.6; text-align:right;">스마트한 현장 관리<br>일잘러 앱</div>
           </div>
         </div>
@@ -88,7 +95,10 @@
 
           <div style="position:absolute; bottom:24px; left:24px; right:24px; display:flex; justify-content:space-between; align-items:flex-end;">
             <div style="font-size:9px; font-weight:800; color:#cbd5e1; text-align:left; z-index:2;">스마트한 현장 관리<br>일잘러 앱</div>
-            <div id="bcB_Phone" style="font-size:15px; font-weight:700; color:#334155; z-index:2;"><%= current_user.phone.presence || '010-1234-5678' %></div>
+            <div style="display:flex; flex-direction:column; align-items:flex-end; gap:4px; z-index:2;">
+              <div id="bcB_Address" style="display:none; font-size:10px; font-weight:600; color:#64748b; max-width:180px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;"><%= current_user.address %></div>
+              <div id="bcB_Phone" style="font-size:15px; font-weight:700; color:#334155;"><%= current_user.phone.presence || '전화번호' %></div>
+            </div>
           </div>
         </div>
       </div>
@@ -96,7 +106,7 @@
       <!-- Action Buttons -->
       <div style="display:flex; flex-direction:column; gap:8px;">
         <button type="button" onclick="generateImageWithLimit()" id="downloadBizCardBtn" style="width:100%; background:#c026d3; color:white; border:none; padding:16px; border-radius:12px; font-size:15px; font-weight:900; cursor:pointer; box-shadow:0 6px 16px rgba(192,38,211,0.3); display:flex; justify-content:center; align-items:center; gap:8px;">
-          <span>💾 사진 앱에 저장 (다운로드)</span>
+          <span>💾 명함공유 및 저장</span>
         </button>
       </div>
       <div id="bcShareStatus" style="text-align:center; margin-top:12px; font-size:13px; font-weight:800; color:#a21caf; display:none; background:#fdf4ff; padding:8px; border-radius:8px;"></div>
@@ -108,7 +118,7 @@
     <div style="background:white; padding:12px 20px; border-radius:12px; font-weight:800; font-size:15px; margin-bottom:16px; color:#1e293b; display:flex; flex-direction:column; align-items:center; gap:4px; text-align:center;">
       <span style="font-size:18px;">🎉 명함 생성이 완료되었습니다!</span>
       <span style="color:#64748b; font-size:12px; margin-top:4px;">기기에 따라 아래 버튼이나<br>이미지를 길게 눌러 저장해주세요.</span>
-      <button onclick="document.getElementById('imageDownloadModal').style.display='none'; window.location.reload();" style="margin-top:10px; padding:6px 12px; border-radius:8px; background:#e2e8f0; border:none; font-weight:bold; cursor:pointer;">닫기</button>
+      <button onclick="document.getElementById('imageDownloadModal').style.display='none';" style="margin-top:10px; padding:6px 12px; border-radius:8px; background:#e2e8f0; border:none; font-weight:bold; cursor:pointer;">닫기</button>
     </div>
     
     <img id="downloadedImagePreview" src="" style="max-width:90%; max-height:50vh; border-radius:12px; border:1px solid rgba(255,255,255,0.2);">
@@ -135,7 +145,7 @@
         await navigator.share({
           files: [file],
           title: '명함 이미지 저장',
-          text: '발급된 이미지입니다. (이미지 저장 버튼을 누르세요)'
+          text: '일잘러에서 명함이 전송되었습니다 클릭해서 저장하기를 누르세요'
         });
         document.getElementById('imageDownloadModal').style.display='none';
         return;
@@ -219,8 +229,19 @@
         document.getElementById('bcB_Name').innerHTML = '<strong>' + nameVal + '</strong>';
       }
       
-      document.getElementById('bcA_Phone').textContent = bPhoneInfo.value || '010-1234-5678';
-      document.getElementById('bcB_Phone').textContent = bPhoneInfo.value || '010-1234-5678';
+      document.getElementById('bcA_Phone').textContent = bPhoneInfo.value || '전화번호';
+      document.getElementById('bcB_Phone').textContent = bPhoneInfo.value || '전화번호';
+      
+      const addrVal = document.getElementById('bcAddressInput').value;
+      if (addrVal) {
+        document.getElementById('bcA_Address_Container').style.display = 'flex';
+        document.getElementById('bcA_Address').textContent = addrVal;
+        document.getElementById('bcB_Address').style.display = 'block';
+        document.getElementById('bcB_Address').textContent = addrVal;
+      } else {
+        document.getElementById('bcA_Address_Container').style.display = 'none';
+        document.getElementById('bcB_Address').style.display = 'none';
+      }
     }
 
     if(logoInput) {
@@ -245,6 +266,7 @@
     bRoleInfo.addEventListener('input', updateBizCard);
     bNameInfo.addEventListener('input', updateBizCard);
     bPhoneInfo.addEventListener('input', updateBizCard);
+    document.getElementById('bcAddressInput').addEventListener('input', updateBizCard);
     
     // 초기화
     updateBizCard();
@@ -286,11 +308,78 @@
       const canvas = await html2canvas(cardEl, { scale: 4, backgroundColor: bgColor, logging: false });
       document.getElementById('downloadedImagePreview').src = canvas.toDataURL('image/png');
       
+      // Update info in backend async
+      const formData = new FormData();
+      formData.append('user[team_name]', document.getElementById('bcTeamInput').value);
+      formData.append('user[role]', document.getElementById('bcRoleInput').value);
+      formData.append('user[name]', document.getElementById('bcNameInput').value);
+      formData.append('user[phone]', document.getElementById('bcPhoneInput').value);
+      formData.append('user[address]', document.getElementById('bcAddressInput').value);
+      
+      fetch('<%= update_my_account_documents_path %>', {
+        method: 'PATCH',
+        headers: {
+          'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').content
+        },
+        body: formData
+      });
+      
     } catch (e) {
       alert("오류가 발생했습니다.");
     } finally {
       btn.disabled = false;
       btn.innerHTML = originalText;
     }
+  }
+</script>
+
+<script src="//t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
+
+<!-- Daum Postcode 팝업 레이어 -->
+<div id="daumPostcodeLayer" style="display:none; position:fixed; overflow:hidden; z-index:99999; -webkit-overflow-scrolling:touch; width:100%; height:100%; top:0; left:0; background:rgba(0,0,0,0.6);">
+  <div style="position:absolute; top:50%; left:50%; transform:translate(-50%, -50%); width:90%; max-width:400px; height:80vh; max-height:600px; background:white; border-radius:12px; overflow:hidden; display:flex; flex-direction:column; box-shadow:0 10px 30px rgba(0,0,0,0.3);">
+    <div style="display:flex; justify-content:space-between; align-items:center; padding:12px 16px; border-bottom:1px solid #f0f0f0; background:#f8fafc;">
+      <span style="font-weight:800; font-size:15px; color:#334155;">📍 주소 검색</span>
+      <button type="button" onclick="closeDaumPostcode()" style="background:none; border:none; font-size:24px; line-height:1; color:#94a3b8; cursor:pointer;">&times;</button>
+    </div>
+    <div id="daumPostcodeWrap" style="width:100%; flex:1; overflow-y:auto; -webkit-overflow-scrolling:touch;"></div>
+  </div>
+</div>
+
+<script>
+  function execDaumPostcode() {
+    const layer = document.getElementById('daumPostcodeLayer');
+    const wrap = document.getElementById('daumPostcodeWrap');
+    layer.style.display = 'block';
+
+    new daum.Postcode({
+      oncomplete: function(data) {
+        let addr = data.userSelectedType === 'R' ? data.roadAddress : data.jibunAddress;
+        let extraAddr = '';
+        if(data.userSelectedType === 'R'){
+          if(data.bname !== '' && /[동|로|가]$/g.test(data.bname)){
+            extraAddr += data.bname;
+          }
+          if(data.buildingName !== '' && data.apartment === 'Y'){
+            extraAddr += (extraAddr !== '' ? ', ' + data.buildingName : data.buildingName);
+          }
+          if(extraAddr !== ''){
+            extraAddr = ' (' + extraAddr + ')';
+          }
+        }
+        const fullAddress = addr + extraAddr;
+        const addrInput = document.getElementById('bcAddressInput');
+        addrInput.value = fullAddress;
+        addrInput.dispatchEvent(new Event('input'));
+        
+        closeDaumPostcode();
+      },
+      width: '100%',
+      height: '100%'
+    }).embed(wrap);
+  }
+
+  function closeDaumPostcode() {
+    document.getElementById('daumPostcodeLayer').style.display = 'none';
   }
 </script>

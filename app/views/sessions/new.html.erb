@@ -55,13 +55,13 @@
     </div>
 
     <%# Google Login Button (인앱 브라우저에서 숨겨짐) %>
-    <a id="google-login-btn" href="/auth/google_oauth2" style="width:100%; display:flex; align-items:center; justify-content:center; gap:12px; height:54px; background:white; color:#3c4043; border:none; border-radius:14px; font-size:15px; font-weight:700; cursor:pointer; font-family:inherit; text-decoration:none; box-shadow:0 2px 12px rgba(0,0,0,0.15); transition:all 0.2s;" onmouseover="this.style.boxShadow='0 4px 20px rgba(0,0,0,0.25)'" onmouseout="this.style.boxShadow='0 2px 12px rgba(0,0,0,0.15)'">
+    <a id="google-login-btn" href="/auth/google_oauth2" target="_blank" data-turbo="false" style="width:100%; display:flex; align-items:center; justify-content:center; gap:12px; height:54px; background:white; color:#3c4043; border:none; border-radius:14px; font-size:15px; font-weight:700; cursor:pointer; font-family:inherit; text-decoration:none; box-shadow:0 2px 12px rgba(0,0,0,0.15); transition:all 0.2s;" onmouseover="this.style.boxShadow='0 4px 20px rgba(0,0,0,0.25)'" onmouseout="this.style.boxShadow='0 2px 12px rgba(0,0,0,0.15)'">
       <svg width="20" height="20" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
       Google 계정으로 로그인
     </a>
 
     <%# Apple Login Button %>
-    <a id="apple-login-btn" href="/apple_auth" style="width:100%; display:flex; align-items:center; justify-content:center; gap:10px; height:54px; background:#ffffff; color:#000000; border:1px solid #d1d5db; border-radius:14px; font-size:15px; font-weight:700; cursor:pointer; font-family:inherit; text-decoration:none; box-shadow:0 2px 12px rgba(0,0,0,0.08); transition:all 0.2s; margin-top:12px;" onmouseover="this.style.boxShadow='0 4px 20px rgba(0,0,0,0.15)'; this.style.background='#f5f5f5'" onmouseout="this.style.boxShadow='0 2px 12px rgba(0,0,0,0.08)'; this.style.background='#ffffff'">
+    <a id="apple-login-btn" href="/apple_auth" target="_blank" data-turbo="false" style="width:100%; display:flex; align-items:center; justify-content:center; gap:10px; height:54px; background:#ffffff; color:#000000; border:1px solid #d1d5db; border-radius:14px; font-size:15px; font-weight:700; cursor:pointer; font-family:inherit; text-decoration:none; box-shadow:0 2px 12px rgba(0,0,0,0.08); transition:all 0.2s; margin-top:12px;" onmouseover="this.style.boxShadow='0 4px 20px rgba(0,0,0,0.15)'; this.style.background='#f5f5f5'" onmouseout="this.style.boxShadow='0 2px 12px rgba(0,0,0,0.08)'; this.style.background='#ffffff'">
       <svg width="20" height="20" viewBox="0 0 256 315"><path d="M213.803 167.03c.442 47.58 41.74 63.413 42.197 63.615-.35 1.116-6.599 22.563-21.757 44.716-13.104 19.153-26.705 38.235-48.13 38.63-21.05.388-27.82-12.483-51.888-12.483-24.061 0-31.582 12.088-51.51 12.871-20.68.783-36.428-20.71-49.64-39.793C7.228 234.11-10.834 174.716 15.896 134.495c13.303-20.003 37.072-32.67 62.87-33.003 20.303-.388 39.453 13.65 51.853 13.65 12.394 0 35.66-16.891 60.103-14.415 10.234.427 38.958 4.136 57.384 31.152-1.484.927-34.255 19.998-33.888 59.647l-.415.504zM174.24 50.199c10.98-13.29 18.368-31.786 16.342-50.199-15.804.642-34.928 10.527-46.28 23.816-10.16 11.761-19.043 30.582-16.65 48.63 17.621 1.371 35.608-8.956 46.588-22.247" fill="#000"/></svg>
       Apple로 로그인
     </a>
@@ -121,9 +121,12 @@
           console.log('[일잘러] Using Capacitor Browser plugin');
           window.Capacitor.Plugins.Browser.open({ url: oauthUrl });
         } else {
-          console.log('[일잘러] Browser plugin not available, using location.href');
-          window.location.href = oauthUrl;
-          return;
+          console.log('[일잘러] Capacitor Browser unavailable, using popup/href');
+          var popup = window.open(oauthUrl, '_blank');
+          if (!popup || popup.closed || typeof popup.closed == 'undefined') {
+            window.location.href = oauthUrl;
+            return;
+          }
         }
       } catch(err) {
         console.error('[일잘러] ' + btnId + ' error:', err);
@@ -157,35 +160,34 @@
     });
   }
 
-  if (isCapacitor || isAndroidWebView) {
+  // PWA Standalone 모드인지 확인
+  var isStandalone = window.matchMedia('(display-mode: standalone)').matches || navigator.standalone;
+
+  if (isCapacitor || isAndroidWebView || isStandalone) {
     // iOS 감지
     var isIOS = /iPhone|iPad|iPod/i.test(ua);
 
-    // Google 로그인: 항상 외부 브라우저 방식 (iOS/Android 동일)
+    // Google 로그인: 폴링이 포함된 팝업/외부 브라우저 방식
     setupOAuthButton('google-login-btn', '/auth/google_oauth2');
 
-    // Apple 로그인: iOS에서는 네이티브 모달, Android에서는 외부 브라우저
-    if (isIOS && window.Capacitor && window.Capacitor.Plugins) {
+    // Apple 로그인: iOS 네이티브 앱은 모달, 그 외에는 폴링 팝업 방식
+    if (isIOS && window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.AppleSignIn) {
       setupNativeAppleSignIn();
     } else {
-      // Android: 기존 외부 브라우저 방식
       setupOAuthButton('apple-login-btn', '/apple_auth');
     }
 
-    // 딥링크 수신 리스너: OAuth 완료 후 앱으로 복귀 (Android용)
+    // 딥링크 수신 리스너 (모바일 앱)
     if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.App) {
       window.Capacitor.Plugins.App.addListener('appUrlOpen', function(event) {
-        // workgood://auth/callback?token=xxx
         var url = event.url || '';
         var tokenMatch = url.match(/[?&]token=([^&]+)/);
         if (tokenMatch && tokenMatch[1]) {
           if (window.oauthTokenHandled) return;
           window.oauthTokenHandled = true;
-          // Chrome Custom Tabs 닫기
           if (window.Capacitor.Plugins.Browser) {
             window.Capacitor.Plugins.Browser.close();
           }
-          // WebView에서 토큰 로그인 → 세션 생성 → 홈으로 이동
           window.location.href = window.location.origin + '/auth/token_login?token=' + tokenMatch[1];
         }
       });

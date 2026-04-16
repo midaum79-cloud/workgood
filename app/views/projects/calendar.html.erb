@@ -109,6 +109,141 @@
       <% end %>
     </div>
 
+    <!-- 시간대별 인사말 -->
+    <div id="greetingBanner" style="display:none; padding:8px 16px; text-align:center; font-size:13px; font-weight:800; border-bottom:1px solid;"></div>
+
+    <!-- 날씨 위젯 -->
+    <div id="weatherWidget" style="background:#f8fafc; border-bottom:1px solid #e2e8f0; padding:10px 16px; display:flex; justify-content:space-between; align-items:center;">
+       <div style="display:flex; align-items:center; gap:8px; cursor:pointer;" onclick="changeWeatherLocation()">
+          <span style="font-size:16px;">📍</span>
+          <span id="weatherLocName" style="font-size:14px; font-weight:800; color:#334155; text-decoration:underline;">서울특별시</span>
+       </div>
+       <div style="display:flex; gap:10px;">
+          <div style="text-align:center; background:white; padding:4px 8px; border-radius:8px; border:1px solid #e2e8f0; min-width:64px;">
+             <div style="font-size:10px; color:#64748b; font-weight:700;">오늘</div>
+             <div id="weatherToday" style="font-size:13px; font-weight:800; margin-top:2px;">-</div>
+          </div>
+          <div style="text-align:center; background:white; padding:4px 8px; border-radius:8px; border:1px solid #e2e8f0; min-width:64px;">
+             <div style="font-size:10px; color:#64748b; font-weight:700;">내일</div>
+             <div id="weatherTomorrow" style="font-size:13px; font-weight:800; margin-top:2px;">-</div>
+          </div>
+       </div>
+    </div>
+
+    <!-- 스크립트 모음 -->
+    <script>
+      (function() {
+        // 1. 시간대별 인사말 로직
+        var now = new Date();
+        var hour = now.getHours();
+        var min = now.getMinutes();
+        var banner = document.getElementById('greetingBanner');
+        
+        var greeting = null;
+        var bg = "#fefce8", text = "#854d0e", border = "#fef08a";
+
+        if (hour < 7) {
+          greeting = "🌅 좋은아침 입니다 오늘도 화이팅입니다!";
+          bg = "#f0fdfa"; text = "#0369a1"; border = "#e0f2fe";
+        } else if (hour === 12 || (hour === 13 && min <= 30)) {
+          greeting = "🍱 식사 맛있게 하세요 화이팅!";
+          bg = "#fff1f2"; text = "#be123c"; border = "#ffe4e6";
+        } else if (hour >= 18) {
+          greeting = "🌙 오늘 하루도 수고 하셨습니다!";
+          bg = "#f8fafc"; text = "#334155"; border = "#e2e8f0";
+        }
+
+        if (greeting) {
+          banner.innerText = greeting;
+          banner.style.background = bg;
+          banner.style.color = text;
+          banner.style.borderBottomColor = border;
+          banner.style.display = 'block';
+        }
+      })();
+
+      // 2. 날씨 위젯 로직
+      function getWeatherEmoji(code) {
+        if (code === 0) return '☀️'; 
+        if (code === 1 || code === 2 || code === 3) return '⛅'; 
+        if (code === 45 || code === 48) return '🌫️'; 
+        if (code >= 51 && code <= 67) return '☔'; 
+        if (code >= 71 && code <= 77) return '☃️'; 
+        if (code >= 80 && code <= 82) return '🌧️'; 
+        if (code >= 85 && code <= 86) return '🌨️'; 
+        if (code >= 95 && code <= 99) return '⛈️'; 
+        return '☀️'; 
+      }
+
+      function updateWeatherDisplay(name, lat, lng) {
+        document.getElementById('weatherLocName').innerText = name;
+        
+        fetch('https://api.open-meteo.com/v1/forecast?latitude=' + lat + '&longitude=' + lng + '&daily=weathercode,temperature_2m_max,temperature_2m_min&timezone=Asia%2FSeoul')
+          .then(res => res.json())
+          .then(data => {
+            if(data && data.daily) {
+              const codes = data.daily.weathercode;
+              const maxTemps = data.daily.temperature_2m_max;
+              const minTemps = data.daily.temperature_2m_min;
+              
+              const todayCode = getWeatherEmoji(codes[0]);
+              const tomorrowCode = getWeatherEmoji(codes[1]);
+              
+              document.getElementById('weatherToday').innerHTML = todayCode + ' ' + Math.round(minTemps[0]) + '°/' + Math.round(maxTemps[0]) + '°';
+              document.getElementById('weatherTomorrow').innerHTML = tomorrowCode + ' ' + Math.round(minTemps[1]) + '°/' + Math.round(maxTemps[1]) + '°';
+            }
+          })
+          .catch(e => {
+            console.error('Weather Fetch Error:', e);
+            document.getElementById('weatherToday').innerText = '오류';
+            document.getElementById('weatherTomorrow').innerText = '오류';
+          });
+      }
+
+      function initWeatherWidget() {
+        const savedName = localStorage.getItem('workgood_weather_name') || '서울특별시';
+        const savedLat = localStorage.getItem('workgood_weather_lat') || '37.566';
+        const savedLng = localStorage.getItem('workgood_weather_lng') || '126.9784';
+        
+        updateWeatherDisplay(savedName, savedLat, savedLng);
+      }
+
+      function changeWeatherLocation() {
+        const q = prompt("현장의 지역명을 입력하세요\n(예: 부산, 수원, 강남구 등)");
+        if (q && q.trim()) {
+          document.getElementById('weatherLocName').innerText = '검색 중...';
+          fetch('https://geocoding-api.open-meteo.com/v1/search?name=' + encodeURIComponent(q.trim()) + '&language=ko&count=1')
+            .then(res => res.json())
+            .then(data => {
+              if (data.results && data.results.length > 0) {
+                let res = data.results[0];
+                let cleanName = res.name; 
+                // 어드민 레벨 이름이 다르면 붙여주는 것이 직관적임 (예: 경기도 수원)
+                if (res.admin1 && res.admin1 !== res.name) {
+                  cleanName = res.admin1 + ' ' + res.name;
+                }
+                localStorage.setItem('workgood_weather_name', cleanName);
+                localStorage.setItem('workgood_weather_lat', res.latitude);
+                localStorage.setItem('workgood_weather_lng', res.longitude);
+                updateWeatherDisplay(cleanName, res.latitude, res.longitude);
+              } else {
+                alert("해당 지역 정보를 찾을 수 없습니다. 다르게 검색해주세요.");
+                initWeatherWidget(); // 복원
+              }
+            })
+            .catch(e => {
+              alert("검색 중 오류가 발생했습니다.");
+              initWeatherWidget();
+            });
+        }
+      }
+
+      document.addEventListener('turbo:load', initWeatherWidget);
+      document.addEventListener('DOMContentLoaded', initWeatherWidget);
+      // init for immediate scripts
+      initWeatherWidget();
+    </script>
+
     <!-- 3패널 캐러셀 컨테이너 -->
     <div id="carouselViewport" style="overflow-x:hidden; overflow-y:auto; background:white; flex:1; min-height:0; position:relative; -webkit-overflow-scrolling:touch; touch-action:pan-y;">
       <div id="carouselTrack" style="display:flex; width:300%; min-height:100%; transform:translateX(-33.333%); will-change:transform;">

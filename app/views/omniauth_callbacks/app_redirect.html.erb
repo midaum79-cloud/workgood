@@ -53,14 +53,20 @@
       // iOS: WebView가 폴링으로 토큰을 받아서 자동 처리함
       // SFSafariViewController 안에서는 이동하지 않음 (쿠키 비공유 문제)
       // 딥링크도 시도 (혹시 작동하면 더 빠름)
-      var iframe = document.createElement('iframe');
-      iframe.style.display = 'none';
-      iframe.src = deepLink;
-      document.body.appendChild(iframe);
+    if (isIOS) {
+      if (window.opener && window.opener !== window) {
+        window.close();
+      } else {
+        var iframe = document.createElement('iframe');
+        iframe.style.display = 'none';
+        iframe.src = deepLink;
+        document.body.appendChild(iframe);
+      }
 
       // 메시지 업데이트: 자동 처리됨을 안내
       setTimeout(function() {
         document.querySelector('p').textContent = '잠시만 기다려주세요...';
+        if (window.opener && window.opener !== window) window.close();
       }, 2000);
 
       // 5초 후에도 안 닫혔으면 수동 안내
@@ -74,11 +80,19 @@
       // 딥링크 직접 이동은 앱 선택기(연결 프로그램)를 트리거할 수 있음
       setTimeout(function() {
         document.querySelector('p').textContent = '잠시만 기다려주세요...';
+        if (window.opener && window.opener !== window) window.close();
       }, 2000);
 
       // 5초 후에도 안 닫혔으면 수동 버튼 표시
       setTimeout(function() {
         document.getElementById('return-btn').style.display = 'inline-block';
+        if (window.opener && window.opener !== window) {
+          var wBtn = document.getElementById('web-btn');
+          wBtn.style.display = 'inline-block';
+          wBtn.textContent = '창 닫기';
+          wBtn.href = '#';
+          wBtn.onclick = function(e){ e.preventDefault(); window.close(); };
+        }
       }, 5000);
     }
   </script>
