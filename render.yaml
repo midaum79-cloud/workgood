@@ -17,6 +17,4 @@ services:
         generateValue: true
       - key: DATABASE_URL
         sync: false
-    customDomains:
-      - name: workgood.co.kr
-      - name: www.workgood.co.kr
+
