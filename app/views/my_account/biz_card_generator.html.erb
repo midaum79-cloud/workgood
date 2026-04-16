@@ -126,18 +126,23 @@
     }
   }
 
-  document.addEventListener("turbo:load", function() {
+  function initBizCard() {
     const bTeamInfo = document.getElementById('bcTeamInput');
     const bRoleInfo = document.getElementById('bcRoleInput');
     const bNameInfo = document.getElementById('bcNameInput');
     const bPhoneInfo = document.getElementById('bcPhoneInput');
     
+    // 이전에 이벤트가 바인딩되었는지 확인하여 중복 방지
+    if(!bTeamInfo || bTeamInfo.dataset.initialized) return;
+    bTeamInfo.dataset.initialized = 'true';
+
     function updateBizCard() {
       if(!bTeamInfo) return;
       document.getElementById('bcA_Team').textContent = bTeamInfo.value || '업체명';
       document.getElementById('bcB_Team').textContent = bTeamInfo.value || '업체명';
       document.getElementById('bcA_Role').textContent = bRoleInfo.value || '직책';
       document.getElementById('bcB_Role').textContent = bRoleInfo.value || '직책';
+      
       const nameVal = bNameInfo.value || '일잘러';
       document.getElementById('bcA_Name').textContent = nameVal;
       if(nameVal.length >= 2) {
@@ -145,18 +150,24 @@
       } else {
         document.getElementById('bcB_Name').innerHTML = '<strong>' + nameVal + '</strong>';
       }
+      
       document.getElementById('bcA_Phone').textContent = bPhoneInfo.value || '010-1234-5678';
       document.getElementById('bcB_Phone').textContent = bPhoneInfo.value || '010-1234-5678';
     }
 
-    if(bTeamInfo) {
-      bTeamInfo.addEventListener('input', updateBizCard);
-      bRoleInfo.addEventListener('input', updateBizCard);
-      bNameInfo.addEventListener('input', updateBizCard);
-      bPhoneInfo.addEventListener('input', updateBizCard);
-      updateBizCard();
-    }
-  });
+    bTeamInfo.addEventListener('input', updateBizCard);
+    bRoleInfo.addEventListener('input', updateBizCard);
+    bNameInfo.addEventListener('input', updateBizCard);
+    bPhoneInfo.addEventListener('input', updateBizCard);
+    
+    // 초기화
+    updateBizCard();
+  }
+  
+  // 스크립트가 로드될 때 즉시 실행
+  initBizCard();
+  // 뒤로가기나 turbo 네비게이션 시에도 보장하기 위해
+  document.addEventListener("turbo:load", initBizCard);
 
   async function generateImageWithLimit() {
     const btn = document.getElementById('downloadBizCardBtn');

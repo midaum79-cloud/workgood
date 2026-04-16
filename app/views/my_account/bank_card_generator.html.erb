@@ -79,7 +79,7 @@
 
 <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 <script>
-  document.addEventListener("turbo:load", function() {
+  function initBankCard() {
     const bankColors = {
       '신한은행': ['#0046FF', '#002E9D', 'white', 'rgba(0,0,0,0.2)'],
       '국민은행': ['#FFCC00', '#F5A623', '#334155', 'none'],
@@ -114,6 +114,10 @@
     const holderInput = document.getElementById('bankHolderInput');
     const cardEl = document.getElementById('bankCardElement');
     
+    // 이전에 이벤트가 바인딩되었는지 확인하여 중복 방지
+    if(!nameInput || nameInput.dataset.initialized) return;
+    nameInput.dataset.initialized = 'true';
+
     function updateCard() {
       if(!cardEl || !nameInput) return;
       const bName = nameInput.value || '신한은행';
@@ -128,13 +132,16 @@
       document.getElementById('cardAccountNumber').style.textShadow = colors[3];
     }
 
-    if(nameInput) {
-      nameInput.addEventListener('change', updateCard);
-      accountInput.addEventListener('input', updateCard);
-      holderInput.addEventListener('input', updateCard);
-      updateCard();
-    }
-  });
+    nameInput.addEventListener('change', updateCard);
+    accountInput.addEventListener('input', updateCard);
+    holderInput.addEventListener('input', updateCard);
+    updateCard();
+  }
+
+  // 스크립트가 로드될 때 즉시 실행
+  initBankCard();
+  // 뒤로가기나 turbo 네비게이션 시에도 보장하기 위해
+  document.addEventListener("turbo:load", initBankCard);
 
   async function generateImageWithLimit() {
     const btn = document.getElementById('downloadBankCardBtn');
