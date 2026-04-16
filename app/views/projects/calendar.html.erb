@@ -582,6 +582,10 @@ function goToProjectDetails() {
 function startCopyMode() {
   copiedProjectId = activeChipProjectId;
   copiedProjectName = activeChipProjectName;
+  
+  sessionStorage.setItem('workgood_copied_id', copiedProjectId);
+  sessionStorage.setItem('workgood_copied_name', copiedProjectName);
+  
   closeChipMenu();
   
   document.getElementById('copySnackbarName').textContent = copiedProjectName;
@@ -594,8 +598,23 @@ function startCopyMode() {
 function cancelCopyMode() {
   copiedProjectId = null;
   copiedProjectName = null;
+  sessionStorage.removeItem('workgood_copied_id');
+  sessionStorage.removeItem('workgood_copied_name');
+  
   document.getElementById('copySnackbar').style.display = 'none';
 }
+
+// 초기화 시 복사 상태 복구
+document.addEventListener('DOMContentLoaded', function() {
+  var savedId = sessionStorage.getItem('workgood_copied_id');
+  var savedName = sessionStorage.getItem('workgood_copied_name');
+  if (savedId && savedName) {
+    copiedProjectId = savedId;
+    copiedProjectName = savedName;
+    document.getElementById('copySnackbarName').textContent = copiedProjectName;
+    document.getElementById('copySnackbar').style.display = 'flex';
+  }
+});
 
 function pasteSchedule(projectId, dateStr) {
   fetch('<%= toggle_schedule_projects_path %>', {
@@ -630,33 +649,7 @@ function pasteSchedule(projectId, dateStr) {
 document.addEventListener('DOMContentLoaded', function() {
   var csrfToken = document.querySelector('meta[name="csrf-token"]').content;
 
-  // 날짜 셀 클릭 → 바텀시트 열기 또는 일정 붙여넣기
-  document.querySelectorAll('.calendar-date-cell').forEach(function(cell) {
-    cell.addEventListener('click', function(e) {
-      if (copiedProjectId) {
-        // 복사 모드일 때
-        e.preventDefault();
-        e.stopPropagation();
-        var dateStr = cell.dataset.date;
-        if (!dateStr) return;
-        
-        var isAlreadyHere = cell.querySelector('.schedule-chip[data-project-id="' + copiedProjectId + '"]');
-        if (isAlreadyHere) {
-          alert("이미 이 날짜에 추가된 현장입니다.");
-          return;
-        }
-        
-        if (confirm("'" + copiedProjectName + "' 일정을 " + dateStr + " 에 추가하시겠습니까? (붙여넣기)")) {
-           pasteSchedule(copiedProjectId, dateStr);
-        }
-        return;
-      }
-
-      if (e.target.closest('.schedule-chip')) return; // 복사 모드가 아닐 때 칩 클릭은 칩의 마우스 이벤트로 넘어감
-      var dateStr = cell.dataset.date;
-      if (dateStr) openBottomSheet(dateStr);
-    });
-  });
+  // 드래그 앤 드롭 및 클릭 이벤트는 rebindCellEvents 통해 초기화됨
 
   // === 드래그 앤 드롭 (데스크톱) ===
   var draggedChip = null;
@@ -1121,8 +1114,8 @@ document.addEventListener('DOMContentLoaded', function() {
             alert("이미 이 날짜에 추가된 현장입니다.");
             return;
           }
-          if (confirm("'" + copiedProjectName + "' 일정을 " + dateStr + " 에 추가하시겠습니까? (붙여넣기)")) {
-             if (typeof pasteSchedule === 'function') pasteSchedule(copiedProjectId, dateStr);
+          if (typeof pasteSchedule === 'function') {
+            pasteSchedule(copiedProjectId, dateStr);
           }
           return;
         }
