@@ -51,7 +51,7 @@
                    draggable="true"
                    data-project-id="<%= proj.id %>"
                    data-date="<%= day.to_s %>"
-                   onclick="window.location.href='<%= "/projects/#{proj.id}" %>'"
+                   onclick="if(typeof openChipMenu === 'function') { openChipMenu(event, '<%= proj.id %>', '<%= j(proj.client_name.presence || proj.project_name) %>', '<%= day.to_s %>'); } else { window.location.href='<%= "/projects/#{proj.id}" %>'; }"
                    style="
                     font-size:9px;
                     font-weight:800;

@@ -252,6 +252,52 @@
   </div>
 </div>
 
+<!-- Chip Action Sheet -->
+<div id="chipBottomSheet" style="
+  position:fixed; left:0; right:0; bottom:0;
+  background:white; z-index:510;
+  border-radius:24px 24px 0 0;
+  box-shadow:0 -4px 30px rgba(0,0,0,0.15);
+  transform:translateY(100%);
+  transition:transform 0.35s cubic-bezier(0.4,0,0.2,1);
+  padding-bottom:env(safe-area-inset-bottom);
+">
+  <div style="display:flex; justify-content:center; padding:12px 0 4px 0;">
+    <div style="width:40px; height:4px; border-radius:99px; background:#d1d5db;"></div>
+  </div>
+
+  <div style="padding:16px 20px 24px 20px;">
+    <div id="chipBsTitle" style="font-size:18px; font-weight:900; color:#111827; margin-bottom:16px; word-break:keep-all;"></div>
+    
+    <div style="display:flex; flex-direction:column; gap:10px;">
+      <button type="button" onclick="goToProjectDetails()" style="display:flex; align-items:center; width:100%; padding:16px; border:none; border-radius:16px; background:#f3f4f6; color:#111827; font-size:16px; font-weight:800; cursor:pointer;">
+        <span style="font-size:20px; margin-right:12px;">➡️</span> 현장 상세 보기
+      </button>
+      
+      <button type="button" onclick="startCopyMode()" style="display:flex; align-items:center; width:100%; padding:16px; border:none; border-radius:16px; background:#4f46e5; color:white; font-size:16px; font-weight:800; cursor:pointer;">
+        <span style="font-size:20px; margin-right:12px;">📋</span> 일정 복사하기 <span style="font-size:13px; font-weight:600; opacity:0.8; margin-left:auto;">(다른 날짜 추가)</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Floating Copy Snackbar -->
+<div id="copySnackbar" style="
+  display:none;
+  position:fixed; bottom:90px; left:50%; transform:translateX(-50%);
+  z-index:600;
+  background:#1e293b; color:white; padding:12px 16px;
+  border-radius:99px; font-size:14px; font-weight:800;
+  box-shadow:0 4px 20px rgba(0,0,0,0.3);
+  align-items:center; gap:12px;
+  white-space:nowrap;
+">
+  <span>📋 <span id="copySnackbarName" style="color:#60a5fa;"></span> 복사됨</span>
+  <span style="opacity:0.8; font-weight:400; font-size:13px;">추가할 날짜를 누르세요</span>
+  <button type="button" onclick="cancelCopyMode()" style="background:rgba(255,255,255,0.2); border:none; color:white; border-radius:99px; padding:4px 10px; font-size:12px; font-weight:800; cursor:pointer;">취소</button>
+</div>
+
+
 <script>
 var bsSelectedDate = null;
 var bsCurrentTab = 'company';
@@ -356,13 +402,122 @@ function bsGoToNewProject(clientName) {
 </script>
 
 <script>
+// === 클립보드(복사-붙여넣기) 상태 및 액션 시트 제어 ===
+var activeChipProjectId = null;
+var activeChipProjectName = null;
+var activeChipDate = null;
+var copiedProjectId = null;
+var copiedProjectName = null;
+
+function openChipMenu(event, projectId, projectName, dateStr) {
+  event.stopPropagation();
+  event.preventDefault();
+  
+  if (copiedProjectId) return; // 복사 모드일 때는 클릭 무시
+  
+  activeChipProjectId = projectId;
+  activeChipProjectName = projectName;
+  activeChipDate = dateStr;
+  
+  document.getElementById('chipBsTitle').textContent = projectName;
+  document.getElementById('bsOverlay').style.opacity = '1';
+  document.getElementById('bsOverlay').style.visibility = 'visible';
+  document.getElementById('bsOverlay').onclick = closeChipMenu;
+  document.getElementById('chipBottomSheet').style.transform = 'translateY(0)';
+  document.body.style.overflow = 'hidden';
+}
+
+function closeChipMenu() {
+  document.getElementById('bsOverlay').style.opacity = '0';
+  document.getElementById('bsOverlay').style.visibility = 'hidden';
+  document.getElementById('chipBottomSheet').style.transform = 'translateY(100%)';
+  document.body.style.overflow = '';
+  // 복원
+  setTimeout(function() {
+    document.getElementById('bsOverlay').onclick = closeBottomSheet;
+  }, 350);
+}
+
+function goToProjectDetails() {
+  if (activeChipProjectId) {
+    window.location.href = '/projects/' + activeChipProjectId;
+  }
+}
+
+function startCopyMode() {
+  copiedProjectId = activeChipProjectId;
+  copiedProjectName = activeChipProjectName;
+  closeChipMenu();
+  
+  document.getElementById('copySnackbarName').textContent = copiedProjectName;
+  document.getElementById('copySnackbar').style.display = 'flex';
+  
+  // 진동 피드백
+  if (navigator.vibrate) navigator.vibrate(50);
+}
+
+function cancelCopyMode() {
+  copiedProjectId = null;
+  copiedProjectName = null;
+  document.getElementById('copySnackbar').style.display = 'none';
+}
+
+function pasteSchedule(projectId, dateStr) {
+  fetch('<%= toggle_schedule_projects_path %>', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').content,
+      'Accept': 'application/json'
+    },
+    body: JSON.stringify({
+      project_id: projectId,
+      date: dateStr
+    })
+  })
+  .then(function(res) { return res.json(); })
+  .then(function(data) {
+    if (data.success) {
+      if (navigator.vibrate) navigator.vibrate(30);
+      window.location.reload();
+    } else {
+      alert(data.error || '일정 복사에 실패했습니다.');
+    }
+  })
+  .catch(function(err) {
+    console.error('Paste error:', err);
+    alert('네트워크 오류가 발생했습니다.');
+  });
+}
+</script>
+
+<script>
 document.addEventListener('DOMContentLoaded', function() {
   var csrfToken = document.querySelector('meta[name="csrf-token"]').content;
 
-  // 날짜 셀 클릭 → 바텀시트 열기 (칩이 아닌 빈 영역 클릭 시)
+  // 날짜 셀 클릭 → 바텀시트 열기 또는 일정 붙여넣기
   document.querySelectorAll('.calendar-date-cell').forEach(function(cell) {
     cell.addEventListener('click', function(e) {
-      if (e.target.closest('.schedule-chip')) return; // 칩 클릭은 무시
+      if (copiedProjectId) {
+        // 복사 모드일 때
+        e.preventDefault();
+        e.stopPropagation();
+        var dateStr = cell.dataset.date;
+        if (!dateStr) return;
+        
+        var isAlreadyHere = cell.querySelector('.schedule-chip[data-project-id="' + copiedProjectId + '"]');
+        if (isAlreadyHere) {
+          alert("이미 이 날짜에 추가된 현장입니다.");
+          return;
+        }
+        
+        if (confirm("'" + copiedProjectName + "' 일정을 " + dateStr + " 에 추가하시겠습니까? (붙여넣기)")) {
+           pasteSchedule(copiedProjectId, dateStr);
+        }
+        return;
+      }
+
+      if (e.target.closest('.schedule-chip')) return; // 복사 모드가 아닐 때 칩 클릭은 칩의 마우스 이벤트로 넘어감
       var dateStr = cell.dataset.date;
       if (dateStr) openBottomSheet(dateStr);
     });
@@ -818,10 +973,25 @@ document.addEventListener('DOMContentLoaded', function() {
     if (!centerPanel) return;
     
     centerPanel.querySelectorAll('.calendar-date-cell').forEach(function(cell) {
-      // 이미 바인드된 경우 스킵
       if (cell._bound) return;
       cell._bound = true;
       cell.addEventListener('click', function(e) {
+        if (typeof copiedProjectId !== 'undefined' && copiedProjectId) {
+          e.preventDefault();
+          e.stopPropagation();
+          var dateStr = cell.dataset.date;
+          if (!dateStr) return;
+          var isAlreadyHere = cell.querySelector('.schedule-chip[data-project-id="' + copiedProjectId + '"]');
+          if (isAlreadyHere) {
+            alert("이미 이 날짜에 추가된 현장입니다.");
+            return;
+          }
+          if (confirm("'" + copiedProjectName + "' 일정을 " + dateStr + " 에 추가하시겠습니까? (붙여넣기)")) {
+             if (typeof pasteSchedule === 'function') pasteSchedule(copiedProjectId, dateStr);
+          }
+          return;
+        }
+
         if (e.target.closest('.schedule-chip')) return;
         var dateStr = cell.dataset.date;
         if (dateStr && typeof openBottomSheet === 'function') openBottomSheet(dateStr);
