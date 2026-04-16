@@ -18,6 +18,13 @@ class MyAccountController < ApplicationController
     current_user.update(bankbook_copy_b64: Base64.strict_encode64(user_params[:bankbook_copy].read)) if user_params[:bankbook_copy].present?
     current_user.update(business_bankbook_copy_b64: Base64.strict_encode64(user_params[:business_bankbook_copy].read)) if user_params[:business_bankbook_copy].present?
 
+    if params[:business_card_base64_direct].present?
+      current_user.update(business_card_b64: params[:business_card_base64_direct].split(',').last)
+    end
+    if params[:bankbook_copy_base64_direct].present?
+      current_user.update(bankbook_copy_b64: params[:bankbook_copy_base64_direct].split(',').last)
+    end
+
     text_attrs = user_params.except(:business_card, :business_registration, :bankbook_copy, :business_bankbook_copy).to_h
     current_user.update(text_attrs) if text_attrs.present?
 
