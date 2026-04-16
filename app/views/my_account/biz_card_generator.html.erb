@@ -35,7 +35,7 @@
       </div>
 
       <!-- 입력 폼 -->
-      <div style="display:grid; grid-template-columns:1fr; gap:10px; margin-bottom:16px;">
+      <div style="display:flex; flex-direction:column; gap:10px; margin-bottom:16px; width:100%;">
         <input type="text" id="bcTeamInput" placeholder="업체명을 입력하세요" style="width:100%; padding:14px; border-radius:12px; border:1px solid #cbd5e1; font-weight:800; font-size:14px; color:#1e293b; box-sizing:border-box;" value="<%= current_user.team_name %>">
         
         <!-- 로고 이미지 업로드 -->
@@ -45,16 +45,15 @@
         </label>
         <input type="file" id="bcLogoInput" accept="image/*" style="display:none;">
 
-        <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
-          <input type="text" id="bcRoleInput" placeholder="직책을 입력하세요" style="width:100%; padding:14px; border-radius:12px; border:1px solid #cbd5e1; font-weight:800; font-size:14px; color:#1e293b; box-sizing:border-box;" value="<%= current_user.role %>">
-          <input type="text" id="bcNameInput" placeholder="성함을 입력하세요" style="width:100%; padding:14px; border-radius:12px; border:1px solid #cbd5e1; font-weight:800; font-size:14px; color:#1e293b; box-sizing:border-box;" value="<%= current_user.name %>">
-        </div>
+        <input type="text" id="bcRoleInput" placeholder="직책을 입력하세요" style="width:100%; padding:14px; border-radius:12px; border:1px solid #cbd5e1; font-weight:800; font-size:14px; color:#1e293b; box-sizing:border-box;" value="<%= current_user.role %>">
+        
+        <input type="text" id="bcNameInput" placeholder="성함을 입력하세요" style="width:100%; padding:14px; border-radius:12px; border:1px solid #cbd5e1; font-weight:800; font-size:14px; color:#1e293b; box-sizing:border-box;" value="<%= current_user.name %>">
+        
         <input type="text" id="bcPhoneInput" placeholder="전화번호를 입력하세요" style="width:100%; padding:14px; border-radius:12px; border:1px solid #cbd5e1; font-weight:800; font-size:14px; color:#1e293b; box-sizing:border-box;" value="<%= current_user.phone %>" maxlength="13" oninput="autoFormatPhone(this)">
         
-        <div style="display:flex; gap:8px;">
-          <input type="text" id="bcAddressInput" placeholder="주소를 입력하세요 (선택)" style="flex:1; padding:14px; border-radius:12px; border:1px solid #cbd5e1; font-weight:800; font-size:14px; color:#1e293b; box-sizing:border-box; min-width:0;" value="<%= current_user.address %>" onclick="execDaumPostcode()" readonly>
-          <button type="button" onclick="execDaumPostcode()" style="background:#f8fafc; color:#64748b; border:1px solid #cbd5e1; border-radius:12px; padding:0 16px; font-weight:800; cursor:pointer; font-size:14px; white-space:nowrap;">주소 검색</button>
-        </div>
+        <!-- 주소 영역도 상하로 분리 -->
+        <input type="text" id="bcAddressInput" placeholder="주소를 입력하세요 (선택)" style="width:100%; padding:14px; border-radius:12px; border:1px solid #cbd5e1; font-weight:800; font-size:14px; color:#1e293b; box-sizing:border-box;" value="<%= current_user.address %>" onclick="execDaumPostcode()" readonly>
+        <button type="button" onclick="execDaumPostcode()" style="width:100%; background:#f8fafc; color:#64748b; border:1px solid #cbd5e1; border-radius:12px; padding:14px; font-weight:800; cursor:pointer; font-size:14px;">주소 검색 (클릭)</button>
       </div>
 
       <!-- 템플릿 선택 -->
