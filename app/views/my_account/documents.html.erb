@@ -119,16 +119,26 @@
               </label>
             </div>
             
-            <button type="button" onclick="executeShare('<%= current_user.document_share_token %>')" style="width:100%; padding:14px; background:#2563eb; color:white; border:none; border-radius:14px; font-size:15px; font-weight:900; cursor:pointer; font-family:inherit;">
-              선택한 서류 링크 복사
+            <div style="display:flex; gap:8px;">
+              <button type="button" onclick="executeShare('<%= current_user.document_share_token %>', 'sms')" style="flex:1; padding:14px; background:#10b981; color:white; border:none; border-radius:12px; font-size:14px; font-weight:800; cursor:pointer; font-family:inherit;">
+                💬 바로 문자 전송
+              </button>
+              <button type="button" onclick="executeShare('<%= current_user.document_share_token %>', 'copy')" style="flex:1; padding:14px; background:#f97316; color:white; border:none; border-radius:12px; font-size:14px; font-weight:800; cursor:pointer; font-family:inherit;">
+                📋 링크 복사
+              </button>
+            </div>
+            <button type="button" onclick="executeShare('<%= current_user.document_share_token %>', 'share')" style="width:100%; margin-top:8px; padding:14px; background:#2563eb; color:white; border:none; border-radius:12px; font-size:14px; font-weight:800; cursor:pointer; font-family:inherit;">
+              🚀 기기 기본 공유 (카톡/기타)
             </button>
           </div>
         </div>
         
         <script>
-          function showShareSuccess() {
+          function showShareSuccess(typeDesc) {
             const toast = document.getElementById('shareSuccessToast');
             if (toast) {
+              const msgEl = document.getElementById('shareSuccessMsg');
+              if(msgEl) msgEl.innerText = typeDesc + " 완료!";
               toast.style.display = 'flex';
               toast.style.opacity = '1';
               setTimeout(() => {
@@ -138,7 +148,7 @@
             }
           }
 
-          function executeShare(token) {
+          function executeShare(token, method) {
             const selectedKeys = [];
             const selectedNames = [];
             
@@ -154,23 +164,39 @@
             
             const shareUrl = 'https://www.workgood.co.kr/d/' + token + '?docs=' + selectedKeys.join(',') + '&v=4';
             const dynamicText = '안녕하세요, 요청하신 ' + selectedNames.join(', ') + ' 보내드립니다.';
+            const fullMessage = dynamicText + '\n' + shareUrl;
             
-            if (navigator.share) {
-              navigator.share({
-                title: '일잘러 - 서류 안내',
-                text: dynamicText,
-                url: shareUrl
-              }).then(() => {
-                document.getElementById('shareModal').style.display='none';
-                showShareSuccess();
-              }).catch((e) => {});
-            } else if (navigator.clipboard) {
-              navigator.clipboard.writeText(dynamicText + '\n' + shareUrl).then(() => {
-                document.getElementById('shareModal').style.display='none';
-                showShareSuccess();
-              });
-            } else {
-              alert("공유 기능이 지원되지 않는 브라우저입니다.");
+            if (method === 'sms') {
+              const userAgent = navigator.userAgent || navigator.vendor || window.opera;
+              // iOS require &body= instead of ?body=
+              if (/iPad|iPhone|iPod/.test(userAgent) && !window.MSStream) {
+                window.location.href = 'sms:&body=' + encodeURIComponent(fullMessage);
+              } else {
+                window.location.href = 'sms:?body=' + encodeURIComponent(fullMessage);
+              }
+              document.getElementById('shareModal').style.display='none';
+            } else if (method === 'copy') {
+              if (navigator.clipboard) {
+                navigator.clipboard.writeText(fullMessage).then(() => {
+                  document.getElementById('shareModal').style.display='none';
+                  showShareSuccess('복사가');
+                });
+              } else {
+                alert("복사 기능이 지원되지 않는 브라우저입니다.");
+              }
+            } else if (method === 'share') {
+              if (navigator.share) {
+                navigator.share({
+                  title: '일잘러 - 서류 안내',
+                  text: dynamicText,
+                  url: shareUrl
+                }).then(() => {
+                  document.getElementById('shareModal').style.display='none';
+                  showShareSuccess('공유가');
+                }).catch((e) => {});
+              } else {
+                alert("기본 공유 기능이 지원되지 않는 브라우저입니다. 링크 복사를 이용해주세요.");
+              }
             }
           }
         </script>
@@ -178,7 +204,7 @@
         <!-- Share Success Toast Overlay -->
         <div id="shareSuccessToast" style="display:none; position:fixed; top:50%; left:50%; transform:translate(-50%, -50%); background:rgba(17, 24, 39, 0.9); color:white; padding:24px 32px; border-radius:20px; z-index:10000; flex-direction:column; align-items:center; opacity:0; transition:opacity 0.3s ease; box-shadow:0 20px 40px rgba(0,0,0,0.2);">
           <div style="font-size:48px; margin-bottom:12px;">✅</div>
-          <div style="font-size:16px; font-weight:900;">공유가 완료되었습니다!</div>
+          <div id="shareSuccessMsg" style="font-size:16px; font-weight:900;">공유가 완료되었습니다!</div>
         </div>
       <% end %>
     </div>
