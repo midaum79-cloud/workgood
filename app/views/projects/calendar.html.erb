@@ -317,6 +317,10 @@
       <button type="button" onclick="startCopyMode()" style="display:flex; align-items:center; width:100%; padding:16px; border:none; border-radius:16px; background:#4f46e5; color:white; font-size:16px; font-weight:800; cursor:pointer;">
         <span style="font-size:20px; margin-right:12px;">📋</span> 일정 복사하기 <span style="font-size:13px; font-weight:600; opacity:0.8; margin-left:auto;">(다른 날짜 추가)</span>
       </button>
+
+      <button type="button" onclick="deleteScheduleOnly()" style="display:flex; align-items:center; width:100%; padding:16px; border:1px solid #fee2e2; border-radius:16px; background:#fef2f2; color:#ef4444; font-size:16px; font-weight:800; cursor:pointer; margin-top:8px;">
+        <span style="font-size:20px; margin-right:12px;">🗑️</span> 이 날짜의 일정만 지우기 <span style="font-size:13px; font-weight:600; opacity:0.8; margin-left:auto;">(현장정보 유지)</span>
+      </button>
     </div>
   </div>
 </div>
@@ -476,6 +480,38 @@ function closeChipMenu() {
   setTimeout(function() {
     document.getElementById('bsOverlay').onclick = closeBottomSheet;
   }, 350);
+}
+
+function deleteScheduleOnly() {
+  if (!activeChipProjectId || !activeChipDate) return;
+  if (!confirm("이 날짜의 일정만 삭제하시겠습니까?\n(현장 정보와 다른 날짜의 일정은 그대로 유지됩니다)")) return;
+  
+  closeChipMenu();
+  
+  fetch('<%= toggle_schedule_projects_path %>', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').content,
+      'Accept': 'application/json'
+    },
+    body: JSON.stringify({
+      project_id: activeChipProjectId,
+      date: activeChipDate
+    })
+  })
+  .then(function(res) { return res.json(); })
+  .then(function(data) {
+    if (data.success) {
+      window.location.reload();
+    } else {
+      alert(data.error || '삭제에 실패했습니다.');
+    }
+  })
+  .catch(function(err) {
+    console.error('Delete error:', err);
+    alert('네트워크 오류가 발생했습니다.');
+  });
 }
 
 function goToProjectDetails() {
