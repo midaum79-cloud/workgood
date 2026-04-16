@@ -41,7 +41,7 @@ class MyAccountController < ApplicationController
   end
 
   def increment_biz_card_gen
-    if current_user.premium? || current_user.biz_card_generations_count.to_i < 3
+    if current_user.premium? || current_user.biz_card_generations_count.to_i < 10
       current_user.increment!(:biz_card_generations_count) unless current_user.premium?
       render json: { success: true }
     else
@@ -53,7 +53,7 @@ class MyAccountController < ApplicationController
   end
 
   def increment_bank_card_gen
-    if current_user.premium? || current_user.bank_card_generations_count.to_i < 3
+    if current_user.premium? || current_user.bank_card_generations_count.to_i < 10
       current_user.increment!(:bank_card_generations_count) unless current_user.premium?
       render json: { success: true }
     else

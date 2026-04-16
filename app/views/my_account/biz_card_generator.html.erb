@@ -17,13 +17,13 @@
           <% if current_user.premium? %>
             무제한 👑
           <% else %>
-            남은 횟수: <%= [3 - current_user.biz_card_generations_count.to_i, 0].max %>회
+            남은 횟수: <%= [10 - current_user.biz_card_generations_count.to_i, 0].max %>회
           <% end %>
         </span>
       </div>
       
       <div style="font-size:12px; color:#c026d3; font-weight:600; margin-bottom:16px; line-height:1.5;">
-        직함 등 정보만 입력하면 인쇄소 부럽지 않은 세련된 명함이 뚝딱! 이미지를 다운받아 카톡으로 나눠주세요. 평생 3회 무료 제공됩니다 (프리미엄은 무제한)
+        직함 등 정보만 입력하면 인쇄소 부럽지 않은 세련된 명함이 뚝딱! 이미지를 다운받아 카톡으로 나눠주세요. 평생 10회 무료 제공됩니다 (프리미엄은 무제한)
       </div>
 
       <!-- 입력 폼 -->
@@ -226,7 +226,7 @@
       const data = await response.json();
       
       if (!data.success && data.limit_reached) {
-        alert("⚠️ 무료 체험 횟수(3회)를 모두 소진하셨습니다!\n\n무제한 생성을 원하시면 프리미엄 플랜을 구독해주세요.");
+        alert("⚠️ 무료 체험 횟수(10회)를 모두 소진하셨습니다!\n\n무제한 생성을 원하시면 프리미엄 플랜을 구독해주세요.");
         window.location.href = '<%= subscription_path %>';
         return;
       }
