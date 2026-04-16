@@ -1,3 +1,4 @@
+<% begin %>
 <div style="min-height:100vh; background:#f5f5f5; padding-bottom:env(safe-area-inset-bottom);">
   <%# Header %>
   <div style="background:white; padding:18px 20px 14px 20px; border-bottom:1px solid #ececec; position:sticky; top:0; z-index:30;" class="safe-sticky-header">
@@ -786,6 +787,13 @@
       <span style="color:#3b82f6; font-size:13px; margin-top:4px;">'사진 앱에 저장' (또는 이미지 저장) 선택</span>
     </div>
     <img id="downloadedImagePreview" src="" style="max-width:90%; max-height:60vh; border-radius:12px; box-shadow:0 10px 25px rgba(0,0,0,0.5); border:1px solid rgba(255,255,255,0.2);">
-    <button onclick="document.getElementById('imageDownloadModal').style.display='none'" style="margin-top:24px; background:#475569; color:white; border:1px solid #64748b; padding:12px 32px; border-radius:99px; font-weight:900; font-size:16px; cursor:pointer; box-shadow:0 4px 12px rgba(0,0,0,0.3);">닫기</button>
   </div>
 </div>
+<% rescue => e %>
+  <div style="padding:40px 20px; text-align:left; font-family:monospace; color:white; background:#aa0000; word-break:break-all; position:relative; z-index:99999;">
+    <h2 style="color:white; margin-bottom:10px;">[AI 자동 진단] 500 에러 원인 확인 </h2>
+    <p style="font-weight:bold; font-size:16px;">오류 유형: <%= e.class %></p>
+    <p style="margin-bottom:20px;">오류 메시지: <%= e.message %></p>
+    <div style="font-size:11px; line-height:1.4;"><%= e.backtrace.first(15).join("<br>").html_safe %></div>
+  </div>
+<% end %>
