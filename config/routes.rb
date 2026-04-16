@@ -14,6 +14,10 @@ Rails.application.routes.draw do
   post "my_account/increment_biz_card_gen", to: "my_account#increment_biz_card_gen", as: :increment_biz_card_gen
   get "my_account/bank_card_generator", to: "my_account#bank_card_generator", as: :bank_card_generator
   post "my_account/increment_bank_card_gen", to: "my_account#increment_bank_card_gen", as: :increment_bank_card_gen
+  
+  post "my_account/cache_image_for_download", to: "my_account#cache_image_for_download", as: :cache_image_for_download
+  get "my_account/download_cached_image/:uuid", to: "my_account#download_cached_image", as: :download_cached_image
+
 
   get "/d/:token", to: "shared_documents#show", as: :shared_document
 

@@ -1,5 +1,7 @@
 class MyAccountController < ApplicationController
   before_action :require_login
+  skip_before_action :verify_authenticity_token, only: [:cache_image_for_download]
+
 
   def show
     @project_count   = current_user.projects.count
@@ -58,6 +60,26 @@ class MyAccountController < ApplicationController
       render json: { success: true }
     else
       render json: { success: false, limit_reached: true }
+    end
+  end
+  def cache_image_for_download
+    uuid = SecureRandom.uuid
+    base64_data = params[:image_base64]
+    if base64_data.present?
+      Rails.cache.write("image_download_#{uuid}", base64_data, expires_in: 10.minutes)
+      render json: { success: true, uuid: uuid, url: download_cached_image_url(uuid: uuid) }
+    else
+      render json: { success: false }
+    end
+  end
+
+  def download_cached_image
+    base64_data = Rails.cache.read("image_download_#{params[:uuid]}")
+    if base64_data.present?
+      image_data = Base64.decode64(base64_data.split(',').last)
+      send_data image_data, type: 'image/png', disposition: 'inline', filename: "일잘러_이미지_#{params[:uuid][0..5]}.png"
+    else
+      render plain: "이미지 링크가 만료되었거나 찾을 수 없습니다. (10분 한정)\n앱으로 돌아가 다시 시도해주세요.", status: 404
     end
   end
 end
