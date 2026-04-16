@@ -90,6 +90,105 @@
   })();
   </script>
 
+  <!-- 날씨 위젯 -->
+  <div id="weatherWidget" style="background:#f8fafc; border-radius:20px; padding:16px 20px; display:flex; justify-content:space-between; align-items:center; box-shadow:0 2px 10px rgba(0,0,0,0.04); margin-bottom:18px;">
+     <div style="display:flex; align-items:center; gap:8px; cursor:pointer;" onclick="changeWeatherLocation()">
+        <span style="font-size:20px;">📍</span>
+        <span id="weatherLocName" style="font-size:16px; font-weight:900; color:#1e293b; text-decoration:underline; text-decoration-color:#cbd5e1; text-underline-offset:4px;">서울특별시</span>
+     </div>
+     <div style="display:flex; gap:10px;">
+        <div style="text-align:center; background:white; padding:6px 12px; border-radius:12px; border:1px solid #e2e8f0; min-width:68px; box-shadow:0 1px 3px rgba(0,0,0,0.02);">
+           <div style="font-size:11px; color:#64748b; font-weight:800;">오늘</div>
+           <div id="weatherToday" style="font-size:15px; font-weight:900; color:#0f172a; margin-top:2px;">-</div>
+        </div>
+        <div style="text-align:center; background:white; padding:6px 12px; border-radius:12px; border:1px solid #e2e8f0; min-width:68px; box-shadow:0 1px 3px rgba(0,0,0,0.02);">
+           <div style="font-size:11px; color:#64748b; font-weight:800;">내일</div>
+           <div id="weatherTomorrow" style="font-size:15px; font-weight:900; color:#0f172a; margin-top:2px;">-</div>
+        </div>
+     </div>
+  </div>
+
+  <script>
+    // 날씨 위젯 로직
+    function getWeatherEmoji(code) {
+      if (code === 0) return '☀️'; 
+      if (code === 1 || code === 2 || code === 3) return '⛅'; 
+      if (code === 45 || code === 48) return '🌫️'; 
+      if (code >= 51 && code <= 67) return '☔'; 
+      if (code >= 71 && code <= 77) return '☃️'; 
+      if (code >= 80 && code <= 82) return '🌧️'; 
+      if (code >= 85 && code <= 86) return '🌨️'; 
+      if (code >= 95 && code <= 99) return '⛈️'; 
+      return '☀️'; 
+    }
+
+    function updateWeatherDisplay(name, lat, lng) {
+      document.getElementById('weatherLocName').innerText = name;
+      
+      fetch('https://api.open-meteo.com/v1/forecast?latitude=' + lat + '&longitude=' + lng + '&daily=weathercode,temperature_2m_max,temperature_2m_min&timezone=Asia%2FSeoul')
+        .then(res => res.json())
+        .then(data => {
+          if(data && data.daily) {
+            const codes = data.daily.weathercode;
+            const maxTemps = data.daily.temperature_2m_max;
+            const minTemps = data.daily.temperature_2m_min;
+            
+            const todayCode = getWeatherEmoji(codes[0]);
+            const tomorrowCode = getWeatherEmoji(codes[1]);
+            
+            document.getElementById('weatherToday').innerHTML = todayCode + ' ' + Math.round(minTemps[0]) + '°/' + Math.round(maxTemps[0]) + '°';
+            document.getElementById('weatherTomorrow').innerHTML = tomorrowCode + ' ' + Math.round(minTemps[1]) + '°/' + Math.round(maxTemps[1]) + '°';
+          }
+        })
+        .catch(e => {
+          console.error('Weather Fetch Error:', e);
+          document.getElementById('weatherToday').innerText = '오류';
+          document.getElementById('weatherTomorrow').innerText = '오류';
+        });
+    }
+
+    function initWeatherWidget() {
+      const savedName = localStorage.getItem('workgood_weather_name') || '서울특별시';
+      const savedLat = localStorage.getItem('workgood_weather_lat') || '37.566';
+      const savedLng = localStorage.getItem('workgood_weather_lng') || '126.9784';
+      
+      updateWeatherDisplay(savedName, savedLat, savedLng);
+    }
+
+    function changeWeatherLocation() {
+      const q = prompt("현장의 지역명을 입력하세요\n(예: 부산, 수원, 강남구 등)");
+      if (q && q.trim()) {
+        document.getElementById('weatherLocName').innerText = '검색 중...';
+        fetch('https://geocoding-api.open-meteo.com/v1/search?name=' + encodeURIComponent(q.trim()) + '&language=ko&count=1')
+          .then(res => res.json())
+          .then(data => {
+            if (data.results && data.results.length > 0) {
+              let res = data.results[0];
+              let cleanName = res.name; 
+              if (res.admin1 && res.admin1 !== res.name) {
+                cleanName = res.admin1 + ' ' + res.name;
+              }
+              localStorage.setItem('workgood_weather_name', cleanName);
+              localStorage.setItem('workgood_weather_lat', res.latitude);
+              localStorage.setItem('workgood_weather_lng', res.longitude);
+              updateWeatherDisplay(cleanName, res.latitude, res.longitude);
+            } else {
+              alert("해당 지역 정보를 찾을 수 없습니다. 다르게 검색해주세요.");
+              initWeatherWidget(); // 복원
+            }
+          })
+          .catch(e => {
+            alert("검색 중 오류가 발생했습니다.");
+            initWeatherWidget();
+          });
+      }
+    }
+
+    document.addEventListener('turbo:load', initWeatherWidget);
+    document.addEventListener('DOMContentLoaded', initWeatherWidget);
+    initWeatherWidget();
+  </script>
+
   <div style="background:white; border-radius:20px; padding:18px; box-shadow:0 2px 10px rgba(0,0,0,0.04); margin-bottom:18px;">
     <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:12px;">
       <div>
