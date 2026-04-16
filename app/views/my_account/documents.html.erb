@@ -194,8 +194,13 @@
                   document.getElementById('shareModal').style.display='none';
                   showShareSuccess('공유가');
                 }).catch((e) => {});
+              } else if (navigator.clipboard) {
+                navigator.clipboard.writeText(fullMessage).then(() => {
+                  document.getElementById('shareModal').style.display='none';
+                  alert("📱 현재 이용 중인 환경(앱)에서는 자동 공유 창을 띄울 수 없어, 대신 텍스트와 링크를 '자동으로 복사'했습니다.\n\n카카오톡 등 원하시는 곳에 [붙여넣기]를 해주세요!");
+                });
               } else {
-                alert("기본 공유 기능이 지원되지 않는 브라우저입니다. 링크 복사를 이용해주세요.");
+                alert("현재 이용 중인 모바일 앱/환경에서는 해당 기능을 지원하지 않습니다. [링크 복사] 버튼을 직접 이용해주세요.");
               }
             }
           }
