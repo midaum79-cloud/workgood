@@ -85,6 +85,8 @@
 <script>
   async function forceDownload(filename) {
     const src = document.getElementById('downloadedImagePreview').src;
+    let urlToDownload = src;
+    let fallbackBlobUrl = null;
     
     // 모바일 기기 (특히 iOS Safari) 에서는 다운로드보다는 Share API(이미지 저장 옵션 제공)가 훨씬 안정적임
     try {
@@ -101,18 +103,27 @@
         document.getElementById('imageDownloadModal').style.display='none';
         return;
       }
+      
+      // Share가 실패하거나 지원안될 경우 Blob URL을 생성하여 href 길이 제한(Base64) 문제 회피
+      fallbackBlobUrl = URL.createObjectURL(blob);
+      urlToDownload = fallbackBlobUrl;
     } catch (e) {
-      console.log('Share API fallback', e);
+      console.log('Blob convert or Share API fallback', e);
     }
 
     // Fallback: 일반 다운로드 (안드로이드 크롬이나 PC 브라우저)
     const a = document.createElement('a');
-    a.href = src;
+    a.href = urlToDownload;
     a.download = filename;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
-    alert('기본 다운로드가 실행되었습니다.\n(갤러리 혹은 다운로드 폴더를 확인해 주세요)');
+    
+    if (fallbackBlobUrl) {
+      setTimeout(() => URL.revokeObjectURL(fallbackBlobUrl), 1000);
+    }
+    
+    alert('다운로드를 시작했습니다!\n갤러리에 보이지 않는다면 [내 파일앱 > 다운로드] 폴더를 확인하시거나,\n이미지를 길게 꾹~ 눌러 [이미지 저장]을 선택해주세요.');
   }
 </script>
 
