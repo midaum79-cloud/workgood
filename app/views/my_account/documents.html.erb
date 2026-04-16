@@ -119,7 +119,7 @@
               <div style="display:grid; grid-template-columns:1fr; gap:10px; margin-bottom:16px;">
                 <input type="text" id="bcTeamInput" placeholder="업체명 (예: 업체명)" style="width:100%; padding:14px; border-radius:12px; border:1px solid #cbd5e1; font-weight:800; font-size:14px; color:#1e293b;" value="<%= current_user.team_name %>">
                 <input type="text" id="bcRoleInput" placeholder="직책 (예: 직책)" style="width:100%; padding:14px; border-radius:12px; border:1px solid #cbd5e1; font-weight:800; font-size:14px; color:#1e293b;" value="<%= current_user.role %>">
-                <input type="text" id="bcNameInput" placeholder="성함 (예: 일잘러)" style="width:100%; padding:14px; border-radius:12px; border:1px solid #cbd5e1; font-weight:800; font-size:14px; color:#1e293b;" value="<%= current_user.name.to_s.match?(/^[a-z0-9]{10}$/) ? '' : current_user.name %>">
+                <input type="text" id="bcNameInput" placeholder="성함 (예: 일잘러)" data-original-name="<%= current_user.name %>" style="width:100%; padding:14px; border-radius:12px; border:1px solid #cbd5e1; font-weight:800; font-size:14px; color:#1e293b;" value="<%= current_user.name %>">
                 <input type="text" id="bcPhoneInput" placeholder="전화번호 (예: 010-1234-5678)" style="width:100%; padding:14px; border-radius:12px; border:1px solid #cbd5e1; font-weight:800; font-size:14px; color:#1e293b;" value="<%= current_user.phone %>">
               </div>
 
@@ -526,6 +526,13 @@
       const bRoleInfo = document.getElementById('bcRoleInput');
       const bNameInfo = document.getElementById('bcNameInput');
       const bPhoneInfo = document.getElementById('bcPhoneInput');
+      
+      if(bNameInfo) {
+        const origName = bNameInfo.getAttribute('data-original-name') || '';
+        if(/^[a-z0-9]{10}$/i.test(origName)) {
+            bNameInfo.value = '';
+        }
+      }
       
       function updateBizCard() {
         if(!bTeamInfo) return;
