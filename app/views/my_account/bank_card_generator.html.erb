@@ -122,29 +122,40 @@
 
   async function saveToGallery(filename) {
     const src = document.getElementById('downloadedImagePreview').src;
-    let fallbackBlobUrl = null;
-    
     try {
       const res = await fetch(src);
       const blob = await res.blob();
-      fallbackBlobUrl = URL.createObjectURL(blob);
-    } catch (e) {
-      fallbackBlobUrl = src;
-    }
+      const file = new File([blob], filename, { type: 'image/png' });
 
-    // 일반 브라우저 다운로드 시도
-    const a = document.createElement('a');
-    a.href = fallbackBlobUrl;
-    a.download = filename;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    
-    if (fallbackBlobUrl && fallbackBlobUrl.startsWith('blob:')) {
+      // Capacitor 네이티브 앱이거나 안드로이드 웹뷰인 경우 (다운로드 및 꾹누르기 불가)
+      if (window.Capacitor || (navigator.userAgent.match(/Android/i) && navigator.userAgent.match(/wv|MicroMessenger/i))) {
+        if (navigator.canShare && navigator.canShare({ files: [file] })) {
+          alert("앱(웹뷰) 환경에서는 전용 다운로드가 제한됩니다.\n대신 뛰워드리는 [공유] 알림창에서 '사진 저장'을 누르시거나 카톡으로 전송해 주세요!");
+          await navigator.share({
+            files: [file],
+            title: filename,
+            text: '스마트통장 이미지 저장/공유'
+          });
+          return;
+        }
+      }
+
+      // 일반 브라우저 다운로드 시도
+      const fallbackBlobUrl = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = fallbackBlobUrl;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      
       setTimeout(() => URL.revokeObjectURL(fallbackBlobUrl), 1000);
+      alert("다운로드를 시도했습니다!\n저장이 안 될 경우, 화면 캡처(스크린샷)를 이용해주시거나 '메시지로 공유' 버튼을 사용해주세요.");
+      
+    } catch (e) {
+      console.error(e);
+      alert("이미지 처리 중 오류가 발생했습니다.");
     }
-    
-    alert("다운로드를 시도했습니다.\n\n안드로이드 앱 사용자 필독🚨:\n갤러리에 안보인다면, [위의 명함 이미지를 2초간 꾹~ 누르세요].\n그러면 나타나는 메뉴에서 '이미지 저장'을 누르시면 됩니다!");
   }
 </script>
 
