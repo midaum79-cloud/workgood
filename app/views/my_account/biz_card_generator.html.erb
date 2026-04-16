@@ -24,23 +24,23 @@
 
       <!-- 입력 폼 -->
       <div style="display:grid; grid-template-columns:1fr; gap:10px; margin-bottom:16px;">
-        <input type="text" id="bcTeamInput" placeholder="업체명을 입력하세요" style="width:100%; padding:14px; border-radius:12px; border:1px solid #cbd5e1; font-weight:800; font-size:14px; color:#1e293b;" value="<%= current_user.team_name %>">
+        <input type="text" id="bcTeamInput" placeholder="업체명을 입력하세요" style="width:100%; padding:14px; border-radius:12px; border:1px solid #cbd5e1; font-weight:800; font-size:14px; color:#1e293b; box-sizing:border-box;" value="<%= current_user.team_name %>">
         
         <!-- 로고 이미지 업로드 -->
-        <label for="bcLogoInput" style="display:flex; align-items:center; justify-content:center; gap:8px; width:100%; padding:14px; border-radius:12px; border:1px dashed #cbd5e1; font-weight:800; font-size:14px; color:#64748b; background:#f8fafc; cursor:pointer;">
+        <label for="bcLogoInput" style="display:flex; align-items:center; justify-content:center; gap:8px; width:100%; padding:14px; border-radius:12px; border:1px dashed #cbd5e1; font-weight:800; font-size:14px; color:#64748b; background:#f8fafc; cursor:pointer; box-sizing:border-box;">
           <svg style="width:16px; fill:#64748b;" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path d="M448 80c8.8 0 16 7.2 16 16V415.8l-5-6.5-136-176c-4.5-5.9-11.6-9.3-19-9.3s-14.4 3.4-19 9.3L202 340.7l-30.5-42.7C167 291.7 159.8 288 152 288s-15 3.7-19.5 10.1l-80 112L48 416V96c0-8.8 7.2-16 16-16H448zM64 32C28.7 32 0 60.7 0 96V416c0 35.3 28.7 64 64 64H448c35.3 0 64-28.7 64-64V96c0-35.3-28.7-64-64-64H64zm80 192a48 48 0 1 0 0-96 48 48 0 1 0 0 96z"/></svg>
           <span id="bcLogoLabel">업체 로고 첨부 (선택)</span>
         </label>
         <input type="file" id="bcLogoInput" accept="image/*" style="display:none;">
 
         <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
-          <input type="text" id="bcRoleInput" placeholder="직책을 입력하세요" style="width:100%; padding:14px; border-radius:12px; border:1px solid #cbd5e1; font-weight:800; font-size:14px; color:#1e293b;" value="<%= current_user.role %>">
-          <input type="text" id="bcNameInput" placeholder="성함을 입력하세요" style="width:100%; padding:14px; border-radius:12px; border:1px solid #cbd5e1; font-weight:800; font-size:14px; color:#1e293b;" value="<%= current_user.name %>">
+          <input type="text" id="bcRoleInput" placeholder="직책을 입력하세요" style="width:100%; padding:14px; border-radius:12px; border:1px solid #cbd5e1; font-weight:800; font-size:14px; color:#1e293b; box-sizing:border-box;" value="<%= current_user.role %>">
+          <input type="text" id="bcNameInput" placeholder="성함을 입력하세요" style="width:100%; padding:14px; border-radius:12px; border:1px solid #cbd5e1; font-weight:800; font-size:14px; color:#1e293b; box-sizing:border-box;" value="<%= current_user.name %>">
         </div>
-        <input type="text" id="bcPhoneInput" placeholder="전화번호를 입력하세요" style="width:100%; padding:14px; border-radius:12px; border:1px solid #cbd5e1; font-weight:800; font-size:14px; color:#1e293b;" value="<%= current_user.phone %>">
+        <input type="text" id="bcPhoneInput" placeholder="전화번호를 입력하세요" style="width:100%; padding:14px; border-radius:12px; border:1px solid #cbd5e1; font-weight:800; font-size:14px; color:#1e293b; box-sizing:border-box;" value="<%= current_user.phone %>">
         
         <div style="display:flex; gap:8px;">
-          <input type="text" id="bcAddressInput" placeholder="주소를 입력하세요 (선택)" style="flex:1; padding:14px; border-radius:12px; border:1px solid #cbd5e1; font-weight:800; font-size:14px; color:#1e293b;" value="<%= current_user.address %>" onclick="execDaumPostcode()">
+          <input type="text" id="bcAddressInput" placeholder="주소를 입력하세요 (선택)" style="flex:1; padding:14px; border-radius:12px; border:1px solid #cbd5e1; font-weight:800; font-size:14px; color:#1e293b; box-sizing:border-box; min-width:0;" value="<%= current_user.address %>" onclick="execDaumPostcode()" readonly>
           <button type="button" onclick="execDaumPostcode()" style="background:#f8fafc; color:#64748b; border:1px solid #cbd5e1; border-radius:12px; padding:0 16px; font-weight:800; cursor:pointer; font-size:14px; white-space:nowrap;">주소 검색</button>
         </div>
       </div>
