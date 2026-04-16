@@ -334,27 +334,51 @@
   // 뒤로가기나 turbo 네비게이션 시에도 보장하기 위해
   document.addEventListener("turbo:load", initBizCard);
 
+  const originalData = {
+    team: "<%= j current_user.team_name.to_s %>",
+    role: "<%= j current_user.role.to_s %>",
+    name: "<%= j current_user.name.to_s %>",
+    phone: "<%= j current_user.phone.to_s %>",
+    address: "<%= j current_user.address.to_s %>"
+  };
+
   async function generateImageWithLimit() {
+    const isChanged = (
+      document.getElementById('bcTeamInput').value !== originalData.team ||
+      document.getElementById('bcRoleInput').value !== originalData.role ||
+      document.getElementById('bcNameInput').value !== originalData.name ||
+      document.getElementById('bcPhoneInput').value !== originalData.phone ||
+      document.getElementById('bcAddressInput').value !== originalData.address
+    );
+
     const btn = document.getElementById('downloadBizCardBtn');
     btn.disabled = true;
     const originalText = btn.innerHTML;
-    btn.innerHTML = '⏳ 권한 확인 중...';
 
     try {
-      const response = await fetch('<%= increment_biz_card_gen_path %>', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').content,
-          'Accept': 'application/json'
+      if (isChanged) {
+        btn.innerHTML = '⏳ 권한 확인 중...';
+        const response = await fetch('<%= increment_biz_card_gen_path %>', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').content,
+            'Accept': 'application/json'
+          }
+        });
+        const data = await response.json();
+        
+        if (!data.success && data.limit_reached) {
+          alert("⚠️ 무료 체험 횟수(10회)를 모두 소진하셨습니다!\n\n무제한 생성을 원하시면 프리미엄 플랜을 구독해주세요.");
+          window.location.href = '<%= subscription_path %>';
+          return;
         }
-      });
-      const data = await response.json();
-      
-      if (!data.success && data.limit_reached) {
-        alert("⚠️ 무료 체험 횟수(10회)를 모두 소진하셨습니다!\n\n무제한 생성을 원하시면 프리미엄 플랜을 구독해주세요.");
-        window.location.href = '<%= subscription_path %>';
-        return;
+
+        originalData.team = document.getElementById('bcTeamInput').value;
+        originalData.role = document.getElementById('bcRoleInput').value;
+        originalData.name = document.getElementById('bcNameInput').value;
+        originalData.phone = document.getElementById('bcPhoneInput').value;
+        originalData.address = document.getElementById('bcAddressInput').value;
       }
       
       btn.innerHTML = '⏳ 굽는 중...';

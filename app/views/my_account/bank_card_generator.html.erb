@@ -225,28 +225,47 @@
   // 뒤로가기나 turbo 네비게이션 시에도 보장하기 위해
   document.addEventListener("turbo:load", initBankCard);
 
+  const originalData = {
+    bank: "<%= j current_user.bank_name.to_s %>",
+    account: "<%= j current_user.bank_account_number.to_s %>",
+    holder: "<%= j current_user.bank_account_holder.to_s %>"
+  };
+
   async function generateImageWithLimit() {
+    const isChanged = (
+      document.getElementById('bankNameInput').value !== originalData.bank ||
+      document.getElementById('bankAccountInput').value !== originalData.account ||
+      document.getElementById('bankHolderInput').value !== originalData.holder
+    );
+
     const btn = document.getElementById('downloadBankCardBtn');
     btn.disabled = true;
     const originalText = btn.innerHTML;
-    btn.innerHTML = '⏳ 권한 확인 중...';
 
     try {
-      const response = await fetch('<%= increment_bank_card_gen_path %>', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').content,
-          'Accept': 'application/json'
+      if (isChanged) {
+        btn.innerHTML = '⏳ 권한 확인 중...';
+        const response = await fetch('<%= increment_bank_card_gen_path %>', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').content,
+            'Accept': 'application/json'
+          }
+        });
+        const data = await response.json();
+        
+        if (!data.success && data.limit_reached) {
+          alert("⚠️ 무료 체험 횟수(10회)를 모두 소진하셨습니다!\n\n무제한 생성을 원하시면 프리미엄 플랜을 구독해주세요.");
+          window.location.href = '<%= subscription_path %>';
+          return;
         }
-      });
-      const data = await response.json();
-      
-      if (!data.success && data.limit_reached) {
-        alert("⚠️ 무료 체험 횟수(10회)를 모두 소진하셨습니다!\n\n무제한 생성을 원하시면 프리미엄 플랜을 구독해주세요.");
-        window.location.href = '<%= subscription_path %>';
-        return;
+
+        originalData.bank = document.getElementById('bankNameInput').value;
+        originalData.account = document.getElementById('bankAccountInput').value;
+        originalData.holder = document.getElementById('bankHolderInput').value;
       }
+
       
       btn.innerHTML = '⏳ 굽는 중...';
       const cardEl = document.getElementById('bankCardElement');
