@@ -9,6 +9,12 @@ Rails.application.routes.draw do
   get "my_account/documents", to: "my_account#documents", as: :my_account_documents
   patch "my_account/documents", to: "my_account#update_documents", as: :update_my_account_documents
   delete "my_account/documents/:type", to: "my_account#delete_document", as: :delete_my_account_document
+  
+  get "my_account/biz_card_generator", to: "my_account#biz_card_generator", as: :biz_card_generator
+  post "my_account/increment_biz_card_gen", to: "my_account#increment_biz_card_gen", as: :increment_biz_card_gen
+  get "my_account/bank_card_generator", to: "my_account#bank_card_generator", as: :bank_card_generator
+  post "my_account/increment_bank_card_gen", to: "my_account#increment_bank_card_gen", as: :increment_bank_card_gen
+
   get "/d/:token", to: "shared_documents#show", as: :shared_document
 
   # 프리미엄: 세금 관리

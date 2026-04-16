@@ -36,4 +36,28 @@ class MyAccountController < ApplicationController
       redirect_to my_account_documents_path, alert: "잘못된 요청입니다."
     end
   end
+
+  def biz_card_generator
+  end
+
+  def increment_biz_card_gen
+    if current_user.premium? || current_user.biz_card_generations_count.to_i < 3
+      current_user.increment!(:biz_card_generations_count) unless current_user.premium?
+      render json: { success: true }
+    else
+      render json: { success: false, limit_reached: true }
+    end
+  end
+
+  def bank_card_generator
+  end
+
+  def increment_bank_card_gen
+    if current_user.premium? || current_user.bank_card_generations_count.to_i < 3
+      current_user.increment!(:bank_card_generations_count) unless current_user.premium?
+      render json: { success: true }
+    else
+      render json: { success: false, limit_reached: true }
+    end
+  end
 end
