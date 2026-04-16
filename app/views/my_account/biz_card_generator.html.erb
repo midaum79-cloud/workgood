@@ -363,10 +363,11 @@
       formData.append('user[phone]', document.getElementById('bcPhoneInput').value);
       formData.append('user[address]', document.getElementById('bcAddressInput').value);
       
-      fetch('<%= update_my_account_documents_path %>', {
+      fetch('<%= update_my_account_documents_path %>.json', {
         method: 'PATCH',
         headers: {
-          'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').content
+          'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').content,
+          'Accept': 'application/json'
         },
         body: formData
       });

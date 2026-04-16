@@ -250,10 +250,11 @@
       formData.append('user[bank_account_number]', document.getElementById('bankAccountInput').value);
       formData.append('user[bank_account_holder]', document.getElementById('bankHolderInput').value);
       
-      fetch('<%= update_my_account_documents_path %>', {
+      fetch('<%= update_my_account_documents_path %>.json', {
         method: 'PATCH',
         headers: {
-          'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').content
+          'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').content,
+          'Accept': 'application/json'
         },
         body: formData
       });

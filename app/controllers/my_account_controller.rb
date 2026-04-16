@@ -21,7 +21,10 @@ class MyAccountController < ApplicationController
 
     current_user.regenerate_document_share_token if current_user.document_share_token.blank?
 
-    redirect_to my_account_documents_path, notice: "비즈니스 문서를 성공적으로 업데이트했습니다."
+    respond_to do |format|
+      format.html { redirect_to my_account_documents_path, notice: "비즈니스 문서를 성공적으로 업데이트했습니다." }
+      format.json { head :ok }
+    end
   end
 
   def delete_document
