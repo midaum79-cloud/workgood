@@ -89,13 +89,31 @@
   <!-- 이미지 다운로드용 모달 -->
   <div id="imageDownloadModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); z-index:9999; justify-content:center; align-items:center; flex-direction:column;">
     <div style="background:white; padding:12px 20px; border-radius:12px; font-weight:800; font-size:15px; margin-bottom:16px; color:#1e293b; display:flex; flex-direction:column; align-items:center; gap:4px; text-align:center;">
-      <span style="font-size:18px;">👇 밑의 이미지를 길게 꾹 눌러주세요 👇</span>
-      <span style="color:#3b82f6; font-size:13px; margin-top:4px;">'사진 앱에 저장' (또는 이미지 저장) 선택</span>
+      <span style="font-size:18px;">🎉 명함 생성이 완료되었습니다!</span>
+      <span style="color:#64748b; font-size:12px; margin-top:4px;">기기에 따라 아래 버튼이나<br>이미지를 길게 눌러 저장해주세요.</span>
       <button onclick="document.getElementById('imageDownloadModal').style.display='none'; window.location.reload();" style="margin-top:10px; padding:6px 12px; border-radius:8px; background:#e2e8f0; border:none; font-weight:bold; cursor:pointer;">닫기</button>
     </div>
-    <img id="downloadedImagePreview" src="" style="max-width:90%; max-height:60vh; border-radius:12px; border:1px solid rgba(255,255,255,0.2);">
+    
+    <img id="downloadedImagePreview" src="" style="max-width:90%; max-height:50vh; border-radius:12px; border:1px solid rgba(255,255,255,0.2);">
+    
+    <button onclick="forceDownload('business_card.png')" style="margin-top:20px; background:#3b82f6; color:white; border:none; padding:16px 24px; border-radius:14px; font-weight:900; font-size:16px; cursor:pointer; box-shadow:0 6px 16px rgba(59,130,246,0.4); display:flex; align-items:center; gap:8px;">
+      ⬇️ 기기에 바로 다운로드 (저장)
+    </button>
   </div>
 </div>
+
+<script>
+  function forceDownload(filename) {
+    const src = document.getElementById('downloadedImagePreview').src;
+    const a = document.createElement('a');
+    a.href = src;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    alert('다운로드가 시작되었습니다.\n(갤러리나 다운로드 폴더를 확인해 주세요)');
+  }
+</script>
 
 <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 <script>
