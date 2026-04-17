@@ -51,11 +51,12 @@
         
         <input type="text" id="bcPhoneInput" placeholder="전화번호를 입력하세요" style="width:100%; padding:14px; border-radius:12px; border:1px solid #cbd5e1; font-weight:800; font-size:14px; color:#1e293b; box-sizing:border-box;" value="<%= current_user.phone %>" maxlength="13" oninput="autoFormatPhone(this)">
         
-        <!-- 주소 영역 -->
-        <div style="display:flex; gap:8px;">
-          <input type="text" id="bcAddressInput" placeholder="주소를 검색하세요" style="flex:1; padding:14px; border-radius:12px; border:1px solid #cbd5e1; font-weight:800; font-size:14px; color:#1e293b; box-sizing:border-box;" value="<%= current_user.address %>" readonly>
-          <button type="button" onclick="execDaumPostcode()" style="background:#f8fafc; color:#64748b; border:1px solid #cbd5e1; border-radius:12px; padding:0 16px; font-weight:800; cursor:pointer; font-size:14px; white-space:nowrap;">주소 검색</button>
-        </div>
+        <!-- 주소 검색 (버튼형) -->
+        <button type="button" id="bcAddressBtn" onclick="execDaumPostcode()" style="width:100%; text-align:left; padding:14px; border-radius:12px; border:1px solid #cbd5e1; font-weight:800; font-size:14px; background:white; cursor:pointer; box-sizing:border-box; display:flex; justify-content:space-between; align-items:center;">
+          <span id="bcAddressBtnText" style="color:<%= current_user.address.present? ? '#1e293b' : '#94a3b8' %>; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;"><%= current_user.address.presence || "🔍 우편번호 검색 (클릭)" %></span>
+          <span style="color:#64748b; font-size:12px; background:#f1f5f9; padding:4px 8px; border-radius:6px; white-space:nowrap; flex-shrink:0; margin-left:8px;">주소 검색</span>
+        </button>
+        <input type="hidden" id="bcAddressInput" value="<%= current_user.address %>">
         <input type="text" id="bcAddressDetailInput" placeholder="상세 주소를 입력하세요 (예: 101동 202호)" style="width:100%; padding:14px; border-radius:12px; border:1px solid #cbd5e1; font-weight:800; font-size:14px; color:#1e293b; box-sizing:border-box;">
       </div>
 
@@ -469,6 +470,13 @@
         const fullAddress = addr + extraAddr;
         const addrInput = document.getElementById('bcAddressInput');
         addrInput.value = fullAddress;
+        
+        const btnText = document.getElementById('bcAddressBtnText');
+        if (btnText) {
+          btnText.textContent = fullAddress;
+          btnText.style.color = '#1e293b';
+        }
+        
         addrInput.dispatchEvent(new Event('input'));
         
         closeDaumPostcode();
