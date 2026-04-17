@@ -52,7 +52,7 @@
         <div id="clockDay" style="font-size:clamp(16px,5vw,22px); font-weight:900; color:#60a5fa; white-space:nowrap;"></div>
         <div style="display:flex; align-items:center; gap:4px; justify-content:flex-end; margin-top:4px;">
           <div id="clockPulse" style="width:8px; height:8px; border-radius:50%; background:#34d399;"></div>
-          <div style="font-size:clamp(10px,2.8vw,12px); font-weight:700; color:rgba(255,255,255,0.5); white-space:nowrap;">오늘도 화이팅!</div>
+          <div id="clockGreeting" style="font-size:clamp(10px,2.8vw,12px); font-weight:700; color:rgba(255,255,255,0.5); white-space:nowrap;">오늘도 화이팅!</div>
         </div>
       </div>
     </div>
@@ -78,12 +78,25 @@
       var secEl = document.getElementById('clockSeconds');
       var dayEl = document.getElementById('clockDay');
       var pulseEl = document.getElementById('clockPulse');
+      var greetingEl = document.getElementById('clockGreeting');
 
       if (dateEl) dateEl.textContent = now.getFullYear() + '년 ' + m + '월 ' + d + '일';
       if (timeEl) timeEl.textContent = ampm + ' ' + h12 + ':' + pad(mi);
       if (secEl) secEl.textContent = ':' + pad(s);
       if (dayEl) dayEl.textContent = dayName;
       if (pulseEl) pulseEl.style.opacity = s % 2 === 0 ? '1' : '0.3';
+      
+      if (greetingEl) {
+        if (h < 7) {
+          greetingEl.textContent = "좋은 아침입니다!";
+        } else if (h === 12 || (h === 13 && mi <= 30)) {
+          greetingEl.textContent = "식사 맛있게 하세요!";
+        } else if (h >= 18) {
+          greetingEl.textContent = "오늘 하루도 수고 하셨습니다!";
+        } else {
+          greetingEl.textContent = "오늘도 화이팅!";
+        }
+      }
     }
     tick();
     setInterval(tick, 1000);

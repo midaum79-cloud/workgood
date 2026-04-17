@@ -109,46 +109,6 @@
       <% end %>
     </div>
 
-    <!-- 시간대별 인사말 -->
-    <div id="greetingBanner" style="display:none; padding:8px 16px; text-align:center; font-size:13px; font-weight:800; border-bottom:1px solid;"></div>
-
-
-
-    <!-- 스크립트 모음 -->
-    <script>
-      (function() {
-        // 1. 시간대별 인사말 로직
-        var now = new Date();
-        var hour = now.getHours();
-        var min = now.getMinutes();
-        var banner = document.getElementById('greetingBanner');
-        
-        var greeting = null;
-        var bg = "#fefce8", text = "#854d0e", border = "#fef08a";
-
-        if (hour < 7) {
-          greeting = "🌅 좋은아침 입니다 오늘도 화이팅입니다!";
-          bg = "#f0fdfa"; text = "#0369a1"; border = "#e0f2fe";
-        } else if (hour === 12 || (hour === 13 && min <= 30)) {
-          greeting = "🍱 식사 맛있게 하세요 화이팅!";
-          bg = "#fff1f2"; text = "#be123c"; border = "#ffe4e6";
-        } else if (hour >= 18) {
-          greeting = "🌙 오늘 하루도 수고 하셨습니다!";
-          bg = "#f8fafc"; text = "#334155"; border = "#e2e8f0";
-        }
-
-        if (greeting) {
-          banner.innerText = greeting;
-          banner.style.background = bg;
-          banner.style.color = text;
-          banner.style.borderBottomColor = border;
-          banner.style.display = 'block';
-        }
-      })();
-
-
-    </script>
-
     <!-- 3패널 캐러셀 컨테이너 -->
     <div id="carouselViewport" style="overflow-x:hidden; overflow-y:auto; background:white; flex:1; min-height:0; position:relative; -webkit-overflow-scrolling:touch; touch-action:pan-y;">
       <div id="carouselTrack" style="display:flex; width:300%; min-height:100%; transform:translateX(-33.333%); will-change:transform;">
