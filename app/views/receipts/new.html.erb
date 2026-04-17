@@ -16,63 +16,29 @@
   <div id="instructionArea" style="text-align:center; padding:40px 20px;">
     <div style="font-size:48px; margin-bottom:16px;">📸</div>
     <h3 style="font-size:18px; font-weight:800; color:#111827; margin-bottom:8px;">영수증을 촬영해주세요</h3>
-    <p style="font-size:14px; color:#6b7280; line-height:1.5;">카메라로 영수증을 찍으면 AI가<br>자동으로 내용을 분석하여 입력합니다.</p>
+    <p style="font-size:14px; color:#6b7280; line-height:1.5;">촬영된 이미지는 스마트기기 환경에 맞춰<br>자동으로 용량이 데이터 최적화 됩니다.</p>
     
-    <button onclick="document.getElementById('receipt_image_file').click()" style="margin-top:24px; background:#be185d; color:white; border:none; padding:16px 24px; font-size:16px; font-weight:700; border-radius:12px; width:100%; display:flex; align-items:center; justify-content:center; gap:8px; cursor:pointer;">
+    <button onclick="document.getElementById('receipt_image_file').click()" style="margin-top:24px; background:#4f46e5; color:white; border:none; padding:16px 24px; font-size:16px; font-weight:700; border-radius:12px; width:100%; display:flex; align-items:center; justify-content:center; gap:8px; cursor:pointer;">
       <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
-      사진 촬영하기
+      사진 선택 / 촬영하기
     </button>
   </div>
-
-  <!-- 로딩 영역 -->
-  <div id="loadingArea" style="display:none; text-align:center; padding:80px 20px;">
-    <div class="spinner" style="margin:0 auto 24px auto; width:48px; height:48px; border:4px solid #f3f4f6; border-top:4px solid #be185d; border-radius:50%; animation:spin 1s linear infinite;"></div>
-    <h3 style="font-size:18px; font-weight:800; color:#111827; margin-bottom:8px;">AI가 영수증을 분석 중입니다...</h3>
-    <p style="font-size:14px; color:#6b7280;">잠시만 기다려주세요 (약 3~5초 소요)</p>
-  </div>
-
-  <style>
-    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-  </style>
 
   <!-- 입력 폼 영역 -->
   <div id="formArea" style="display:none;">
     <%= form_with model: @receipt, local: true, html: { multipart: true, id: "receiptForm" } do |f| %>
-      <input type="file" id="receipt_image_file" name="receipt[image]" accept="image/*" capture="environment" style="display:none;">
+      <input type="file" id="receipt_image_file" name="receipt[image]" accept="image/*" capture="environment" style="display:none;" required>
       
       <div style="background:#f9fafb; border-radius:12px; padding:16px; margin-bottom:24px; text-align:center;">
-        <img id="imagePreview" src="" style="max-width:100%; max-height:200px; border-radius:8px; object-fit:contain; display:none; margin:0 auto;">
-      </div>
-
-      <div class="form-group" style="margin-bottom:20px;">
-        <label style="display:block; font-size:14px; font-weight:700; color:#374151; margin-bottom:8px;">결제일자</label>
-        <%= f.date_field :receipt_date, class: "form-input", style: "width:100%; padding:14px; border:1px solid #d1d5db; border-radius:10px; font-size:16px;", required: true %>
-      </div>
-
-      <div class="form-group" style="margin-bottom:20px;">
-        <label style="display:block; font-size:14px; font-weight:700; color:#374151; margin-bottom:8px;">총 결제금액</label>
-        <div style="position:relative;">
-          <%= f.number_field :amount, class: "form-input", style: "width:100%; padding:14px 40px 14px 14px; border:1px solid #d1d5db; border-radius:10px; font-size:16px; text-align:right;", required: true %>
-          <span style="position:absolute; right:14px; top:50%; transform:translateY(-50%); color:#6b7280; font-weight:600;">원</span>
-        </div>
-      </div>
-
-      <div class="form-group" style="margin-bottom:20px;">
-        <label style="display:block; font-size:14px; font-weight:700; color:#374151; margin-bottom:8px;">결제처 (상호명)</label>
-        <%= f.text_field :store_name, class: "form-input", style: "width:100%; padding:14px; border:1px solid #d1d5db; border-radius:10px; font-size:16px;" %>
-      </div>
-
-      <div class="form-group" style="margin-bottom:20px;">
-        <label style="display:block; font-size:14px; font-weight:700; color:#374151; margin-bottom:8px;">카테고리</label>
-        <%= f.select :category, options_for_select(["식대", "자재비", "공구", "주유비", "기타"]), {}, class: "form-input", style: "width:100%; padding:14px; border:1px solid #d1d5db; border-radius:10px; font-size:16px; background:white; -webkit-appearance: none;" %>
+        <img id="imagePreview" src="" style="max-width:100%; max-height:200px; border-radius:8px; object-fit:contain; display:none; margin:0 auto; box-shadow:0 4px 6px -1px rgba(0,0,0,0.1);">
       </div>
 
       <div class="form-group" style="margin-bottom:32px;">
-        <label style="display:block; font-size:14px; font-weight:700; color:#374151; margin-bottom:8px;">메모 (선택)</label>
-        <%= f.text_area :memo, class: "form-input", style: "width:100%; padding:14px; border:1px solid #d1d5db; border-radius:10px; font-size:16px;", rows: 3, placeholder: "누구랑 밥 먹었는지, 어느 현장인지 등 메모" %>
+        <label style="display:block; font-size:14px; font-weight:700; color:#374151; margin-bottom:8px;">결제 날짜</label>
+        <%= f.date_field :receipt_date, value: @selected_date, class: "form-input", style: "width:100%; padding:14px; border:1px solid #d1d5db; border-radius:10px; font-size:16px;", required: true %>
       </div>
 
-      <button type="submit" style="width:100%; background:#111827; color:white; border:none; padding:18px; font-size:18px; font-weight:800; border-radius:12px; cursor:pointer; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);">
+      <button type="submit" id="submitBtn" style="width:100%; background:#111827; color:white; border:none; padding:18px; font-size:18px; font-weight:800; border-radius:12px; cursor:pointer; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);">
         영수증 저장하기
       </button>
     <% end %>
@@ -96,33 +62,39 @@
       if (this.files && this.files[0]) {
         const file = this.files[0];
         
-        // 미리보기 렌더링 (메모리 절약을 위해 URL.createObjectURL 사용 - WebView 튕김 방지)
         const objectUrl = URL.createObjectURL(file);
         const imgPreview = document.getElementById('imagePreview');
         imgPreview.src = objectUrl;
         imgPreview.style.display = 'block';
 
-        imgPreview.onload = function() {
-          URL.revokeObjectURL(objectUrl); // 메모리 해제
-        }
+        const btn = document.getElementById('submitBtn');
+        btn.innerText = "이미지 최적화 중...";
+        btn.style.opacity = "0.7";
+        btn.style.pointerEvents = "none";
 
         // UI 상태 전환
         document.getElementById('instructionArea').style.display = 'none';
-        document.getElementById('loadingArea').style.display = 'block';
-        document.getElementById('formArea').style.display = 'none';
+        document.getElementById('formArea').style.display = 'block';
 
-        // 캔버스를 활용해 이미지 리사이징 (폭 1200px 제한) 압축 시도 (네트워크 지연 및 메모리 초과 방지)
+        // 캔버스를 활용해 이미지 리사이징 (모바일 화면 최적화: 가로/세로 최대 800px)
         const img = new Image();
         img.src = objectUrl;
         img.onload = function() {
           const canvas = document.createElement('canvas');
           let width = img.width;
           let height = img.height;
-          const MAX_WIDTH = 1200;
+          const MAX_SIZE = 800; // 용량 최적화 기준
           
-          if (width > MAX_WIDTH) {
-            height = Math.round((height * MAX_WIDTH) / width);
-            width = MAX_WIDTH;
+          if (width > height) {
+            if (width > MAX_SIZE) {
+              height = Math.round((height * MAX_SIZE) / width);
+              width = MAX_SIZE;
+            }
+          } else {
+            if (height > MAX_SIZE) {
+              width = Math.round((width * MAX_SIZE) / height);
+              height = MAX_SIZE;
+            }
           }
           
           canvas.width = width;
@@ -130,45 +102,31 @@
           const ctx = canvas.getContext('2d');
           ctx.drawImage(img, 0, 0, width, height);
           
-          // 압축된 Blob 객체 생성 후 서버로 전송
+          // 압축된 Blob 객체 생성 후 폼 파일 입력 대체 (DataTransfer)
           canvas.toBlob(function(blob) {
-            const formData = new FormData();
-            // blob을 file로 변경 (Gemini가 처리할 수 있게)
-            formData.append('file', blob, 'receipt.jpg');
-
-            const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
-
-            fetch('/receipts/analyze', {
-              method: 'POST',
-              headers: {
-                'X-CSRF-Token': csrfToken,
-                'Accept': 'application/json'
-              },
-              body: formData
-            })
-            .then(response => response.json())
-            .then(data => {
-              document.getElementById('loadingArea').style.display = 'none';
-              document.getElementById('formArea').style.display = 'block';
-
-              if (data.success && data.data) {
-                const result = data.data;
-                if (result.date) document.getElementById('receipt_receipt_date').value = result.date;
-                if (result.amount) document.getElementById('receipt_amount').value = result.amount;
-                if (result.store_name) document.getElementById('receipt_store_name').value = result.store_name;
-                if (result.category) document.getElementById('receipt_category').value = result.category;
-              } else {
-                alert(data.error || '표면 인식이 어렵습니다. 직접 내용을 채워주세요.');
-              }
-            })
-            .catch(error => {
-              console.error('Error:', error);
-              document.getElementById('loadingArea').style.display = 'none';
-              document.getElementById('formArea').style.display = 'block';
-              alert('영수증 분석 중 서버 응답 시간이 초과되거나 네트워크 오류가 발생했습니다. 직접 입력해주세요.');
-            });
-          }, 'image/jpeg', 0.8); 
+            const newFile = new File([blob], "receipt_optimized.png", {type: "image/png"});
+            const dt = new DataTransfer();
+            dt.items.add(newFile);
+            fileInput.files = dt.files; // 기존 원본 대용량 파일 대신 PNG 최적화 파일 교체
+            
+            btn.innerText = "저장하기";
+            btn.style.opacity = "1";
+            btn.style.pointerEvents = "auto";
+            
+          }, 'image/png'); // 화질 저하 없이 서버 용량은 아끼기 위해 PNG 포맷 채택
         };
+      }
+    });
+
+    // 폼 제출 방지 - 최적화 도중에는 제출 불가
+    document.getElementById('receiptForm').addEventListener('submit', function(e) {
+      const btn = document.getElementById('submitBtn');
+      if (btn.innerText === "이미지 최적화 중...") {
+        e.preventDefault();
+      } else {
+        btn.innerText = "저장하는 중...";
+        btn.style.opacity = "0.7";
+        btn.style.pointerEvents = "none";
       }
     });
   }
