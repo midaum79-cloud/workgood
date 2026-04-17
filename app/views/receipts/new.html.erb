@@ -46,88 +46,95 @@
 </div>
 
 <script>
-  let eventBound = false;
-
-  document.addEventListener('turbo:load', function() {
-    initCameraFeature();
-  });
-
-  function initCameraFeature() {
-    const fileInput = document.getElementById('receipt_image_file');
-    if (!fileInput || eventBound) return;
+  (function() {
+    // Turbo 네비게이션 시 중복 선언 방지를 위해 window 객체에 이벤트 바운드 여부 기록
+    if (window.receiptsNewEventBound) return;
     
-    eventBound = true;
+    document.addEventListener('turbo:load', function() {
+      initCameraFeature();
+    });
 
-    fileInput.addEventListener('change', function(e) {
-      if (this.files && this.files[0]) {
-        const file = this.files[0];
-        
-        const objectUrl = URL.createObjectURL(file);
-        const imgPreview = document.getElementById('imagePreview');
-        imgPreview.src = objectUrl;
-        imgPreview.style.display = 'block';
+    function initCameraFeature() {
+      const fileInput = document.getElementById('receipt_image_file');
+      if (!fileInput) return;
+      window.receiptsNewEventBound = true;
 
-        const btn = document.getElementById('submitBtn');
-        btn.innerText = "이미지 최적화 중...";
-        btn.style.opacity = "0.7";
-        btn.style.pointerEvents = "none";
+      // 이미 이벤트가 추가된 input이면 방지
+      if (fileInput.dataset.eventBound === "true") return;
+      fileInput.dataset.eventBound = "true";
 
-        // UI 상태 전환
-        document.getElementById('instructionArea').style.display = 'none';
-        document.getElementById('formArea').style.display = 'block';
-
-        // 캔버스를 활용해 이미지 리사이징 (모바일 화면 최적화: 가로/세로 최대 800px)
-        const img = new Image();
-        img.src = objectUrl;
-        img.onload = function() {
-          const canvas = document.createElement('canvas');
-          let width = img.width;
-          let height = img.height;
-          const MAX_SIZE = 800; // 용량 최적화 기준
+      fileInput.addEventListener('change', function(e) {
+        if (this.files && this.files[0]) {
+          const file = this.files[0];
           
-          if (width > height) {
-            if (width > MAX_SIZE) {
-              height = Math.round((height * MAX_SIZE) / width);
-              width = MAX_SIZE;
+          const objectUrl = URL.createObjectURL(file);
+          const imgPreview = document.getElementById('imagePreview');
+          imgPreview.src = objectUrl;
+          imgPreview.style.display = 'block';
+
+          const btn = document.getElementById('submitBtn');
+          const originalText = btn.innerText;
+          btn.innerText = "이미지 최적화 중...";
+          btn.style.opacity = "0.7";
+          btn.style.pointerEvents = "none";
+
+          document.getElementById('instructionArea').style.display = 'none';
+          document.getElementById('formArea').style.display = 'block';
+
+          const img = new Image();
+          img.src = objectUrl;
+          img.onload = function() {
+            const canvas = document.createElement('canvas');
+            let width = img.width;
+            let height = img.height;
+            const MAX_SIZE = 800; 
+            
+            if (width > height) {
+              if (width > MAX_SIZE) {
+                height = Math.round((height * MAX_SIZE) / width);
+                width = MAX_SIZE;
+              }
+            } else {
+              if (height > MAX_SIZE) {
+                width = Math.round((width * MAX_SIZE) / height);
+                height = MAX_SIZE;
+              }
             }
+            
+            canvas.width = width;
+            canvas.height = height;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(img, 0, 0, width, height);
+            
+            canvas.toBlob(function(blob) {
+              const newFile = new File([blob], "receipt_optimized.png", {type: "image/png"});
+              const dt = new DataTransfer();
+              dt.items.add(newFile);
+              fileInput.files = dt.files;
+              
+              btn.innerText = originalText;
+              btn.style.opacity = "1";
+              btn.style.pointerEvents = "auto";
+              
+            }, 'image/png');
+          };
+        }
+      });
+
+      const form = document.getElementById('receiptForm');
+      if (form && !form.dataset.submitBound) {
+        form.dataset.submitBound = "true";
+        form.addEventListener('submit', function(e) {
+          const btn = document.getElementById('submitBtn');
+          if (btn.innerText === "이미지 최적화 중...") {
+            e.preventDefault();
           } else {
-            if (height > MAX_SIZE) {
-              width = Math.round((width * MAX_SIZE) / height);
-              height = MAX_SIZE;
-            }
+            btn.innerText = "저장하는 중...";
+            btn.style.opacity = "0.7";
+            btn.style.pointerEvents = "none";
           }
-          
-          canvas.width = width;
-          canvas.height = height;
-          const ctx = canvas.getContext('2d');
-          ctx.drawImage(img, 0, 0, width, height);
-          
-          // 압축된 Blob 객체 생성 후 폼 파일 입력 대체 (DataTransfer)
-          canvas.toBlob(function(blob) {
-            const newFile = new File([blob], "receipt_optimized.png", {type: "image/png"});
-            const dt = new DataTransfer();
-            dt.items.add(newFile);
-            fileInput.files = dt.files; // 기존 원본 대용량 파일 대신 PNG 최적화 파일 교체
-            
-            btn.innerText = "저장하기";
-            btn.style.opacity = "1";
-            btn.style.pointerEvents = "auto";
-            
-          }, 'image/png'); // 화질 저하 없이 서버 용량은 아끼기 위해 PNG 포맷 채택
-        };
+        });
       }
-    });
-
-    // 폼 제출 방지 - 최적화 도중에는 제출 불가
-    document.getElementById('receiptForm').addEventListener('submit', function(e) {
-      const btn = document.getElementById('submitBtn');
-      if (btn.innerText === "이미지 최적화 중...") {
-        e.preventDefault();
-      } else {
-        btn.innerText = "저장하는 중...";
-        btn.style.opacity = "0.7";
-        btn.style.pointerEvents = "none";
-      }
-    });
-  }
+    }
+  })();
 </script>

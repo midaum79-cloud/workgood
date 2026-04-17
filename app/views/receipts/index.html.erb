@@ -126,86 +126,91 @@
 </div>
 
 <script>
-  let modalImg = document.getElementById('modalImage');
-  let zoomContainer = document.getElementById('zoomContainer');
-  
-  // 핀치 줌 관련 변수
-  let currentScale = 1;
-  let initialDistance = null;
+  (function() {
+    let modalImg = document.getElementById('modalImage');
+    let zoomContainer = document.getElementById('zoomContainer');
+    
+    // 핀치 줌 관련 변수
+    let currentScale = 1;
+    let initialDistance = null;
 
-  function openImageModal(src, id) {
-    modalImg.src = src;
-    document.getElementById('imageModal').style.display = 'flex';
-    currentScale = 1;
-    modalImg.style.transform = `scale(${currentScale})`;
-  }
-
-  function closeImageModal() {
-    document.getElementById('imageModal').style.display = 'none';
-    currentScale = 1;
-    modalImg.style.transform = `scale(1)`;
-  }
-
-  // 간단한 터치 줌 (두 손가락)
-  zoomContainer.addEventListener('touchstart', function(e) {
-    if (e.touches.length === 2) {
-      initialDistance = Math.hypot(
-        e.touches[0].clientX - e.touches[1].clientX,
-        e.touches[0].clientY - e.touches[1].clientY
-      );
-    }
-  });
-
-  zoomContainer.addEventListener('touchmove', function(e) {
-    if (e.touches.length === 2 && initialDistance) {
-      e.preventDefault(); // 스크롤 방지
-      let newDistance = Math.hypot(
-        e.touches[0].clientX - e.touches[1].clientX,
-        e.touches[0].clientY - e.touches[1].clientY
-      );
-      
-      let scaleChange = newDistance / initialDistance;
-      let targetScale = currentScale * scaleChange;
-      
-      // 스케일 제한 설정 (1x ~ 4x)
-      targetScale = Math.max(1, Math.min(targetScale, 4));
-      
-      modalImg.style.transform = `scale(${targetScale})`;
-    }
-  });
-
-  zoomContainer.addEventListener('touchend', function(e) {
-    if (e.touches.length < 2) {
-      initialDistance = null;
-      // 터치가 끝나면 현재 스케일을 저장
-      const transform = modalImg.style.transform;
-      const match = transform.match(/scale\(([^)]+)\)/);
-      if (match) {
-        currentScale = parseFloat(match[1]);
-      }
-    }
-  });
-
-  // 더블 탭 확대/축소
-  let lastTap = 0;
-  zoomContainer.addEventListener('touchend', function(e) {
-    let currentTime = new Date().getTime();
-    let tapLength = currentTime - lastTap;
-    if (tapLength < 300 && tapLength > 0) {
-      // 더블 탭 감지
-      if (currentScale > 1) {
-        currentScale = 1; // 확대 상태면 원래대로
-      } else {
-        currentScale = 2.5; // 원래 상태면 확대
-      }
-      modalImg.style.transition = 'transform 0.2s ease-out';
+    window.openImageModal = function(src, id) {
+      if(!modalImg) modalImg = document.getElementById('modalImage');
+      modalImg.src = src;
+      document.getElementById('imageModal').style.display = 'flex';
+      currentScale = 1;
       modalImg.style.transform = `scale(${currentScale})`;
-      
-      setTimeout(() => {
-        modalImg.style.transition = 'none'; // 애니메이션 종료 후 초기화
-      }, 200);
-      e.preventDefault();
+    };
+
+    window.closeImageModal = function() {
+      document.getElementById('imageModal').style.display = 'none';
+      currentScale = 1;
+      if(modalImg) modalImg.style.transform = `scale(1)`;
+    };
+
+    if (zoomContainer) {
+      // 간단한 터치 줌 (두 손가락)
+      zoomContainer.addEventListener('touchstart', function(e) {
+        if (e.touches.length === 2) {
+          initialDistance = Math.hypot(
+            e.touches[0].clientX - e.touches[1].clientX,
+            e.touches[0].clientY - e.touches[1].clientY
+          );
+        }
+      });
+
+      zoomContainer.addEventListener('touchmove', function(e) {
+        if (e.touches.length === 2 && initialDistance) {
+          e.preventDefault(); // 스크롤 방지
+          let newDistance = Math.hypot(
+            e.touches[0].clientX - e.touches[1].clientX,
+            e.touches[0].clientY - e.touches[1].clientY
+          );
+          
+          let scaleChange = newDistance / initialDistance;
+          let targetScale = currentScale * scaleChange;
+          
+          // 스케일 제한 설정 (1x ~ 4x)
+          targetScale = Math.max(1, Math.min(targetScale, 4));
+          
+          modalImg.style.transform = `scale(${targetScale})`;
+        }
+      });
+
+      zoomContainer.addEventListener('touchend', function(e) {
+        if (e.touches.length < 2) {
+          initialDistance = null;
+          // 터치가 끝나면 현재 스케일을 저장
+          const transform = modalImg.style.transform;
+          const match = transform.match(/scale\(([^)]+)\)/);
+          if (match) {
+            currentScale = parseFloat(match[1]);
+          }
+        }
+      });
+
+      // 더블 탭 확대/축소
+      let lastTap = 0;
+      zoomContainer.addEventListener('touchend', function(e) {
+        let currentTime = new Date().getTime();
+        let tapLength = currentTime - lastTap;
+        if (tapLength < 300 && tapLength > 0) {
+          // 더블 탭 감지
+          if (currentScale > 1) {
+            currentScale = 1; // 확대 상태면 원래대로
+          } else {
+            currentScale = 2.5; // 원래 상태면 확대
+          }
+          modalImg.style.transition = 'transform 0.2s ease-out';
+          modalImg.style.transform = `scale(${currentScale})`;
+          
+          setTimeout(() => {
+            modalImg.style.transition = 'none'; // 애니메이션 종료 후 초기화
+          }, 200);
+          e.preventDefault();
+        }
+        lastTap = currentTime;
+      });
     }
-    lastTap = currentTime;
-  });
+  })();
 </script>
