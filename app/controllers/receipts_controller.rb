@@ -45,7 +45,8 @@ class ReceiptsController < ApplicationController
       render :new, status: :unprocessable_entity
     end
   rescue => e
-    redirect_to receipts_path, alert: "저장 에러: #{e.message}"
+    Rails.logger.error("Receipt create error: #{e.class} - #{e.message}")
+    redirect_to receipts_path, alert: "저장 중 오류가 발생했습니다. 다시 시도해 주세요."
   end
 
   # DB에 저장된 이미지를 직접 서빙
