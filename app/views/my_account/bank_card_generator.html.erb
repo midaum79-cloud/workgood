@@ -152,17 +152,27 @@
   </div>
 
   <!-- 이미지 다운로드용 모달 -->
-  <div id="imageDownloadModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); z-index:9999; justify-content:center; align-items:center; flex-direction:column;">
+  <div id="imageDownloadModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); z-index:9999; justify-content:center; align-items:center; flex-direction:column; overflow-y:auto; padding:20px 0;">
     <div style="background:white; padding:12px 20px; border-radius:12px; font-weight:800; font-size:15px; margin-bottom:16px; color:#1e293b; display:flex; flex-direction:column; align-items:center; gap:4px; text-align:center;">
       <span style="font-size:18px;">🎉 통장사본이 생성되었습니다!</span>
       <span style="color:#64748b; font-size:12px; margin-top:4px;">기기에 따라 아래 버튼이나<br>이미지를 길게 눌러 저장해주세요.</span>
       <button onclick="document.getElementById('imageDownloadModal').style.display='none'; window.location.reload();" style="margin-top:10px; padding:6px 12px; border-radius:8px; background:#e2e8f0; border:none; font-weight:bold; cursor:pointer;">닫기</button>
     </div>
     
-    <img id="downloadedImagePreview" src="" style="max-width:90%; max-height:50vh; border-radius:12px; border:1px solid rgba(255,255,255,0.2); -webkit-touch-callout: default !important; user-select: auto !important; pointer-events: auto !important;">
+    <img id="downloadedImagePreview" src="" style="max-width:90%; max-height:40vh; border-radius:12px; border:1px solid rgba(255,255,255,0.2); -webkit-touch-callout: default !important; user-select: auto !important; pointer-events: auto !important;">
+
+    <!-- 계좌정보 복사 영역 -->
+    <div id="bankInfoCopyArea" style="width:90%; max-width:320px; margin-top:14px; background:white; border-radius:14px; padding:14px 16px; text-align:center;">
+      <div style="font-size:12px; font-weight:700; color:#64748b; margin-bottom:8px;">📋 계좌정보 (터치하여 복사)</div>
+      <div id="bankInfoText" style="font-size:14px; font-weight:900; color:#111827; line-height:1.6; user-select:all; -webkit-user-select:all; padding:8px; background:#f8fafc; border-radius:10px; border:1px dashed #cbd5e1;">
+      </div>
+      <button onclick="copyBankInfo()" style="margin-top:10px; width:100%; padding:12px; background:#10b981; color:white; border:none; border-radius:10px; font-size:14px; font-weight:900; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:6px;">
+        <span>📋</span> <span id="copyBtnText">계좌번호 복사하기</span>
+      </button>
+    </div>
     
-    <div style="display:flex; gap:10px; margin-top:20px; width:90%; max-width:320px;">
-      <button onclick="shareImage('bank_passbook.png', '통장사본 공유', '통장사본이 전송되었습니다. 클릭해서 저장하세요.')" style="flex:1; background:#0f172a; color:white; border:none; padding:16px 0; border-radius:14px; font-weight:900; font-size:14px; cursor:pointer; box-shadow:0 6px 16px rgba(15,23,42,0.4); display:flex; flex-direction:column; align-items:center; gap:4px;">
+    <div style="display:flex; gap:10px; margin-top:14px; width:90%; max-width:320px;">
+      <button onclick="shareBankInfo()" style="flex:1; background:#0f172a; color:white; border:none; padding:16px 0; border-radius:14px; font-weight:900; font-size:14px; cursor:pointer; box-shadow:0 6px 16px rgba(15,23,42,0.4); display:flex; flex-direction:column; align-items:center; gap:4px;">
         <span style="font-size:24px;">💬</span>
         <span>메시지로 공유</span>
       </button>
@@ -176,12 +186,42 @@
 </div>
 
 <script>
-  async function shareImage(filename, title, text) {
+  function getBankInfoText() {
+    var bank = document.getElementById('bankNameInput').value || '신한은행';
+    var account = document.getElementById('bankAccountInput').value || '';
+    var holder = document.getElementById('bankHolderInput').value || '';
+    return '🏦 ' + bank + '\n💳 ' + account + '\n👤 ' + holder;
+  }
+
+  async function copyBankInfo() {
+    var text = getBankInfoText();
+    var btnText = document.getElementById('copyBtnText');
+    try {
+      await navigator.clipboard.writeText(text);
+      btnText.textContent = '✅ 복사 완료!';
+      setTimeout(function() { btnText.textContent = '계좌번호 복사하기'; }, 2000);
+    } catch(e) {
+      // 클립보드 API 지원하지 않는 경우 fallback
+      var ta = document.createElement('textarea');
+      ta.value = text;
+      ta.style.position = 'fixed';
+      ta.style.opacity = '0';
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand('copy');
+      document.body.removeChild(ta);
+      btnText.textContent = '✅ 복사 완료!';
+      setTimeout(function() { btnText.textContent = '계좌번호 복사하기'; }, 2000);
+    }
+  }
+
+  async function shareBankInfo() {
+    var text = getBankInfoText();
     try {
       if (navigator.share) {
         await navigator.share({
-          title: title,
-          text: text,
+          title: '통장사본 공유',
+          text: text + '\n\n통장사본 이미지 확인 👇',
           url: 'https://workgood.co.kr/d/<%= current_user.document_share_token %>?docs=bank'
         });
       } else {
@@ -397,6 +437,13 @@
       document.getElementById('imageDownloadModal').style.display = 'flex';
       const canvas = await html2canvas(cardEl, { scale: 4, backgroundColor: '#ffffff', logging: false });
       document.getElementById('downloadedImagePreview').src = canvas.toDataURL('image/png');
+      
+      // 모달 계좌 정보 텍스트 세팅
+      var bank = document.getElementById('bankNameInput').value;
+      var account = document.getElementById('bankAccountInput').value;
+      var holder = document.getElementById('bankHolderInput').value;
+      document.getElementById('bankInfoText').innerHTML = 
+        '🏦 ' + bank + '<br>💳 ' + account + '<br>👤 ' + holder;
       
       // Update info in backend async
       const formData = new FormData();
