@@ -29,11 +29,12 @@ class ReceiptsController < ApplicationController
       receipt_date: params.dig(:receipt, :receipt_date)
     )
 
-    # 이미지를 DB에 직접 저장 (R2/S3 우회)
+    # 이미지를 서버에서 압축 후 DB에 직접 저장 (R2/S3 완전 우회)
     if params.dig(:receipt, :image).present?
       uploaded = params[:receipt][:image]
-      @receipt.image_data = uploaded.read
-      @receipt.image_content_type = uploaded.content_type
+      compressed = compress_image(uploaded)
+      @receipt.image_data = compressed[:data]
+      @receipt.image_content_type = compressed[:content_type]
     end
 
     if @receipt.image_data.present? && @receipt.save
@@ -51,6 +52,7 @@ class ReceiptsController < ApplicationController
   def serve_image
     receipt = current_user.receipts.find(params[:id])
     if receipt.image_data.present?
+      expires_in 1.hour, public: false
       send_data receipt.image_data,
                 type: receipt.image_content_type || 'image/jpeg',
                 disposition: 'inline'
@@ -68,6 +70,32 @@ class ReceiptsController < ApplicationController
   end
 
   private
+
+  # 이미지를 800px로 리사이즈하고 JPEG 70% 품질로 압축
+  # 원본 ~3-5MB → 압축 후 ~30-80KB
+  def compress_image(uploaded_file)
+    require 'image_processing/vips'
+
+    processed = ImageProcessing::Vips
+      .source(uploaded_file.tempfile)
+      .resize_to_limit(800, 800)
+      .convert("jpeg")
+      .saver(quality: 70, strip: true)
+      .call
+
+    {
+      data: processed.read,
+      content_type: 'image/jpeg'
+    }
+  rescue => e
+    # 압축 실패 시 원본 그대로 저장
+    Rails.logger.warn("이미지 압축 실패 (#{e.message}), 원본 저장")
+    uploaded_file.rewind
+    {
+      data: uploaded_file.read,
+      content_type: uploaded_file.content_type
+    }
+  end
 
   def require_standard_for_receipts!
     unless current_user.standard_or_above?
