@@ -12,8 +12,12 @@
 <div style="min-height:100vh; background:#f5f5f5; padding-bottom:env(safe-area-inset-bottom);">
   <div style="background:white; padding:18px 20px 14px 20px; border-bottom:1px solid #ececec; position:sticky; top:0; z-index:30;" class="safe-sticky-header">
     <div style="display:flex; justify-content:space-between; align-items:center;">
-      <div style="font-size:24px; color:#111827; font-weight:900; cursor:pointer;" onclick="openDrawer()">☰</div>
-      <div style="font-size:20px; font-weight:900; color:#111827;">💳 스마트통장 이미지</div>
+      <div style="display:flex; align-items:center; gap:8px;">
+        <a href="javascript:history.back()" style="color:#1f2937; text-decoration:none;">
+          <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
+        </a>
+        <div style="font-size:20px; font-weight:900; color:#111827;">🏦 통장사본 이미지</div>
+      </div>
       <div style="width:24px;"></div>
     </div>
   </div>
@@ -22,14 +26,14 @@
     <div style="background:white; border-radius:20px; padding:20px; box-shadow:0 2px 10px rgba(0,0,0,0.02);">
       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
         <div style="font-size:15px; font-weight:900; color:#0369a1; display:flex; align-items:center; gap:6px;">
-          스마트통장 이미지 생성기
+          🏦 통장사본 이미지 생성기
         </div>
         <span style="background:#bae6fd; color:#0369a1; font-size:10px; font-weight:900; padding:4px 8px; border-radius:99px;">
           남은 횟수: <%= [10 - current_user.bank_card_generations_count.to_i, 0].max %>회
         </span>
       </div>
       <div style="font-size:12px; color:#0284c7; font-weight:600; margin-bottom:16px; line-height:1.5;">
-        계좌번호를 입력하면 신뢰감을 주는 스마트 통장 명함이 즉시 생성됩니다. 앱 내 이미지를 다운받아 보내세요. 평생 10회 무료 제공됩니다.
+        계좌번호를 입력하면 실제 통장사본과 동일한 형태의 이미지가 생성됩니다. 거래처에 통장사본을 보낼 때 활용하세요.
       </div>
 
       <!-- Inputs -->
@@ -37,29 +41,103 @@
         <select id="bankNameInput" style="width:100%; padding:14px; border-radius:12px; border:1px solid #cbd5e1; font-weight:800; font-size:14px; color:#1e293b;">
           <%= options_for_select(['신한은행', '국민은행', '우리은행', '하나은행', '농협은행', 'IBK기업은행', 'KDB산업은행', '수협은행', '카카오뱅크', '토스뱅크', '케이뱅크', '새마을금고', '우체국', '신협', '저축은행', '산림조합', '씨티은행', 'SC제일은행', '대구은행', '부산은행', '광주은행', '제주은행', '전북은행', '경남은행', '기타'], current_user.bank_name) %>
         </select>
+        <select id="accountTypeInput" style="width:100%; padding:14px; border-radius:12px; border:1px solid #cbd5e1; font-weight:800; font-size:14px; color:#1e293b;">
+          <option value="보통예금">보통예금</option>
+          <option value="자유입출금">자유입출금</option>
+          <option value="기업자유예금">기업자유예금</option>
+          <option value="정기예금">정기예금</option>
+          <option value="저축예금">저축예금</option>
+        </select>
         <input type="text" id="bankAccountInput" placeholder="계좌번호 (예: 110-123-456789)" style="width:100%; padding:14px; border-radius:12px; border:1px solid #cbd5e1; font-weight:800; font-size:14px; color:#1e293b;" value="<%= current_user.bank_account_number %>">
         <input type="text" id="bankHolderInput" placeholder="예금주 성함" style="width:100%; padding:14px; border-radius:12px; border:1px solid #cbd5e1; font-weight:800; font-size:14px; color:#1e293b;" value="<%= current_user.bank_account_holder %>">
       </div>
 
-      <!-- Preview Card -->
-      <div id="bankCardElement" style="position:relative; width:100%; aspect-ratio:1.586; border-radius:16px; background:linear-gradient(135deg, #2563eb, #1e3a8a); color:white; padding:24px; box-shadow:0 10px 25px rgba(0,0,0,0.15); overflow:hidden; margin-bottom:16px; display:flex; flex-direction:column; justify-content:space-between; box-sizing:border-box; transition: all 0.3s ease;">
-        <div style="position:absolute; top:-50px; right:-50px; width:150px; height:150px; background:rgba(255,255,255,0.1); border-radius:50%;"></div>
-        <div style="position:absolute; bottom:-30px; left:-30px; width:100px; height:100px; background:rgba(255,255,255,0.05); border-radius:50%;"></div>
-        <div style="position:absolute; top:40%; right:10%; width:60px; height:60px; background:rgba(255,255,255,0.08); border-radius:12px; transform:rotate(15deg);"></div>
-        
-        <div style="position:relative; z-index:1; display:flex; justify-content:space-between; align-items:flex-start;">
-          <div id="cardBankName" style="font-size:20px; font-weight:900; letter-spacing:-0.5px; text-shadow:0 1px 3px rgba(0,0,0,0.1);"><%= current_user.bank_name.presence || '신한은행' %></div>
-          <div style="font-size:24px; filter:drop-shadow(0 2px 4px rgba(0,0,0,0.1));">💳</div>
+      <!-- 통장사본 미리보기 -->
+      <div id="bankCardElement" style="
+        width: 100%;
+        background: white;
+        border: 2px solid #1e3a5f;
+        border-radius: 4px;
+        overflow: hidden;
+        margin-bottom: 16px;
+        box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+      ">
+        <!-- 통장 상단 헤더 (은행 브랜드) -->
+        <div id="bankHeader" style="
+          background: linear-gradient(135deg, #1e3a5f, #2563eb);
+          padding: 20px 24px;
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+        ">
+          <div style="display:flex; align-items:center; gap:10px;">
+            <div id="bankIcon" style="width:36px; height:36px; background:white; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:18px; font-weight:900; color:#1e3a5f;">🏦</div>
+            <div>
+              <div id="cardBankName" style="font-size:20px; font-weight:900; color:white; letter-spacing:-0.5px;">신한은행</div>
+              <div style="font-size:11px; font-weight:700; color:rgba(255,255,255,0.7);">BANK PASSBOOK</div>
+            </div>
+          </div>
+          <div style="text-align:right;">
+            <div style="font-size:10px; font-weight:700; color:rgba(255,255,255,0.6);">통장사본</div>
+            <div style="font-size:10px; font-weight:700; color:rgba(255,255,255,0.6);">COPY</div>
+          </div>
         </div>
 
-        <div style="position:relative; z-index:1; margin-top:auto;">
-          <div id="cardAccountNumber" style="font-size:22px; font-weight:800; letter-spacing:1px; margin-bottom:12px; font-family:'Courier New', Courier, monospace; text-shadow:0 2px 4px rgba(0,0,0,0.2);"><%= current_user.bank_account_number.presence || '110-123-456789' %></div>
-          <div style="display:flex; justify-content:space-between; align-items:flex-end;">
-            <div style="display:flex; flex-direction:column;">
-              <span style="font-size:10px; opacity:0.8; font-weight:700; margin-bottom:2px; letter-spacing:0.5px;">성함</span>
-              <span id="cardHolderName" style="font-size:16px; font-weight:900; letter-spacing:1px; text-shadow:0 1px 3px rgba(0,0,0,0.1);"><%= current_user.bank_account_holder.presence || '김일잘' %></span>
+        <!-- 점선 구분선 -->
+        <div style="border-top:2px dashed #d1d5db; margin:0;"></div>
+
+        <!-- 통장 정보 필드 (표 형태) -->
+        <div style="padding:0;">
+          <!-- 예금종류 -->
+          <div style="display:flex; border-bottom:1px solid #e5e7eb;">
+            <div style="width:100px; flex-shrink:0; background:#f8fafc; padding:14px 16px; font-size:12px; font-weight:800; color:#64748b; display:flex; align-items:center; border-right:1px solid #e5e7eb;">
+              예금종류
             </div>
-            <div style="font-size:9px; font-weight:800; opacity:0.8; text-align:right; line-height:1.2; text-shadow:0 1px 2px rgba(0,0,0,0.1);">스마트한 현장 관리<br>일잘러 앱</div>
+            <div id="fieldAccountType" style="flex:1; padding:14px 16px; font-size:14px; font-weight:800; color:#111827; display:flex; align-items:center;">
+              보통예금
+            </div>
+          </div>
+
+          <!-- 계좌번호 -->
+          <div style="display:flex; border-bottom:1px solid #e5e7eb;">
+            <div style="width:100px; flex-shrink:0; background:#f8fafc; padding:14px 16px; font-size:12px; font-weight:800; color:#64748b; display:flex; align-items:center; border-right:1px solid #e5e7eb;">
+              계좌번호
+            </div>
+            <div id="fieldAccountNumber" style="flex:1; padding:14px 16px; font-size:18px; font-weight:900; color:#111827; font-family:'Courier New', Courier, monospace; letter-spacing:1.5px; display:flex; align-items:center;">
+              110-123-456789
+            </div>
+          </div>
+
+          <!-- 예금주 -->
+          <div style="display:flex; border-bottom:1px solid #e5e7eb;">
+            <div style="width:100px; flex-shrink:0; background:#f8fafc; padding:14px 16px; font-size:12px; font-weight:800; color:#64748b; display:flex; align-items:center; border-right:1px solid #e5e7eb;">
+              예금주
+            </div>
+            <div id="fieldHolderName" style="flex:1; padding:14px 16px; font-size:16px; font-weight:900; color:#111827; display:flex; align-items:center;">
+              김일잘
+            </div>
+          </div>
+
+          <!-- 개설지점 -->
+          <div style="display:flex;">
+            <div style="width:100px; flex-shrink:0; background:#f8fafc; padding:14px 16px; font-size:12px; font-weight:800; color:#64748b; display:flex; align-items:center; border-right:1px solid #e5e7eb;">
+              발급일
+            </div>
+            <div id="fieldIssueDate" style="flex:1; padding:14px 16px; font-size:13px; font-weight:700; color:#6b7280; display:flex; align-items:center;">
+            </div>
+          </div>
+        </div>
+
+        <!-- 통장 하단 -->
+        <div style="border-top:2px dashed #d1d5db;"></div>
+        <div style="background:#f8fafc; padding:12px 16px; display:flex; justify-content:space-between; align-items:center;">
+          <div style="font-size:10px; color:#94a3b8; font-weight:700; line-height:1.5;">
+            ※ 본 통장사본은 계좌확인 용도로 발급되었습니다.<br>
+            ※ 일잘러 앱에서 생성된 디지털 통장사본입니다.
+          </div>
+          <div style="text-align:right;">
+            <div style="font-size:9px; color:#94a3b8; font-weight:700;">Powered by</div>
+            <div style="font-size:11px; color:#64748b; font-weight:900;">일잘러</div>
           </div>
         </div>
       </div>
@@ -67,7 +145,7 @@
       <!-- Action Buttons -->
       <div style="display:flex; flex-direction:column; gap:8px;">
         <button type="button" onclick="generateImageWithLimit()" id="downloadBankCardBtn" style="width:100%; background:#0f172a; color:white; border:none; padding:16px; border-radius:12px; font-size:15px; font-weight:900; cursor:pointer; box-shadow:0 6px 16px rgba(15,23,42,0.3); display:flex; justify-content:center; align-items:center; gap:8px;">
-          <span>💾 명함공유 및 저장</span>
+          <span>📄 통장사본 공유 및 저장</span>
         </button>
       </div>
     </div>
@@ -76,7 +154,7 @@
   <!-- 이미지 다운로드용 모달 -->
   <div id="imageDownloadModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); z-index:9999; justify-content:center; align-items:center; flex-direction:column;">
     <div style="background:white; padding:12px 20px; border-radius:12px; font-weight:800; font-size:15px; margin-bottom:16px; color:#1e293b; display:flex; flex-direction:column; align-items:center; gap:4px; text-align:center;">
-      <span style="font-size:18px;">🎉 명함 생성이 완료되었습니다!</span>
+      <span style="font-size:18px;">🎉 통장사본이 생성되었습니다!</span>
       <span style="color:#64748b; font-size:12px; margin-top:4px;">기기에 따라 아래 버튼이나<br>이미지를 길게 눌러 저장해주세요.</span>
       <button onclick="document.getElementById('imageDownloadModal').style.display='none'; window.location.reload();" style="margin-top:10px; padding:6px 12px; border-radius:8px; background:#e2e8f0; border:none; font-weight:bold; cursor:pointer;">닫기</button>
     </div>
@@ -84,12 +162,12 @@
     <img id="downloadedImagePreview" src="" style="max-width:90%; max-height:50vh; border-radius:12px; border:1px solid rgba(255,255,255,0.2); -webkit-touch-callout: default !important; user-select: auto !important; pointer-events: auto !important;">
     
     <div style="display:flex; gap:10px; margin-top:20px; width:90%; max-width:320px;">
-      <button onclick="shareImage('bank_card.png', '스마트통장 이미지 저장', '일잘러에서 명함이 전송되었습니다 클릭해서 저장하기를 누르세요')" style="flex:1; background:#0f172a; color:white; border:none; padding:16px 0; border-radius:14px; font-weight:900; font-size:14px; cursor:pointer; box-shadow:0 6px 16px rgba(15,23,42,0.4); display:flex; flex-direction:column; align-items:center; gap:4px;">
+      <button onclick="shareImage('bank_passbook.png', '통장사본 공유', '통장사본이 전송되었습니다. 클릭해서 저장하세요.')" style="flex:1; background:#0f172a; color:white; border:none; padding:16px 0; border-radius:14px; font-weight:900; font-size:14px; cursor:pointer; box-shadow:0 6px 16px rgba(15,23,42,0.4); display:flex; flex-direction:column; align-items:center; gap:4px;">
         <span style="font-size:24px;">💬</span>
         <span>메시지로 공유</span>
       </button>
 
-      <button onclick="saveToGallery('bank_card.png')" style="flex:1; background:#3b82f6; color:white; border:none; padding:16px 0; border-radius:14px; font-weight:900; font-size:14px; cursor:pointer; box-shadow:0 6px 16px rgba(59,130,246,0.4); display:flex; flex-direction:column; align-items:center; gap:4px;">
+      <button onclick="saveToGallery('bank_passbook.png')" style="flex:1; background:#3b82f6; color:white; border:none; padding:16px 0; border-radius:14px; font-weight:900; font-size:14px; cursor:pointer; box-shadow:0 6px 16px rgba(59,130,246,0.4); display:flex; flex-direction:column; align-items:center; gap:4px;">
         <span style="font-size:24px;">💾</span>
         <span>갤러리에 저장</span>
       </button>
@@ -122,18 +200,16 @@
       const blob = await res.blob();
       const file = new File([blob], filename, { type: 'image/png' });
 
-      // Capacitor 네이티브 앱이거나 안드로이드 웹뷰인 경우 (다운로드 및 꾹누르기 불가)
       if (window.Capacitor || (navigator.userAgent.match(/Android/i) && navigator.userAgent.match(/wv|MicroMessenger|Instagram|KAKAOTALK/i))) {
         if (navigator.canShare && navigator.canShare({ files: [file] })) {
           alert("앱(웹뷰) 환경에서는 전용 다운로드가 제한됩니다.\n대신 뛰워드리는 [공유] 알림창에서 '사진 저장'을 누르시거나 카톡으로 전송해 주세요!");
           await navigator.share({
             files: [file],
             title: filename,
-            text: '스마트통장 이미지 저장/공유'
+            text: '통장사본 이미지 저장/공유'
           });
           return;
         } else {
-          // Web Share API를 지원하지 않는 극한의 갤럭시 웹뷰 환경 우회
           const uploadRes = await fetch('<%= cache_image_for_download_path %>', {
             method: 'POST',
             headers: {'Content-Type': 'application/json', 'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').content},
@@ -141,7 +217,7 @@
           });
           const uploadData = await uploadRes.json();
           if (uploadData.success) {
-            alert("전용 앱 보안 한계로 인해 이미지를 외부 새 창에 띄워드립니다!\n\n💡 열린 창에서 통장을 2~3초간 꾹~ 눌러 [이미지 저장]을 선택해주세요.");
+            alert("전용 앱 보안 한계로 인해 이미지를 외부 새 창에 띄워드립니다!\n\n💡 열린 창에서 통장사본을 2~3초간 꾹~ 눌러 [이미지 저장]을 선택해주세요.");
             if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.Browser) {
               await window.Capacitor.Plugins.Browser.open({ url: uploadData.url });
             } else {
@@ -152,7 +228,6 @@
         }
       }
 
-      // 일반 브라우저 다운로드 시도
       const fallbackBlobUrl = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = fallbackBlobUrl;
@@ -175,66 +250,103 @@
 <script>
   function initBankCard() {
     const bankColors = {
-      '신한은행': ['#0046FF', '#002E9D', 'white', 'rgba(0,0,0,0.2)'],
-      '국민은행': ['#FFCC00', '#F5A623', '#334155', 'none'],
-      '우리은행': ['#0067AC', '#004B80', 'white', 'rgba(0,0,0,0.2)'],
-      '하나은행': ['#008485', '#00595A', 'white', 'rgba(0,0,0,0.2)'],
-      '농협은행': ['#008D62', '#005C40', 'white', 'rgba(0,0,0,0.2)'],
-      'IBK기업은행': ['#1B4D98', '#113366', 'white', 'rgba(0,0,0,0.2)'],
-      '기업은행': ['#1B4D98', '#113366', 'white', 'rgba(0,0,0,0.2)'],
-      'KDB산업은행': ['#0033A1', '#00226D', 'white', 'rgba(0,0,0,0.2)'],
-      '수협은행': ['#0082C5', '#005988', 'white', 'rgba(0,0,0,0.2)'],
-      '카카오뱅크': ['#FEE500', '#E5CE00', '#111827', 'none'],
-      '토스뱅크': ['#3182F6', '#1E4DB7', 'white', 'rgba(0,0,0,0.1)'],
-      '케이뱅크': ['#000000', '#222222', 'white', 'none'],
-      '새마을금고': ['#116238', '#0A3D22', 'white', 'rgba(0,0,0,0.2)'],
-      '우체국': ['#FF4A00', '#CC3B00', 'white', 'rgba(0,0,0,0.2)'],
-      '신협': ['#005AAA', '#003D73', 'white', 'rgba(0,0,0,0.2)'],
-      '저축은행': ['#E74C3C', '#C0392B', 'white', 'rgba(0,0,0,0.2)'],
-      '산림조합': ['#27AE60', '#1D8348', 'white', 'rgba(0,0,0,0.2)'],
-      '씨티은행': ['#002B49', '#00192A', 'white', 'rgba(0,0,0,0.2)'],
-      'SC제일은행': ['#5B2B82', '#3D1B57', 'white', 'rgba(0,0,0,0.2)'],
-      '대구은행': ['#008B3E', '#005F2B', 'white', 'rgba(0,0,0,0.2)'],
-      '부산은행': ['#D51820', '#A91119', 'white', 'rgba(0,0,0,0.2)'],
-      '광주은행': ['#FFB600', '#D69800', '#111827', 'none'],
-      '제주은행': ['#003F98', '#002A67', 'white', 'rgba(0,0,0,0.2)'],
-      '전북은행': ['#12285E', '#0B183A', 'white', 'rgba(0,0,0,0.2)'],
-      '경남은행': ['#ED1C24', '#BB131A', 'white', 'rgba(0,0,0,0.2)'],
-      '기타': ['#475569', '#1e293b', 'white', 'rgba(0,0,0,0.2)']
+      '신한은행': ['#0046FF', '#002E9D'],
+      '국민은행': ['#FFCC00', '#F5A623'],
+      '우리은행': ['#0067AC', '#004B80'],
+      '하나은행': ['#008485', '#00595A'],
+      '농협은행': ['#008D62', '#005C40'],
+      'IBK기업은행': ['#1B4D98', '#113366'],
+      '기업은행': ['#1B4D98', '#113366'],
+      'KDB산업은행': ['#0033A1', '#00226D'],
+      '수협은행': ['#0082C5', '#005988'],
+      '카카오뱅크': ['#FEE500', '#E5CE00'],
+      '토스뱅크': ['#3182F6', '#1E4DB7'],
+      '케이뱅크': ['#000000', '#222222'],
+      '새마을금고': ['#116238', '#0A3D22'],
+      '우체국': ['#FF4A00', '#CC3B00'],
+      '신협': ['#005AAA', '#003D73'],
+      '저축은행': ['#E74C3C', '#C0392B'],
+      '산림조합': ['#27AE60', '#1D8348'],
+      '씨티은행': ['#002B49', '#00192A'],
+      'SC제일은행': ['#5B2B82', '#3D1B57'],
+      '대구은행': ['#008B3E', '#005F2B'],
+      '부산은행': ['#D51820', '#A91119'],
+      '광주은행': ['#FFB600', '#D69800'],
+      '제주은행': ['#003F98', '#002A67'],
+      '전북은행': ['#12285E', '#0B183A'],
+      '경남은행': ['#ED1C24', '#BB131A'],
+      '기타': ['#475569', '#1e293b']
     };
+
+    const bankInitials = {
+      '신한은행': '신한', '국민은행': 'KB', '우리은행': '우리', '하나은행': '하나',
+      '농협은행': 'NH', 'IBK기업은행': 'IBK', 'KDB산업은행': 'KDB', '수협은행': 'Sh',
+      '카카오뱅크': 'KB', '토스뱅크': 'T', '케이뱅크': 'K', '새마을금고': 'MG',
+      '우체국': '우체국', '신협': '신협', '저축은행': '저축', '산림조합': '산림',
+      '씨티은행': 'Citi', 'SC제일은행': 'SC', '대구은행': 'DGB', '부산은행': 'BNK',
+      '광주은행': '광주', '제주은행': '제주', '전북은행': 'JB', '경남은행': 'BNK',
+      '기타': '🏦'
+    };
+
+    // 국민, 카카오뱅크 등 밝은 배경은 어두운 텍스트
+    const darkTextBanks = ['국민은행', '카카오뱅크', '광주은행'];
 
     const nameInput = document.getElementById('bankNameInput');
     const accountInput = document.getElementById('bankAccountInput');
     const holderInput = document.getElementById('bankHolderInput');
-    const cardEl = document.getElementById('bankCardElement');
-    
-    // 이전에 이벤트가 바인딩되었는지 확인하여 중복 방지
+    const typeInput = document.getElementById('accountTypeInput');
+
     if(!nameInput || nameInput.dataset.initialized) return;
     nameInput.dataset.initialized = 'true';
 
     function updateCard() {
-      if(!cardEl || !nameInput) return;
-      const bName = nameInput.value || '신한은행';
-      const colors = bankColors[bName] || bankColors['기타'];
-      
-      document.getElementById('cardBankName').textContent = nameInput.value || '은행명';
-      document.getElementById('cardAccountNumber').textContent = accountInput.value || '110-123-456789';
-      document.getElementById('cardHolderName').textContent = holderInput.value || '김일잘';
+      var bName = nameInput.value || '신한은행';
+      var colors = bankColors[bName] || bankColors['기타'];
+      var isDark = darkTextBanks.includes(bName);
+      var textColor = isDark ? '#1e293b' : 'white';
+      var subColor = isDark ? 'rgba(0,0,0,0.5)' : 'rgba(255,255,255,0.7)';
+      var iconBg = isDark ? '#1e293b' : 'white';
+      var iconColor = isDark ? colors[0] : colors[0];
 
-      cardEl.style.background = `linear-gradient(135deg, ${colors[0]}, ${colors[1]})`;
-      cardEl.style.color = colors[2];
-      document.getElementById('cardAccountNumber').style.textShadow = colors[3];
+      // 헤더
+      var header = document.getElementById('bankHeader');
+      header.style.background = 'linear-gradient(135deg, ' + colors[0] + ', ' + colors[1] + ')';
+
+      // 은행명
+      document.getElementById('cardBankName').textContent = bName;
+      document.getElementById('cardBankName').style.color = textColor;
+
+      // 은행 아이콘
+      var iconEl = document.getElementById('bankIcon');
+      iconEl.textContent = bankInitials[bName] || '🏦';
+      iconEl.style.background = iconBg;
+      iconEl.style.color = iconColor;
+      iconEl.style.fontSize = (bankInitials[bName] || '').length > 2 ? '10px' : '14px';
+
+      // 서브텍스트
+      header.querySelectorAll('div[style*="rgba"]').forEach(function(el) {
+        el.style.color = subColor;
+      });
+
+      // 필드 업데이트
+      document.getElementById('fieldAccountType').textContent = typeInput.value || '보통예금';
+      document.getElementById('fieldAccountNumber').textContent = accountInput.value || '110-123-456789';
+      document.getElementById('fieldHolderName').textContent = holderInput.value || '김일잘';
+      
+      // 발급일
+      var today = new Date();
+      document.getElementById('fieldIssueDate').textContent = 
+        today.getFullYear() + '년 ' + (today.getMonth()+1) + '월 ' + today.getDate() + '일';
     }
 
     nameInput.addEventListener('change', updateCard);
     accountInput.addEventListener('input', updateCard);
     holderInput.addEventListener('input', updateCard);
+    typeInput.addEventListener('change', updateCard);
     updateCard();
   }
 
-  // 스크립트가 로드될 때 즉시 실행
   initBankCard();
-  // 뒤로가기나 turbo 네비게이션 시에도 보장하기 위해
   document.addEventListener("turbo:load", initBankCard);
 
   const originalData = {
@@ -279,11 +391,11 @@
       }
 
       
-      btn.innerHTML = '⏳ 굽는 중...';
+      btn.innerHTML = '⏳ 생성 중...';
       const cardEl = document.getElementById('bankCardElement');
       
       document.getElementById('imageDownloadModal').style.display = 'flex';
-      const canvas = await html2canvas(cardEl, { scale: 4, backgroundColor: null, logging: false });
+      const canvas = await html2canvas(cardEl, { scale: 4, backgroundColor: '#ffffff', logging: false });
       document.getElementById('downloadedImagePreview').src = canvas.toDataURL('image/png');
       
       // Update info in backend async
