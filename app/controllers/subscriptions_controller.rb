@@ -42,6 +42,35 @@ class SubscriptionsController < ApplicationController
 
     expected_amount = User::PLAN_PRICES[plan]
 
+    # [백엔드 보안 패치] RevenueCat API를 호출하여 실제 권한(Entitlement)이 있는지 검증합니다.
+    require 'net/http'
+    require 'json'
+
+    rc_key = ENV['REVENUECAT_GOOGLE_API_KEY'] || ENV['REVENUECAT_APPLE_API_KEY']
+    begin
+      uri = URI("https://api.revenuecat.com/v1/subscribers/#{current_user.id}")
+      req = Net::HTTP::Get.new(uri)
+      req['Authorization'] = "Bearer #{rc_key}"
+      req['Accept'] = "application/json"
+
+      res = Net::HTTP.start(uri.hostname, uri.port, use_ssl: true) { |http| http.request(req) }
+      data = JSON.parse(res.body)
+
+      entitlements = data.dig("subscriber", "entitlements") || {}
+      target_entitlement = entitlements[plan]
+      
+      is_active = target_entitlement.present? && 
+                  (target_entitlement["expires_date"].nil? || Time.parse(target_entitlement["expires_date"]) > Time.current)
+
+      unless is_active
+        Rails.logger.warn "[Security] Unauthorized mobile upgrade attempt by User #{current_user.id} for plan #{plan}"
+        return redirect_to subscription_path, alert: "결제 권한이 확인되지 않았습니다. 잠시 후 다시 시도해주세요."
+      end
+    rescue => e
+      Rails.logger.error "[RevenueCat] Verification failed: #{e.message}"
+      return redirect_to subscription_path, alert: "결제 검증 서버와 통신할 수 없습니다. 고객센터에 문의해주세요."
+    end
+
     # 결제 기록 저장 (실패해도 구독 업그레이드는 진행)
     begin
       current_user.subscription_payments.create(
