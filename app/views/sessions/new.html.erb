@@ -113,7 +113,7 @@
     btn.addEventListener('click', function(e) {
       e.preventDefault();
       var nonce = Math.random().toString(36).substr(2) + Date.now().toString(36);
-      var oauthUrl = window.location.origin + authPath + '?origin=' + encodeURIComponent(window.location.origin + '?source=app&nonce=' + nonce);
+      var oauthUrl = window.location.origin + authPath + '?source=app&nonce=' + nonce + '&origin=' + encodeURIComponent(window.location.origin + '?source=app&nonce=' + nonce);
       console.log('[일잘러] ' + btnId + ' clicked, nonce:', nonce, 'oauthUrl:', oauthUrl);
 
       try {

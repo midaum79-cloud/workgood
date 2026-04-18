@@ -12,14 +12,15 @@ class OmniauthCallbacksController < ApplicationController
 
     if user&.persisted?
       origin = request.env["omniauth.origin"] || ""
-      from_app = origin.include?("source=app")
+      auth_params = request.env["omniauth.params"] || {}
+      from_app = origin.include?("source=app") || auth_params["source"] == "app"
 
       if from_app
         token = SecureRandom.hex(32)
         Rails.cache.write("app_login_token:#{token}", user.id, expires_in: 60.seconds)
         @deep_link = "workgood://auth/callback?token=#{token}"
 
-        nonce = origin.match(/nonce=([^&]+)/)&.captures&.first
+        nonce = origin.match(/nonce=([^&]+)/)&.captures&.first || auth_params["nonce"]
         if nonce
           Rails.cache.write("app_login_nonce:#{nonce}", token, expires_in: 120.seconds)
         end
@@ -49,14 +50,15 @@ class OmniauthCallbacksController < ApplicationController
 
     if user&.persisted?
       origin = request.env["omniauth.origin"] || ""
-      from_app = origin.include?("source=app")
+      auth_params = request.env["omniauth.params"] || {}
+      from_app = origin.include?("source=app") || auth_params["source"] == "app"
 
       if from_app
         token = SecureRandom.hex(32)
         Rails.cache.write("app_login_token:#{token}", user.id, expires_in: 60.seconds)
         @deep_link = "workgood://auth/callback?token=#{token}"
 
-        nonce = origin.match(/nonce=([^&]+)/)&.captures&.first
+        nonce = origin.match(/nonce=([^&]+)/)&.captures&.first || auth_params["nonce"]
         if nonce
           Rails.cache.write("app_login_nonce:#{nonce}", token, expires_in: 120.seconds)
         end
