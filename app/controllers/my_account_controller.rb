@@ -58,7 +58,7 @@ class MyAccountController < ApplicationController
   end
 
   def increment_biz_card_gen
-    if current_user.biz_card_generations_count.to_i < 10
+    if current_user.biz_card_generations_count.to_i < 30
       current_user.increment!(:biz_card_generations_count)
       render json: { success: true }
     else
@@ -70,7 +70,7 @@ class MyAccountController < ApplicationController
   end
 
   def increment_bank_card_gen
-    if current_user.bank_card_generations_count.to_i < 10
+    if current_user.bank_card_generations_count.to_i < 30
       current_user.increment!(:bank_card_generations_count)
       render json: { success: true }
     else
