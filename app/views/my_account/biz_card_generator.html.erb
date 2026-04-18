@@ -1,8 +1,6 @@
 <style>
-  /* 화면 가로넘침 방지를 위한 전역 박스 사이징 강제 */
   #bcFormWrap * { box-sizing: border-box !important; }
   input, button, label, select { max-width: 100%; box-sizing: border-box !important; }
-  /* 안드로이드 웹뷰에서 이미지 길게 누르기(다운로드)를 허용하기 위한 CSS */
   img#downloadedImagePreview {
     -webkit-touch-callout: default !important;
     -webkit-user-select: auto !important;
@@ -38,7 +36,6 @@
       <div style="display:flex; flex-direction:column; gap:10px; margin-bottom:16px; width:100%;">
         <input type="text" id="bcTeamInput" placeholder="업체명을 입력하세요" style="width:100%; padding:14px; border-radius:12px; border:1px solid #cbd5e1; font-weight:800; font-size:14px; color:#1e293b; box-sizing:border-box;" value="<%= current_user.team_name %>">
         
-        <!-- 로고 이미지 업로드 -->
         <label for="bcLogoInput" style="display:flex; align-items:center; justify-content:center; gap:8px; width:100%; padding:14px; border-radius:12px; border:1px dashed #cbd5e1; font-weight:800; font-size:14px; color:#64748b; background:#f8fafc; cursor:pointer; box-sizing:border-box;">
           <svg style="width:16px; fill:#64748b;" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path d="M448 80c8.8 0 16 7.2 16 16V415.8l-5-6.5-136-176c-4.5-5.9-11.6-9.3-19-9.3s-14.4 3.4-19 9.3L202 340.7l-30.5-42.7C167 291.7 159.8 288 152 288s-15 3.7-19.5 10.1l-80 112L48 416V96c0-8.8 7.2-16 16-16H448zM64 32C28.7 32 0 60.7 0 96V416c0 35.3 28.7 64 64 64H448c35.3 0 64-28.7 64-64V96c0-35.3-28.7-64-64-64H64zm80 192a48 48 0 1 0 0-96 48 48 0 1 0 0 96z"/></svg>
           <span id="bcLogoLabel">업체 로고 첨부 (선택)</span>
@@ -51,7 +48,6 @@
         
         <input type="text" id="bcPhoneInput" placeholder="전화번호를 입력하세요" style="width:100%; padding:14px; border-radius:12px; border:1px solid #cbd5e1; font-weight:800; font-size:14px; color:#1e293b; box-sizing:border-box;" value="<%= current_user.phone %>" maxlength="13" oninput="autoFormatPhone(this)">
         
-        <!-- 주소 검색 (버튼형) -->
         <button type="button" id="bcAddressBtn" onclick="execDaumPostcode()" style="width:100%; text-align:left; padding:14px; border-radius:12px; border:1px solid #cbd5e1; font-weight:800; font-size:14px; background:white; cursor:pointer; box-sizing:border-box; display:flex; justify-content:space-between; align-items:center;">
           <span id="bcAddressBtnText" style="color:<%= current_user.address.present? ? '#1e293b' : '#94a3b8' %>; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;"><%= current_user.address.presence || "🔍 우편번호 검색 (클릭)" %></span>
           <span style="color:#64748b; font-size:12px; background:#f1f5f9; padding:4px 8px; border-radius:6px; white-space:nowrap; flex-shrink:0; margin-left:8px;">주소 검색</span>
@@ -60,60 +56,145 @@
         <input type="text" id="bcAddressDetailInput" placeholder="상세 주소를 입력하세요" style="width:100%; padding:14px; border-radius:12px; border:1px solid #cbd5e1; font-weight:800; font-size:14px; color:#1e293b; box-sizing:border-box;">
       </div>
 
-      <!-- 템플릿 선택 -->
-      <div style="display:flex; gap:8px; margin-bottom:16px;">
-        <button type="button" onclick="setBcTemplate('A')" id="btnTplA" style="flex:1; padding:10px; background:#4c1d95; color:white; border:none; border-radius:8px; font-size:12px; font-weight:800; cursor:pointer; font-family:inherit;">[도안 A] 신뢰감 현장형</button>
-        <button type="button" onclick="setBcTemplate('B')" id="btnTplB" style="flex:1; padding:10px; background:#f1f5f9; color:#475569; border:1px solid #cbd5e1; border-radius:8px; font-size:12px; font-weight:800; cursor:pointer; font-family:inherit;">[도안 B] 세련된 건축형</button>
+      <!-- 템플릿 선택 (6개, 가로 스크롤) -->
+      <div style="margin-bottom:16px;">
+        <div style="font-size:12px; font-weight:800; color:#64748b; margin-bottom:8px;">도안 선택</div>
+        <div style="display:flex; gap:6px; overflow-x:auto; padding-bottom:6px; -webkit-overflow-scrolling:touch;">
+          <button type="button" onclick="setBcTemplate('A')" id="btnTplA" style="flex-shrink:0; padding:8px 12px; background:#4c1d95; color:white; border:none; border-radius:8px; font-size:11px; font-weight:800; cursor:pointer; white-space:nowrap;">A 신뢰감</button>
+          <button type="button" onclick="setBcTemplate('B')" id="btnTplB" style="flex-shrink:0; padding:8px 12px; background:#f1f5f9; color:#475569; border:1px solid #cbd5e1; border-radius:8px; font-size:11px; font-weight:800; cursor:pointer; white-space:nowrap;">B 세련된</button>
+          <button type="button" onclick="setBcTemplate('C')" id="btnTplC" style="flex-shrink:0; padding:8px 12px; background:#f1f5f9; color:#475569; border:1px solid #cbd5e1; border-radius:8px; font-size:11px; font-weight:800; cursor:pointer; white-space:nowrap;">C 네이비</button>
+          <button type="button" onclick="setBcTemplate('D')" id="btnTplD" style="flex-shrink:0; padding:8px 12px; background:#f1f5f9; color:#475569; border:1px solid #cbd5e1; border-radius:8px; font-size:11px; font-weight:800; cursor:pointer; white-space:nowrap;">D 그린</button>
+          <button type="button" onclick="setBcTemplate('E')" id="btnTplE" style="flex-shrink:0; padding:8px 12px; background:#f1f5f9; color:#475569; border:1px solid #cbd5e1; border-radius:8px; font-size:11px; font-weight:800; cursor:pointer; white-space:nowrap;">E 미니멀</button>
+          <button type="button" onclick="setBcTemplate('F')" id="btnTplF" style="flex-shrink:0; padding:8px 12px; background:#f1f5f9; color:#475569; border:1px solid #cbd5e1; border-radius:8px; font-size:11px; font-weight:800; cursor:pointer; white-space:nowrap;">F 프리미엄</button>
+        </div>
       </div>
 
       <!-- Preview Card Container -->
       <div id="bcPreviewWrap" style="margin-bottom:16px;">
-        <!-- Template A -->
-        <div id="bcTemplateA" style="position:relative; width:100%; aspect-ratio:1.8; border-radius:10px; background:#111827; color:white; box-shadow:0 10px 25px rgba(0,0,0,0.15); box-sizing:border-box; overflow:hidden;">
+        <!-- Template A: 신뢰감 현장형 (다크 + 골드 라인) -->
+        <div id="bcTemplateA" style="position:relative; width:100%; aspect-ratio:1.8; border-radius:10px; background:#111827; color:white; box-shadow:0 10px 25px rgba(0,0,0,0.15); overflow:hidden;">
           <div style="position:absolute; top:0; left:0; width:8px; height:100%; background:#eab308;"></div>
-          
           <div style="position:absolute; top:24px; left:28px; display:flex; align-items:center; gap:8px;">
-            <img id="bcA_LogoImg" src="" style="display:none; max-width:60px; max-height:24px; object-fit:contain; border-radius:2px;">
-            <div id="bcA_Team" style="font-size:15px; font-weight:900; color:#eab308; letter-spacing:1px;"><%= current_user.team_name.presence || '업체명' %></div>
+            <img class="bcLogoImg" src="" style="display:none; max-width:60px; max-height:24px; object-fit:contain; border-radius:2px;">
+            <div class="bcTeamEl" style="font-size:13px; font-weight:900; color:#eab308; letter-spacing:1px;"></div>
           </div>
-
           <div style="position:absolute; top:50%; left:28px; transform:translateY(-50%); display:flex; align-items:baseline; gap:8px;">
-            <div id="bcA_Name" style="font-size:26px; font-weight:900; letter-spacing:2px;"><%= current_user.name.presence || '김현장' %></div>
-            <div id="bcA_Role" style="font-size:15px; font-weight:700; color:#9ca3af;"><%= current_user.role.presence || '반장' %></div>
+            <div class="bcNameEl" style="font-size:20px; font-weight:900; letter-spacing:2px;"></div>
+            <div class="bcRoleEl" style="font-size:12px; font-weight:700; color:#9ca3af;"></div>
           </div>
-
           <div style="position:absolute; bottom:24px; left:28px; width:calc(100% - 52px); display:flex; justify-content:space-between; align-items:flex-end;">
-            <div style="display:flex; flex-direction:column; gap:6px;">
-              <div id="bcA_Address_Container" style="display:none; align-items:flex-end; gap:6px;">
-                <svg style="width:10px; height:10px; fill:#9ca3af; margin-bottom:2px;" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"><path d="M215.7 499.2C267 435 384 279.4 384 192C384 86 298 0 192 0S0 86 0 192c0 87.4 117 243 168.3 307.2c12.3 15.3 35.1 15.3 47.4 0zM192 128a64 64 0 1 1 0 128 64 64 0 1 1 0-128z"/></svg>
-                <div id="bcA_Address" style="font-size:10px; font-weight:600; color:#d1d5db; max-width:220px; word-break:keep-all; line-height:1.4; padding-bottom:2px;"><%= current_user.address %></div>
+            <div style="display:flex; flex-direction:column; gap:4px;">
+              <div class="bcAddrWrap" style="display:none; align-items:flex-end; gap:4px;">
+                <svg style="width:9px; height:9px; fill:#9ca3af; margin-bottom:2px;" viewBox="0 0 384 512"><path d="M215.7 499.2C267 435 384 279.4 384 192C384 86 298 0 192 0S0 86 0 192c0 87.4 117 243 168.3 307.2c12.3 15.3 35.1 15.3 47.4 0zM192 128a64 64 0 1 1 0 128 64 64 0 1 1 0-128z"/></svg>
+                <div class="bcAddrEl" style="font-size:9px; font-weight:600; color:#d1d5db; max-width:200px; line-height:1.3;"></div>
               </div>
-              <div id="bcA_Phone" style="font-size:16px; font-weight:800; letter-spacing:1px; color:#f3f4f6;"><%= current_user.phone.presence || '전화번호' %></div>
+              <div class="bcPhoneEl" style="font-size:14px; font-weight:800; letter-spacing:1px; color:#f3f4f6;"></div>
             </div>
-            <div style="font-size:9px; font-weight:800; opacity:0.6; text-align:right;">스마트한 현장 관리<br>일잘러 앱</div>
+            <div style="font-size:8px; font-weight:800; opacity:0.5; text-align:right;">스마트한 현장 관리<br>일잘러 앱</div>
           </div>
         </div>
         
-        <!-- Template B -->
-        <div id="bcTemplateB" style="display:none; position:relative; width:100%; aspect-ratio:1.8; border-radius:10px; background:#ffffff; color:#111827; box-shadow:0 10px 25px rgba(0,0,0,0.05); box-sizing:border-box; overflow:hidden; border:1px solid #f1f5f9;">
+        <!-- Template B: 세련된 화이트 -->
+        <div id="bcTemplateB" style="display:none; position:relative; width:100%; aspect-ratio:1.8; border-radius:10px; background:#ffffff; color:#111827; box-shadow:0 10px 25px rgba(0,0,0,0.05); overflow:hidden; border:1px solid #f1f5f9;">
           <div style="position:absolute; bottom:-40px; right:-40px; width:150px; height:150px; border-radius:50%; background:#f8fafc; border:2px solid #f1f5f9;"></div>
-          
           <div style="position:absolute; top:24px; right:24px; display:flex; align-items:center; gap:8px; flex-direction:row-reverse;">
-            <div id="bcB_Team" style="font-size:12px; font-weight:800; color:#64748b; letter-spacing:2px;"><%= current_user.team_name.presence || '업체명' %></div>
-            <img id="bcB_LogoImg" src="" style="display:none; max-width:60px; max-height:24px; object-fit:contain; border-radius:2px;">
+            <div class="bcTeamEl" style="font-size:11px; font-weight:800; color:#64748b; letter-spacing:2px;"></div>
+            <img class="bcLogoImg" src="" style="display:none; max-width:60px; max-height:24px; object-fit:contain; border-radius:2px;">
           </div>
-
           <div style="position:absolute; top:50%; right:24px; transform:translateY(-50%); padding-right:10px; border-right:4px solid #111827; text-align:right;">
-            <div id="bcB_Name" style="font-size:28px; font-weight:300; letter-spacing:-1px; color:#0f172a; margin-bottom:2px;"><strong><%= (current_user.name.presence || '김현장').chars.first %></strong><%= (current_user.name.presence || '김현장').chars.drop(1).join %></div>
-            <div id="bcB_Role" style="font-size:14px; font-weight:600; color:#475569;"><%= current_user.role.presence || '반장' %></div>
+            <div class="bcNameEl" style="font-size:22px; font-weight:300; letter-spacing:-1px; color:#0f172a; margin-bottom:2px;"></div>
+            <div class="bcRoleEl" style="font-size:12px; font-weight:600; color:#475569;"></div>
           </div>
-
           <div style="position:absolute; bottom:24px; left:24px; right:24px; display:flex; justify-content:space-between; align-items:flex-end;">
-            <div style="font-size:9px; font-weight:800; color:#cbd5e1; text-align:left; z-index:2;">스마트한 현장 관리<br>일잘러 앱</div>
-            <div style="display:flex; flex-direction:column; align-items:flex-end; gap:4px; z-index:2;">
-              <div id="bcB_Address" style="display:none; font-size:10px; font-weight:600; color:#64748b; max-width:220px; word-break:keep-all; line-height:1.4; text-align:right; padding-bottom:2px;"><%= current_user.address %></div>
-              <div id="bcB_Phone" style="font-size:15px; font-weight:700; color:#334155;"><%= current_user.phone.presence || '전화번호' %></div>
+            <div style="font-size:8px; font-weight:800; color:#cbd5e1; z-index:2;">스마트한 현장 관리<br>일잘러 앱</div>
+            <div style="display:flex; flex-direction:column; align-items:flex-end; gap:3px; z-index:2;">
+              <div class="bcAddrEl" style="display:none; font-size:9px; font-weight:600; color:#64748b; max-width:200px; line-height:1.3; text-align:right;"></div>
+              <div class="bcPhoneEl" style="font-size:13px; font-weight:700; color:#334155;"></div>
             </div>
+          </div>
+        </div>
+
+        <!-- Template C: 네이비 프로 -->
+        <div id="bcTemplateC" style="display:none; position:relative; width:100%; aspect-ratio:1.8; border-radius:10px; background:linear-gradient(135deg, #1e3a5f, #0f172a); color:white; box-shadow:0 10px 25px rgba(0,0,0,0.2); overflow:hidden;">
+          <div style="position:absolute; top:0; right:0; width:40%; height:100%; background:rgba(255,255,255,0.03);"></div>
+          <div style="position:absolute; top:0; right:0; width:1px; height:100%; background:rgba(255,255,255,0.1); right:40%;"></div>
+          <div style="position:absolute; top:20px; left:20px; display:flex; align-items:center; gap:6px;">
+            <img class="bcLogoImg" src="" style="display:none; max-width:50px; max-height:20px; object-fit:contain;">
+            <div class="bcTeamEl" style="font-size:11px; font-weight:800; color:#93c5fd; letter-spacing:1px;"></div>
+          </div>
+          <div style="position:absolute; top:50%; left:20px; transform:translateY(-50%);">
+            <div class="bcNameEl" style="font-size:22px; font-weight:900; letter-spacing:3px; margin-bottom:4px;"></div>
+            <div class="bcRoleEl" style="font-size:11px; font-weight:700; color:#93c5fd;"></div>
+          </div>
+          <div style="position:absolute; bottom:20px; left:20px; right:20px; display:flex; justify-content:space-between; align-items:flex-end;">
+            <div>
+              <div class="bcAddrWrap" style="display:none; margin-bottom:4px;"><div class="bcAddrEl" style="font-size:9px; color:#94a3b8; max-width:180px; line-height:1.3;"></div></div>
+              <div class="bcPhoneEl" style="font-size:13px; font-weight:800; color:#e2e8f0;"></div>
+            </div>
+            <div style="font-size:7px; font-weight:700; color:rgba(255,255,255,0.3); text-align:right;">일잘러 앱</div>
+          </div>
+        </div>
+
+        <!-- Template D: 그린 자연형 -->
+        <div id="bcTemplateD" style="display:none; position:relative; width:100%; aspect-ratio:1.8; border-radius:10px; background:linear-gradient(135deg, #064e3b, #065f46); color:white; box-shadow:0 10px 25px rgba(0,0,0,0.15); overflow:hidden;">
+          <div style="position:absolute; top:-30px; right:-30px; width:100px; height:100px; border-radius:50%; background:rgba(255,255,255,0.05);"></div>
+          <div style="position:absolute; bottom:-20px; left:-20px; width:70px; height:70px; border-radius:50%; background:rgba(255,255,255,0.04);"></div>
+          <div style="position:absolute; bottom:0; left:0; right:0; height:4px; background:linear-gradient(90deg, #34d399, #6ee7b7, #34d399);"></div>
+          <div style="position:absolute; top:20px; left:20px; display:flex; align-items:center; gap:6px;">
+            <img class="bcLogoImg" src="" style="display:none; max-width:50px; max-height:20px; object-fit:contain;">
+            <div class="bcTeamEl" style="font-size:12px; font-weight:800; color:#6ee7b7; letter-spacing:1px;"></div>
+          </div>
+          <div style="position:absolute; top:48%; left:20px; transform:translateY(-50%);">
+            <div class="bcNameEl" style="font-size:20px; font-weight:900; letter-spacing:1px; margin-bottom:4px;"></div>
+            <div class="bcRoleEl" style="font-size:11px; font-weight:700; color:#6ee7b7;"></div>
+          </div>
+          <div style="position:absolute; bottom:20px; left:20px; right:20px; display:flex; justify-content:space-between; align-items:flex-end;">
+            <div>
+              <div class="bcAddrWrap" style="display:none; margin-bottom:4px;"><div class="bcAddrEl" style="font-size:9px; color:#a7f3d0; max-width:180px; line-height:1.3;"></div></div>
+              <div class="bcPhoneEl" style="font-size:13px; font-weight:800; color:#ecfdf5;"></div>
+            </div>
+            <div style="font-size:7px; font-weight:700; color:rgba(255,255,255,0.3); text-align:right;">일잘러 앱</div>
+          </div>
+        </div>
+
+        <!-- Template E: 미니멀 그레이 -->
+        <div id="bcTemplateE" style="display:none; position:relative; width:100%; aspect-ratio:1.8; border-radius:10px; background:#fafafa; color:#111827; box-shadow:0 4px 12px rgba(0,0,0,0.06); overflow:hidden; border:1px solid #e5e7eb;">
+          <div style="position:absolute; top:0; left:0; right:0; height:3px; background:#111827;"></div>
+          <div style="position:absolute; top:24px; left:24px; display:flex; align-items:center; gap:6px;">
+            <img class="bcLogoImg" src="" style="display:none; max-width:50px; max-height:20px; object-fit:contain;">
+            <div class="bcTeamEl" style="font-size:10px; font-weight:800; color:#6b7280; letter-spacing:2px; text-transform:uppercase;"></div>
+          </div>
+          <div style="position:absolute; top:50%; left:24px; transform:translateY(-50%);">
+            <div class="bcNameEl" style="font-size:22px; font-weight:900; letter-spacing:0; color:#111827;"></div>
+            <div class="bcRoleEl" style="font-size:11px; font-weight:600; color:#9ca3af; margin-top:2px;"></div>
+          </div>
+          <div style="position:absolute; bottom:20px; left:24px; right:24px; display:flex; justify-content:space-between; align-items:flex-end;">
+            <div>
+              <div class="bcAddrWrap" style="display:none; margin-bottom:4px;"><div class="bcAddrEl" style="font-size:9px; color:#9ca3af; max-width:180px; line-height:1.3;"></div></div>
+              <div class="bcPhoneEl" style="font-size:13px; font-weight:700; color:#374151;"></div>
+            </div>
+            <div style="font-size:7px; font-weight:700; color:#d1d5db; text-align:right;">일잘러 앱</div>
+          </div>
+        </div>
+
+        <!-- Template F: 프리미엄 골드 -->
+        <div id="bcTemplateF" style="display:none; position:relative; width:100%; aspect-ratio:1.8; border-radius:10px; background:linear-gradient(135deg, #1c1917, #292524); color:white; box-shadow:0 10px 25px rgba(0,0,0,0.25); overflow:hidden;">
+          <div style="position:absolute; top:0; left:0; right:0; height:2px; background:linear-gradient(90deg, #b45309, #f59e0b, #b45309);"></div>
+          <div style="position:absolute; bottom:0; left:0; right:0; height:2px; background:linear-gradient(90deg, #b45309, #f59e0b, #b45309);"></div>
+          <div style="position:absolute; top:22px; right:20px; display:flex; align-items:center; gap:6px; flex-direction:row-reverse;">
+            <div class="bcTeamEl" style="font-size:11px; font-weight:800; color:#fbbf24; letter-spacing:2px;"></div>
+            <img class="bcLogoImg" src="" style="display:none; max-width:50px; max-height:20px; object-fit:contain;">
+          </div>
+          <div style="position:absolute; top:50%; left:24px; transform:translateY(-50%);">
+            <div class="bcNameEl" style="font-size:22px; font-weight:900; letter-spacing:4px; color:#fef3c7; margin-bottom:4px;"></div>
+            <div class="bcRoleEl" style="font-size:11px; font-weight:700; color:#d97706;"></div>
+          </div>
+          <div style="position:absolute; bottom:20px; left:24px; right:24px; display:flex; justify-content:space-between; align-items:flex-end;">
+            <div>
+              <div class="bcAddrWrap" style="display:none; margin-bottom:4px;"><div class="bcAddrEl" style="font-size:9px; color:#a8a29e; max-width:180px; line-height:1.3;"></div></div>
+              <div class="bcPhoneEl" style="font-size:13px; font-weight:800; color:#fef3c7;"></div>
+            </div>
+            <div style="font-size:7px; font-weight:700; color:rgba(255,255,255,0.2); text-align:right;">일잘러 앱</div>
           </div>
         </div>
       </div>
@@ -135,15 +216,12 @@
       <span style="color:#64748b; font-size:12px; margin-top:4px;">기기에 따라 아래 버튼이나<br>이미지를 길게 눌러 저장해주세요.</span>
       <button onclick="document.getElementById('imageDownloadModal').style.display='none';" style="margin-top:10px; padding:6px 12px; border-radius:8px; background:#e2e8f0; border:none; font-weight:bold; cursor:pointer;">닫기</button>
     </div>
-    
     <img id="downloadedImagePreview" src="" style="max-width:90%; max-height:50vh; border-radius:12px; border:1px solid rgba(255,255,255,0.2); -webkit-touch-callout: default !important; user-select: auto !important; pointer-events: auto !important;">
-    
     <div style="display:flex; gap:10px; margin-top:20px; width:90%; max-width:320px;">
       <button onclick="shareImage('business_card.png', '명함 이미지 저장', '일잘러에서 명함이 전송되었습니다 클릭해서 저장하기를 누르세요')" style="flex:1; background:#0f172a; color:white; border:none; padding:16px 0; border-radius:14px; font-weight:900; font-size:14px; cursor:pointer; box-shadow:0 6px 16px rgba(15,23,42,0.4); display:flex; flex-direction:column; align-items:center; gap:4px;">
         <span style="font-size:24px;">💬</span>
         <span>메시지로 공유</span>
       </button>
-
       <button onclick="saveToGallery('business_card.png')" style="flex:1; background:#3b82f6; color:white; border:none; padding:16px 0; border-radius:14px; font-weight:900; font-size:14px; cursor:pointer; box-shadow:0 6px 16px rgba(59,130,246,0.4); display:flex; flex-direction:column; align-items:center; gap:4px;">
         <span style="font-size:24px;">💾</span>
         <span>갤러리에 저장</span>
@@ -176,19 +254,12 @@
       const res = await fetch(src);
       const blob = await res.blob();
       const file = new File([blob], filename, { type: 'image/png' });
-
-      // Capacitor 네이티브 앱이거나 안드로이드 웹뷰인 경우 (다운로드 및 꾹누르기 불가)
       if (window.Capacitor || (navigator.userAgent.match(/Android/i) && navigator.userAgent.match(/wv|MicroMessenger|Instagram|KAKAOTALK/i))) {
         if (navigator.canShare && navigator.canShare({ files: [file] })) {
           alert("앱(웹뷰) 환경에서는 전용 다운로드가 제한됩니다.\n대신 뛰워드리는 [공유] 알림창에서 '사진 저장'을 누르시거나 카톡으로 전송해 주세요!");
-          await navigator.share({
-            files: [file],
-            title: filename,
-            text: '명함 이미지 저장/공유'
-          });
+          await navigator.share({ files: [file], title: filename, text: '명함 이미지 저장/공유' });
           return;
         } else {
-          // Web Share API를 지원하지 않는 극한의 갤럭시 웹뷰 환경 우회
           const uploadRes = await fetch('<%= cache_image_for_download_path %>', {
             method: 'POST',
             headers: {'Content-Type': 'application/json', 'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').content},
@@ -206,8 +277,6 @@
           }
         }
       }
-
-      // 일반 브라우저 다운로드 시도
       const fallbackBlobUrl = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = fallbackBlobUrl;
@@ -215,10 +284,8 @@
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
-      
       setTimeout(() => URL.revokeObjectURL(fallbackBlobUrl), 1000);
       alert("다운로드를 시도했습니다!\n저장이 안 될 경우, 화면 캡처(스크린샷)를 이용해주시거나 '메시지로 공유' 버튼을 사용해주세요.");
-      
     } catch (e) {
       console.error(e);
       alert("이미지 처리 중 오류가 발생했습니다.");
@@ -228,36 +295,28 @@
 
 <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 <script>
-  let currentBcTemplate = 'A';
+  var currentBcTemplate = 'A';
+  var allTpls = ['A','B','C','D','E','F'];
+  var tplBgColors = { A:'#111827', B:'#ffffff', C:'#0f172a', D:'#064e3b', E:'#fafafa', F:'#1c1917' };
+
   function setBcTemplate(type) {
     currentBcTemplate = type;
-    if(type === 'A') {
-      document.getElementById('bcTemplateA').style.display = 'block';
-      document.getElementById('bcTemplateB').style.display = 'none';
-      document.getElementById('btnTplA').style.background = '#4c1d95';
-      document.getElementById('btnTplA').style.color = 'white';
-      document.getElementById('btnTplA').style.border = 'none';
-      
-      document.getElementById('btnTplB').style.background = '#f1f5f9';
-      document.getElementById('btnTplB').style.color = '#475569';
-      document.getElementById('btnTplB').style.border = '1px solid #cbd5e1';
-    } else {
-      document.getElementById('bcTemplateA').style.display = 'none';
-      document.getElementById('bcTemplateB').style.display = 'block';
-      
-      document.getElementById('btnTplB').style.background = '#4c1d95';
-      document.getElementById('btnTplB').style.color = 'white';
-      document.getElementById('btnTplB').style.border = 'none';
-      
-      document.getElementById('btnTplA').style.background = '#f1f5f9';
-      document.getElementById('btnTplA').style.color = '#475569';
-      document.getElementById('btnTplA').style.border = '1px solid #cbd5e1';
-    }
+    allTpls.forEach(function(t) {
+      var el = document.getElementById('bcTemplate' + t);
+      var btn = document.getElementById('btnTpl' + t);
+      if (t === type) {
+        if(el) el.style.display = 'block';
+        if(btn) { btn.style.background = '#4c1d95'; btn.style.color = 'white'; btn.style.border = 'none'; }
+      } else {
+        if(el) el.style.display = 'none';
+        if(btn) { btn.style.background = '#f1f5f9'; btn.style.color = '#475569'; btn.style.border = '1px solid #cbd5e1'; }
+      }
+    });
   }
 
   function autoFormatPhone(obj) {
-    let v = obj.value.replace(/[^0-9]/g, "");
-    let res = "";
+    var v = obj.value.replace(/[^0-9]/g, "");
+    var res = "";
     if (v.startsWith("02")) {
       if (v.length < 3) res = v;
       else if (v.length < 6) res = v.substr(0, 2) + "-" + v.substr(2);
@@ -269,89 +328,80 @@
       else if (v.length < 11) res = v.substr(0, 3) + "-" + v.substr(3, 3) + "-" + v.substr(6);
       else res = v.substr(0, 3) + "-" + v.substr(3, 4) + "-" + v.substr(7, 4);
     }
-    // Update value and trigger any listening 'input' events to update the card preview
-    if (obj.value !== res) {
-      obj.value = res;
-      obj.dispatchEvent(new Event('input', { bubbles: true }));
-    }
+    if (obj.value !== res) { obj.value = res; obj.dispatchEvent(new Event('input', { bubbles: true })); }
   }
 
   function initBizCard() {
-    const bTeamInfo = document.getElementById('bcTeamInput');
-    const bRoleInfo = document.getElementById('bcRoleInput');
-    const bNameInfo = document.getElementById('bcNameInput');
-    const bPhoneInfo = document.getElementById('bcPhoneInput');
-    const logoInput = document.getElementById('bcLogoInput');
+    var bTeamInfo = document.getElementById('bcTeamInput');
+    var bRoleInfo = document.getElementById('bcRoleInput');
+    var bNameInfo = document.getElementById('bcNameInput');
+    var bPhoneInfo = document.getElementById('bcPhoneInput');
+    var logoInput = document.getElementById('bcLogoInput');
     
-    // 이전에 이벤트가 바인딩되었는지 확인하여 중복 방지
     if(!bTeamInfo || bTeamInfo.dataset.initialized) return;
     bTeamInfo.dataset.initialized = 'true';
 
-    function updateBizCard() {
+    function updateAll() {
       if(!bTeamInfo) return;
-      document.getElementById('bcA_Team').textContent = bTeamInfo.value || '업체명';
-      document.getElementById('bcB_Team').textContent = bTeamInfo.value || '업체명';
-      document.getElementById('bcA_Role').textContent = bRoleInfo.value || '직책';
-      document.getElementById('bcB_Role').textContent = bRoleInfo.value || '직책';
+      var teamVal = bTeamInfo.value || '업체명';
+      var roleVal = bRoleInfo.value || '직책';
+      var nameVal = bNameInfo.value || '일잘러';
+      var phoneVal = bPhoneInfo.value || '전화번호';
+      var addrVal = [document.getElementById('bcAddressInput').value, document.getElementById('bcAddressDetailInput').value].filter(function(v){return v.trim();}).join(' ');
+
+      // 모든 템플릿 한번에 업데이트
+      document.querySelectorAll('.bcTeamEl').forEach(function(el){ el.textContent = teamVal; });
+      document.querySelectorAll('.bcRoleEl').forEach(function(el){ el.textContent = roleVal; });
+      document.querySelectorAll('.bcPhoneEl').forEach(function(el){ el.textContent = phoneVal; });
       
-      const nameVal = bNameInfo.value || '일잘러';
-      document.getElementById('bcA_Name').textContent = nameVal;
-      if(nameVal.length >= 2) {
-        document.getElementById('bcB_Name').innerHTML = '<strong>' + nameVal.substring(0, 1) + '</strong>' + nameVal.substring(1);
-      } else {
-        document.getElementById('bcB_Name').innerHTML = '<strong>' + nameVal + '</strong>';
-      }
-      
-      document.getElementById('bcA_Phone').textContent = bPhoneInfo.value || '전화번호';
-      document.getElementById('bcB_Phone').textContent = bPhoneInfo.value || '전화번호';
-      
-      const addrVal = [document.getElementById('bcAddressInput').value, document.getElementById('bcAddressDetailInput').value].filter(v => v.trim()).join(' ');
-      if (addrVal) {
-        document.getElementById('bcA_Address_Container').style.display = 'flex';
-        document.getElementById('bcA_Address').textContent = addrVal;
-        document.getElementById('bcB_Address').style.display = 'block';
-        document.getElementById('bcB_Address').textContent = addrVal;
-      } else {
-        document.getElementById('bcA_Address_Container').style.display = 'none';
-        document.getElementById('bcB_Address').style.display = 'none';
-      }
+      document.querySelectorAll('.bcNameEl').forEach(function(el){
+        // 템플릿 B는 첫 글자 볼드 스타일
+        if (el.closest('#bcTemplateB') && nameVal.length >= 2) {
+          el.innerHTML = '<strong>' + nameVal.substring(0,1) + '</strong>' + nameVal.substring(1);
+        } else {
+          el.textContent = nameVal;
+        }
+      });
+
+      document.querySelectorAll('.bcAddrWrap').forEach(function(el){
+        el.style.display = addrVal ? 'flex' : 'none';
+      });
+      document.querySelectorAll('.bcAddrEl').forEach(function(el){
+        if (addrVal) { el.textContent = addrVal; el.style.display = 'block'; }
+        else { el.style.display = 'none'; }
+      });
     }
 
     if(logoInput) {
       logoInput.addEventListener('change', function(e) {
-        const file = e.target.files[0];
+        var file = e.target.files[0];
         if (file) {
           document.getElementById('bcLogoLabel').textContent = file.name;
-          const reader = new FileReader();
+          var reader = new FileReader();
           reader.onload = function(evt) {
-            const resultUrl = evt.target.result;
-            const logoA = document.getElementById('bcA_LogoImg');
-            const logoB = document.getElementById('bcB_LogoImg');
-            if(logoA) { logoA.src = resultUrl; logoA.style.display = 'block'; }
-            if(logoB) { logoB.src = resultUrl; logoB.style.display = 'block'; }
+            document.querySelectorAll('.bcLogoImg').forEach(function(img){
+              img.src = evt.target.result;
+              img.style.display = 'block';
+            });
           };
           reader.readAsDataURL(file);
         }
       });
     }
 
-    bTeamInfo.addEventListener('input', updateBizCard);
-    bRoleInfo.addEventListener('input', updateBizCard);
-    bNameInfo.addEventListener('input', updateBizCard);
-    bPhoneInfo.addEventListener('input', updateBizCard);
-    document.getElementById('bcAddressInput').addEventListener('input', updateBizCard);
-    document.getElementById('bcAddressDetailInput').addEventListener('input', updateBizCard);
-    
-    // 초기화
-    updateBizCard();
+    bTeamInfo.addEventListener('input', updateAll);
+    bRoleInfo.addEventListener('input', updateAll);
+    bNameInfo.addEventListener('input', updateAll);
+    bPhoneInfo.addEventListener('input', updateAll);
+    document.getElementById('bcAddressInput').addEventListener('input', updateAll);
+    document.getElementById('bcAddressDetailInput').addEventListener('input', updateAll);
+    updateAll();
   }
   
-  // 스크립트가 로드될 때 즉시 실행
   initBizCard();
-  // 뒤로가기나 turbo 네비게이션 시에도 보장하기 위해
   document.addEventListener("turbo:load", initBizCard);
 
-  const originalData = {
+  var originalData = {
     team: "<%= j current_user.team_name.to_s %>",
     role: "<%= j current_user.role.to_s %>",
     name: "<%= j current_user.name.to_s %>",
@@ -360,7 +410,7 @@
   };
 
   async function generateImageWithLimit() {
-    const isChanged = (
+    var isChanged = (
       document.getElementById('bcTeamInput').value !== originalData.team ||
       document.getElementById('bcRoleInput').value !== originalData.role ||
       document.getElementById('bcNameInput').value !== originalData.name ||
@@ -368,62 +418,51 @@
       document.getElementById('bcAddressInput').value !== originalData.address
     );
 
-    const btn = document.getElementById('downloadBizCardBtn');
+    var btn = document.getElementById('downloadBizCardBtn');
     btn.disabled = true;
-    const originalText = btn.innerHTML;
+    var originalText = btn.innerHTML;
 
     try {
       if (isChanged) {
         btn.innerHTML = '⏳ 권한 확인 중...';
-        const response = await fetch('<%= increment_biz_card_gen_path %>', {
+        var response = await fetch('<%= increment_biz_card_gen_path %>', {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').content,
-            'Accept': 'application/json'
-          }
+          headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').content, 'Accept': 'application/json' }
         });
-        const data = await response.json();
-        
+        var data = await response.json();
         if (!data.success && data.limit_reached) {
           alert("⚠️ 무료 체험 횟수(10회)를 모두 소진하셨습니다!\n\n무제한 생성을 원하시면 프리미엄 플랜을 구독해주세요.");
           window.location.href = '<%= subscription_path %>';
           return;
         }
-
         originalData.team = document.getElementById('bcTeamInput').value;
         originalData.role = document.getElementById('bcRoleInput').value;
         originalData.name = document.getElementById('bcNameInput').value;
         originalData.phone = document.getElementById('bcPhoneInput').value;
-        originalData.address = [document.getElementById('bcAddressInput').value, document.getElementById('bcAddressDetailInput').value].filter(v => v.trim()).join(' ');
+        originalData.address = [document.getElementById('bcAddressInput').value, document.getElementById('bcAddressDetailInput').value].filter(function(v){return v.trim();}).join(' ');
       }
       
       btn.innerHTML = '⏳ 굽는 중...';
-      const cardEl = document.getElementById('bcTemplate' + currentBcTemplate);
-      const bgColor = currentBcTemplate === 'A' ? '#111827' : '#ffffff';
+      var cardEl = document.getElementById('bcTemplate' + currentBcTemplate);
+      var bgColor = tplBgColors[currentBcTemplate] || '#ffffff';
       
       document.getElementById('imageDownloadModal').style.display = 'flex';
-      const canvas = await html2canvas(cardEl, { scale: 4, backgroundColor: bgColor, logging: false });
+      var canvas = await html2canvas(cardEl, { scale: 4, backgroundColor: bgColor, logging: false });
       document.getElementById('downloadedImagePreview').src = canvas.toDataURL('image/png');
       
-      // Update info in backend async
-      const formData = new FormData();
+      var formData = new FormData();
       formData.append('user[team_name]', document.getElementById('bcTeamInput').value);
       formData.append('user[role]', document.getElementById('bcRoleInput').value);
       formData.append('user[name]', document.getElementById('bcNameInput').value);
       formData.append('user[phone]', document.getElementById('bcPhoneInput').value);
-      formData.append('user[address]', [document.getElementById('bcAddressInput').value, document.getElementById('bcAddressDetailInput').value].filter(v => v.trim()).join(' '));
+      formData.append('user[address]', [document.getElementById('bcAddressInput').value, document.getElementById('bcAddressDetailInput').value].filter(function(v){return v.trim();}).join(' '));
       formData.append('business_card_base64_direct', canvas.toDataURL('image/png'));
       
       fetch('<%= update_my_account_documents_path %>.json', {
         method: 'PATCH',
-        headers: {
-          'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').content,
-          'Accept': 'application/json'
-        },
+        headers: { 'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').content, 'Accept': 'application/json' },
         body: formData
       });
-      
     } catch (e) {
       alert("오류가 발생했습니다.");
     } finally {
@@ -435,7 +474,6 @@
 
 <script src="//t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
 
-<!-- Daum Postcode 팝업 레이어 -->
 <div id="daumPostcodeLayer" style="display:none; position:fixed; overflow:hidden; z-index:99999; -webkit-overflow-scrolling:touch; width:100%; height:100%; top:0; left:0; background:rgba(0,0,0,0.6);">
   <div style="position:absolute; top:50%; left:50%; transform:translate(-50%, -50%); width:90%; max-width:400px; height:80vh; max-height:600px; background:white; border-radius:12px; overflow:hidden; display:flex; flex-direction:column; box-shadow:0 10px 30px rgba(0,0,0,0.3);">
     <div style="display:flex; justify-content:space-between; align-items:center; padding:12px 16px; border-bottom:1px solid #f0f0f0; background:#f8fafc;">
@@ -448,46 +486,30 @@
 
 <script>
   function execDaumPostcode() {
-    const layer = document.getElementById('daumPostcodeLayer');
-    const wrap = document.getElementById('daumPostcodeWrap');
+    var layer = document.getElementById('daumPostcodeLayer');
+    var wrap = document.getElementById('daumPostcodeWrap');
     layer.style.display = 'block';
-
     new daum.Postcode({
       oncomplete: function(data) {
-        let addr = data.userSelectedType === 'R' ? data.roadAddress : data.jibunAddress;
-        let extraAddr = '';
+        var addr = data.userSelectedType === 'R' ? data.roadAddress : data.jibunAddress;
+        var extraAddr = '';
         if(data.userSelectedType === 'R'){
-          if(data.bname !== '' && /[동|로|가]$/g.test(data.bname)){
-            extraAddr += data.bname;
-          }
-          if(data.buildingName !== '' && data.apartment === 'Y'){
-            extraAddr += (extraAddr !== '' ? ', ' + data.buildingName : data.buildingName);
-          }
-          if(extraAddr !== ''){
-            extraAddr = ' (' + extraAddr + ')';
-          }
+          if(data.bname !== '' && /[동|로|가]$/g.test(data.bname)){ extraAddr += data.bname; }
+          if(data.buildingName !== '' && data.apartment === 'Y'){ extraAddr += (extraAddr !== '' ? ', ' + data.buildingName : data.buildingName); }
+          if(extraAddr !== ''){ extraAddr = ' (' + extraAddr + ')'; }
         }
-        const fullAddress = addr + extraAddr;
-        const addrInput = document.getElementById('bcAddressInput');
+        var fullAddress = addr + extraAddr;
+        var addrInput = document.getElementById('bcAddressInput');
         addrInput.value = fullAddress;
-        
-        const btnText = document.getElementById('bcAddressBtnText');
-        if (btnText) {
-          btnText.textContent = fullAddress;
-          btnText.style.color = '#1e293b';
-        }
-        
+        var btnText = document.getElementById('bcAddressBtnText');
+        if (btnText) { btnText.textContent = fullAddress; btnText.style.color = '#1e293b'; }
         addrInput.dispatchEvent(new Event('input'));
-        
         closeDaumPostcode();
-        setTimeout(() => document.getElementById('bcAddressDetailInput').focus(), 100);
+        setTimeout(function(){ document.getElementById('bcAddressDetailInput').focus(); }, 100);
       },
       width: '100%',
       height: '100%'
     }).embed(wrap);
   }
-
-  function closeDaumPostcode() {
-    document.getElementById('daumPostcodeLayer').style.display = 'none';
-  }
+  function closeDaumPostcode() { document.getElementById('daumPostcodeLayer').style.display = 'none'; }
 </script>
