@@ -18,29 +18,31 @@
     <h3 style="font-size:18px; font-weight:800; color:#111827; margin-bottom:8px;">영수증을 촬영해주세요</h3>
     <p style="font-size:14px; color:#6b7280; line-height:1.5;">촬영된 이미지는 스마트기기 환경에 맞춰<br>자동으로 용량이 데이터 최적화 됩니다.</p>
     
-    <button onclick="document.getElementById('receipt_image_file').click()" style="margin-top:24px; background:#4f46e5; color:white; border:none; padding:16px 24px; font-size:16px; font-weight:700; border-radius:12px; width:100%; display:flex; align-items:center; justify-content:center; gap:8px; cursor:pointer;">
+    <label for="receipt_image_file" style="margin-top:24px; background:#4f46e5; color:white; border:none; padding:16px 24px; font-size:16px; font-weight:700; border-radius:12px; width:100%; display:flex; align-items:center; justify-content:center; gap:8px; cursor:pointer; box-sizing:border-box;">
       <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
       사진 선택 / 촬영하기
-    </button>
+    </label>
   </div>
 
   <!-- 입력 폼 영역 -->
-  <div id="formArea" style="display:none;">
+  <div id="formArea">
     <%= form_with model: @receipt, local: true, html: { multipart: true, id: "receiptForm" } do |f| %>
-      <input type="file" id="receipt_image_file" name="receipt[image]" accept="image/*" capture="environment" style="display:none;" required>
+      <input type="file" id="receipt_image_file" name="receipt[image]" accept="image/*" style="width: 0; height: 0; position: absolute; opacity: 0; overflow: hidden;" required>
       
-      <div style="background:#f9fafb; border-radius:12px; padding:16px; margin-bottom:24px; text-align:center;">
-        <img id="imagePreview" src="" style="max-width:100%; max-height:200px; border-radius:8px; object-fit:contain; display:none; margin:0 auto; box-shadow:0 4px 6px -1px rgba(0,0,0,0.1);">
-      </div>
+      <div id="formDetails" style="display:none;">
+        <div style="background:#f9fafb; border-radius:12px; padding:16px; margin-bottom:24px; text-align:center;">
+          <img id="imagePreview" src="" style="max-width:100%; max-height:200px; border-radius:8px; object-fit:contain; display:none; margin:0 auto; box-shadow:0 4px 6px -1px rgba(0,0,0,0.1);">
+        </div>
 
-      <div class="form-group" style="margin-bottom:32px;">
-        <label style="display:block; font-size:14px; font-weight:700; color:#374151; margin-bottom:8px;">결제 날짜</label>
-        <%= f.date_field :receipt_date, value: @selected_date, class: "form-input", style: "width:100%; padding:14px; border:1px solid #d1d5db; border-radius:10px; font-size:16px;", required: true %>
-      </div>
+        <div class="form-group" style="margin-bottom:32px;">
+          <label style="display:block; font-size:14px; font-weight:700; color:#374151; margin-bottom:8px;">결제 날짜</label>
+          <%= f.date_field :receipt_date, value: @selected_date, class: "form-input", style: "width:100%; padding:14px; border:1px solid #d1d5db; border-radius:10px; font-size:16px;", required: true %>
+        </div>
 
-      <button type="submit" id="submitBtn" style="width:100%; background:#111827; color:white; border:none; padding:18px; font-size:18px; font-weight:800; border-radius:12px; cursor:pointer; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);">
-        영수증 저장하기
-      </button>
+        <button type="submit" id="submitBtn" style="width:100%; background:#111827; color:white; border:none; padding:18px; font-size:18px; font-weight:800; border-radius:12px; cursor:pointer; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);">
+          영수증 저장하기
+        </button>
+      </div>
     <% end %>
   </div>
 </div>
@@ -79,7 +81,7 @@
           btn.style.pointerEvents = "none";
 
           document.getElementById('instructionArea').style.display = 'none';
-          document.getElementById('formArea').style.display = 'block';
+          document.getElementById('formDetails').style.display = 'block';
 
           const img = new Image();
           img.src = objectUrl;
