@@ -492,13 +492,12 @@
       if (hasEntitlement) {
         window.location.href = `/subscription/verify_mobile?plan=${plan}`;
       } else {
-        // 엔타이틀먼트가 없어도 verify 요청 (RevenueCat Webhook으로 처리될 수 있음)
-        window.location.href = `/subscription/verify_mobile?plan=${plan}`;
+        alert("성공적으로 결제 권한을 확인하지 못했습니다. 잠시 후 다시 시도해주세요.");
       }
 
     } catch (e) {
       const errMsg = (e.message || '').toLowerCase();
-      if (e.code === 'PURCHASE_CANCELLED' || e.code === '1' || errMsg.includes('cancel')) {
+      if (e.userCancelled === true || e.code === 'PURCHASE_CANCELLED' || e.code === '1' || errMsg.includes('cancel')) {
         return; // 사용자가 취소
       }
       
