@@ -46,6 +46,9 @@
         min-height: 100%;
         overscroll-behavior: none;
         overscroll-behavior-y: none;
+        -webkit-text-size-adjust: none;
+        -moz-text-size-adjust: none;
+        text-size-adjust: none;
       }
 
       body {
@@ -293,6 +296,9 @@
         font-size: 16px;
         font-weight: 700;
         transition: background 0.2s;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
       }
 
       .drawer-item:hover, .drawer-item:active {
