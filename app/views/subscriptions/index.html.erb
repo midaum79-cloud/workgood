@@ -459,8 +459,9 @@
 
       await initPurchases();
 
-      // 상품 식별자: App Store Connect에 등록된 정확한 Product ID 사용
-      const productIdentifier = `com.workgood.app.${plan}`;
+      // 상품 식별자: 플랫폼별 패키지명 분기 (iOS: com.workgood.app / Android: com.workgood.mobile)
+      const appPrefix = window.Capacitor.getPlatform() === 'android' ? 'com.workgood.mobile' : 'com.workgood.app';
+      const productIdentifier = `${appPrefix}.${plan}`;
 
       // 상품 목록 조회
       const { products } = await Purchases.getProducts({
