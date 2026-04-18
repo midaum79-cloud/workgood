@@ -585,6 +585,10 @@
         <%= link_to vendors_path, class: "drawer-item", onclick: "closeDrawer()" do %>
           <span class="drawer-item-icon">🤝</span> 거래처 관리
         <% end %>
+        <%= link_to tax_tips_path, class: "drawer-item", onclick: "closeDrawer()" do %>
+          <span class="drawer-item-icon">📚</span> 세무상식
+          <span style="margin-left:auto; font-size:10px; font-weight:800; background:#dcfce7; color:#166534; padding:2px 8px; border-radius:999px;">필독</span>
+        <% end %>
         <%= link_to monthly_payments_projects_path, class: "drawer-item", onclick: "closeDrawer()", style: "background:#fffbeb;" do %>
           <span class="drawer-item-icon">💰</span> 돈 관리
           <span style="margin-left:auto; font-size:10px; font-weight:800; background:#fef3c7; color:#92400e; padding:2px 8px; border-radius:999px;">PREMIUM</span>

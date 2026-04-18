@@ -1,5 +1,6 @@
 Rails.application.routes.draw do
   get "pages/guide"
+  get "pages/tax_tips", to: "pages#tax_tips", as: :tax_tips
   get  "daily_memos",        to: "daily_memos#index",  as: :daily_memos_list
   get  "daily_memos/panel",  to: "daily_memos#panel",  as: :daily_memos_panel
   get  "daily_memos/show",   to: "daily_memos#show",   as: :daily_memo
