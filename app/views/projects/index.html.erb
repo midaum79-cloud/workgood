@@ -120,58 +120,56 @@
   })();
   </script>
 
-  <!-- 날씨 위젯 (프리미엄) -->
+  <!-- 날씨 위젯 (컴팩트) -->
   <div id="weatherWidget" style="
-    border-radius:20px; 
-    padding:20px; 
-    margin-bottom:18px; 
+    border-radius:16px; 
+    padding:14px 16px; 
+    margin-bottom:14px; 
     position:relative; 
     overflow:hidden;
     background: linear-gradient(135deg, #0ea5e9 0%, #6366f1 50%, #8b5cf6 100%);
     color:white;
-    min-height:140px;
     transition: background 0.5s ease;
   ">
     <!-- 배경 장식 -->
-    <div style="position:absolute; top:-40px; right:-20px; width:120px; height:120px; border-radius:50%; background:rgba(255,255,255,0.08);"></div>
-    <div style="position:absolute; bottom:-30px; left:30px; width:80px; height:80px; border-radius:50%; background:rgba(255,255,255,0.05);"></div>
-    <div style="position:absolute; top:20px; right:60px; width:40px; height:40px; border-radius:50%; background:rgba(255,255,255,0.06);"></div>
+    <div style="position:absolute; top:-30px; right:-15px; width:80px; height:80px; border-radius:50%; background:rgba(255,255,255,0.08);"></div>
+    <div style="position:absolute; bottom:-20px; left:20px; width:50px; height:50px; border-radius:50%; background:rgba(255,255,255,0.05);"></div>
 
-    <!-- 상단: 위치 + 현재 날씨 -->
-    <div style="display:flex; justify-content:space-between; align-items:flex-start; position:relative; z-index:2;">
-      <div>
-        <div style="display:flex; align-items:center; gap:6px; cursor:pointer; margin-bottom:10px;" onclick="changeWeatherLocation()">
-          <svg width="14" height="14" fill="white" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5S10.62 6.5 12 6.5s2.5 1.12 2.5 2.5S13.38 11.5 12 11.5z"/></svg>
-          <span id="weatherLocName" style="font-size:14px; font-weight:800; opacity:0.95; border-bottom:1px dashed rgba(255,255,255,0.4); padding-bottom:1px;">서울특별시</span>
-          <svg width="10" height="10" fill="rgba(255,255,255,0.6)" viewBox="0 0 24 24"><path d="M7 10l5 5 5-5z"/></svg>
+    <!-- 메인: 한 줄 레이아웃 -->
+    <div style="display:flex; align-items:center; justify-content:space-between; position:relative; z-index:2;">
+      
+      <!-- 좌측: 현재 날씨 -->
+      <div style="display:flex; align-items:center; gap:10px; flex:1; min-width:0;">
+        <div id="weatherTodayIcon" style="font-size:36px; line-height:1; flex-shrink:0; animation: weatherFloat 3s ease-in-out infinite;">☀️</div>
+        <div style="min-width:0;">
+          <div style="display:flex; align-items:baseline; gap:6px;">
+            <span id="weatherTodayTemp" style="font-size:28px; font-weight:900; line-height:1; letter-spacing:-1px;">--°</span>
+            <span id="weatherTodayDesc" style="font-size:11px; font-weight:700; opacity:0.75; white-space:nowrap;">불러오는 중</span>
+          </div>
+          <div style="display:flex; align-items:center; gap:4px; margin-top:3px; cursor:pointer;" onclick="changeWeatherLocation()">
+            <svg width="10" height="10" fill="white" opacity="0.7" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5S10.62 6.5 12 6.5s2.5 1.12 2.5 2.5S13.38 11.5 12 11.5z"/></svg>
+            <span id="weatherLocName" style="font-size:11px; font-weight:700; opacity:0.7;">서울특별시</span>
+          </div>
         </div>
-        <div style="display:flex; align-items:flex-end; gap:4px;">
-          <span id="weatherTodayTemp" style="font-size:42px; font-weight:900; line-height:1; letter-spacing:-2px;">--°</span>
-        </div>
-        <div id="weatherTodayDesc" style="font-size:13px; font-weight:700; opacity:0.8; margin-top:4px;">날씨 불러오는 중...</div>
       </div>
-      <div id="weatherTodayIcon" style="font-size:56px; line-height:1; filter:drop-shadow(0 4px 8px rgba(0,0,0,0.15)); animation: weatherFloat 3s ease-in-out infinite;">☀️</div>
-    </div>
 
-    <!-- 하단: 3일 예보 카드 -->
-    <div style="display:flex; gap:8px; margin-top:16px; position:relative; z-index:2;">
-      <div style="flex:1; background:rgba(255,255,255,0.15); backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px); border-radius:14px; padding:10px 8px; text-align:center;">
-        <div style="font-size:11px; font-weight:800; opacity:0.7;">오늘</div>
-        <div id="weatherDay0Icon" style="font-size:22px; margin:4px 0;">☀️</div>
-        <div id="weatherDay0Temp" style="font-size:13px; font-weight:900;">--°</div>
-        <div id="weatherDay0Range" style="font-size:10px; font-weight:700; opacity:0.6; margin-top:2px;">--°/--°</div>
-      </div>
-      <div style="flex:1; background:rgba(255,255,255,0.15); backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px); border-radius:14px; padding:10px 8px; text-align:center;">
-        <div style="font-size:11px; font-weight:800; opacity:0.7;">내일</div>
-        <div id="weatherDay1Icon" style="font-size:22px; margin:4px 0;">⛅</div>
-        <div id="weatherDay1Temp" style="font-size:13px; font-weight:900;">--°</div>
-        <div id="weatherDay1Range" style="font-size:10px; font-weight:700; opacity:0.6; margin-top:2px;">--°/--°</div>
-      </div>
-      <div style="flex:1; background:rgba(255,255,255,0.15); backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px); border-radius:14px; padding:10px 8px; text-align:center;">
-        <div style="font-size:11px; font-weight:800; opacity:0.7;">모레</div>
-        <div id="weatherDay2Icon" style="font-size:22px; margin:4px 0;">🌤️</div>
-        <div id="weatherDay2Temp" style="font-size:13px; font-weight:900;">--°</div>
-        <div id="weatherDay2Range" style="font-size:10px; font-weight:700; opacity:0.6; margin-top:2px;">--°/--°</div>
+      <!-- 우측: 3일 예보 -->
+      <div style="display:flex; gap:4px; flex-shrink:0;">
+        <div style="background:rgba(255,255,255,0.15); border-radius:10px; padding:6px 8px; text-align:center; min-width:48px;">
+          <div style="font-size:9px; font-weight:800; opacity:0.6;">오늘</div>
+          <div id="weatherDay0Icon" style="font-size:16px; line-height:1; margin:2px 0;">☀️</div>
+          <div id="weatherDay0Temp" style="font-size:11px; font-weight:900;">--°</div>
+        </div>
+        <div style="background:rgba(255,255,255,0.15); border-radius:10px; padding:6px 8px; text-align:center; min-width:48px;">
+          <div style="font-size:9px; font-weight:800; opacity:0.6;">내일</div>
+          <div id="weatherDay1Icon" style="font-size:16px; line-height:1; margin:2px 0;">⛅</div>
+          <div id="weatherDay1Temp" style="font-size:11px; font-weight:900;">--°</div>
+        </div>
+        <div style="background:rgba(255,255,255,0.15); border-radius:10px; padding:6px 8px; text-align:center; min-width:48px;">
+          <div style="font-size:9px; font-weight:800; opacity:0.6;">모레</div>
+          <div id="weatherDay2Icon" style="font-size:16px; line-height:1; margin:2px 0;">🌤️</div>
+          <div id="weatherDay2Temp" style="font-size:11px; font-weight:900;">--°</div>
+        </div>
       </div>
     </div>
   </div>
@@ -262,10 +260,8 @@
             for (var i = 0; i < 3; i++) {
               var iconEl = document.getElementById('weatherDay' + i + 'Icon');
               var tempEl = document.getElementById('weatherDay' + i + 'Temp');
-              var rangeEl = document.getElementById('weatherDay' + i + 'Range');
               if (iconEl) iconEl.textContent = getWeatherEmoji(codes[i]);
               if (tempEl) tempEl.textContent = Math.round(maxTemps[i]) + '°';
-              if (rangeEl) rangeEl.textContent = Math.round(minTemps[i]) + '° / ' + Math.round(maxTemps[i]) + '°';
             }
           }
         })
