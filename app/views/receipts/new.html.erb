@@ -38,7 +38,7 @@
   <!-- 입력 폼 영역 -->
   <div id="formArea">
     <%= form_with model: @receipt, local: true, html: { multipart: true, id: "receiptForm" } do |f| %>
-      <input type="file" id="receipt_image_file" name="receipt[image]" accept="image/*" style="width: 0; height: 0; position: absolute; opacity: 0; overflow: hidden;" required>
+      <input type="file" id="receipt_image_file" name="receipt[image]" accept="image/*" style="display:none;">
       
       <div id="formDetails" style="display:none;">
         <div style="background:#f9fafb; border-radius:12px; padding:16px; margin-bottom:24px; text-align:center;">
@@ -149,6 +149,11 @@
           if (btn.innerText === "이미지 최적화 중...") {
             e.preventDefault();
           } else {
+            if (!mainFileInput.files || mainFileInput.files.length === 0) {
+              e.preventDefault();
+              alert("이미지를 다시 선택해주세요.");
+              return;
+            }
             btn.innerText = "저장하는 중...";
             btn.style.opacity = "0.7";
             btn.style.pointerEvents = "none";
