@@ -37,7 +37,17 @@
 
   <!-- 입력 폼 영역 -->
   <div id="formArea">
-    <%= form_with model: @receipt, local: true, html: { multipart: true, id: "receiptForm" } do |f| %>
+    <%= form_with model: @receipt, local: true, html: { multipart: true, id: "receiptForm", data: { turbo: false } } do |f| %>
+      <% if @receipt.errors.any? %>
+        <div style="background:#fef2f2; border:1px solid #f87171; color:#ef4444; padding:12px; border-radius:8px; margin-bottom:16px;">
+          <ul style="margin:0; padding-left:20px; font-size:14px;">
+            <% @receipt.errors.full_messages.each do |message| %>
+              <li><%= message %></li>
+            <% end %>
+          </ul>
+        </div>
+      <% end %>
+
       <input type="file" id="receipt_image_file" name="receipt[image]" accept="image/*" style="display:none;">
       
       <div id="formDetails" style="display:none;">
@@ -123,10 +133,15 @@
             ctx.drawImage(img, 0, 0, width, height);
             
             canvas.toBlob(function(blob) {
-              const newFile = new File([blob], "receipt_optimized.png", {type: "image/png"});
-              const dt = new DataTransfer();
-              dt.items.add(newFile);
-              mainFileInput.files = dt.files;
+              window.optimizedReceiptBlob = blob; // JS blob 저장
+              
+              // 폴백: 네이티브 폼을 위해서도 값 세팅
+              try {
+                const newFile = new File([blob], "receipt_optimized.png", {type: "image/png"});
+                const dt = new DataTransfer();
+                dt.items.add(newFile);
+                mainFileInput.files = dt.files;
+              } catch(e) {}
               
               btn.innerText = originalText;
               btn.style.opacity = "1";
@@ -145,19 +160,55 @@
       if (form && !form.dataset.submitBound) {
         form.dataset.submitBound = "true";
         form.addEventListener('submit', function(e) {
+          e.preventDefault();
+          
           const btn = document.getElementById('submitBtn');
           if (btn.innerText === "이미지 최적화 중...") {
-            e.preventDefault();
-          } else {
-            if (!mainFileInput.files || mainFileInput.files.length === 0) {
-              e.preventDefault();
-              alert("이미지를 다시 선택해주세요.");
-              return;
-            }
-            btn.innerText = "저장하는 중...";
-            btn.style.opacity = "0.7";
-            btn.style.pointerEvents = "none";
+            return;
           }
+
+          if (!window.optimizedReceiptBlob) {
+            alert("이미지를 다시 선택해주세요.");
+            return;
+          }
+
+          btn.innerText = "저장하는 중...";
+          btn.style.opacity = "0.7";
+          btn.style.pointerEvents = "none";
+
+          const formData = new FormData(form);
+          formData.set('receipt[image]', window.optimizedReceiptBlob, 'receipt_optimized.png');
+
+          fetch(form.action, {
+            method: 'POST',
+            body: formData,
+            headers: {
+              'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').content,
+              'Accept': 'text/html, application/xhtml+xml'
+            }
+          })
+          .then(response => {
+            if (response.redirected) {
+              window.location.href = response.url;
+            } else if (response.ok) {
+               response.text().then(html => {
+                 document.open();
+                 document.write(html);
+                 document.close();
+               });
+            } else {
+              alert("서버 오류가 발생했습니다. 다시 시도해 주세요.");
+              btn.innerText = "영수증 저장하기";
+              btn.style.opacity = "1";
+              btn.style.pointerEvents = "auto";
+            }
+          })
+          .catch(err => {
+            alert("통신 오류가 발생했습니다.");
+            btn.innerText = "영수증 저장하기";
+            btn.style.opacity = "1";
+            btn.style.pointerEvents = "auto";
+          });
         });
       }
     }
