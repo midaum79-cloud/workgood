@@ -11,6 +11,7 @@ class ReceiptsController < ApplicationController
 
     @receipts = current_user.receipts
                             .with_attached_image
+                            .joins(:image_attachment)
                             .where(receipt_date: @current_date.beginning_of_month..@current_date.end_of_month)
                             .order(receipt_date: :asc, created_at: :asc)
     
