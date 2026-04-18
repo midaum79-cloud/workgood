@@ -1,4 +1,11 @@
 <% content_for :title, "새 영수증 등록" %>
+<script>
+  // 이 페이지에서 Turbo 캐시 비활성화 (카메라/갤러리 복귀 시 페이지 리셋 방지)
+  if (window.Turbo) {
+    Turbo.cache.exemptPageFromCache();
+  }
+</script>
+
 
 <div class="top-header" style="background:white; padding:18px 20px 14px 20px; border-bottom:1px solid #ececec; position:sticky; top:0; z-index:30;">
   <div style="display:flex; justify-content:space-between; align-items:center;">
@@ -12,223 +19,142 @@
 </div>
 
 <div style="padding:20px; padding-bottom:80px;">
-  <!-- 안내 영역 -->
-  <div id="instructionArea" style="text-align:center; padding:40px 20px;">
-    <div style="font-size:48px; margin-bottom:16px;">📸</div>
-    <h3 style="font-size:18px; font-weight:800; color:#111827; margin-bottom:8px;">영수증을 촬영해주세요</h3>
-    <p style="font-size:14px; color:#6b7280; line-height:1.5;">촬영된 이미지는 스마트기기 환경에 맞춰<br>자동으로 용량이 데이터 최적화 됩니다.</p>
-    
-    <div style="display:flex; gap:12px; margin-top:24px;">
-      <label for="receipt_image_file_gallery" style="flex:1; background:#f3f4f6; color:#374151; border:none; padding:16px 0; font-size:16px; font-weight:700; border-radius:12px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:8px; cursor:pointer; box-sizing:border-box;">
-        <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
-        사진 선택
-      </label>
+  <% if @receipt.errors.any? %>
+    <div style="background:#fef2f2; border:1px solid #f87171; color:#ef4444; padding:12px; border-radius:8px; margin-bottom:16px;">
+      <ul style="margin:0; padding-left:20px; font-size:14px;">
+        <% @receipt.errors.full_messages.each do |message| %>
+          <li><%= message %></li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
 
-      <label for="receipt_image_file_camera" style="flex:1; background:#111827; color:white; border:none; padding:16px 0; font-size:16px; font-weight:700; border-radius:12px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:8px; cursor:pointer; box-sizing:border-box;">
-        <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
-        직접 촬영
-      </label>
+  <form action="<%= receipts_path %>" method="post" enctype="multipart/form-data" id="receiptForm" data-turbo="false">
+    <input type="hidden" name="authenticity_token" value="<%= form_authenticity_token %>">
+    <input type="hidden" name="receipt[receipt_date]" id="receipt_date_field" value="<%= @selected_date || Date.current.to_s %>">
+
+    <!-- 안내 + 버튼 영역 -->
+    <div id="instructionArea" style="text-align:center; padding:40px 20px;">
+      <div style="font-size:48px; margin-bottom:16px;">📸</div>
+      <h3 style="font-size:18px; font-weight:800; color:#111827; margin-bottom:8px;">영수증을 촬영해주세요</h3>
+      <p style="font-size:14px; color:#6b7280; line-height:1.5;">촬영된 이미지는 스마트기기 환경에 맞춰<br>자동으로 용량이 데이터 최적화 됩니다.</p>
+      
+      <div style="display:flex; gap:12px; margin-top:24px;">
+        <label for="galleryInput" style="flex:1; background:#f3f4f6; color:#374151; border:none; padding:16px 0; font-size:16px; font-weight:700; border-radius:12px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:8px; cursor:pointer; box-sizing:border-box;">
+          <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+          사진 선택
+        </label>
+
+        <label for="cameraInput" style="flex:1; background:#111827; color:white; border:none; padding:16px 0; font-size:16px; font-weight:700; border-radius:12px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:8px; cursor:pointer; box-sizing:border-box;">
+          <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+          직접 촬영
+        </label>
+      </div>
     </div>
 
-    <!-- Hidden native inputs -->
-    <input type="file" id="receipt_image_file_gallery" accept="image/*" style="width:0; height:0; position:absolute; opacity:0;">
-    <input type="file" id="receipt_image_file_camera" accept="image/*" capture="environment" style="width:0; height:0; position:absolute; opacity:0;">
-  </div>
+    <!-- 갤러리용 (capture 없음) — 폼 안에 위치 -->
+    <input type="file" id="galleryInput" name="receipt[image]" accept="image/*" style="position:absolute; left:-9999px; opacity:0; width:1px; height:1px;">
+    <!-- 카메라용 (capture 있음) — 폼 안에 위치 -->
+    <input type="file" id="cameraInput" accept="image/*" capture="environment" style="position:absolute; left:-9999px; opacity:0; width:1px; height:1px;">
 
-  <!-- 입력 폼 영역 -->
-  <div id="formArea">
-    <%= form_with model: @receipt, local: true, html: { multipart: true, id: "receiptForm", data: { turbo: false } } do |f| %>
-      <% if @receipt.errors.any? %>
-        <div style="background:#fef2f2; border:1px solid #f87171; color:#ef4444; padding:12px; border-radius:8px; margin-bottom:16px;">
-          <ul style="margin:0; padding-left:20px; font-size:14px;">
-            <% @receipt.errors.full_messages.each do |message| %>
-              <li><%= message %></li>
-            <% end %>
-          </ul>
-        </div>
-      <% end %>
-
-      <input type="file" id="receipt_image_file" name="receipt[image]" accept="image/*" style="display:none;">
-      
-      <div id="formDetails" style="display:none;">
-        <div style="background:#f9fafb; border-radius:12px; padding:16px; margin-bottom:24px; text-align:center;">
-          <img id="imagePreview" src="" style="max-width:100%; max-height:200px; border-radius:8px; object-fit:contain; display:none; margin:0 auto; box-shadow:0 4px 6px -1px rgba(0,0,0,0.1);">
-        </div>
-
-        <div class="form-group" style="margin-bottom:32px;">
-          <label style="display:block; font-size:14px; font-weight:700; color:#374151; margin-bottom:8px;">결제 날짜</label>
-          <%= f.date_field :receipt_date, value: @selected_date, class: "form-input", style: "width:100%; padding:14px; border:1px solid #d1d5db; border-radius:10px; font-size:16px;", required: true %>
-        </div>
-
-        <button type="submit" id="submitBtn" style="width:100%; background:#111827; color:white; border:none; padding:18px; font-size:18px; font-weight:800; border-radius:12px; cursor:pointer; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);">
-          영수증 저장하기
-        </button>
+    <!-- 미리보기 + 저장 영역 -->
+    <div id="formDetails" style="display:none;">
+      <div style="background:#f9fafb; border-radius:12px; padding:16px; margin-bottom:16px; text-align:center;">
+        <img id="imagePreview" src="" style="max-width:100%; max-height:200px; border-radius:8px; object-fit:contain; display:none; margin:0 auto; box-shadow:0 4px 6px -1px rgba(0,0,0,0.1);">
       </div>
-    <% end %>
-  </div>
+
+      <div style="margin-bottom:24px;">
+        <label style="display:block; font-size:14px; font-weight:700; color:#374151; margin-bottom:8px;">결제 날짜</label>
+        <input type="date" id="receipt_date_visible" value="<%= @selected_date || Date.current.to_s %>" style="width:100%; padding:14px; border:1px solid #d1d5db; border-radius:10px; font-size:16px; box-sizing:border-box;">
+      </div>
+
+      <button type="submit" id="submitBtn" style="width:100%; background:#111827; color:white; border:none; padding:18px; font-size:18px; font-weight:800; border-radius:12px; cursor:pointer; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);">
+        영수증 저장하기
+      </button>
+    </div>
+  </form>
 </div>
 
 <script>
-  (function() {
-    // Turbo 네비게이션 시 중복 선언 방지를 위해 window 객체에 이벤트 바운드 여부 기록
-    if (window.receiptsNewEventBound) return;
-    
-    document.addEventListener('turbo:load', function() {
-      initCameraFeature();
+document.addEventListener('DOMContentLoaded', function() {
+  var galleryInput = document.getElementById('galleryInput');
+  var cameraInput = document.getElementById('cameraInput');
+  var form = document.getElementById('receiptForm');
+  var instructionArea = document.getElementById('instructionArea');
+  var formDetails = document.getElementById('formDetails');
+  var imagePreview = document.getElementById('imagePreview');
+  var submitBtn = document.getElementById('submitBtn');
+  var dateField = document.getElementById('receipt_date_field');
+  var dateVisible = document.getElementById('receipt_date_visible');
+
+  if (!form) return;
+
+  // 날짜 동기화
+  if (dateVisible) {
+    dateVisible.addEventListener('change', function() {
+      dateField.value = this.value;
     });
+  }
 
-    function initCameraFeature() {
-      const mainFileInput = document.getElementById('receipt_image_file');
-      const galleryInput = document.getElementById('receipt_image_file_gallery');
-      const cameraInput = document.getElementById('receipt_image_file_camera');
-      
-      if (!mainFileInput) return;
-      window.receiptsNewEventBound = true;
-
-      // 이미 이벤트가 추가된 input이면 방지
-      if (mainFileInput.dataset.eventBound === "true") return;
-      mainFileInput.dataset.eventBound = "true";
-
-      function handleFileChange(e) {
-        try {
-          if (!this.files || this.files.length === 0) {
-            // 파일이 비어있음 (취소했거나 안드로이드 버그로 누락됨)
-            return;
-          }
-          const file = this.files[0];
-          
-          const objectUrl = URL.createObjectURL(file);
-          const imgPreview = document.getElementById('imagePreview');
-          imgPreview.src = objectUrl;
-          imgPreview.style.display = 'block';
-
-          const btn = document.getElementById('submitBtn');
-          const originalText = btn.innerText;
-          btn.innerText = "이미지 최적화 중...";
-          btn.style.opacity = "0.7";
-          btn.style.pointerEvents = "none";
-
-          document.getElementById('instructionArea').style.display = 'none';
-          document.getElementById('formDetails').style.display = 'block';
-
-          const img = new Image();
-          img.src = objectUrl;
-          img.onload = function() {
-            try {
-              const canvas = document.createElement('canvas');
-              let width = img.width;
-              let height = img.height;
-              const MAX_SIZE = 800; // 해상도 리밋
-              
-              if (width > height) {
-                if (width > MAX_SIZE) {
-                  height = Math.round((height * MAX_SIZE) / width);
-                  width = MAX_SIZE;
-                }
-              } else {
-                if (height > MAX_SIZE) {
-                  width = Math.round((width * MAX_SIZE) / height);
-                  height = MAX_SIZE;
-                }
-              }
-              
-              canvas.width = width;
-              canvas.height = height;
-              const ctx = canvas.getContext('2d');
-              ctx.drawImage(img, 0, 0, width, height);
-              
-              canvas.toBlob(function(blob) {
-                if(!blob) throw new Error("Canvas 압축 결과가 비어있습니다.");
-                window.optimizedReceiptBlob = blob; // JS blob 저장
-                
-                // 폴백: 네이티브 폼을 위해서도 값 세팅
-                try {
-                  const newFile = new File([blob], "receipt_optimized.png", {type: "image/png"});
-                  const dt = new DataTransfer();
-                  dt.items.add(newFile);
-                  mainFileInput.files = dt.files;
-                } catch(e) {}
-                
-                btn.innerText = "영수증 저장하기";
-                btn.style.opacity = "1";
-                btn.style.pointerEvents = "auto";
-                
-              }, 'image/png');
-            } catch(e) {
-              alert("이미지 처리 중 오류가 발생했습니다: " + e.message);
-              document.getElementById('instructionArea').style.display = 'block';
-              document.getElementById('formDetails').style.display = 'none';
-            }
-          };
-          img.onerror = function() {
-            alert("선택하신 이미지를 브라우저가 읽을 수 없습니다.");
-            document.getElementById('instructionArea').style.display = 'block';
-            document.getElementById('formDetails').style.display = 'none';
-          };
-        } catch(e) {
-          alert("파일 선택 중 알 수 없는 오류가 발생했습니다: " + e.message);
-        }
-      }
-
-      if (galleryInput) galleryInput.addEventListener('change', handleFileChange);
-      if (cameraInput) cameraInput.addEventListener('change', handleFileChange);
-
-
-      const form = document.getElementById('receiptForm');
-      if (form && !form.dataset.submitBound) {
-        form.dataset.submitBound = "true";
-        form.addEventListener('submit', function(e) {
-          e.preventDefault();
-          
-          const btn = document.getElementById('submitBtn');
-          if (btn.innerText === "이미지 최적화 중...") {
-            return;
-          }
-
-          if (!window.optimizedReceiptBlob) {
-            alert("이미지를 다시 선택해주세요.");
-            return;
-          }
-
-          btn.innerText = "저장하는 중...";
-          btn.style.opacity = "0.7";
-          btn.style.pointerEvents = "none";
-
-          const formData = new FormData(form);
-          formData.set('receipt[image]', window.optimizedReceiptBlob, 'receipt_optimized.png');
-
-          fetch(form.action, {
-            method: 'POST',
-            body: formData,
-            headers: {
-              'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').content,
-              'Accept': 'text/html, application/xhtml+xml'
-            }
-          })
-          .then(response => {
-            if (response.redirected) {
-              window.location.href = response.url;
-            } else if (response.ok) {
-               response.text().then(html => {
-                 document.open();
-                 document.write(html);
-                 document.close();
-               });
-            } else {
-              alert("서버 오류가 발생했습니다. 다시 시도해 주세요.");
-              btn.innerText = "영수증 저장하기";
-              btn.style.opacity = "1";
-              btn.style.pointerEvents = "auto";
-            }
-          })
-          .catch(err => {
-            alert("통신 오류가 발생했습니다.");
-            btn.innerText = "영수증 저장하기";
-            btn.style.opacity = "1";
-            btn.style.pointerEvents = "auto";
-          });
-        });
-      }
+  // 카메라로 찍은 파일 → galleryInput(폼의 name 필드)로 복사
+  function copyFileToGalleryInput(sourceInput) {
+    if (!sourceInput.files || sourceInput.files.length === 0) return;
+    try {
+      var dt = new DataTransfer();
+      dt.items.add(sourceInput.files[0]);
+      galleryInput.files = dt.files;
+    } catch(e) {
+      // DataTransfer 미지원 시 - 폼 제출 전에 직접 처리
     }
-  })();
+  }
+
+  function handleFile(inputEl) {
+    if (!inputEl.files || inputEl.files.length === 0) return;
+    
+    var file = inputEl.files[0];
+    
+    // 미리보기 표시
+    var reader = new FileReader();
+    reader.onload = function(e) {
+      imagePreview.src = e.target.result;
+      imagePreview.style.display = 'block';
+    };
+    reader.readAsDataURL(file);
+
+    // UI 전환
+    instructionArea.style.display = 'none';
+    formDetails.style.display = 'block';
+  }
+
+  // 갤러리 선택 (이미 name="receipt[image]"이므로 바로 사용 가능)
+  galleryInput.addEventListener('change', function() {
+    handleFile(this);
+  });
+
+  // 카메라 촬영 → galleryInput으로 파일 복사 후 처리
+  cameraInput.addEventListener('change', function() {
+    if (!this.files || this.files.length === 0) return;
+    copyFileToGalleryInput(this);
+    handleFile(galleryInput);
+  });
+
+  // 폼 제출
+  form.addEventListener('submit', function(e) {
+    // 파일 확인
+    if (!galleryInput.files || galleryInput.files.length === 0) {
+      e.preventDefault();
+      alert('영수증 사진을 선택해주세요.');
+      return;
+    }
+
+    // 날짜 동기화
+    if (dateVisible) {
+      dateField.value = dateVisible.value;
+    }
+
+    submitBtn.innerText = '저장하는 중...';
+    submitBtn.style.opacity = '0.7';
+    submitBtn.style.pointerEvents = 'none';
+  });
+});
 </script>
