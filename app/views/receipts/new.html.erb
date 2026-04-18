@@ -18,10 +18,21 @@
     <h3 style="font-size:18px; font-weight:800; color:#111827; margin-bottom:8px;">영수증을 촬영해주세요</h3>
     <p style="font-size:14px; color:#6b7280; line-height:1.5;">촬영된 이미지는 스마트기기 환경에 맞춰<br>자동으로 용량이 데이터 최적화 됩니다.</p>
     
-    <label for="receipt_image_file" style="margin-top:24px; background:#4f46e5; color:white; border:none; padding:16px 24px; font-size:16px; font-weight:700; border-radius:12px; width:100%; display:flex; align-items:center; justify-content:center; gap:8px; cursor:pointer; box-sizing:border-box;">
-      <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
-      사진 선택 / 촬영하기
-    </label>
+    <div style="display:flex; gap:12px; margin-top:24px;">
+      <label for="receipt_image_file_gallery" style="flex:1; background:#f3f4f6; color:#374151; border:none; padding:16px 0; font-size:16px; font-weight:700; border-radius:12px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:8px; cursor:pointer; box-sizing:border-box;">
+        <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+        사진 선택
+      </label>
+
+      <label for="receipt_image_file_camera" style="flex:1; background:#111827; color:white; border:none; padding:16px 0; font-size:16px; font-weight:700; border-radius:12px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:8px; cursor:pointer; box-sizing:border-box;">
+        <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+        직접 촬영
+      </label>
+    </div>
+
+    <!-- Hidden native inputs -->
+    <input type="file" id="receipt_image_file_gallery" accept="image/*" style="display:none;">
+    <input type="file" id="receipt_image_file_camera" accept="image/*" capture="environment" style="display:none;">
   </div>
 
   <!-- 입력 폼 영역 -->
@@ -57,15 +68,18 @@
     });
 
     function initCameraFeature() {
-      const fileInput = document.getElementById('receipt_image_file');
-      if (!fileInput) return;
+      const mainFileInput = document.getElementById('receipt_image_file');
+      const galleryInput = document.getElementById('receipt_image_file_gallery');
+      const cameraInput = document.getElementById('receipt_image_file_camera');
+      
+      if (!mainFileInput) return;
       window.receiptsNewEventBound = true;
 
       // 이미 이벤트가 추가된 input이면 방지
-      if (fileInput.dataset.eventBound === "true") return;
-      fileInput.dataset.eventBound = "true";
+      if (mainFileInput.dataset.eventBound === "true") return;
+      mainFileInput.dataset.eventBound = "true";
 
-      fileInput.addEventListener('change', function(e) {
+      function handleFileChange(e) {
         if (this.files && this.files[0]) {
           const file = this.files[0];
           
@@ -112,7 +126,7 @@
               const newFile = new File([blob], "receipt_optimized.png", {type: "image/png"});
               const dt = new DataTransfer();
               dt.items.add(newFile);
-              fileInput.files = dt.files;
+              mainFileInput.files = dt.files;
               
               btn.innerText = originalText;
               btn.style.opacity = "1";
@@ -121,7 +135,11 @@
             }, 'image/png');
           };
         }
-      });
+      }
+
+      if (galleryInput) galleryInput.addEventListener('change', handleFileChange);
+      if (cameraInput) cameraInput.addEventListener('change', handleFileChange);
+
 
       const form = document.getElementById('receiptForm');
       if (form && !form.dataset.submitBound) {
