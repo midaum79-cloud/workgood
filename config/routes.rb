@@ -69,6 +69,9 @@ Rails.application.routes.draw do
   delete "subscription",       to: "subscriptions#cancel", as: :cancel_subscription
 
   resources :receipts, only: [:index, :new, :create, :destroy] do
+    member do
+      get :serve_image
+    end
     collection do
       post :analyze
     end
