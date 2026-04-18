@@ -51,7 +51,7 @@ class User < ApplicationRecord
       # OAuth users get a random secure password they never need to use
       unless u.persisted?
         u.subscription_plan = "premium"
-        u.subscription_expires_at = 1.month.from_now
+        u.subscription_expires_at = Time.zone.parse("2026-05-30 23:59:59")
         generated_password = SecureRandom.hex(24)
         u.password = generated_password
         u.password_confirmation = generated_password
