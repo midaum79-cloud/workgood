@@ -51,6 +51,10 @@
 	<string>현장 영수증 및 다이어리 사진 촬영을 위해 카메라 권한이 필요합니다.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>저장된 영수증 및 현장 사진을 업로드하기 위해 사진첩 접근 권한이 필요합니다.</string>
+	<key>GIDClientID</key>
+	<string>944339730636-2enclt34i6lq8g203bk0afhorbll1dt3.apps.googleusercontent.com</string>
+	<key>GIDServerClientID</key>
+	<string>944339730636-oft69s2rqriu7dkibggi6s3eieqa9nth.apps.googleusercontent.com</string>
 	<key>CFBundleURLTypes</key>
 	<array>
 		<dict>
