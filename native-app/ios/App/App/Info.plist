@@ -61,6 +61,14 @@
 				<string>workgood</string>
 			</array>
 		</dict>
+		<dict>
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>com.googleusercontent.apps.944339730636-2enclt34i6lq8g203bk0afhorbll1dt3</string>
+			</array>
+		</dict>
 	</array>
 </dict>
 </plist>
