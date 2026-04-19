@@ -14,11 +14,11 @@ class ProjectsController < ApplicationController
 
     @projects =
       if @selected_status == "all"
-        all_projects
-      elsif %w[진행중 예정 완료].include?(@selected_status)
+        all_projects.reject { |p| p.effective_status == "완료" }
+      elsif %w[진행중 예정].include?(@selected_status)
         all_projects.select { |p| p.effective_status == @selected_status }
       else
-        all_projects
+        all_projects.reject { |p| p.effective_status == "완료" }
       end
 
     @featured_project = @projects.first
@@ -35,22 +35,26 @@ class ProjectsController < ApplicationController
     @today_work_processes = today_work_days
       .map(&:work_process)
       .uniq
+      .reject { |process| process.project.effective_status == "완료" }
       .sort_by { |process| [ process.position || 9999, process.id || 0 ] }
 
     @today_schedules = ProjectSchedule
       .where(project_id: all_project_ids, work_date: Time.zone.today)
       .includes(:project)
+      .reject { |s| s.project.effective_status == "완료" }
 
     tomorrow_work_days = work_day_scope.select { |wd| wd.work_date == Time.zone.tomorrow }
 
     @tomorrow_work_processes = tomorrow_work_days
       .map(&:work_process)
       .uniq
+      .reject { |process| process.project.effective_status == "완료" }
       .sort_by { |process| [ process.position || 9999, process.id || 0 ] }
 
     @tomorrow_schedules = ProjectSchedule
       .where(project_id: all_project_ids, work_date: Time.zone.tomorrow)
       .includes(:project)
+      .reject { |s| s.project.effective_status == "완료" }
 
     @ending_soon_processes = []
 

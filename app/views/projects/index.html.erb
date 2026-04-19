@@ -559,7 +559,7 @@
           color:#{@selected_status == 'all' ? 'white' : '#374151'};
         " %>
 
-    <% ["예정", "진행중", "완료"].each do |status| %>
+    <% ["예정", "진행중"].each do |status| %>
       <%= link_to status,
           projects_path(
             status: status,

@@ -55,6 +55,8 @@ Rails.application.routes.draw do
   get  "/auth/check_login",            to: "omniauth_callbacks#check_login"
   # Native Apple Sign-In (iOS 앱 네이티브 모달)
   post "/auth/native_apple",           to: "native_apple_auth#create"
+  # Native Google Sign-In (iOS/Android 앱 네이티브 SDK)
+  post "/auth/native_google",          to: "native_google_auth#create"
 
 
   # App Settings

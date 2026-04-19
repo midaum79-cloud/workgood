@@ -12,6 +12,12 @@
       "launchShowDuration": 2000,
       "backgroundColor": "#0a0f1e",
       "showSpinner": false
+    },
+    "SocialLogin": {
+      "google": {
+        "iOSClientId": "944339730636-2enclt34i6lq8g203bk0afhorbll1dt3.apps.googleusercontent.com",
+        "iOSURLScheme": "com.googleusercontent.apps.944339730636-2enclt34i6lq8g203bk0afhorbll1dt3"
+      }
     }
   },
   "ios": {
@@ -23,6 +29,7 @@
   "packageClassList": [
     "CAPBrowserPlugin",
     "PurchasesPlugin",
-    "AppleSignInPlugin"
+    "AppleSignInPlugin",
+    "SocialLoginPlugin"
   ]
 }
