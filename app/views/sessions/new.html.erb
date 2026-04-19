@@ -162,9 +162,17 @@
         e.preventDefault();
         console.log('[일잘러] Native Google Sign-In 시도...');
 
-        // SocialLogin 플러그인 확인
-        if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.SocialLogin) {
-          var SocialLogin = window.Capacitor.Plugins.SocialLogin;
+        // SocialLogin 플러그인 확인 (try-catch로 크래시 방지)
+        var SocialLogin = null;
+        try {
+          if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.SocialLogin) {
+            SocialLogin = window.Capacitor.Plugins.SocialLogin;
+          }
+        } catch(pluginErr) {
+          console.log('[일잘러] SocialLogin 플러그인 접근 중 오류:', pluginErr);
+        }
+
+        if (SocialLogin) {
 
           // 버튼 로딩 표시
           googleBtn.style.opacity = '0.6';
@@ -246,8 +254,12 @@
         } else {
           // SocialLogin 플러그인이 없으면 기존 외부 브라우저 방식
           console.log('[일잘러] SocialLogin 플러그인 없음, 외부 브라우저 폴백');
-          doExternalOAuth('/auth/google_oauth2');
-        }
+          try {
+            doExternalOAuth('/auth/google_oauth2');
+          } catch(fallbackErr) {
+            console.log('[일잘러] 외부 브라우저 폴백 실패, 직접 이동:', fallbackErr);
+            window.location.href = '/auth/google_oauth2';
+          }
       });
     }
 
