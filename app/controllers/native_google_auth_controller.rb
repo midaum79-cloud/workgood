@@ -26,8 +26,8 @@ class NativeGoogleAuthController < ApplicationController
       # audience 검증: Web, iOS, Android 클라이언트 ID 모두 허용
       valid_audiences = [
         ENV["GOOGLE_CLIENT_ID"],                                                          # Web
-        ENV["GOOGLE_IOS_CLIENT_ID"],                                                      # iOS
-        ENV["GOOGLE_ANDROID_CLIENT_ID"]                                                   # Android
+        "944339730636-2enclt34i6lq8g203bk0afhorbll1dt3.apps.googleusercontent.com",       # iOS
+        "944339730636-5q5tarbc3dsf0s6rfcnfh70q5oi8kpvf.apps.googleusercontent.com"        # Android
       ].compact
       raise "Invalid audience" unless valid_audiences.include?(id_token[:aud])
       raise "Token expired" unless id_token[:exp] >= Time.now.to_i
