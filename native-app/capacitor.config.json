@@ -15,6 +15,7 @@
     },
     "SocialLogin": {
       "google": {
+        "webClientId": "944339730636-oft69s2rqriu7dkibggi6s3eieqa9nth.apps.googleusercontent.com",
         "iOSClientId": "944339730636-2enclt34i6lq8g203bk0afhorbll1dt3.apps.googleusercontent.com",
         "iOSURLScheme": "com.googleusercontent.apps.944339730636-2enclt34i6lq8g203bk0afhorbll1dt3"
       }
