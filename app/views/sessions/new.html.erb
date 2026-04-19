@@ -184,20 +184,39 @@
             provider: 'google',
             options: {}
           }).then(function(res) {
-            console.log('[일잘러] Google native login success:', JSON.stringify(res));
+            console.log('[일잘러] Google native login success - full response:', JSON.stringify(res));
+            console.log('[일잘러] Response keys:', res ? Object.keys(res) : 'null');
+            if (res && res.result) {
+              console.log('[일잘러] Result keys:', Object.keys(res.result));
+              if (res.result.credential) {
+                console.log('[일잘러] Credential keys:', Object.keys(res.result.credential));
+              }
+            }
 
-            // ID Token 추출 (플러그인 응답 구조에 따라)
+            // ID Token 추출 (플러그인 응답 구조에 따라 — 모든 경로 탐색)
             var idToken = null;
             if (res && res.result && res.result.idToken) {
               idToken = res.result.idToken;
+              console.log('[일잘러] Token from: result.idToken');
             } else if (res && res.result && res.result.credential && res.result.credential.idToken) {
               idToken = res.result.credential.idToken;
+              console.log('[일잘러] Token from: result.credential.idToken');
+            } else if (res && res.result && res.result.authentication && res.result.authentication.idToken) {
+              idToken = res.result.authentication.idToken;
+              console.log('[일잘러] Token from: result.authentication.idToken');
+            } else if (res && res.result && res.result.serverAuthCode) {
+              console.log('[일잘러] serverAuthCode found (NOT idToken):', res.result.serverAuthCode);
             } else if (res && res.idToken) {
               idToken = res.idToken;
+              console.log('[일잘러] Token from: res.idToken');
+            }
+
+            if (idToken) {
+              console.log('[일잘러] Token type:', typeof idToken, ', length:', idToken.length, ', JWT parts:', (typeof idToken === 'string' ? idToken.split('.').length : 'N/A'));
             }
 
             if (!idToken) {
-              console.error('[일잘러] ID Token을 찾을 수 없습니다:', JSON.stringify(res));
+              console.error('[일잘러] ID Token을 찾을 수 없습니다. 전체 응답:', JSON.stringify(res));
               googleBtn.innerHTML = originalHTML;
               googleBtn.style.opacity = '1';
               googleBtn.style.pointerEvents = 'auto';
