@@ -54,41 +54,6 @@
       <% end %>
     </div>
 
-    <%# ── 2. 비밀번호 변경 ── %>
-    <div style="background:white; border-radius:20px; overflow:hidden;">
-      <div style="padding:16px 18px; border-bottom:1px solid #f3f4f6; display:flex; align-items:center; gap:10px;">
-        <span style="font-size:18px;">🔒</span>
-        <span style="font-size:16px; font-weight:900; color:#111827;">비밀번호 변경</span>
-      </div>
-
-      <%= form_with url: update_password_app_settings_path, method: :patch, local: true do |f| %>
-        <div style="padding:14px 18px 0; display:flex; flex-direction:column; gap:12px;">
-          <div>
-            <label style="font-size:12px; font-weight:800; color:#6b7280; display:block; margin-bottom:6px;">현재 비밀번호</label>
-            <%= password_field_tag :current_password, "",
-                style: "width:100%; height:46px; border:1.5px solid #e5e7eb; border-radius:12px; padding:0 14px; font-size:15px; font-family:inherit; outline:none; box-sizing:border-box;",
-                autocomplete: "current-password" %>
-          </div>
-          <div>
-            <label style="font-size:12px; font-weight:800; color:#6b7280; display:block; margin-bottom:6px;">새 비밀번호 (8자 이상)</label>
-            <%= password_field_tag :new_password, "",
-                style: "width:100%; height:46px; border:1.5px solid #e5e7eb; border-radius:12px; padding:0 14px; font-size:15px; font-family:inherit; outline:none; box-sizing:border-box;",
-                autocomplete: "new-password" %>
-          </div>
-          <div>
-            <label style="font-size:12px; font-weight:800; color:#6b7280; display:block; margin-bottom:6px;">새 비밀번호 확인</label>
-            <%= password_field_tag :new_password_confirmation, "",
-                style: "width:100%; height:46px; border:1.5px solid #e5e7eb; border-radius:12px; padding:0 14px; font-size:15px; font-family:inherit; outline:none; box-sizing:border-box;",
-                autocomplete: "new-password" %>
-          </div>
-        </div>
-        <div style="padding:14px 18px;">
-          <%= submit_tag "비밀번호 변경",
-              style: "width:100%; height:46px; background:#374151; color:white; border:none; border-radius:12px; font-size:15px; font-weight:900; cursor:pointer; font-family:inherit;" %>
-        </div>
-      <% end %>
-    </div>
-
     <%# ── 3. 알림 설정 (알림함에서 설정) ── %>
     <div style="background:white; border-radius:20px; overflow:hidden;">
       <div style="padding:16px 18px; border-bottom:1px solid #f3f4f6; display:flex; align-items:center; gap:10px;">
