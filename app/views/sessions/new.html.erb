@@ -202,11 +202,22 @@
         waitForCapacitorPlugin('SocialLogin', function(SocialLogin) {
           if (SocialLogin) {
             // ── 네이티브 Google Sign-In 시도 ──
-            console.log('[일잘러] SocialLogin 플러그인 확인됨, 네이티브 로그인 시도...');
+            console.log('[일잘러] SocialLogin 플러그인 확인됨, initialize 후 로그인 시도...');
 
-            SocialLogin.login({
-              provider: 'google',
-              options: {}
+            // ★ 플러그인 초기화 (login 전에 반드시 호출해야 함)
+            SocialLogin.initialize({
+              google: {
+                webClientId: '944339730636-oft69s2rqriu7dkibggi6s3eieqa9nth.apps.googleusercontent.com',
+                iOSClientId: '944339730636-2enclt34i6lq8g203bk0afhorbll1dt3.apps.googleusercontent.com',
+                iOSServerClientId: '944339730636-oft69s2rqriu7dkibggi6s3eieqa9nth.apps.googleusercontent.com',
+                mode: 'online'
+              }
+            }).then(function() {
+              console.log('[일잘러] SocialLogin.initialize 완료, login 호출...');
+              return SocialLogin.login({
+                provider: 'google',
+                options: {}
+              });
             }).then(function(res) {
               console.log('[일잘러] Google native login success:', JSON.stringify(res));
 
