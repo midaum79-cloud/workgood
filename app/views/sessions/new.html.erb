@@ -98,388 +98,226 @@
 
 <script>
 (function() {
-  // ── 5회 연속 탭 (히든 로그인 표시) ──
-  var logoArea = document.getElementById('logo-tap-area');
-  var hiddenSection = document.getElementById('hidden-email-section');
-  var otherLoginHint = document.getElementById('other-login-hint');
+  // ── 로고 5회 탭 → 히든 이메일 로그인 표시 ──
   var tapCount = 0;
   var tapTimer = null;
+  var logoArea = document.getElementById('logo-tap-area');
+  var hiddenSection = document.getElementById('hidden-email-section');
+  var loginHint = document.getElementById('other-login-hint');
 
   if (logoArea && hiddenSection) {
     logoArea.addEventListener('click', function(e) {
-      // prevent default selection behavior on fast clicks
-      e.preventDefault(); 
-      
+      e.preventDefault();
       tapCount++;
       clearTimeout(tapTimer);
-      
-      console.log('[일잘러] 로고 탭:', tapCount);
-
+      tapTimer = setTimeout(function() { tapCount = 0; }, 3000);
       if (tapCount >= 5) {
         hiddenSection.style.maxHeight = '500px';
         hiddenSection.style.opacity = '1';
-        if (otherLoginHint) otherLoginHint.style.display = 'none';
-        tapCount = 0; // 리셋
-      } else {
-        tapTimer = setTimeout(function() {
-          tapCount = 0;
-        }, 3000); // 3초 내에 5번 달성 실패시 리셋
+        if (loginHint) loginHint.style.display = 'none';
+        tapCount = 0;
       }
     });
   }
 
   var ua = navigator.userAgent || navigator.vendor || '';
-
-
-  // Capacitor 앱 감지 (Android/iOS 네이티브 앱)
-  // 원격 URL 로딩 시 Capacitor bridge가 늦게 주입될 수 있으므로 다중 감지
   var isCapacitor = !!(window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform());
-  // Android WebView 감지 (Capacitor bridge가 없어도)
   var isAndroidWebView = /wv/.test(ua) || (/Android/.test(ua) && /Version\//.test(ua));
-  console.log('[일잘러] isCapacitor:', isCapacitor, 'isAndroidWebView:', isAndroidWebView, 'UA:', ua);
-
-  // 주요 인앱 브라우저 감지 (네이버, 카카오, 인스타, 페이스북, 라인, 다음 등)
-  var inAppPatterns = [
-    'NAVER', 'KAKAOTALK', 'KakaoTalk',
-    'Instagram', 'FBAN', 'FBAV', 'FB_IAB',
-    'Line', 'DaumApps', 'everytimeApp',
-    'SamsungBrowser.*CrossApp', 'whale'
-  ];
-  var isInApp = new RegExp(inAppPatterns.join('|'), 'i').test(ua);
-
-
-  // PWA Standalone 모드인지 확인
+  var isInApp = new RegExp(['NAVER','KAKAOTALK','KakaoTalk','Instagram','FBAN','FBAV','FB_IAB','Line','DaumApps','everytimeApp','SamsungBrowser.*CrossApp','whale'].join('|'), 'i').test(ua);
   var isStandalone = window.matchMedia('(display-mode: standalone)').matches || navigator.standalone;
 
-  if (isCapacitor || isAndroidWebView || isStandalone) {
-    // iOS 감지
-    var isIOS = /iPhone|iPad|iPod/i.test(ua);
+  console.log('[일잘러] isCapacitor:', isCapacitor, 'isAndroidWebView:', isAndroidWebView, 'UA:', ua);
 
-    // ── Capacitor Bridge 준비 대기 (원격 URL 로딩 시 bridge가 늦게 주입될 수 있음) ──
-    function waitForCapacitorPlugin(pluginName, callback, maxWait) {
-      var waited = 0;
-      var interval = 100;
-      var check = setInterval(function() {
-        waited += interval;
-        try {
-          if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins[pluginName]) {
-            clearInterval(check);
-            callback(window.Capacitor.Plugins[pluginName]);
-            return;
-          }
-        } catch(e) {}
-        if (waited >= (maxWait || 3000)) {
-          clearInterval(check);
-          callback(null); // 타임아웃: 플러그인 없음
-        }
-      }, interval);
-    }
-
-    // ── Google: 네이티브 Google Sign-In SDK ──
-    var googleBtn = document.getElementById('google-login-btn');
-    if (googleBtn) {
-      googleBtn.addEventListener('click', function(e) {
-        e.preventDefault();
-        if (googleBtn.dataset.loading === 'true') return; // 중복 클릭 방지
-        googleBtn.dataset.loading = 'true';
-
-        console.log('[일잘러] Native Google Sign-In 시도...');
-
-        // 버튼 로딩 표시
-        googleBtn.style.opacity = '0.6';
-        googleBtn.style.pointerEvents = 'none';
-        var originalHTML = googleBtn.innerHTML;
-        googleBtn.innerHTML = '<div style="width:20px;height:20px;border:2px solid #ccc;border-top:2px solid #4285F4;border-radius:50%;animation:spin 0.8s linear infinite;"></div> 로그인 중...';
-
-        function restoreButton() {
-          googleBtn.innerHTML = originalHTML;
-          googleBtn.style.opacity = '1';
-          googleBtn.style.pointerEvents = 'auto';
-          googleBtn.dataset.loading = 'false';
-        }
-
-        // Capacitor bridge가 준비될 때까지 대기 후 SocialLogin 시도
-        waitForCapacitorPlugin('SocialLogin', function(SocialLogin) {
-          if (SocialLogin) {
-            // ── 네이티브 Google Sign-In 시도 ──
-            console.log('[일잘러] SocialLogin 플러그인 확인됨, initialize 후 로그인 시도...');
-
-            // ★ 플러그인 초기화 (login 전에 반드시 호출해야 함)
-            SocialLogin.initialize({
-              google: {
-                webClientId: '944339730636-oft69s2rqriu7dkibggi6s3eieqa9nth.apps.googleusercontent.com',
-                iOSClientId: '944339730636-2enclt34i6lq8g203bk0afhorbll1dt3.apps.googleusercontent.com',
-                iOSServerClientId: '944339730636-oft69s2rqriu7dkibggi6s3eieqa9nth.apps.googleusercontent.com',
-                mode: 'online'
-              }
-            }).then(function() {
-              console.log('[일잘러] SocialLogin.initialize 완료, login 호출...');
-              return SocialLogin.login({
-                provider: 'google',
-                options: {}
-              });
-            }).then(function(res) {
-              console.log('[일잘러] Google native login success:', JSON.stringify(res));
-
-              // ID Token 추출 (플러그인 응답 구조에 따라 — 모든 경로 탐색)
-              var idToken = null;
-              if (res && res.result && res.result.idToken) {
-                idToken = res.result.idToken;
-              } else if (res && res.result && res.result.credential && res.result.credential.idToken) {
-                idToken = res.result.credential.idToken;
-              } else if (res && res.result && res.result.authentication && res.result.authentication.idToken) {
-                idToken = res.result.authentication.idToken;
-              } else if (res && res.idToken) {
-                idToken = res.idToken;
-              }
-
-              if (!idToken) {
-                console.error('[일잘러] ID Token을 찾을 수 없습니다. 전체 응답:', JSON.stringify(res));
-                restoreButton();
-                alert('Google 로그인에서 인증 토큰을 받지 못했습니다. 다시 시도해주세요.');
-                return;
-              }
-
-              console.log('[일잘러] idToken 수신 완료, 서버 검증 중...');
-
-              // 서버에 ID Token 전송 → 검증 → 세션 생성
-              var csrfToken = document.querySelector('meta[name="csrf-token"]') ? document.querySelector('meta[name="csrf-token"]').getAttribute('content') : '';
-              fetch('/auth/native_google', {
-                method: 'POST',
-                headers: {
-                  'Content-Type': 'application/json',
-                  'X-CSRF-Token': csrfToken
-                },
-                body: JSON.stringify({ idToken: idToken })
-              })
-              .then(function(r) { return r.json(); })
-              .then(function(data) {
-                if (data.token) {
-                  console.log('[일잘러] Google auth 서버 토큰 수신, 로그인 완료');
-                  window.location.href = '/auth/token_login?token=' + data.token;
-                } else {
-                  console.error('[일잘러] Google auth server error:', data);
-                  restoreButton();
-                  alert('Google 로그인 검증 실패: ' + (data.error || JSON.stringify(data)));
-                }
-              })
-              .catch(function(err) {
-                console.error('[일잘러] Google auth fetch error:', err);
-                restoreButton();
-                alert('Google 로그인 처리 중 오류가 발생했습니다.');
-              });
-
-            }).catch(function(err) {
-              console.log('[일잘러] Google native login error:', JSON.stringify(err));
-
-              // 사용자가 취소한 경우는 버튼만 복원
-              var errMsg = (err && err.message) || '';
-              if (errMsg.indexOf('cancel') >= 0 || (err && err.code === 'SIGN_IN_CANCELED')) {
-                restoreButton();
-                return;
-              }
-
-              // ── 네이티브 실패 → 즉시 외부 브라우저 OAuth 실행 ──
-              console.log('[일잘러] 네이티브 실패, 즉시 외부 브라우저 폴백 실행...');
-              doExternalOAuth('/auth/google_oauth2');
-              // 버튼은 폴링 완료 후 자동 전환되므로 로딩 상태 유지
-            });
-
-          } else {
-            // SocialLogin 플러그인이 없으면 바로 외부 브라우저 방식
-            console.log('[일잘러] SocialLogin 플러그인 없음 (또는 타임아웃), 외부 브라우저 폴백');
-            doExternalOAuth('/auth/google_oauth2');
-          }
-        }, 2000); // 최대 2초 대기
-      });
-    }
-
-    // Apple 로그인: Capacitor bridge 준비 후 확인
-    waitForCapacitorPlugin('AppleSignIn', function(AppleSignIn) {
-      if (isIOS && AppleSignIn) {
-        setupNativeAppleSignIn();
-      } else {
-        setupOAuthFallback('apple-login-btn', '/apple_auth');
-      }
-    }, 2000);
-
-    // 딥링크 수신 리스너 (모바일 앱)
-    waitForCapacitorPlugin('App', function(AppPlugin) {
-      if (AppPlugin) {
-        AppPlugin.addListener('appUrlOpen', function(event) {
-          var url = event.url || '';
-          var tokenMatch = url.match(/[?&]token=([^&]+)/);
-          if (tokenMatch && tokenMatch[1]) {
-            if (window.oauthTokenHandled) return;
-            window.oauthTokenHandled = true;
-            try {
-              if (window.Capacitor.Plugins.Browser) {
-                window.Capacitor.Plugins.Browser.close();
-              }
-            } catch(e) {}
-            window.location.href = window.location.origin + '/auth/token_login?token=' + tokenMatch[1];
-          }
-        });
-      }
-    }, 3000);
-  }
-
-  // ── 외부 브라우저 OAuth (폴백용) ──
-  function doExternalOAuth(authPath) {
+  // ── 외부 브라우저 폴백 함수 (workhead 동일) ──
+  function fallbackToExternalBrowser(oauthPath) {
     var nonce = Math.random().toString(36).substr(2) + Date.now().toString(36);
-    var oauthUrl = window.location.origin + authPath + '?source=app&nonce=' + nonce + '&origin=' + encodeURIComponent(window.location.origin + '?source=app&nonce=' + nonce);
-    console.log('[일잘러] 외부 브라우저 OAuth, url:', oauthUrl);
+    var oauthUrl = window.location.origin + oauthPath + '?origin=' + encodeURIComponent(window.location.origin + '?source=app&nonce=' + nonce);
+    console.log('[일잘러] 외부 브라우저 폴백, url:', oauthUrl);
 
     try {
       if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.Browser && window.Capacitor.Plugins.Browser.open) {
         window.Capacitor.Plugins.Browser.open({ url: oauthUrl });
       } else {
-        var popup = window.open(oauthUrl, '_blank');
-        if (!popup || popup.closed || typeof popup.closed == 'undefined') {
-          window.location.href = oauthUrl;
-          return;
-        }
+        window.location.href = oauthUrl;
+        return;
       }
     } catch(err) {
       window.location.href = oauthUrl;
       return;
     }
 
-    // ── 폴링: 외부 브라우저에서 로그인 완료 감지 ──
+    // 폴링 (폴백 시에만 사용)
     var pollCount = 0;
-    var maxPoll = 90; // 3분 (2초 × 90)
+    var maxPoll = 60;
     var pollInterval = setInterval(function() {
       pollCount++;
-      if (pollCount > maxPoll) {
-        clearInterval(pollInterval);
-        // 타임아웃: 버튼 복원
-        var btn = document.getElementById('google-login-btn');
-        if (btn) {
-          btn.dataset.loading = 'false';
-          btn.style.opacity = '1';
-          btn.style.pointerEvents = 'auto';
-        }
-        return;
-      }
+      if (pollCount > maxPoll) { clearInterval(pollInterval); return; }
       fetch('/auth/check_login?nonce=' + nonce)
         .then(function(r) { return r.json(); })
         .then(function(data) {
           if (data.token) {
             clearInterval(pollInterval);
-            if (window.oauthTokenHandled) return;
-            window.oauthTokenHandled = true;
-
-            // SFSafariViewController / 외부 브라우저 닫기
             try {
               if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.Browser) {
                 window.Capacitor.Plugins.Browser.close();
               }
-            } catch(e) {
-              console.log('[일잘러] Browser.close 실패:', e);
-            }
-
-            // 약간의 지연 후 토큰 로그인 (브라우저 닫기 애니메이션 완료 대기)
-            setTimeout(function() {
-              window.location.href = window.location.origin + '/auth/token_login?token=' + data.token;
-            }, 300);
+            } catch(e) {}
+            window.location.href = window.location.origin + '/auth/token_login?token=' + data.token;
           }
         })
         .catch(function(err) { console.log('[일잘러] Poll error:', err); });
     }, 2000);
   }
 
-  function setupOAuthFallback(btnId, authPath) {
-    var btn = document.getElementById(btnId);
-    if (!btn) return;
-    btn.addEventListener('click', function(e) {
-      e.preventDefault();
-      doExternalOAuth(authPath);
-    });
-  }
+  // ── Capacitor 앱: 네이티브 소셜 로그인 (workhead 동일 방식) ──
+  if (isCapacitor || isAndroidWebView) {
+    var isIOS = /iPhone|iPad|iPod/i.test(ua);
 
-  // ── iOS 네이티브 Apple Sign-In (하단 모달) ──
-  function setupNativeAppleSignIn() {
-    var btn = document.getElementById('apple-login-btn');
-    if (!btn) return;
+    // ── Google: 네이티브 Google Sign-In SDK ──
+    var googleBtn = document.getElementById('google-login-btn');
+    if (googleBtn) {
+      googleBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        console.log('[일잘러] Native Google Sign-In 시도...');
 
-    btn.addEventListener('click', function(e) {
-      e.preventDefault();
-      console.log('[일잘러] Native Apple Sign-In 시작');
+        // SocialLogin 플러그인 확인 (동기 체크 — workhead 동일)
+        if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.SocialLogin) {
+          var SocialLogin = window.Capacitor.Plugins.SocialLogin;
 
-      // 버튼 비활성화 + 로딩 표시
-      btn.style.opacity = '0.6';
-      btn.style.pointerEvents = 'none';
-      var originalText = btn.innerHTML;
-      btn.innerHTML = '<div style="width:20px;height:20px;border:2px solid #ccc;border-top:2px solid #333;border-radius:50%;animation:spin 0.8s linear infinite;"></div> 로그인 중...';
+          SocialLogin.login({
+            provider: 'google',
+            options: {}
+          }).then(function(res) {
+            console.log('[일잘러] Google native login success:', JSON.stringify(res));
 
-      // Capacitor AppleSignIn 플러그인 호출
-      var AppleSignIn = window.Capacitor.Plugins.AppleSignIn;
-      if (!AppleSignIn) {
-        console.error('[일잘러] AppleSignIn plugin not available');
-        btn.innerHTML = originalText;
-        btn.style.opacity = '1';
-        btn.style.pointerEvents = 'auto';
-        alert('Apple 로그인을 사용할 수 없습니다. 앱을 업데이트해주세요.');
-        return;
-      }
+            // ID Token 추출
+            var idToken = null;
+            if (res && res.result && res.result.idToken) {
+              idToken = res.result.idToken;
+            } else if (res && res.result && res.result.credential && res.result.credential.idToken) {
+              idToken = res.result.credential.idToken;
+            } else if (res && res.idToken) {
+              idToken = res.idToken;
+            }
 
-      AppleSignIn.signIn({
-        scopes: ['EMAIL', 'FULL_NAME']
-      }).then(function(result) {
-        console.log('[일잘러] Apple Sign-In 성공, idToken 수신:', result);
-        var idToken = result.idToken;
-        var givenName = (result.name && result.name.givenName) || (result.givenName || '');
-        var familyName = (result.name && result.name.familyName) || (result.familyName || '');
-        var fullName = [familyName, givenName].filter(function(n) { return n; }).join(' ');
+            if (!idToken) {
+              console.error('[일잘러] ID Token 없음:', JSON.stringify(res));
+              alert('Google 로그인에서 인증 토큰을 받지 못했습니다. 다시 시도해주세요.');
+              return;
+            }
 
-        if (!idToken) {
-          console.error('[일잘러] idToken이 없음');
-          btn.innerHTML = originalText;
-          btn.style.opacity = '1';
-          btn.style.pointerEvents = 'auto';
-          alert('Apple 인증 정보를 받지 못했습니다. 다시 시도해주세요.');
-          return;
+            // 서버에 ID Token 전송
+            var csrfToken = document.querySelector('meta[name="csrf-token"]') ? document.querySelector('meta[name="csrf-token"]').getAttribute('content') : '';
+            fetch('/auth/native_google', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': csrfToken },
+              body: JSON.stringify({ idToken: idToken })
+            })
+            .then(function(r) { return r.json(); })
+            .then(function(data) {
+              if (data.token) {
+                window.location.href = window.location.origin + '/auth/token_login?token=' + data.token;
+              } else {
+                alert('Google 로그인 검증 실패: ' + (data.error || JSON.stringify(data)));
+              }
+            })
+            .catch(function(err) {
+              console.error('[일잘러] Google auth fetch error:', err);
+              alert('Google 로그인 처리 중 오류가 발생했습니다.');
+            });
+
+          }).catch(function(err) {
+            console.log('[일잘러] Google native login error:', JSON.stringify(err));
+            // 사용자 취소는 무시
+            if (err && (err.message || '').indexOf('cancel') >= 0) return;
+            if (err && err.code === 'SIGN_IN_CANCELED') return;
+
+            // 네이티브 실패 → 외부 브라우저 폴백
+            console.log('[일잘러] 네이티브 실패, 외부 브라우저 폴백...');
+            fallbackToExternalBrowser('/auth/google_oauth2');
+          });
+
+        } else {
+          // SocialLogin 플러그인 없음 → 외부 브라우저 폴백
+          console.log('[일잘러] SocialLogin 플러그인 없음, 외부 브라우저 폴백');
+          fallbackToExternalBrowser('/auth/google_oauth2');
         }
-
-        // 서버로 identityToken 전송
-        return fetch(window.location.origin + '/auth/native_apple', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            id_token: idToken,
-            name: fullName || null
-          })
-        });
-      }).then(function(response) {
-        if (!response) return;
-        return response.json().then(function(data) {
-          if (response.ok && data.token) {
-            console.log('[일잘러] 서버 토큰 수신, 로그인 완료');
-            window.location.href = window.location.origin + '/auth/token_login?token=' + data.token;
-          } else {
-            console.error('[일잘러] 서버 응답 오류:', data);
-            btn.innerHTML = originalText;
-            btn.style.opacity = '1';
-            btn.style.pointerEvents = 'auto';
-            alert('로그인 처리 중 오류가 발생했습니다. 다시 시도해주세요.');
-          }
-        });
-      }).catch(function(err) {
-        console.error('[일잘러] Apple Sign-In 오류:', err);
-        btn.innerHTML = originalText;
-        btn.style.opacity = '1';
-        btn.style.pointerEvents = 'auto';
-        // 사용자가 취소한 경우 조용히 무시
-        if (err && err.message && err.message.indexOf('cancel') !== -1) {
-          console.log('[일잘러] 사용자가 Apple 로그인 취소');
-          return;
-        }
-        alert('Apple 로그인 중 오류가 발생했습니다. 다시 시도해주세요.');
       });
-    });
+    }
+
+    // ── Apple: 네이티브 Apple Sign-In (workhead 동일) ──
+    var btnApple = document.getElementById('apple-login-btn');
+    if (isCapacitor && isIOS && btnApple) {
+      btnApple.addEventListener('click', function(e) {
+        e.preventDefault();
+        try {
+          if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.AppleSignIn) {
+            window.Capacitor.Plugins.AppleSignIn.signIn({
+              scopes: ['EMAIL', 'FULL_NAME']
+            }).then(function(res) {
+              console.log('[일잘러] Apple Sign-In 성공');
+              var idToken = res.idToken;
+              var givenName = (res.name && res.name.givenName) || (res.givenName || '');
+              var familyName = (res.name && res.name.familyName) || (res.familyName || '');
+              var fullName = [familyName, givenName].filter(function(n) { return n; }).join(' ');
+
+              if (!idToken) {
+                alert('Apple 인증 정보를 받지 못했습니다.');
+                return;
+              }
+
+              var csrfToken = document.querySelector('meta[name="csrf-token"]') ? document.querySelector('meta[name="csrf-token"]').getAttribute('content') : '';
+              fetch('/auth/native_apple', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': csrfToken },
+                body: JSON.stringify({ id_token: idToken, name: fullName || null })
+              })
+              .then(function(r) { return r.json(); })
+              .then(function(data) {
+                if (data.token) {
+                  window.location.href = window.location.origin + '/auth/token_login?token=' + data.token;
+                } else {
+                  alert('Apple 로그인 검증 실패: ' + (data.error || JSON.stringify(data)));
+                }
+              })
+              .catch(function(err) {
+                console.log('[일잘러] Apple API Error:', err);
+                alert('Apple 로그인 처리 중 오류가 발생했습니다.');
+              });
+            }).catch(function(err) {
+              console.log('[일잘러] Apple native error:', err);
+            });
+          } else {
+            fallbackToExternalBrowser('/apple_auth');
+          }
+        } catch(err) {
+          console.log('[일잘러] Apple login catch:', err);
+          fallbackToExternalBrowser('/apple_auth');
+        }
+      });
+    } else if (btnApple) {
+      btnApple.addEventListener('click', function(e) {
+        e.preventDefault();
+        fallbackToExternalBrowser('/apple_auth');
+      });
+    }
+
+    // 딥링크 수신 리스너
+    if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.App) {
+      window.Capacitor.Plugins.App.addListener('appUrlOpen', function(event) {
+        var url = event.url || '';
+        var tokenMatch = url.match(/[?&]token=([^&]+)/);
+        if (tokenMatch && tokenMatch[1]) {
+          if (window.Capacitor.Plugins.Browser) {
+            window.Capacitor.Plugins.Browser.close();
+          }
+          window.location.href = window.location.origin + '/auth/token_login?token=' + tokenMatch[1];
+        }
+      });
+    }
   }
 
-  // ── 일반 인앱 브라우저(네이버, 카카오 등): 기존 로직 ──
+  // ── 일반 인앱 브라우저(네이버, 카카오 등) ──
   if (isInApp && !isCapacitor && !isAndroidWebView) {
     var googleBtn2 = document.getElementById('google-login-btn');
     if (googleBtn2) googleBtn2.style.display = 'none';
@@ -489,11 +327,9 @@
     var notice = document.getElementById('inapp-notice');
     if (notice) notice.style.display = 'block';
 
-    setTimeout(function() {
-      openInExternalBrowser();
-    }, 800);
+    setTimeout(function() { openInExternalBrowser(); }, 800);
   } else if (!isCapacitor && !isAndroidWebView && !isStandalone) {
-    // ── 일반 웹 브라우저: data-oauth-url로 직접 이동 ──
+    // ── 일반 웹 브라우저 ──
     var webGoogleBtn = document.getElementById('google-login-btn');
     if (webGoogleBtn) {
       webGoogleBtn.addEventListener('click', function(e) {
@@ -515,7 +351,6 @@ function openInExternalBrowser() {
   var currentUrl = window.location.href;
   var host = window.location.host;
   var path = window.location.pathname + window.location.search;
-  // Intent action 대신 명시적 브라우저 패키지로 fallback 유도 (안드로이드에서 의도치 않은 이메일 앱 등 호출 방지)
   var intentUrl = 'intent://' + host + path + '#Intent;scheme=https;package=com.android.chrome;end';
 
   if (/NAVER/i.test(navigator.userAgent)) {
@@ -523,13 +358,11 @@ function openInExternalBrowser() {
     setTimeout(function() { window.location.href = intentUrl; }, 500);
     return;
   }
-
   if (/KAKAOTALK|KakaoTalk/i.test(navigator.userAgent)) {
     window.location.href = 'kakaotalk://web/openExternal?url=' + encodeURIComponent(currentUrl);
     setTimeout(function() { window.location.href = intentUrl; }, 500);
     return;
   }
-
   window.location.href = intentUrl;
 }
 </script>
