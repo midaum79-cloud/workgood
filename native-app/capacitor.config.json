@@ -10,7 +10,7 @@
   "plugins": {
     "SplashScreen": {
       "launchShowDuration": 2000,
-      "backgroundColor": "#0a0f1e",
+      "backgroundColor": "#f5f5f5",
       "showSpinner": false
     },
     "SocialLogin": {
@@ -22,7 +22,8 @@
     }
   },
   "ios": {
-    "scheme": "일잘러"
+    "scheme": "일잘러",
+    "backgroundColor": "#f5f5f5"
   },
   "android": {
     "allowMixedContent": false

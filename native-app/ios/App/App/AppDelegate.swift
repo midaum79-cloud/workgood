@@ -1,4 +1,5 @@
 import UIKit
+import WebKit
 import Capacitor
 
 @UIApplicationMain
@@ -8,7 +9,28 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
         // Override point for customization after application launch.
+
+        // WKWebView 배경색을 앱 배경색과 동일하게 설정하여
+        // Turbo Drive 페이지 전환 시 검은 화면 깜빡임(블랙아웃) 방지
+        DispatchQueue.main.async {
+            if let webView = self.findWebView(in: self.window) {
+                webView.isOpaque = false
+                webView.backgroundColor = UIColor(red: 245/255, green: 245/255, blue: 245/255, alpha: 1.0)  // #f5f5f5
+                webView.scrollView.backgroundColor = UIColor(red: 245/255, green: 245/255, blue: 245/255, alpha: 1.0)
+            }
+        }
+
         return true
+    }
+
+    /// WKWebView 인스턴스를 뷰 계층에서 재귀적으로 검색
+    private func findWebView(in view: UIView?) -> WKWebView? {
+        guard let view = view else { return nil }
+        if let webView = view as? WKWebView { return webView }
+        for subview in view.subviews {
+            if let found = findWebView(in: subview) { return found }
+        }
+        return nil
     }
 
     func applicationWillResignActive(_ application: UIApplication) {
