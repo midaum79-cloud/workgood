@@ -89,7 +89,8 @@ class User < ApplicationRecord
   end
 
   def project_limit_reached?
-    projects.count >= plan_limit
+    return false if plan_limit == Float::INFINITY
+    projects.where(created_at: Time.current.beginning_of_month..Time.current.end_of_month).count >= plan_limit
   end
 
   def can_use_ai_import?

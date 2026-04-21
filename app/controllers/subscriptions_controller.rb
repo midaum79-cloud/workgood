@@ -5,6 +5,7 @@ class SubscriptionsController < ApplicationController
   def index
     @current_plan = current_user.subscription_plan
     @project_count = current_user.projects.count
+    @monthly_project_count = current_user.projects.where(created_at: Time.current.beginning_of_month..Time.current.end_of_month).count
     @plan_limit = current_user.plan_limit
     @last_payment = current_user.subscription_payments.successful.recent.first
   end

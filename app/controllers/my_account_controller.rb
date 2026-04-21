@@ -4,6 +4,7 @@ class MyAccountController < ApplicationController
 
   def show
     @project_count   = current_user.projects.count
+    @monthly_project_count = current_user.projects.where(created_at: Time.current.beginning_of_month..Time.current.end_of_month).count
     @plan_limit      = current_user.plan_limit
   end
 

@@ -40,12 +40,12 @@
     <%# Usage bar %>
     <div style="margin-top:16px;">
       <div style="display:flex; justify-content:space-between; margin-bottom:6px;">
-        <span style="font-size:12px; color:rgba(255,255,255,0.65); font-weight:600;">프로젝트 사용량</span>
+        <span style="font-size:12px; color:rgba(255,255,255,0.65); font-weight:600;">이번 달 현장 등록</span>
         <span style="font-size:12px; color:rgba(255,255,255,0.65); font-weight:700;">
-          <%= @project_count %>개 / <%= @plan_limit == Float::INFINITY ? "무제한" : "#{@plan_limit}개" %>
+          <%= @monthly_project_count %>개 / <%= @plan_limit == Float::INFINITY ? "무제한" : "#{@plan_limit}개" %>
         </span>
       </div>
-      <% usage_pct = @plan_limit == Float::INFINITY ? 0 : [(@project_count.to_f / @plan_limit * 100).round, 100].min %>
+      <% usage_pct = @plan_limit == Float::INFINITY ? 0 : [(@monthly_project_count.to_f / @plan_limit * 100).round, 100].min %>
       <div style="width:100%; height:6px; background:rgba(255,255,255,0.15); border-radius:999px; overflow:hidden;">
         <div style="width:<%= usage_pct %>%; height:100%; background:<%= usage_pct >= 100 ? '#ef4444' : '#4ade80' %>; border-radius:999px; transition:width 0.5s;"></div>
       </div>
