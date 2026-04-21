@@ -36,7 +36,7 @@
       <div style="font-size:12px; font-weight:700; color:rgba(255,255,255,0.6); margin-bottom:6px;">현재 요금제</div>
       <div style="display:flex; justify-content:space-between; align-items:center;">
         <div style="font-size:26px; font-weight:900;"><%= current_user.plan_label %> 플랜</div>
-        <div style="font-size:14px; font-weight:800; color:#4ade80;"><%= current_user.plan_limit == Float::INFINITY ? "현장 무제한" : "현장 최대 #{current_user.plan_limit}개" %></div>
+        <div style="font-size:14px; font-weight:800; color:#4ade80;"><%= current_user.plan_limit == Float::INFINITY ? "월 등록 무제한" : "이번 달 최대 #{current_user.plan_limit}개" %></div>
       </div>
       <div style="font-size:13px; color:rgba(255,255,255,0.6); margin-top:6px;">
         이번 달 공사현장 <%= @monthly_project_count %>개 사용 중
@@ -51,7 +51,7 @@
 
     <%# Plans Section %>
     <div style="font-size:16px; font-weight:900; color:#111827; margin-bottom:6px;">요금제 선택</div>
-    <div style="font-size:13px; font-weight:600; color:#9ca3af; margin-bottom:16px;">플랜별 현장 등록 개수 상이 💪</div>
+    <div style="font-size:13px; font-weight:600; color:#9ca3af; margin-bottom:16px;">플랜별 월 현장 등록 개수 상이 💪</div>
 
     <div style="display:flex; flex-direction:column; gap:14px;">
 
