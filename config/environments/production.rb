@@ -53,8 +53,9 @@ Rails.application.configure do
   # Don't log any deprecations.
   config.active_support.report_deprecations = false
 
-  # Replace the default in-process memory cache store with a durable alternative.
-  # config.cache_store = :mem_cache_store
+  # 프로세스 간 공유 캐시 (OAuth 폴링 nonce 등에 필수)
+  # memory_store는 Puma worker 간 공유 불가 → file_store로 전환
+  config.cache_store = :file_store, "/tmp/workgood_cache", { expires_in: 5.minutes }
 
   # Replace the default in-process and non-durable queuing backend for Active Job.
   # config.active_job.queue_adapter = :resque
