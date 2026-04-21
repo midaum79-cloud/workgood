@@ -7,27 +7,40 @@
   <style>
     body {
       margin: 0; padding: 0;
-      background: #0a0f1e;
+      background: #f5f5f5;
       display: flex; align-items: center; justify-content: center;
       min-height: 100vh;
-      font-family: -apple-system, BlinkMacSystemFont, sans-serif;
-      color: white;
+      font-family: -apple-system, BlinkMacSystemFont, 'Pretendard', sans-serif;
+      color: #111827;
     }
     .container { text-align: center; padding: 24px; }
     .spinner {
       width: 40px; height: 40px;
-      border: 3px solid rgba(255,255,255,0.15);
+      border: 3px solid #e5e7eb;
       border-top: 3px solid #2563eb;
       border-radius: 50%;
       animation: spin 0.8s linear infinite;
       margin: 0 auto 20px;
     }
     @keyframes spin { to { transform: rotate(360deg); } }
-    h2 { font-size: 18px; margin-bottom: 8px; }
-    p { font-size: 14px; color: rgba(255,255,255,0.5); }
+    .check-icon {
+      font-size: 48px;
+      margin-bottom: 16px;
+    }
+    h2 { font-size: 18px; margin-bottom: 8px; font-weight: 900; }
+    p { font-size: 14px; color: #6b7280; line-height: 1.6; }
     .btn {
-      display: inline-block; margin-top: 20px;
-      padding: 12px 24px; background: #2563eb;
+      display: inline-block; margin-top: 16px;
+      padding: 14px 28px; background: #2563eb;
+      color: white; border-radius: 14px;
+      text-decoration: none; font-weight: 800; font-size: 15px;
+      box-shadow: 0 4px 16px rgba(37,99,235,0.3);
+      transition: all 0.2s;
+    }
+    .btn:hover { box-shadow: 0 6px 24px rgba(37,99,235,0.4); }
+    .btn-secondary {
+      display: inline-block; margin-top: 10px;
+      padding: 12px 24px; background: #374151;
       color: white; border-radius: 12px;
       text-decoration: none; font-weight: 700; font-size: 14px;
     }
@@ -35,63 +48,99 @@
 </head>
 <body>
   <div class="container">
-    <div class="spinner"></div>
-    <h2>✅ 로그인 성공!</h2>
-    <p>앱으로 돌아가는 중...</p>
-    <a class="btn" href="<%= @deep_link %>" id="return-btn" style="display:none;">앱으로 돌아가기</a>
-    <a class="btn" href="<%= @web_fallback || "/auth/token_login?token=#{@deep_link.split('token=').last}" %>" id="web-btn" style="display:none; margin-top:10px; background:#374151;">웹에서 계속하기</a>
+    <div class="spinner" id="loadingSpinner"></div>
+    <div class="check-icon" id="checkIcon" style="display:none;">✅</div>
+    <h2 id="statusTitle">로그인 성공!</h2>
+    <p id="statusMsg">앱으로 돌아가는 중...</p>
+    <a class="btn" href="#" id="return-btn" style="display:none;">앱으로 돌아가기</a>
+    <br>
+    <a class="btn-secondary" href="#" id="web-btn" style="display:none;">웹에서 계속하기</a>
   </div>
   <script>
     var deepLink = '<%= @deep_link %>';
     var token = deepLink.split('token=')[1];
     var webFallback = window.location.origin + '/auth/token_login?token=' + token;
-
-    // iOS 감지
     var isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
 
+    // 즉시 처리 시도
     if (isIOS) {
-      // iOS: WebView가 폴링으로 토큰을 받아서 자동 처리함
-      // SFSafariViewController 안에서는 이동하지 않음 (쿠키 비공유 문제)
-      // 딥링크도 시도 (혹시 작동하면 더 빠름)
-    if (isIOS) {
+      // === iOS ===
+      // SFSafariViewController / 외부 Safari에서 열렸을 때:
+      // 1) 팝업이면 닫기
+      // 2) 숨겨진 iframe으로 딥링크 시도
+      // 3) 폴링으로 앱이 토큰을 자동 수신하므로 안내 메시지 표시
+
       if (window.opener && window.opener !== window) {
+        // 팝업 창이면 닫기
         window.close();
-      } else {
+      }
+
+      // 딥링크 iframe 시도 (Custom URL Scheme)
+      try {
         var iframe = document.createElement('iframe');
         iframe.style.display = 'none';
         iframe.src = deepLink;
         document.body.appendChild(iframe);
+      } catch(e) {
+        console.log('[일잘러] 딥링크 iframe 실패:', e);
       }
 
-      // 메시지 업데이트: 자동 처리됨을 안내
+      // Universal Link 시도 (window.location으로 — 이게 더 확실함)
       setTimeout(function() {
-        document.querySelector('p').textContent = '잠시만 기다려주세요...';
-        if (window.opener && window.opener !== window) window.close();
+        window.location.href = deepLink;
+      }, 500);
+
+      // 2초 후: 이미 앱이 폴링으로 자동 처리 가능 → 안내
+      setTimeout(function() {
+        document.getElementById('statusMsg').textContent = '앱에서 자동으로 로그인 처리 중입니다...';
       }, 2000);
 
-      // 5초 후에도 안 닫혔으면 수동 안내
+      // 4초 후: 아직 이 페이지가 보인다면 수동 안내 + 웹 폴백
       setTimeout(function() {
-        document.querySelector('p').textContent = '왼쪽 상단 X를 눌러 앱으로 돌아가세요';
-        document.querySelector('p').style.color = '#60a5fa';
-        document.querySelector('p').style.fontWeight = '700';
-      }, 5000);
+        document.getElementById('loadingSpinner').style.display = 'none';
+        document.getElementById('checkIcon').style.display = 'block';
+        document.getElementById('statusMsg').innerHTML = 
+          '자동 전환이 안 될 경우<br><b>왼쪽 상단 ← 또는 완료</b>를 눌러<br>앱으로 돌아가세요';
+        document.getElementById('statusMsg').style.color = '#2563eb';
+        document.getElementById('statusMsg').style.fontWeight = '700';
+
+        // 웹 폴백 버튼 표시 (SFSafariViewController에서 웹으로 계속)
+        var webBtn = document.getElementById('web-btn');
+        webBtn.style.display = 'inline-block';
+        webBtn.href = webFallback;
+        webBtn.textContent = '웹 브라우저에서 계속하기';
+      }, 4000);
+
     } else {
-      // Android: 폴링이 자동으로 처리함 (딥링크 직접 이동하지 않음)
-      // 딥링크 직접 이동은 앱 선택기(연결 프로그램)를 트리거할 수 있음
+      // === Android ===
+      // Capacitor Browser 플러그인에서 열렸을 때:
+      // 폴링에 의해 자동으로 처리됨 → 대기 안내
+
       setTimeout(function() {
-        document.querySelector('p').textContent = '잠시만 기다려주세요...';
+        document.getElementById('statusMsg').textContent = '잠시만 기다려주세요...';
         if (window.opener && window.opener !== window) window.close();
       }, 2000);
 
-      // 5초 후에도 안 닫혔으면 수동 버튼 표시
+      // 5초 후 버튼 표시
       setTimeout(function() {
-        document.getElementById('return-btn').style.display = 'inline-block';
+        document.getElementById('loadingSpinner').style.display = 'none';
+        document.getElementById('checkIcon').style.display = 'block';
+
+        var returnBtn = document.getElementById('return-btn');
+        returnBtn.style.display = 'inline-block';
+        returnBtn.href = deepLink;
+
         if (window.opener && window.opener !== window) {
           var wBtn = document.getElementById('web-btn');
           wBtn.style.display = 'inline-block';
           wBtn.textContent = '창 닫기';
           wBtn.href = '#';
           wBtn.onclick = function(e){ e.preventDefault(); window.close(); };
+        } else {
+          var wBtn2 = document.getElementById('web-btn');
+          wBtn2.style.display = 'inline-block';
+          wBtn2.href = webFallback;
+          wBtn2.textContent = '웹에서 계속하기';
         }
       }, 5000);
     }

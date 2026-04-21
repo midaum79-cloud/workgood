@@ -44,6 +44,7 @@
 
       html {
         min-height: 100%;
+        background: #f5f5f5;
         overscroll-behavior: none;
         overscroll-behavior-y: none;
         -webkit-text-size-adjust: none;
@@ -337,6 +338,21 @@
         #app-splash {
           display: none !important;
         }
+      }
+
+      /* ========== Turbo 전환 블랙아웃 방지 ========== */
+      /* 페이지 전환 시 부드러운 페이드 효과로 검은 화면 깜빡임 제거 */
+      .turbo-transition-overlay {
+        position: fixed;
+        inset: 0;
+        z-index: 9998;
+        background: #f5f5f5;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.15s ease;
+      }
+      .turbo-transition-overlay.active {
+        opacity: 1;
       }
     </style>
   </head>
@@ -733,5 +749,31 @@
       })();
     </script>
     <% end %>
+
+    <!-- ===== Turbo 페이지 전환 블랙아웃 방지 ===== -->
+    <div class="turbo-transition-overlay" id="turboTransitionOverlay"></div>
+    <script>
+      (function() {
+        var overlay = document.getElementById('turboTransitionOverlay');
+        if (!overlay) return;
+
+        // Turbo가 새 페이지를 렌더링하기 직전: 오버레이를 켜서 검은 배경을 가림
+        document.addEventListener('turbo:before-render', function(event) {
+          overlay.classList.add('active');
+        });
+
+        // 새 페이지 렌더링 완료 후: 오버레이를 부드럽게 끔
+        document.addEventListener('turbo:render', function() {
+          requestAnimationFrame(function() {
+            overlay.classList.remove('active');
+          });
+        });
+
+        // 페이지 로드 완료 시에도 오버레이 제거 (안전장치)
+        document.addEventListener('turbo:load', function() {
+          overlay.classList.remove('active');
+        });
+      })();
+    </script>
   </body>
 </html>
