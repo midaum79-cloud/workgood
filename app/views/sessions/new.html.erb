@@ -188,10 +188,12 @@
         if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.SocialLogin) {
           var SocialLogin = window.Capacitor.Plugins.SocialLogin;
 
-          SocialLogin.login({
-            provider: 'google',
-            options: {}
-          }).then(function(res) {
+          // ── 기존 Google 세션 로그아웃 (항상 계정 선택 화면 표시) ──
+          var doGoogleLogin = function() {
+            SocialLogin.login({
+              provider: 'google',
+              options: { scopes: ['email', 'profile'] }
+            }).then(function(res) {
             console.log('[일잘러] Google native login success:', JSON.stringify(res));
 
             // ID Token 추출
@@ -230,16 +232,28 @@
               alert('Google 로그인 처리 중 오류가 발생했습니다.');
             });
 
-          }).catch(function(err) {
-            console.log('[일잘러] Google native login error:', JSON.stringify(err));
-            // 사용자 취소는 무시
-            if (err && (err.message || '').indexOf('cancel') >= 0) return;
-            if (err && err.code === 'SIGN_IN_CANCELED') return;
+            }).catch(function(err) {
+              console.log('[일잘러] Google native login error:', JSON.stringify(err));
+              // 사용자 취소는 무시
+              if (err && (err.message || '').indexOf('cancel') >= 0) return;
+              if (err && err.code === 'SIGN_IN_CANCELED') return;
 
-            // 네이티브 실패 → 외부 브라우저 폴백
-            console.log('[일잘러] 네이티브 실패, 외부 브라우저 폴백...');
-            fallbackToExternalBrowser('/auth/google_oauth2');
-          });
+              // 네이티브 실패 → 외부 브라우저 폴백
+              console.log('[일잘러] 네이티브 실패, 외부 브라우저 폴백...');
+              fallbackToExternalBrowser('/auth/google_oauth2');
+            });
+          };
+
+          // 먼저 기존 세션 로그아웃 후 로그인 시도
+          SocialLogin.logout({ provider: 'google' })
+            .then(function() {
+              console.log('[일잘러] Google 기존 세션 로그아웃 완료');
+              doGoogleLogin();
+            })
+            .catch(function(logoutErr) {
+              console.log('[일잘러] Google logout skip (미로그인 상태):', logoutErr);
+              doGoogleLogin();
+            });
 
         } else {
           // SocialLogin 플러그인 없음 → 외부 브라우저 폴백
