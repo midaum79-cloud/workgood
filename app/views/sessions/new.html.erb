@@ -174,30 +174,72 @@
   }
 
   // ── Capacitor 앱: 네이티브 소셜 로그인 ──
-  // (SocialLogin은 capacitor.config.json에서 자동 초기화됨)
   if (isCapacitor || isAndroidWebView) {
     var isIOS = /iPhone|iPad|iPod/i.test(ua);
+
+    // ── SocialLogin 플러그인 초기화 (Google Web Client ID 필수) ──
+    var socialLoginReady = false;
+    if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.SocialLogin) {
+      try {
+        window.Capacitor.Plugins.SocialLogin.initialize({
+          google: {
+            webClientId: '<%= ENV["GOOGLE_CLIENT_ID"] || "" %>'
+          }
+        }).then(function() {
+          console.log('[일잘러] SocialLogin initialized successfully');
+          socialLoginReady = true;
+        }).catch(function(err) {
+          console.warn('[일잘러] SocialLogin init warning:', err);
+          socialLoginReady = true; // 실패해도 시도는 해봄
+        });
+      } catch(e) {
+        console.warn('[일잘러] SocialLogin init error:', e);
+      }
+    }
 
     // ── Google: 네이티브 Google Sign-In SDK ──
     var googleBtn = document.getElementById('google-login-btn');
     if (googleBtn) {
       googleBtn.addEventListener('click', function(e) {
         e.preventDefault();
-        console.log('[일잘러] Native Google Sign-In 시도...');
+
+        // 버튼 로딩 상태
+        var originalText = googleBtn.innerHTML;
+        googleBtn.innerHTML = '<div style="width:20px;height:20px;border:2px solid #ccc;border-top:2px solid #333;border-radius:50%;animation:spin 0.8s linear infinite;"></div> 로그인 중...';
+        googleBtn.style.pointerEvents = 'none';
+        googleBtn.style.opacity = '0.7';
+
+        function resetBtn() {
+          googleBtn.innerHTML = originalText;
+          googleBtn.style.pointerEvents = '';
+          googleBtn.style.opacity = '';
+        }
+
+        console.log('[일잘러] Native Google Sign-In 시도... ready:', socialLoginReady);
 
         // SocialLogin 플러그인 확인
         if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.SocialLogin) {
           var SocialLogin = window.Capacitor.Plugins.SocialLogin;
 
-          // ── Google 네이티브 로그인 실행 함수 ──
-          var doGoogleLogin = function() {
+          // initialize가 완료될 때까지 짧게 대기
+          var waitCount = 0;
+          function tryLogin() {
+            if (!socialLoginReady && waitCount < 10) {
+              waitCount++;
+              setTimeout(tryLogin, 300);
+              return;
+            }
+
+            // iOS: 기존 Google 세션 초기화 (계정 선택 화면 강제 표시)
+            if (isIOS) { try { SocialLogin.logout({ provider: 'google' }); } catch(e) {} }
+
             SocialLogin.login({
               provider: 'google',
-              options: { scopes: ['email', 'profile'] }
+              options: {}
             }).then(function(res) {
               console.log('[일잘러] Google native login success:', JSON.stringify(res));
 
-              // ID Token 추출
+              // ID Token 추출 (다양한 플러그인 버전 대응)
               var idToken = null;
               if (res && res.result && res.result.idToken) {
                 idToken = res.result.idToken;
@@ -208,8 +250,9 @@
               }
 
               if (!idToken) {
-                console.error('[일잘러] ID Token 없음:', JSON.stringify(res));
-                alert('Google 로그인에서 인증 토큰을 받지 못했습니다. 다시 시도해주세요.');
+                console.error('[일잘러] ID Token 없음. 응답:', JSON.stringify(res));
+                resetBtn();
+                alert('Google 로그인 응답에서 인증 토큰을 찾을 수 없습니다.');
                 return;
               }
 
@@ -225,32 +268,36 @@
                 if (data.token) {
                   window.location.href = window.location.origin + '/auth/token_login?token=' + data.token;
                 } else {
+                  resetBtn();
                   alert('Google 로그인 검증 실패: ' + (data.error || JSON.stringify(data)));
                 }
               })
               .catch(function(err) {
+                resetBtn();
                 console.error('[일잘러] Google auth fetch error:', err);
-                alert('Google 로그인 처리 중 오류가 발생했습니다.');
+                alert('서버 연결 오류. 네트워크를 확인해주세요.');
               });
 
             }).catch(function(err) {
-              console.log('[일잘러] Google native login error:', JSON.stringify(err));
-              // 사용자 취소는 무시
-              if (err && (err.message || '').indexOf('cancel') >= 0) return;
-              if (err && err.code === 'SIGN_IN_CANCELED') return;
+              var errStr = JSON.stringify(err) || '';
+              var errMsg = (err && err.message) || errStr;
+              console.log('[일잘러] Google native login error:', errMsg);
 
-              // 네이티브 실패 → 외부 브라우저 폴백
-              console.log('[일잘러] 네이티브 실패, 외부 브라우저 폴백...');
+              // 사용자가 직접 취소한 경우만 무시
+              if (err && err.code === 'SIGN_IN_CANCELED') { resetBtn(); return; }
+              if (errMsg === 'The user canceled the sign-in flow.') { resetBtn(); return; }
+
+              // 네이티브 실패 → 외부 브라우저로 자동 전환
+              console.log('[일잘러] 네이티브 실패, 외부 브라우저 폴백:', errMsg);
+              googleBtn.innerHTML = '<div style="width:20px;height:20px;border:2px solid #ccc;border-top:2px solid #333;border-radius:50%;animation:spin 0.8s linear infinite;"></div> 브라우저로 로그인 중...';
               fallbackToExternalBrowser('/auth/google_oauth2');
             });
-          };
-
-          // ── 네이티브 Google 로그인 바로 시도 ──
-          doGoogleLogin();
-
+          }
+          tryLogin();
         } else {
           // SocialLogin 플러그인 없음 → 외부 브라우저 폴백
           console.log('[일잘러] SocialLogin 플러그인 없음, 외부 브라우저 폴백');
+          resetBtn();
           fallbackToExternalBrowser('/auth/google_oauth2');
         }
       });
