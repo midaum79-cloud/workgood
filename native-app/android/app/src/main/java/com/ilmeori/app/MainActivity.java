@@ -7,6 +7,8 @@ import android.util.Log;
 import android.webkit.CookieManager;
 import android.webkit.WebView;
 
+import androidx.activity.EdgeToEdge;
+
 import com.getcapacitor.BridgeActivity;
 
 import java.io.BufferedReader;
@@ -18,11 +20,13 @@ import java.util.concurrent.Executors;
 
 public class MainActivity extends BridgeActivity {
 
-    private static final String TAG = "일머리";
-    private static final String SERVER_URL = "https://ilmeori.onrender.com";
+    private static final String TAG = "일잘러";
+    private static final String SERVER_URL = "https://workgood.co.kr";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        // Android 15+ Edge-to-Edge 디스플레이 대응
+        EdgeToEdge.enable(this);
         super.onCreate(savedInstanceState);
         // 앱이 처음 시작될 때 deep link 확인
         handleDeepLink(getIntent());
@@ -45,7 +49,7 @@ public class MainActivity extends BridgeActivity {
     private void handleDeepLink(Intent intent) {
         if (intent == null) return;
         Uri uri = intent.getData();
-        if (uri != null && "ilmeori".equals(uri.getScheme())) {
+        if (uri != null && "workgood".equals(uri.getScheme())) {
             String token = uri.getQueryParameter("token");
             Log.d(TAG, "Deep link received: " + uri.toString());
             if (token != null && !token.isEmpty()) {
