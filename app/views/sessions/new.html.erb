@@ -244,16 +244,9 @@
             });
           };
 
-          // ── 기존 Google 세션 로그아웃 후 로그인 (항상 계정 선택 화면 표시) ──
-          SocialLogin.logout({ provider: 'google' })
-            .then(function() {
-              console.log('[일잘러] Google 기존 세션 로그아웃 완료');
-              doGoogleLogin();
-            })
-            .catch(function(logoutErr) {
-              console.log('[일잘러] Google logout skip (미로그인 상태):', logoutErr);
-              doGoogleLogin();
-            });
+          // ── 바로 Google 네이티브 로그인 시도 ──
+          // (로그아웃 시점에서 이미 세션이 초기화됨)
+          doGoogleLogin();
 
         } else {
           // SocialLogin 플러그인 없음 → 외부 브라우저 폴백

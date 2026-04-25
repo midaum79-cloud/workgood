@@ -675,6 +675,32 @@
         document.getElementById('drawerOverlay').classList.remove('open');
         document.body.style.overflow = '';
       }
+
+      // ── 로그아웃 시 네이티브 소셜 로그인 세션 클리어 ──
+      document.addEventListener('DOMContentLoaded', function() {
+        var logoutForms = document.querySelectorAll('form[action*="logout"]');
+        logoutForms.forEach(function(form) {
+          form.addEventListener('submit', function(e) {
+            var isCapacitor = window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform();
+            if (!isCapacitor) return; // 웹 브라우저는 그냥 진행
+
+            var SocialLogin = window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.SocialLogin;
+            if (!SocialLogin) return; // 플러그인 없으면 그냥 진행
+
+            e.preventDefault();
+            var theForm = form;
+
+            // Google 세션 로그아웃
+            SocialLogin.logout({ provider: 'google' })
+              .then(function() { console.log('[일잘러] 로그아웃: Google 세션 클리어 완료'); })
+              .catch(function() { console.log('[일잘러] 로그아웃: Google 세션 클리어 skip'); })
+              .finally(function() {
+                // 서버 로그아웃 실행
+                theForm.submit();
+              });
+          });
+        });
+      });
     </script>
 
     <% if logged_in? && VAPID_PUBLIC_KEY.present? %>
