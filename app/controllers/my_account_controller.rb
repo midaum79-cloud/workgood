@@ -1,6 +1,6 @@
 class MyAccountController < ApplicationController
   before_action :require_login
-  skip_before_action :verify_authenticity_token, only: [:cache_image_for_download]
+  skip_before_action :verify_authenticity_token, only: [ :cache_image_for_download ]
 
   def show
     @project_count   = current_user.projects.count
@@ -25,11 +25,11 @@ class MyAccountController < ApplicationController
     update_file_attribute(:business_bankbook_copy_b64, user_params[:business_bankbook_copy])
 
     if params[:business_card_base64_direct].present?
-      current_user.update(business_card_b64: params[:business_card_base64_direct].split(',').last)
+      current_user.update(business_card_b64: params[:business_card_base64_direct].split(",").last)
     end
-    
+
     if params[:bankbook_copy_base64_direct].present?
-      current_user.update(bankbook_copy_b64: params[:bankbook_copy_base64_direct].split(',').last)
+      current_user.update(bankbook_copy_b64: params[:bankbook_copy_base64_direct].split(",").last)
     end
 
     text_attrs = user_params.except(
@@ -40,7 +40,7 @@ class MyAccountController < ApplicationController
     current_user.regenerate_document_share_token if current_user.document_share_token.blank?
 
     respond_to do |format|
-      format.html { redirect_to my_account_documents_path, notice: '비즈니스 문서를 성공적으로 업데이트했습니다.' }
+      format.html { redirect_to my_account_documents_path, notice: "비즈니스 문서를 성공적으로 업데이트했습니다." }
       format.json { head :ok }
     end
   end
@@ -49,9 +49,9 @@ class MyAccountController < ApplicationController
     type = params[:type]
     if %w[business_card business_registration bankbook_copy business_bankbook_copy].include?(type)
       current_user.update("#{type}_b64" => nil)
-      redirect_to my_account_documents_path, notice: '해당 서류가 삭제되었습니다.'
+      redirect_to my_account_documents_path, notice: "해당 서류가 삭제되었습니다."
     else
-      redirect_to my_account_documents_path, alert: '잘못된 요청입니다.'
+      redirect_to my_account_documents_path, alert: "잘못된 요청입니다."
     end
   end
 
@@ -91,9 +91,9 @@ class MyAccountController < ApplicationController
   end
 
   def download_cached_image
-    safe_uuid = params[:uuid].to_s.gsub(/[^a-zA-Z0-9-]/, '')
+    safe_uuid = params[:uuid].to_s.gsub(/[^a-zA-Z0-9-]/, "")
     base64_data = Rails.cache.read("image_download_#{safe_uuid}")
-    
+
     if base64_data.present?
       image_data = Base64.decode64(base64_data.split(',').last)
       send_data image_data,
