@@ -173,9 +173,28 @@
     }, 2000);
   }
 
-  // ── Capacitor 앱: 네이티브 소셜 로그인 (workhead 동일 방식) ──
+  // ── Capacitor 앱: 네이티브 소셜 로그인 ──
   if (isCapacitor || isAndroidWebView) {
     var isIOS = /iPhone|iPad|iPod/i.test(ua);
+
+    // ── 페이지 로드 시 SocialLogin 초기화 (조용히) ──
+    var socialLoginReady = false;
+    if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.SocialLogin) {
+      try {
+        window.Capacitor.Plugins.SocialLogin.initialize({
+          google: {
+            webClientId: '944339730636-oft69s2rqriu7dkibggi6s3eieqa9nth.apps.googleusercontent.com'
+          }
+        }).then(function() {
+          socialLoginReady = true;
+          console.log('[일잘러] SocialLogin 페이지 로드 초기화 완료');
+        }).catch(function(e) {
+          console.log('[일잘러] SocialLogin 초기화 skip:', e);
+        });
+      } catch(e) {
+        console.log('[일잘러] SocialLogin 초기화 예외:', e);
+      }
+    }
 
     // ── Google: 네이티브 Google Sign-In SDK ──
     var googleBtn = document.getElementById('google-login-btn');
@@ -184,26 +203,9 @@
         e.preventDefault();
         console.log('[일잘러] Native Google Sign-In 시도...');
 
-        // SocialLogin 플러그인 확인 (동기 체크)
+        // SocialLogin 플러그인 확인
         if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.SocialLogin) {
           var SocialLogin = window.Capacitor.Plugins.SocialLogin;
-
-          // ── SocialLogin 초기화 후 로그인 ──
-          var initAndLogin = function() {
-            // 플러그인 초기화 (Credential Manager 설정)
-            SocialLogin.initialize({
-              google: {
-                webClientId: '944339730636-oft69s2rqriu7dkibggi6s3eieqa9nth.apps.googleusercontent.com'
-              }
-            }).then(function() {
-              console.log('[일잘러] SocialLogin 초기화 완료');
-              doGoogleLogin();
-            }).catch(function(initErr) {
-              console.log('[일잘러] SocialLogin 초기화 실패:', initErr);
-              // 초기화 실패해도 로그인 시도
-              doGoogleLogin();
-            });
-          };
 
           // ── Google 네이티브 로그인 실행 함수 ──
           var doGoogleLogin = function() {
@@ -261,8 +263,8 @@
             });
           };
 
-          // ── SocialLogin 초기화 → 네이티브 Google 로그인 ──
-          initAndLogin();
+          // ── 네이티브 Google 로그인 바로 시도 ──
+          doGoogleLogin();
 
         } else {
           // SocialLogin 플러그인 없음 → 외부 브라우저 폴백
