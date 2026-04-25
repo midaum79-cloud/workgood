@@ -188,49 +188,49 @@
         if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.SocialLogin) {
           var SocialLogin = window.Capacitor.Plugins.SocialLogin;
 
-          // ── 기존 Google 세션 로그아웃 (항상 계정 선택 화면 표시) ──
+          // ── Google 네이티브 로그인 실행 함수 ──
           var doGoogleLogin = function() {
             SocialLogin.login({
               provider: 'google',
               options: { scopes: ['email', 'profile'] }
             }).then(function(res) {
-            console.log('[일잘러] Google native login success:', JSON.stringify(res));
+              console.log('[일잘러] Google native login success:', JSON.stringify(res));
 
-            // ID Token 추출
-            var idToken = null;
-            if (res && res.result && res.result.idToken) {
-              idToken = res.result.idToken;
-            } else if (res && res.result && res.result.credential && res.result.credential.idToken) {
-              idToken = res.result.credential.idToken;
-            } else if (res && res.idToken) {
-              idToken = res.idToken;
-            }
-
-            if (!idToken) {
-              console.error('[일잘러] ID Token 없음:', JSON.stringify(res));
-              alert('Google 로그인에서 인증 토큰을 받지 못했습니다. 다시 시도해주세요.');
-              return;
-            }
-
-            // 서버에 ID Token 전송
-            var csrfToken = document.querySelector('meta[name="csrf-token"]') ? document.querySelector('meta[name="csrf-token"]').getAttribute('content') : '';
-            fetch('/auth/native_google', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': csrfToken },
-              body: JSON.stringify({ idToken: idToken })
-            })
-            .then(function(r) { return r.json(); })
-            .then(function(data) {
-              if (data.token) {
-                window.location.href = window.location.origin + '/auth/token_login?token=' + data.token;
-              } else {
-                alert('Google 로그인 검증 실패: ' + (data.error || JSON.stringify(data)));
+              // ID Token 추출
+              var idToken = null;
+              if (res && res.result && res.result.idToken) {
+                idToken = res.result.idToken;
+              } else if (res && res.result && res.result.credential && res.result.credential.idToken) {
+                idToken = res.result.credential.idToken;
+              } else if (res && res.idToken) {
+                idToken = res.idToken;
               }
-            })
-            .catch(function(err) {
-              console.error('[일잘러] Google auth fetch error:', err);
-              alert('Google 로그인 처리 중 오류가 발생했습니다.');
-            });
+
+              if (!idToken) {
+                console.error('[일잘러] ID Token 없음:', JSON.stringify(res));
+                alert('Google 로그인에서 인증 토큰을 받지 못했습니다. 다시 시도해주세요.');
+                return;
+              }
+
+              // 서버에 ID Token 전송
+              var csrfToken = document.querySelector('meta[name="csrf-token"]') ? document.querySelector('meta[name="csrf-token"]').getAttribute('content') : '';
+              fetch('/auth/native_google', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': csrfToken },
+                body: JSON.stringify({ idToken: idToken })
+              })
+              .then(function(r) { return r.json(); })
+              .then(function(data) {
+                if (data.token) {
+                  window.location.href = window.location.origin + '/auth/token_login?token=' + data.token;
+                } else {
+                  alert('Google 로그인 검증 실패: ' + (data.error || JSON.stringify(data)));
+                }
+              })
+              .catch(function(err) {
+                console.error('[일잘러] Google auth fetch error:', err);
+                alert('Google 로그인 처리 중 오류가 발생했습니다.');
+              });
 
             }).catch(function(err) {
               console.log('[일잘러] Google native login error:', JSON.stringify(err));
@@ -244,16 +244,23 @@
             });
           };
 
-          // 먼저 기존 세션 로그아웃 후 로그인 시도
-          SocialLogin.logout({ provider: 'google' })
-            .then(function() {
-              console.log('[일잘러] Google 기존 세션 로그아웃 완료');
-              doGoogleLogin();
-            })
-            .catch(function(logoutErr) {
-              console.log('[일잘러] Google logout skip (미로그인 상태):', logoutErr);
-              doGoogleLogin();
-            });
+          // ── iOS: 기존 세션 로그아웃 후 로그인 (계정 선택 화면 강제 표시) ──
+          // ── Android: 바로 로그인 (logout 호출 시 메일 앱 트리거 방지) ──
+          if (isIOS) {
+            SocialLogin.logout({ provider: 'google' })
+              .then(function() {
+                console.log('[일잘러] iOS: Google 기존 세션 로그아웃 완료');
+                doGoogleLogin();
+              })
+              .catch(function(logoutErr) {
+                console.log('[일잘러] iOS: Google logout skip:', logoutErr);
+                doGoogleLogin();
+              });
+          } else {
+            // Android: 바로 로그인 시도
+            console.log('[일잘러] Android: Google 네이티브 로그인 직접 시도');
+            doGoogleLogin();
+          }
 
         } else {
           // SocialLogin 플러그인 없음 → 외부 브라우저 폴백

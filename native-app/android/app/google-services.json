@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "944339730636",
+    "project_id": "workgood-491612",
+    "storage_bucket": ""
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:944339730636:android:workgood",
+        "android_client_info": {
+          "package_name": "com.workgood.mobile"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "944339730636-5q5tarbc3dsf0s6rfcnfh70q5oi8kpvf.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.workgood.mobile",
+            "certificate_hash": "9b97ef52de8cffc3768731bd4b673862ddc9b390"
+          }
+        },
+        {
+          "client_id": "944339730636-oft69s2rqriu7dkibggi6s3eieqa9nth.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": ""
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "944339730636-oft69s2rqriu7dkibggi6s3eieqa9nth.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
