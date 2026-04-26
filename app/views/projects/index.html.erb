@@ -174,12 +174,13 @@
   <!-- ═══ 이벤트 배너 영역 ═══ -->
   <div id="eventBannerArea" style="margin-bottom:14px;">
 
-    <!-- 이벤트 1: 오픈 프리미엄 이벤트 (크기 2/3 축소) -->
-    <a href="<%= subscription_path %>" style="
-      text-decoration:none; display:block;
-      background: linear-gradient(135deg, #1e1b4b 0%, #4c1d95 30%, #7c3aed 70%, #a855f7 100%);
-      border-radius:14px;
-      padding:14px;
+    <% if Date.current <= Date.new(2026, 5, 3) %>
+      <!-- 이벤트 1: 오픈 프리미엄 이벤트 (크기 2/3 축소) -->
+      <a href="<%= subscription_path %>" style="
+        text-decoration:none; display:block;
+        background: linear-gradient(135deg, #1e1b4b 0%, #4c1d95 30%, #7c3aed 70%, #a855f7 100%);
+        border-radius:14px;
+        padding:14px;
       color:white;
       position:relative;
       overflow:hidden;
@@ -226,6 +227,7 @@
         </div>
       </div>
     </a>
+    <% end %>
   </div>
 
   <style>
