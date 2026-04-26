@@ -154,7 +154,12 @@ class User < ApplicationRecord
     self[:is_admin] || email == "midaum79@gmail.com"
   end
 
+  def subscription_plan
+    is_admin? ? "premium" : super
+  end
+
   def plan_label
+    return "관리자(프리미엄)" if is_admin?
     PLAN_LABELS[subscription_plan] || "무료"
   end
 
