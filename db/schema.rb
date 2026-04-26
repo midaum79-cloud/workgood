@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_04_18_013500) do
+ActiveRecord::Schema[8.1].define(version: 2026_04_26_200002) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -133,6 +133,27 @@ ActiveRecord::Schema[8.1].define(version: 2026_04_18_013500) do
     t.text "worker_names"
   end
 
+  create_table "promo_code_usages", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.bigint "promo_code_id", null: false
+    t.datetime "updated_at", null: false
+    t.bigint "user_id", null: false
+    t.index ["promo_code_id"], name: "index_promo_code_usages_on_promo_code_id"
+    t.index ["user_id", "promo_code_id"], name: "index_promo_code_usages_on_user_id_and_promo_code_id", unique: true
+    t.index ["user_id"], name: "index_promo_code_usages_on_user_id"
+  end
+
+  create_table "promo_codes", force: :cascade do |t|
+    t.boolean "active", default: true
+    t.string "code", null: false
+    t.datetime "created_at", null: false
+    t.integer "current_uses", default: 0
+    t.integer "max_uses"
+    t.integer "reward_days", default: 30, null: false
+    t.datetime "updated_at", null: false
+    t.index ["code"], name: "index_promo_codes_on_code", unique: true
+  end
+
   create_table "receipts", force: :cascade do |t|
     t.integer "amount"
     t.string "category"
@@ -226,6 +247,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_04_18_013500) do
     t.boolean "evening_alert_enabled"
     t.string "evening_alert_time"
     t.boolean "is_active"
+    t.boolean "is_admin", default: false, null: false
     t.text "memo"
     t.boolean "morning_alert_enabled"
     t.string "morning_alert_time"
@@ -308,6 +330,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_04_18_013500) do
   add_foreign_key "payments", "companies"
   add_foreign_key "payments", "sites"
   add_foreign_key "project_schedules", "projects"
+  add_foreign_key "promo_code_usages", "promo_codes"
+  add_foreign_key "promo_code_usages", "users"
   add_foreign_key "receipts", "users"
   add_foreign_key "site_members", "sites"
   add_foreign_key "site_members", "users"

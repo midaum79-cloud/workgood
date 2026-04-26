@@ -70,6 +70,11 @@ Rails.application.routes.draw do
   patch "subscription",        to: "subscriptions#update"
   get   "subscription/verify_mobile", to: "subscriptions#verify_mobile", as: :verify_mobile_subscription
   delete "subscription",       to: "subscriptions#cancel", as: :cancel_subscription
+  post  "promo_codes/apply",   to: "promo_codes#apply",    as: :apply_promo_code
+
+  namespace :admin do
+    resources :promo_codes, only: [:index, :create]
+  end
 
   resources :receipts, only: [:index, :new, :create, :destroy] do
     member do

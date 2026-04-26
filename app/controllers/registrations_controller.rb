@@ -6,12 +6,9 @@ class RegistrationsController < ApplicationController
 
   def create
     @user = User.new(registration_params)
-    @user.subscription_plan = "premium"
-    @user.subscription_expires_at = Time.zone.parse("2026-05-30 23:59:59")
-
     if @user.save
       session[:user_id] = @user.id
-      redirect_to root_path, notice: "환영합니다, #{@user.name}님! 🎉 오픈 이벤트로 5월 30일까지 프리미엄 요금제가 무료 제공됩니다!"
+      redirect_to root_path, notice: "환영합니다, #{@user.name}님! 🎉"
     else
       render :new, status: :unprocessable_entity
     end

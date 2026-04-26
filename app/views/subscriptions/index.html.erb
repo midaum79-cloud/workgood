@@ -49,6 +49,15 @@
       <% end %>
     </div>
 
+    <%# Promo Code %>
+    <div style="background:white; border-radius:18px; padding:18px; border:1px solid #e5e7eb; margin-bottom:20px;">
+      <div style="font-size:16px; font-weight:900; color:#111827; margin-bottom:12px;">🎁 프로모션 코드 등록</div>
+      <%= form_with url: apply_promo_code_path, method: :post, local: true, style: "display:flex; gap:8px;" do |f| %>
+        <%= f.text_field :code, placeholder: "코드를 입력해주세요", style: "flex:1; padding:12px; border:1px solid #d1d5db; border-radius:12px; font-size:15px; font-weight:700;" %>
+        <button type="submit" style="padding:0 20px; background:#111827; color:white; border:none; border-radius:12px; font-size:14px; font-weight:800; cursor:pointer;">등록</button>
+      <% end %>
+    </div>
+
     <%# Plans Section %>
     <div style="font-size:16px; font-weight:900; color:#111827; margin-bottom:6px;">요금제 선택</div>
     <div style="font-size:13px; font-weight:600; color:#9ca3af; margin-bottom:16px;">플랜별 월 현장 등록 개수 상이 💪</div>

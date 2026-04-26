@@ -10,6 +10,8 @@ class User < ApplicationRecord
   has_many :notifications, dependent: :destroy
   has_many :vendors, dependent: :destroy
   has_many :receipts, dependent: :destroy
+  has_many :promo_code_usages, dependent: :destroy
+  has_many :used_promo_codes, through: :promo_code_usages, source: :promo_code
 
   has_secure_token :document_share_token
 
@@ -50,8 +52,6 @@ class User < ApplicationRecord
       
       # OAuth users get a random secure password they never need to use
       unless u.persisted?
-        u.subscription_plan = "premium"
-        u.subscription_expires_at = Time.zone.parse("2026-05-30 23:59:59")
         generated_password = SecureRandom.hex(24)
         u.password = generated_password
         u.password_confirmation = generated_password
@@ -85,6 +85,7 @@ class User < ApplicationRecord
   end
 
   def plan_limit
+    return Float::INFINITY if is_admin?
     PLAN_LIMITS[subscription_plan] || 1
   end
 
@@ -138,15 +139,19 @@ class User < ApplicationRecord
   end
 
   def premium?
-    subscription_plan == "premium"
+    subscription_plan == "premium" || is_admin?
   end
 
   def free?
-    subscription_plan == "free"
+    subscription_plan == "free" && !is_admin?
   end
 
   def standard_or_above?
-    %w[standard premium].include?(subscription_plan)
+    %w[standard premium].include?(subscription_plan) || is_admin?
+  end
+
+  def is_admin?
+    self[:is_admin] || email == "midaum79@gmail.com"
   end
 
   def plan_label

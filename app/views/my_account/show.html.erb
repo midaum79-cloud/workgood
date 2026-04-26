@@ -113,6 +113,20 @@
       <% end %>
     <% end %>
 
+    <% if current_user.is_admin? %>
+      <div style="margin-bottom:14px;">
+        <%= link_to admin_promo_codes_path, style: "display:block; text-decoration:none;" do %>
+          <div style="background:#fee2e2; border-radius:16px; padding:14px 18px; display:flex; justify-content:space-between; align-items:center; border:1px solid #fca5a5;">
+            <div style="display:flex; align-items:center; gap:10px;">
+              <span style="font-size:20px;">🛠️</span>
+              <span style="font-size:14px; font-weight:900; color:#991b1b;">관리자 전용 메뉴 (쿠폰 발급)</span>
+            </div>
+            <span style="color:#ef4444; font-weight:900;">→</span>
+          </div>
+        <% end %>
+      </div>
+    <% end %>
+
     <%# ── 로그아웃 / 계정정보 ── %>
     <div style="background:white; border-radius:20px; overflow:hidden;">
       <div style="padding:14px 18px; border-bottom:1px solid #f9fafb; display:flex; justify-content:space-between;">
