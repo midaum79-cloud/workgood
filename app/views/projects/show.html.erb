@@ -169,7 +169,7 @@
       textLines.push("<%= j(@project.memo) %>");
       <% end %>
 
-      const baseShortUrl = "<%= shared_project_url(@project.signed_id(purpose: :share_schedule)) rescue 'https://workgood.co.kr' %>";
+      const baseShortUrl = "<%= request.base_url + shared_project_path(@project.signed_id(purpose: :share_schedule)) %>";
       const shortUrl = baseShortUrl + "?s=" + encodeURIComponent(senderName);
 
       textLines.push("");

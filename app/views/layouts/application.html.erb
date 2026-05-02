@@ -683,6 +683,35 @@
         document.body.style.overflow = '';
       }
 
+      // 글로벌 딥링크(appUrlOpen) 리스너
+      document.addEventListener('DOMContentLoaded', function() {
+        var isCapacitor = window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform();
+        if (isCapacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.App) {
+          window.Capacitor.Plugins.App.addListener('appUrlOpen', function(event) {
+            var url = event.url || '';
+            // 1. token 로그인 처리 (workgood://?token=...)
+            var tokenMatch = url.match(/[?&]token=([^&]+)/);
+            if (tokenMatch && tokenMatch[1]) {
+              if (window.Capacitor.Plugins.Browser) {
+                window.Capacitor.Plugins.Browser.close();
+              }
+              window.location.href = window.location.origin + '/auth/token_login?token=' + tokenMatch[1];
+              return;
+            }
+            
+            // 2. 다른 경로 처리 (workgood://projects/new?client_name=...)
+            // scheme(workgood://) 뒤의 경로와 파라미터 전체를 추출하여 웹 URL로 라우팅
+            var schemeMatch = url.match(/^workgood:\/\/(.*)$/);
+            if (schemeMatch && schemeMatch[1]) {
+              if (window.Capacitor.Plugins.Browser) {
+                window.Capacitor.Plugins.Browser.close();
+              }
+              window.location.href = window.location.origin + '/' + schemeMatch[1];
+            }
+          });
+        }
+      });
+
       // ── 로그아웃 시 네이티브 소셜 로그인 세션 클리어 ──
       document.addEventListener('DOMContentLoaded', function() {
         var logoutForms = document.querySelectorAll('form[action*="logout"]');

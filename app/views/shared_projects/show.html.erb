@@ -100,7 +100,7 @@
         path_and_query = "projects/new?#{query_string}"
         
         android_intent = "intent://#{path_and_query}#Intent;scheme=workgood;package=com.workgood.mobile;end"
-        ios_scheme = "일잘러://#{path_and_query}"
+        ios_scheme = "workgood://#{path_and_query}"
       %>
       <a href="javascript:void(0)" onclick="openNativeApp('<%= j(web_link) %>', '<%= j(android_intent) %>', '<%= j(ios_scheme) %>')" class="action-btn">
         👉 내 캘린더에 일정 자동 등록하기
@@ -112,6 +112,14 @@
       <script>
       function openNativeApp(webUrl, androidIntent, iosScheme) {
         var ua = navigator.userAgent || navigator.vendor || window.opera;
+        var isCapacitor = !!(window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform());
+
+        if (isCapacitor) {
+          // 앱 내부에서는 딥링크(Intent/Scheme)를 호출하면 404(루프)가 발생할 수 있으므로 바로 웹 URL로 이동
+          window.location.href = webUrl;
+          return;
+        }
+
         var isAndroid = /android/i.test(ua);
         var isIOS = /iPad|iPhone|iPod/.test(ua) && !window.MSStream;
 
@@ -123,7 +131,7 @@
           window.location.href = iosScheme;
           setTimeout(function() {
             if (!document.hidden) {
-              if (confirm("일잘러 앱이 없거나 열 수 없습니다. 앱스토어로 이동하시겠습니까?\\n(취소 시 웹에서 계속 진행합니다)")) {
+              if (confirm("일잘러 앱이 없거나 열 수 없습니다. 앱스토어로 이동하시겠습니까?\n(취소 시 웹에서 계속 진행합니다)")) {
                 window.location.href = "https://apps.apple.com/kr/app/id6470000000";
               } else {
                 window.location.href = webUrl;

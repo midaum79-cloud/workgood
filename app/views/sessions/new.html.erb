@@ -360,19 +360,7 @@
       });
     }
 
-    // 딥링크 수신 리스너
-    if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.App) {
-      window.Capacitor.Plugins.App.addListener('appUrlOpen', function(event) {
-        var url = event.url || '';
-        var tokenMatch = url.match(/[?&]token=([^&]+)/);
-        if (tokenMatch && tokenMatch[1]) {
-          if (window.Capacitor.Plugins.Browser) {
-            window.Capacitor.Plugins.Browser.close();
-          }
-          window.location.href = window.location.origin + '/auth/token_login?token=' + tokenMatch[1];
-        }
-      });
-    }
+    // 딥링크 수신 리스너는 application.html.erb의 글로벌 리스너로 통합되었습니다.
   }
 
   // ── 일반 인앱 브라우저(네이버, 카카오 등) ──
