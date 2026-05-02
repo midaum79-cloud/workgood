@@ -181,8 +181,8 @@
       const isCapacitor = !!(window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform());
 
       // 네이티브 앱 공유 (Capacitor Share 플러그인)
-      if (isCapacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.Share) {
-        window.Capacitor.Plugins.Share.share({
+      if (isCapacitor && window.Capacitor.nativePromise) {
+        window.Capacitor.nativePromise('Share', 'share', {
           title: "현장 정보 공유",
           text: shareText
         }).catch(err => {
