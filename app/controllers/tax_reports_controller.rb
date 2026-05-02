@@ -15,15 +15,15 @@ class TaxReportsController < ApplicationController
 
     # 수입 집계
     @total_estimate  = @projects.sum { |p| p.estimate_amount.to_i }
-    @total_collected = @projects.sum { |p| p.payment_status == "완납" ? p.estimate_amount.to_i : (p.deposit_amount.to_i + p.mid_payment.to_i) }
-    @total_outstanding = @projects.sum { |p| p.payment_status == "완납" ? 0 : [ p.estimate_amount.to_i - (p.deposit_amount.to_i + p.mid_payment.to_i), 0 ].max }
+    @total_collected = @projects.sum(&:total_collected)
+    @total_outstanding = @projects.sum(&:outstanding_balance)
 
     # 세금계산서 vs 일용근로 분리
     @invoice_projects = @projects.select { |p| p.tax_invoice_issued? }
     @regular_projects = @projects.reject { |p| p.tax_invoice_issued? }
 
-    @invoice_collected = @invoice_projects.sum { |p| p.payment_status == "완납" ? p.estimate_amount.to_i : (p.deposit_amount.to_i + p.mid_payment.to_i) }
-    @regular_collected = @regular_projects.sum { |p| p.payment_status == "완납" ? p.estimate_amount.to_i : (p.deposit_amount.to_i + p.mid_payment.to_i) }
+    @invoice_collected = @invoice_projects.sum(&:total_collected)
+    @regular_collected = @regular_projects.sum(&:total_collected)
 
     # 세금 계산: 일용근로 3.3% / 세금계산서 10% 부가세
     @tax_rate        = 3.3
@@ -37,7 +37,7 @@ class TaxReportsController < ApplicationController
         p.start_date&.year == @year && p.start_date&.month == month ||
         p.end_date&.year == @year && p.end_date&.month == month
       end
-      collected = month_projects.sum { |p| p.deposit_amount.to_i + p.mid_payment.to_i }
+      collected = month_projects.sum(&:total_collected)
       {
         month: month,
         count: month_projects.size,
@@ -48,10 +48,7 @@ class TaxReportsController < ApplicationController
     end
 
     # 미수금 현장 목록
-    @outstanding_projects = @projects.select do |p|
-      p.estimate_amount.to_i > (p.deposit_amount.to_i + p.mid_payment.to_i) &&
-      p.payment_status != "완납"
-    end
+    @outstanding_projects = @projects.select { |p| p.outstanding_balance > 0 }
   end
 
   def download
@@ -73,8 +70,8 @@ class TaxReportsController < ApplicationController
         est       = p.estimate_amount.to_i
         dep       = p.deposit_amount.to_i
         mid       = p.mid_payment.to_i
-        collected = dep + mid
-        outstanding = [ est - collected, 0 ].max
+        collected = p.total_collected
+        outstanding = p.outstanding_balance
         tax       = (collected * tax_rate / 100).round
         net       = collected - tax
 
@@ -95,7 +92,7 @@ class TaxReportsController < ApplicationController
       end
 
       csv << []
-      total_collected = projects.sum(:deposit_amount).to_i + projects.sum(:mid_payment).to_i
+      total_collected = projects.sum(&:total_collected)
       total_tax = (total_collected * tax_rate / 100).round
       csv << [ "합계", "", "", "", projects.sum(:estimate_amount).to_i, "", "", total_collected, "", "", total_tax, total_collected - total_tax ]
     end
@@ -112,7 +109,7 @@ class TaxReportsController < ApplicationController
     project = current_user.projects.find_by(id: project_id)
 
     if project
-      outstanding = [ project.estimate_amount.to_i - project.deposit_amount.to_i - project.mid_payment.to_i, 0 ].max
+      outstanding = project.outstanding_balance
       Notification.create!(
         user: current_user,
         project: project,

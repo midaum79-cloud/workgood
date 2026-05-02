@@ -206,7 +206,7 @@
             <div style="font-size:12px; font-weight:700; color:#9ca3af;">견적-계약금-중도금</div>
           </div>
         <% is_fully_paid = (@project.payment_status == '완납') %>
-        <% balance = is_fully_paid ? 0 : [@project.estimate_amount.to_i - @project.deposit_amount.to_i - @project.mid_payment.to_i, 0].max %>
+        <% balance = @project.outstanding_balance %>
         <div style="background:#fff7ed; border:1px solid #fed7aa; border-radius:14px; padding:12px;">
           <div style="font-size:12px; font-weight:800; color:#ea580c; margin-bottom:4px;">💰 잔금</div>
           <div style="font-size:16px; font-weight:900; color:#ea580c;">
@@ -217,8 +217,7 @@
           </div>
         </div>
 
-        <% is_fully_paid = @project.payment_status == '완납' %>
-        <% outstanding = is_fully_paid ? 0 : [@project.estimate_amount.to_i - @project.deposit_amount.to_i - @project.mid_payment.to_i, 0].max %>
+        <% outstanding = @project.outstanding_balance %>
         <div style="background:<%= outstanding > 0 ? '#fef2f2' : '#f0fdf4' %>; border-radius:14px; padding:12px;">
           <div style="font-size:12px; font-weight:800; color:<%= outstanding > 0 ? '#dc2626' : '#16a34a' %>; margin-bottom:4px;">
             <%= outstanding > 0 ? '⚠️ 미수금' : '✅ 완납' %>

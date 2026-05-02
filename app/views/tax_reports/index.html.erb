@@ -190,7 +190,7 @@
         <div style="font-size:15px; font-weight:900; color:#111827; margin-bottom:14px;">⚠️ 미수금 입금 요청 알림</div>
         <div style="display:flex; flex-direction:column; gap:10px;">
           <% @outstanding_projects.each do |project| %>
-            <% out = [project.estimate_amount.to_i - project.deposit_amount.to_i - project.mid_payment.to_i, 0].max %>
+            <% out = project.outstanding_balance %>
             <div style="background:#fef2f2; border:1px solid #fecaca; border-radius:14px; padding:14px;">
               <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:10px;">
                 <div>
@@ -222,10 +222,8 @@
         <div style="display:flex; flex-direction:column; gap:8px;">
           <% @projects.each do |project| %>
             <% est = project.estimate_amount.to_i %>
-            <% dep = project.deposit_amount.to_i %>
-            <% mid = project.mid_payment.to_i %>
-            <% collected = dep + mid %>
-            <% out = [est - collected, 0].max %>
+            <% collected = project.total_collected %>
+            <% out = project.outstanding_balance %>
             <% is_invoice = project.tax_invoice_issued? %>
             <% tax = is_invoice ? (collected * 10.0 / 110).round : (collected * 3.3 / 100).round %>
             <% net = collected - tax %>

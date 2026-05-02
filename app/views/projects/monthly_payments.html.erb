@@ -167,7 +167,7 @@
             <% est = project.estimate_amount.to_i %>
             <% dep = project.deposit_amount.to_i %>
             <% mid = project.mid_payment.to_i %>
-            <% out = [est - dep - mid, 0].max %>
+            <% out = project.outstanding_balance %>
             <div style="background:#f9fafb; border:1px solid #f3f4f6; border-radius:16px; padding:14px;">
               <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:8px;">
                 <div>
@@ -213,12 +213,11 @@
     <% if @outstanding_projects.any? %>
       <div style="font-size:13px; font-weight:800; color:#6b7280; margin-bottom:10px; padding-left:4px;">⚠️ 미수금 현장 목록</div>
       <div style="display:flex; flex-direction:column; gap:10px;">
-        <% @outstanding_projects.sort_by { |p| -(p.estimate_amount.to_i - p.deposit_amount.to_i - p.mid_payment.to_i) }.each do |project| %>
+        <% @outstanding_projects.sort_by { |p| -p.outstanding_balance }.each do |project| %>
           <% est = project.estimate_amount.to_i %>
-          <% dep = project.deposit_amount.to_i %>
-          <% mid = project.mid_payment.to_i %>
-          <% out = [est - dep - mid, 0].max %>
-          <% ratio = est > 0 ? [(dep + mid) * 100 / est, 100].min : 0 %>
+          <% out = project.outstanding_balance %>
+          <% collected = project.total_collected %>
+          <% ratio = est > 0 ? [collected * 100 / est, 100].min : 0 %>
           <%= link_to project_path(project), style: "text-decoration:none;" do %>
             <div style="background:white; border-radius:18px; padding:16px; box-shadow:0 2px 8px rgba(0,0,0,0.05); border-left:4px solid #ef4444;">
               <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:10px;">

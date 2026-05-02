@@ -117,12 +117,11 @@ class ProjectsController < ApplicationController
       .order("projects.start_date ASC")
 
     @total_estimate = @projects.sum { |p| p.estimate_amount.to_i }
-    @total_collected = @projects.sum { |p| p.payment_status == "완납" ? p.estimate_amount.to_i : (p.deposit_amount.to_i + p.mid_payment.to_i) }
-    @total_outstanding = @projects.sum { |p| p.payment_status == "완납" ? 0 : [ p.estimate_amount.to_i - (p.deposit_amount.to_i + p.mid_payment.to_i), 0 ].max }
+    @total_collected = @projects.sum(&:total_collected)
+    @total_outstanding = @projects.sum(&:outstanding_balance)
 
     # 미수금 현장 (완납 제외)
-    @outstanding_projects = @projects.reject { |p| p.payment_status == "완납" }
-                                     .select { |p| p.estimate_amount.to_i > (p.deposit_amount.to_i + p.mid_payment.to_i) }
+    @outstanding_projects = @projects.select { |p| p.outstanding_balance > 0 }
 
     # 거래처별 매출 분석
     @vendor_stats = @projects.group_by(&:client_name).map do |client_name, projs|
@@ -130,8 +129,8 @@ class ProjectsController < ApplicationController
         name: client_name.presence || "미지정",
         count: projs.size,
         estimate: projs.sum { |p| p.estimate_amount.to_i },
-        collected: projs.sum { |p| p.payment_status == "완납" ? p.estimate_amount.to_i : (p.deposit_amount.to_i + p.mid_payment.to_i) },
-        outstanding: projs.sum { |p| p.payment_status == "완납" ? 0 : [ p.estimate_amount.to_i - p.deposit_amount.to_i - p.mid_payment.to_i, 0 ].max }
+        collected: projs.sum(&:total_collected),
+        outstanding: projs.sum(&:outstanding_balance)
       }
     end.sort_by { |v| -v[:estimate] }
 

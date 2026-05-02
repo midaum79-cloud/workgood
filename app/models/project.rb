@@ -157,6 +157,22 @@ class Project < ApplicationRecord
     end
   end
 
+  def total_collected
+    if payment_status == "완납"
+      estimate_amount.to_i
+    else
+      deposit_amount.to_i + mid_payment.to_i
+    end
+  end
+
+  def outstanding_balance
+    if payment_status == "완납"
+      0
+    else
+      [estimate_amount.to_i - total_collected, 0].max
+    end
+  end
+
   private
 
   def create_selected_processes
