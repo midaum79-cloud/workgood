@@ -35,7 +35,7 @@
     <div class="header">
       <img src="/logo.png" alt="일잘러" onerror="this.style.display='none'">
       <div style="font-size: 20px; font-weight: 900; letter-spacing: -0.5px;">현장 정보 및 일정 공유</div>
-      <div style="font-size: 14px; font-weight: 700; color: #9ca3af; margin-top: 8px;"><%= @team_leader.try(:name).presence || @team_leader.email.split("@").first %>님이 현장을 공유했습니다.</div>
+      <div style="font-size: 14px; font-weight: 700; color: #9ca3af; margin-top: 8px;"><%= params[:s].presence || @team_leader.try(:name).presence || @team_leader.email.split("@").first %>님이 현장을 공유했습니다.</div>
     </div>
     
     <div class="app-links">
@@ -81,7 +81,7 @@
       </div>
 
       <%
-        team_leader_name = @team_leader.try(:name).presence || @team_leader.email.split('@').first
+        team_leader_name = params[:s].presence || @team_leader.try(:name).presence || @team_leader.email.split('@').first
         project_name = @project.client_name.presence || @project.project_name
         
         query_params = {

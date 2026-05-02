@@ -112,6 +112,12 @@
 
     <script>
     function shareSchedule() {
+      // 발신자 이름 입력받기
+      let defaultName = "<%= j(current_user.try(:name).presence || current_user.email.split('@').first) %>";
+      let senderName = prompt("팀원 일정표에 '고객명(오더 출처)'으로 등록될 본인의 이름 또는 상호명을 입력해주세요:", defaultName);
+      if (senderName === null) return; // 취소 시 공유 중단
+      if (senderName.trim() === "") senderName = defaultName;
+
       let textLines = [];
       textLines.push("[현장 정보 공유]");
       textLines.push("현장: <%= j(@project.client_name.presence || @project.project_name) %>");
@@ -129,8 +135,9 @@
       textLines.push("<%= j(@project.memo) %>");
       <% end %>
 
-      // 짧은 공유 링크 생성
-      const shortUrl = "<%= shared_project_url(@project.signed_id(purpose: :share_schedule)) rescue 'https://workgood.co.kr' %>";
+      // 짧은 공유 링크에 발신자 이름 추가
+      const baseShortUrl = "<%= shared_project_url(@project.signed_id(purpose: :share_schedule)) rescue 'https://workgood.co.kr' %>";
+      const shortUrl = baseShortUrl + "?s=" + encodeURIComponent(senderName.trim());
 
       textLines.push("");
       textLines.push("👉 현장정보 상세보기 & 일정 자동등록:");
