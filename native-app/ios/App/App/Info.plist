@@ -51,6 +51,8 @@
 	<string>현장 영수증 및 다이어리 사진 촬영을 위해 카메라 권한이 필요합니다.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>저장된 영수증 및 현장 사진을 업로드하기 위해 사진첩 접근 권한이 필요합니다.</string>
+	<key>NSContactsUsageDescription</key>
+	<string>거래처 등록 시 연락처를 빠르게 입력하기 위해 주소록 접근 권한이 필요합니다.</string>
 	<key>GIDClientID</key>
 	<string>944339730636-2enclt34i6lq8g203bk0afhorbll1dt3.apps.googleusercontent.com</string>
 	<key>GIDServerClientID</key>
