@@ -60,143 +60,165 @@
       <div style="margin-bottom:16px;">
         <div style="font-size:12px; font-weight:800; color:#64748b; margin-bottom:8px;">도안 선택</div>
         <div style="display:flex; gap:6px; overflow-x:auto; padding-bottom:6px; -webkit-overflow-scrolling:touch;">
-          <button type="button" onclick="setBcTemplate('A')" id="btnTplA" style="flex-shrink:0; padding:8px 12px; background:#4c1d95; color:white; border:none; border-radius:8px; font-size:11px; font-weight:800; cursor:pointer; white-space:nowrap;">A 신뢰감</button>
-          <button type="button" onclick="setBcTemplate('B')" id="btnTplB" style="flex-shrink:0; padding:8px 12px; background:#f1f5f9; color:#475569; border:1px solid #cbd5e1; border-radius:8px; font-size:11px; font-weight:800; cursor:pointer; white-space:nowrap;">B 세련된</button>
-          <button type="button" onclick="setBcTemplate('C')" id="btnTplC" style="flex-shrink:0; padding:8px 12px; background:#f1f5f9; color:#475569; border:1px solid #cbd5e1; border-radius:8px; font-size:11px; font-weight:800; cursor:pointer; white-space:nowrap;">C 네이비</button>
-          <button type="button" onclick="setBcTemplate('D')" id="btnTplD" style="flex-shrink:0; padding:8px 12px; background:#f1f5f9; color:#475569; border:1px solid #cbd5e1; border-radius:8px; font-size:11px; font-weight:800; cursor:pointer; white-space:nowrap;">D 그린</button>
-          <button type="button" onclick="setBcTemplate('E')" id="btnTplE" style="flex-shrink:0; padding:8px 12px; background:#f1f5f9; color:#475569; border:1px solid #cbd5e1; border-radius:8px; font-size:11px; font-weight:800; cursor:pointer; white-space:nowrap;">E 미니멀</button>
+          <button type="button" onclick="setBcTemplate('A')" id="btnTplA" style="flex-shrink:0; padding:8px 12px; background:#4c1d95; color:white; border:none; border-radius:8px; font-size:11px; font-weight:800; cursor:pointer; white-space:nowrap;">A 웜미니멀</button>
+          <button type="button" onclick="setBcTemplate('B')" id="btnTplB" style="flex-shrink:0; padding:8px 12px; background:#f1f5f9; color:#475569; border:1px solid #cbd5e1; border-radius:8px; font-size:11px; font-weight:800; cursor:pointer; white-space:nowrap;">B 센터포인트</button>
+          <button type="button" onclick="setBcTemplate('C')" id="btnTplC" style="flex-shrink:0; padding:8px 12px; background:#f1f5f9; color:#475569; border:1px solid #cbd5e1; border-radius:8px; font-size:11px; font-weight:800; cursor:pointer; white-space:nowrap;">C 클래식</button>
+          <button type="button" onclick="setBcTemplate('D')" id="btnTplD" style="flex-shrink:0; padding:8px 12px; background:#f1f5f9; color:#475569; border:1px solid #cbd5e1; border-radius:8px; font-size:11px; font-weight:800; cursor:pointer; white-space:nowrap;">D 모던심플</button>
+          <button type="button" onclick="setBcTemplate('E')" id="btnTplE" style="flex-shrink:0; padding:8px 12px; background:#f1f5f9; color:#475569; border:1px solid #cbd5e1; border-radius:8px; font-size:11px; font-weight:800; cursor:pointer; white-space:nowrap;">E 버티컬</button>
           <button type="button" onclick="setBcTemplate('F')" id="btnTplF" style="flex-shrink:0; padding:8px 12px; background:#f1f5f9; color:#475569; border:1px solid #cbd5e1; border-radius:8px; font-size:11px; font-weight:800; cursor:pointer; white-space:nowrap;">F 프리미엄</button>
         </div>
       </div>
 
       <!-- Preview Card Container -->
       <div id="bcPreviewWrap" style="margin-bottom:16px;">
-        <!-- Template A: 신뢰감 현장형 (다크 + 골드 라인) -->
-        <div id="bcTemplateA" style="position:relative; width:100%; aspect-ratio:1.8; border-radius:10px; background:#111827; color:white; box-shadow:0 10px 25px rgba(0,0,0,0.15); overflow:hidden;">
-          <div style="position:absolute; top:0; left:0; width:8px; height:100%; background:#eab308;"></div>
-          <div style="position:absolute; top:24px; left:28px; display:flex; align-items:center; gap:8px;">
-            <img class="bcLogoImg" src="" style="display:none; max-width:60px; max-height:24px; object-fit:contain; border-radius:2px;">
-            <div class="bcTeamEl" style="font-size:13px; font-weight:900; color:#eab308; letter-spacing:1px;"></div>
+        <!-- Template A: 웜미니멀 -->
+        <div id="bcTemplateA" style="position:relative; width:100%; aspect-ratio:1.8; border-radius:10px; background:#fffcf9; color:#4a4036; box-shadow:0 10px 25px rgba(0,0,0,0.15); overflow:hidden; border:1px solid #e7e5e4;">
+          <div style="position:absolute; top:24px; right:24px; display:flex; align-items:center; gap:8px;">
+            <img class="bcLogoImg" src="" style="display:none; max-width:50px; max-height:20px; object-fit:contain;">
+            <div class="bcTeamEl" style="font-size:14px; font-weight:900; letter-spacing:1px; color:#4a4036;"></div>
           </div>
-          <div style="position:absolute; top:50%; left:28px; transform:translateY(-50%); display:flex; align-items:baseline; gap:8px;">
-            <div class="bcRoleEl" style="font-size:12px; font-weight:700; color:#9ca3af;"></div>
-            <div class="bcNameEl" style="font-size:20px; font-weight:900; letter-spacing:2px;"></div>
+          <div style="position:absolute; top:40%; left:28px; transform:translateY(-50%);">
+            <div class="bcNameEl" style="font-size:20px; font-weight:900; letter-spacing:3px; margin-bottom:4px;"></div>
+            <div class="bcRoleEl" style="font-size:11px; font-weight:600; color:#78716c;"></div>
           </div>
-          <div style="position:absolute; bottom:24px; left:28px; width:calc(100% - 52px); display:flex; justify-content:space-between; align-items:flex-end;">
-            <div style="display:flex; flex-direction:column; gap:4px;">
-              <div class="bcAddrWrap" style="display:none; align-items:flex-end; gap:4px;">
-                <svg style="width:9px; height:9px; fill:#9ca3af; margin-bottom:2px;" viewBox="0 0 384 512"><path d="M215.7 499.2C267 435 384 279.4 384 192C384 86 298 0 192 0S0 86 0 192c0 87.4 117 243 168.3 307.2c12.3 15.3 35.1 15.3 47.4 0zM192 128a64 64 0 1 1 0 128 64 64 0 1 1 0-128z"/></svg>
-                <div class="bcAddrEl" style="font-size:9px; font-weight:600; color:#d1d5db; max-width:200px; line-height:1.3;"></div>
-              </div>
-              <div class="bcPhoneEl" style="font-size:14px; font-weight:800; letter-spacing:1px; color:#f3f4f6;"></div>
+          <div style="position:absolute; bottom:36px; left:28px; display:flex; flex-direction:column; gap:6px;">
+            <div style="display:flex; align-items:center; gap:8px;">
+              <span style="font-size:10px; font-weight:900; width:12px;">M</span>
+              <div class="bcPhoneEl" style="font-size:11px; font-weight:600; color:#57534e;"></div>
             </div>
-            <div style="font-size:8px; font-weight:800; opacity:0.5; text-align:right;">스마트한 현장 관리<br>일잘러 앱</div>
+            <div class="bcAddrWrap" style="display:none; align-items:flex-start; gap:8px;">
+              <span style="font-size:10px; font-weight:900; width:12px;">A</span>
+              <div class="bcAddrEl" style="font-size:11px; font-weight:600; color:#57534e; max-width:220px; line-height:1.3;"></div>
+            </div>
           </div>
+          <div style="position:absolute; bottom:16px; left:28px; right:28px; height:2px; background:#4a4036;"></div>
         </div>
         
-        <!-- Template B: 세련된 화이트 -->
-        <div id="bcTemplateB" style="display:none; position:relative; width:100%; aspect-ratio:1.8; border-radius:10px; background:#ffffff; color:#111827; box-shadow:0 10px 25px rgba(0,0,0,0.05); overflow:hidden; border:1px solid #f1f5f9;">
-          <div style="position:absolute; bottom:-40px; right:-40px; width:150px; height:150px; border-radius:50%; background:#f8fafc; border:2px solid #f1f5f9;"></div>
-          <div style="position:absolute; top:24px; right:24px; display:flex; align-items:center; gap:8px; flex-direction:row-reverse;">
-            <div class="bcTeamEl" style="font-size:11px; font-weight:800; color:#64748b; letter-spacing:2px;"></div>
-            <img class="bcLogoImg" src="" style="display:none; max-width:60px; max-height:24px; object-fit:contain; border-radius:2px;">
-          </div>
-          <div style="position:absolute; top:50%; right:24px; transform:translateY(-50%); padding-right:10px; border-right:4px solid #111827; text-align:right;">
-            <div style="display:flex; align-items:baseline; gap:6px; justify-content:flex-end;">
-              <div class="bcRoleEl" style="font-size:12px; font-weight:600; color:#475569;"></div>
-              <div class="bcNameEl" style="font-size:22px; font-weight:300; letter-spacing:-1px; color:#0f172a;"></div>
+        <!-- Template B: 센터포인트 -->
+        <div id="bcTemplateB" style="display:none; position:relative; width:100%; aspect-ratio:1.8; border-radius:10px; background:#f4f4f5; color:#18181b; box-shadow:0 10px 25px rgba(0,0,0,0.15); overflow:hidden; border:1px solid #e4e4e7;">
+          <div style="position:absolute; top:0; left:0; width:100%; height:100%; background:radial-gradient(circle at 10% 20%, #ffffff 0%, transparent 40%), radial-gradient(circle at 90% 80%, #ffffff 0%, transparent 40%); opacity:0.6;"></div>
+          <div style="position:absolute; top:0; left:50%; transform:translateX(-50%); width:32px; height:100%; background:#18181b; display:flex; flex-direction:column; justify-content:center; align-items:center; gap:16px; z-index:2;">
+            <div style="width:16px; height:16px; background:#ffffff; border-radius:2px; display:flex; justify-content:center; align-items:center;">
+              <svg style="width:8px; fill:#18181b;" viewBox="0 0 512 512"><path d="M164.9 24.6c-7.7-18.6-28-28.5-47.4-23.2l-88 24C12.1 30.2 0 46 0 64C0 311.4 200.6 512 448 512c18 0 33.8-12.1 38.6-29.5l24-88c5.3-19.4-4.6-39.7-23.2-47.4l-96-40c-16.3-6.8-35.2-2.1-46.3 11.6L304.7 368C234.3 334.7 177.3 277.7 144 207.3L193.3 167c13.7-11.2 18.4-30 11.6-46.3l-40-96z"/></svg>
+            </div>
+            <div class="bcAddrIcon" style="width:16px; height:16px; background:#ffffff; border-radius:2px; display:flex; justify-content:center; align-items:center;">
+              <svg style="width:8px; fill:#18181b;" viewBox="0 0 384 512"><path d="M215.7 499.2C267 435 384 279.4 384 192C384 86 298 0 192 0S0 86 0 192c0 87.4 117 243 168.3 307.2c12.3 15.3 35.1 15.3 47.4 0zM192 128a64 64 0 1 1 0 128 64 64 0 1 1 0-128z"/></svg>
+            </div>
+            <div style="width:16px; height:16px; background:#ffffff; border-radius:2px; display:flex; justify-content:center; align-items:center;">
+              <svg style="width:8px; fill:#18181b;" viewBox="0 0 512 512"><path d="M384 48H128c-26.5 0-48 21.5-48 48v320c0 26.5 21.5 48 48 48h256c26.5 0 48-21.5 48-48V96c0-26.5-21.5-48-48-48zm-128 368c-17.7 0-32-14.3-32-32s14.3-32 32-32 32 14.3 32 32-14.3 32-32 32zm128-112H128V96h256v208z"/></svg>
             </div>
           </div>
-          <div style="position:absolute; bottom:24px; left:24px; right:24px; display:flex; justify-content:space-between; align-items:flex-end;">
-            <div style="font-size:8px; font-weight:800; color:#cbd5e1; z-index:2;">스마트한 현장 관리<br>일잘러 앱</div>
-            <div style="display:flex; flex-direction:column; align-items:flex-end; gap:3px; z-index:2;">
-              <div class="bcAddrEl" style="display:none; font-size:9px; font-weight:600; color:#64748b; max-width:200px; line-height:1.3; text-align:right;"></div>
-              <div class="bcPhoneEl" style="font-size:13px; font-weight:700; color:#334155;"></div>
+          <div style="position:absolute; top:50%; right:55%; transform:translateY(-50%); text-align:right; z-index:3;">
+            <div class="bcNameEl" style="font-size:18px; font-weight:800; letter-spacing:1px; color:#18181b;"></div>
+            <div class="bcRoleEl" style="font-size:10px; font-weight:500; color:#52525b; margin-top:4px;"></div>
+          </div>
+          <div style="position:absolute; top:50%; left:55%; transform:translateY(-50%); display:flex; flex-direction:column; gap:16px; z-index:3;">
+            <div class="bcPhoneEl" style="font-size:9px; font-weight:600; color:#3f3f46;"></div>
+            <div class="bcAddrWrap" style="display:none; flex-direction:column;">
+              <div class="bcAddrEl" style="font-size:9px; font-weight:600; color:#3f3f46; max-width:140px; line-height:1.3;"></div>
+            </div>
+            <div style="display:flex; align-items:center; gap:4px;">
+              <img class="bcLogoImg" src="" style="display:none; max-width:30px; max-height:12px; object-fit:contain;">
+              <div class="bcTeamEl" style="font-size:10px; font-weight:800; color:#18181b;"></div>
             </div>
           </div>
         </div>
 
-        <!-- Template C: 네이비 프로 -->
-        <div id="bcTemplateC" style="display:none; position:relative; width:100%; aspect-ratio:1.8; border-radius:10px; background:linear-gradient(135deg, #1e3a5f, #0f172a); color:white; box-shadow:0 10px 25px rgba(0,0,0,0.2); overflow:hidden;">
-          <div style="position:absolute; top:0; right:0; width:40%; height:100%; background:rgba(255,255,255,0.03);"></div>
-          <div style="position:absolute; top:0; right:0; width:1px; height:100%; background:rgba(255,255,255,0.1); right:40%;"></div>
-          <div style="position:absolute; top:20px; left:20px; display:flex; align-items:center; gap:6px;">
-            <img class="bcLogoImg" src="" style="display:none; max-width:50px; max-height:20px; object-fit:contain;">
-            <div class="bcTeamEl" style="font-size:11px; font-weight:800; color:#93c5fd; letter-spacing:1px;"></div>
+        <!-- Template C: 클래식 -->
+        <div id="bcTemplateC" style="display:none; position:relative; width:100%; aspect-ratio:1.8; border-radius:10px; background:#ffffff; color:#334155; box-shadow:0 10px 25px rgba(0,0,0,0.1); border:1px solid #f1f5f9; overflow:hidden;">
+          <div style="position:absolute; top:24px; right:24px; display:flex; flex-direction:column; align-items:center; gap:4px;">
+            <img class="bcLogoImg" src="" style="display:none; max-width:40px; max-height:20px; object-fit:contain;">
+            <div class="bcTeamEl" style="font-size:12px; font-weight:800; letter-spacing:2px; color:#475569; text-transform:uppercase;"></div>
           </div>
-          <div style="position:absolute; top:50%; left:20px; transform:translateY(-50%); display:flex; align-items:baseline; gap:8px;">
-            <div class="bcRoleEl" style="font-size:11px; font-weight:700; color:#93c5fd;"></div>
-            <div class="bcNameEl" style="font-size:22px; font-weight:900; letter-spacing:3px;"></div>
+          <div style="position:absolute; top:45%; left:28px; transform:translateY(-50%);">
+            <div class="bcNameEl" style="font-size:18px; font-weight:600; letter-spacing:2px; color:#1e293b; font-family:serif;"></div>
+            <div class="bcRoleEl" style="font-size:10px; font-weight:700; color:#64748b; margin-top:2px;"></div>
           </div>
-          <div style="position:absolute; bottom:20px; left:20px; right:20px; display:flex; justify-content:space-between; align-items:flex-end;">
-            <div>
-              <div class="bcAddrWrap" style="display:none; margin-bottom:4px;"><div class="bcAddrEl" style="font-size:9px; color:#94a3b8; max-width:180px; line-height:1.3;"></div></div>
-              <div class="bcPhoneEl" style="font-size:13px; font-weight:800; color:#e2e8f0;"></div>
+          <div style="position:absolute; top:60%; left:28px; right:28px; height:1px; background:#cbd5e1;"></div>
+          <div style="position:absolute; top:calc(60% + 12px); left:28px; display:flex; flex-direction:column; gap:4px;">
+            <div class="bcTeamEl" style="font-size:10px; font-weight:800; color:#334155;"></div>
+            <div class="bcAddrWrap" style="display:none;">
+              <div class="bcAddrEl" style="font-size:9px; font-weight:500; color:#64748b; max-width:180px; line-height:1.3;"></div>
             </div>
-            <div style="font-size:7px; font-weight:700; color:rgba(255,255,255,0.3); text-align:right;">일잘러 앱</div>
+          </div>
+          <div style="position:absolute; top:calc(60% + 12px); right:28px; display:flex; flex-direction:column; gap:4px;">
+            <div style="display:flex; gap:6px;">
+              <span style="font-size:9px; font-weight:800; color:#334155;">P:</span>
+              <div class="bcPhoneEl" style="font-size:9px; font-weight:500; color:#64748b;"></div>
+            </div>
           </div>
         </div>
 
-        <!-- Template D: 그린 자연형 -->
-        <div id="bcTemplateD" style="display:none; position:relative; width:100%; aspect-ratio:1.8; border-radius:10px; background:linear-gradient(135deg, #064e3b, #065f46); color:white; box-shadow:0 10px 25px rgba(0,0,0,0.15); overflow:hidden;">
-          <div style="position:absolute; top:-30px; right:-30px; width:100px; height:100px; border-radius:50%; background:rgba(255,255,255,0.05);"></div>
-          <div style="position:absolute; bottom:-20px; left:-20px; width:70px; height:70px; border-radius:50%; background:rgba(255,255,255,0.04);"></div>
-          <div style="position:absolute; bottom:0; left:0; right:0; height:4px; background:linear-gradient(90deg, #34d399, #6ee7b7, #34d399);"></div>
-          <div style="position:absolute; top:20px; left:20px; display:flex; align-items:center; gap:6px;">
-            <img class="bcLogoImg" src="" style="display:none; max-width:50px; max-height:20px; object-fit:contain;">
-            <div class="bcTeamEl" style="font-size:12px; font-weight:800; color:#6ee7b7; letter-spacing:1px;"></div>
-          </div>
-          <div style="position:absolute; top:48%; left:20px; transform:translateY(-50%); display:flex; align-items:baseline; gap:8px;">
-            <div class="bcRoleEl" style="font-size:11px; font-weight:700; color:#6ee7b7;"></div>
-            <div class="bcNameEl" style="font-size:20px; font-weight:900; letter-spacing:1px;"></div>
-          </div>
-          <div style="position:absolute; bottom:20px; left:20px; right:20px; display:flex; justify-content:space-between; align-items:flex-end;">
-            <div>
-              <div class="bcAddrWrap" style="display:none; margin-bottom:4px;"><div class="bcAddrEl" style="font-size:9px; color:#a7f3d0; max-width:180px; line-height:1.3;"></div></div>
-              <div class="bcPhoneEl" style="font-size:13px; font-weight:800; color:#ecfdf5;"></div>
+        <!-- Template D: 모던심플 -->
+        <div id="bcTemplateD" style="display:none; position:relative; width:100%; aspect-ratio:1.8; border-radius:10px; background:#f4f4f5; color:#27272a; box-shadow:0 10px 25px rgba(0,0,0,0.1); border:1px solid #e4e4e7; overflow:hidden;">
+          <div style="position:absolute; top:24px; right:32px; display:flex; flex-direction:column; align-items:center; gap:4px;">
+            <div style="width:32px; height:32px; border:2px solid #27272a; display:flex; justify-content:center; align-items:center; background:transparent;">
+              <img class="bcLogoImg" src="" style="display:none; max-width:24px; max-height:24px; object-fit:contain;">
+              <span class="bcTeamFirstLetter" style="font-size:16px; font-weight:900;"></span>
             </div>
-            <div style="font-size:7px; font-weight:700; color:rgba(255,255,255,0.3); text-align:right;">일잘러 앱</div>
+            <div class="bcTeamEl" style="font-size:8px; font-weight:800; letter-spacing:2px; text-transform:uppercase;"></div>
+          </div>
+          <div style="position:absolute; top:35%; left:32px;">
+            <div class="bcNameEl" style="font-size:22px; font-weight:300; letter-spacing:-0.5px;"></div>
+            <div class="bcRoleEl" style="font-size:10px; font-weight:600; color:#52525b; margin-top:2px;"></div>
+            <div style="width:24px; height:2px; background:#27272a; margin-top:10px;"></div>
+          </div>
+          <div style="position:absolute; bottom:24px; left:32px; display:flex; flex-direction:column; gap:5px;">
+            <div style="display:flex; gap:6px;">
+              <span style="font-size:9px; font-weight:800; color:#27272a;">P:</span>
+              <div class="bcPhoneEl" style="font-size:9px; font-weight:600; color:#52525b;"></div>
+            </div>
+            <div class="bcAddrWrap" style="display:none; gap:6px; margin-top:2px;">
+              <div class="bcAddrEl" style="font-size:9px; font-weight:600; color:#52525b; max-width:240px; line-height:1.3;"></div>
+            </div>
           </div>
         </div>
 
-        <!-- Template E: 미니멀 그레이 -->
-        <div id="bcTemplateE" style="display:none; position:relative; width:100%; aspect-ratio:1.8; border-radius:10px; background:#fafafa; color:#111827; box-shadow:0 4px 12px rgba(0,0,0,0.06); overflow:hidden; border:1px solid #e5e7eb;">
-          <div style="position:absolute; top:0; left:0; right:0; height:3px; background:#111827;"></div>
-          <div style="position:absolute; top:24px; left:24px; display:flex; align-items:center; gap:6px;">
-            <img class="bcLogoImg" src="" style="display:none; max-width:50px; max-height:20px; object-fit:contain;">
-            <div class="bcTeamEl" style="font-size:10px; font-weight:800; color:#6b7280; letter-spacing:2px; text-transform:uppercase;"></div>
-          </div>
-          <div style="position:absolute; top:50%; left:24px; transform:translateY(-50%); display:flex; align-items:baseline; gap:8px;">
-            <div class="bcRoleEl" style="font-size:11px; font-weight:600; color:#9ca3af;"></div>
-            <div class="bcNameEl" style="font-size:22px; font-weight:900; letter-spacing:0; color:#111827;"></div>
-          </div>
-          <div style="position:absolute; bottom:20px; left:24px; right:24px; display:flex; justify-content:space-between; align-items:flex-end;">
-            <div>
-              <div class="bcAddrWrap" style="display:none; margin-bottom:4px;"><div class="bcAddrEl" style="font-size:9px; color:#9ca3af; max-width:180px; line-height:1.3;"></div></div>
-              <div class="bcPhoneEl" style="font-size:13px; font-weight:700; color:#374151;"></div>
+        <!-- Template E: 버티컬 -->
+        <div id="bcTemplateE" style="display:none; position:relative; width:100%; aspect-ratio:1.8; border-radius:10px; background:#ffffff; color:#3f3f46; box-shadow:0 10px 25px rgba(0,0,0,0.08); border:1px solid #f4f4f5; overflow:hidden;">
+          <div style="position:absolute; top:45%; left:50%; transform:translate(-50%, -50%); display:flex; align-items:center; gap:20px; width:80%;">
+            <div style="flex:1; text-align:right;">
+              <div class="bcNameEl" style="font-size:20px; font-weight:800; letter-spacing:1px; color:#27272a;"></div>
+              <div class="bcRoleEl" style="font-size:10px; font-weight:600; color:#71717a; letter-spacing:1px; margin-top:2px;"></div>
             </div>
-            <div style="font-size:7px; font-weight:700; color:#d1d5db; text-align:right;">일잘러 앱</div>
+            <div style="width:1px; height:40px; background:#d4d4d8;"></div>
+            <div style="flex:1; display:flex; flex-direction:column; gap:6px;">
+              <div style="display:flex; align-items:center; gap:6px;">
+                <svg style="width:10px; fill:#52525b;" viewBox="0 0 512 512"><path d="M164.9 24.6c-7.7-18.6-28-28.5-47.4-23.2l-88 24C12.1 30.2 0 46 0 64C0 311.4 200.6 512 448 512c18 0 33.8-12.1 38.6-29.5l24-88c5.3-19.4-4.6-39.7-23.2-47.4l-96-40c-16.3-6.8-35.2-2.1-46.3 11.6L304.7 368C234.3 334.7 177.3 277.7 144 207.3L193.3 167c13.7-11.2 18.4-30 11.6-46.3l-40-96z"/></svg>
+                <div class="bcPhoneEl" style="font-size:10px; font-weight:600; color:#3f3f46;"></div>
+              </div>
+              <div style="display:flex; align-items:center; gap:6px;">
+                <svg style="width:10px; fill:#52525b;" viewBox="0 0 512 512"><path d="M384 48H128c-26.5 0-48 21.5-48 48v320c0 26.5 21.5 48 48 48h256c26.5 0 48-21.5 48-48V96c0-26.5-21.5-48-48-48zm-128 368c-17.7 0-32-14.3-32-32s14.3-32 32-32 32 14.3 32 32-14.3 32-32 32zm128-112H128V96h256v208z"/></svg>
+                <div class="bcTeamEl" style="font-size:10px; font-weight:600; color:#3f3f46;"></div>
+              </div>
+            </div>
+          </div>
+          <div class="bcAddrWrap" style="position:absolute; bottom:24px; left:0; width:100%; display:none; justify-content:center; align-items:center; gap:6px;">
+            <svg style="width:10px; fill:#52525b;" viewBox="0 0 384 512"><path d="M215.7 499.2C267 435 384 279.4 384 192C384 86 298 0 192 0S0 86 0 192c0 87.4 117 243 168.3 307.2c12.3 15.3 35.1 15.3 47.4 0zM192 128a64 64 0 1 1 0 128 64 64 0 1 1 0-128z"/></svg>
+            <div class="bcAddrEl" style="font-size:9px; font-weight:600; color:#52525b; letter-spacing:1px; max-width:80%; text-align:center;"></div>
           </div>
         </div>
 
-        <!-- Template F: 프리미엄 골드 -->
-        <div id="bcTemplateF" style="display:none; position:relative; width:100%; aspect-ratio:1.8; border-radius:10px; background:linear-gradient(135deg, #1c1917, #292524); color:white; box-shadow:0 10px 25px rgba(0,0,0,0.25); overflow:hidden;">
-          <div style="position:absolute; top:0; left:0; right:0; height:2px; background:linear-gradient(90deg, #b45309, #f59e0b, #b45309);"></div>
-          <div style="position:absolute; bottom:0; left:0; right:0; height:2px; background:linear-gradient(90deg, #b45309, #f59e0b, #b45309);"></div>
-          <div style="position:absolute; top:22px; right:20px; display:flex; align-items:center; gap:6px; flex-direction:row-reverse;">
-            <div class="bcTeamEl" style="font-size:11px; font-weight:800; color:#fbbf24; letter-spacing:2px;"></div>
-            <img class="bcLogoImg" src="" style="display:none; max-width:50px; max-height:20px; object-fit:contain;">
+        <!-- Template F: 프리미엄 -->
+        <div id="bcTemplateF" style="display:none; position:relative; width:100%; aspect-ratio:1.8; border-radius:10px; background:#18181b; color:#e4e4e7; box-shadow:0 10px 25px rgba(0,0,0,0.25); overflow:hidden;">
+          <div style="position:absolute; top:0; left:0; right:0; height:3px; background:#d4af37;"></div>
+          <div style="position:absolute; top:24px; right:24px; display:flex; align-items:center; gap:8px;">
+            <div class="bcTeamEl" style="font-size:12px; font-weight:800; color:#d4af37; letter-spacing:2px; text-transform:uppercase;"></div>
+            <img class="bcLogoImg" src="" style="display:none; max-width:40px; max-height:20px; object-fit:contain;">
           </div>
-          <div style="position:absolute; top:50%; left:24px; transform:translateY(-50%); display:flex; align-items:baseline; gap:8px;">
-            <div class="bcRoleEl" style="font-size:11px; font-weight:700; color:#d97706;"></div>
-            <div class="bcNameEl" style="font-size:22px; font-weight:900; letter-spacing:4px; color:#fef3c7;"></div>
+          <div style="position:absolute; top:50%; left:28px; transform:translateY(-50%);">
+            <div class="bcNameEl" style="font-size:22px; font-weight:800; letter-spacing:2px; color:#ffffff;"></div>
+            <div class="bcRoleEl" style="font-size:11px; font-weight:600; color:#a1a1aa; margin-top:4px;"></div>
           </div>
-          <div style="position:absolute; bottom:20px; left:24px; right:24px; display:flex; justify-content:space-between; align-items:flex-end;">
-            <div>
-              <div class="bcAddrWrap" style="display:none; margin-bottom:4px;"><div class="bcAddrEl" style="font-size:9px; color:#a8a29e; max-width:180px; line-height:1.3;"></div></div>
-              <div class="bcPhoneEl" style="font-size:13px; font-weight:800; color:#fef3c7;"></div>
+          <div style="position:absolute; bottom:24px; left:28px; display:flex; flex-direction:column; gap:5px;">
+            <div style="display:flex; gap:6px;">
+              <span style="font-size:10px; font-weight:800; color:#d4af37;">T.</span>
+              <div class="bcPhoneEl" style="font-size:10px; font-weight:500; color:#e4e4e7;"></div>
             </div>
-            <div style="font-size:7px; font-weight:700; color:rgba(255,255,255,0.2); text-align:right;">일잘러 앱</div>
+            <div class="bcAddrWrap" style="display:none; gap:6px;">
+              <span style="font-size:10px; font-weight:800; color:#d4af37;">A.</span>
+              <div class="bcAddrEl" style="font-size:10px; font-weight:500; color:#e4e4e7; max-width:240px; line-height:1.3;"></div>
+            </div>
           </div>
         </div>
       </div>
@@ -299,7 +321,7 @@
 <script>
   var currentBcTemplate = 'A';
   var allTpls = ['A','B','C','D','E','F'];
-  var tplBgColors = { A:'#111827', B:'#ffffff', C:'#0f172a', D:'#064e3b', E:'#fafafa', F:'#1c1917' };
+  var tplBgColors = { A:'#fffcf9', B:'#f4f4f5', C:'#ffffff', D:'#f4f4f5', E:'#ffffff', F:'#18181b' };
 
   function setBcTemplate(type) {
     currentBcTemplate = type;
@@ -357,12 +379,12 @@
       document.querySelectorAll('.bcPhoneEl').forEach(function(el){ el.textContent = phoneVal; });
       
       document.querySelectorAll('.bcNameEl').forEach(function(el){
-        // 템플릿 B는 첫 글자 볼드 스타일
-        if (el.closest('#bcTemplateB') && nameVal.length >= 2) {
-          el.innerHTML = '<strong>' + nameVal.substring(0,1) + '</strong>' + nameVal.substring(1);
-        } else {
-          el.textContent = nameVal;
-        }
+        el.textContent = nameVal;
+      });
+
+      var firstLetter = teamVal ? teamVal.charAt(0).toUpperCase() : 'M';
+      document.querySelectorAll('.bcTeamFirstLetter').forEach(function(el){
+        el.textContent = firstLetter;
       });
 
       document.querySelectorAll('.bcAddrWrap').forEach(function(el){
