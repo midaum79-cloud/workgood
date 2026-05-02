@@ -107,10 +107,69 @@
 
         <%# 전화번호 %>
         <div>
-          <label style="font-size:13px; font-weight:800; color:#374151; display:block; margin-bottom:6px;">전화번호</label>
-          <%= f.telephone_field :phone, placeholder: "010-0000-0000",
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+            <label style="font-size:13px; font-weight:800; color:#374151;">전화번호</label>
+            <button type="button" id="import_contact_btn" style="background:none; border:none; color:#2563eb; font-size:13px; font-weight:800; padding:0; cursor:pointer; display:none;">
+              📞 연락처 불러오기
+            </button>
+          </div>
+          <%= f.telephone_field :phone, placeholder: "010-0000-0000", id: "vendor_phone_input",
               style: "width:100%; height:48px; border:1.5px solid #e5e7eb; border-radius:12px; padding:0 14px; font-size:15px; font-weight:700; font-family:inherit; box-sizing:border-box;" %>
         </div>
+
+        <script>
+          function formatPhoneNumber(value) {
+            if (!value) return value;
+            value = value.replace(/[^0-9]/g, '');
+            if (!value) return '';
+            
+            if (value.startsWith('02')) {
+              if (value.length <= 2) return value;
+              if (value.length <= 5) return value.replace(/(\d{2})(\d{1,3})/, '$1-$2');
+              if (value.length <= 9) return value.replace(/(\d{2})(\d{3})(\d{1,4})/, '$1-$2-$3');
+              return value.replace(/(\d{2})(\d{4})(\d{1,4})/, '$1-$2-$3');
+            } else if (value.startsWith('15') || value.startsWith('16') || value.startsWith('18')) {
+              if (value.length <= 4) return value;
+              return value.replace(/(\d{4})(\d{1,4})/, '$1-$2');
+            } else {
+              if (value.length <= 3) return value;
+              if (value.length <= 7) return value.replace(/(\d{3})(\d{1,3})/, '$1-$2');
+              return value.replace(/(\d{3})(\d{4})(\d{1,4})/, '$1-$2-$3');
+            }
+          }
+
+          document.addEventListener('DOMContentLoaded', function() {
+            var phoneInput = document.getElementById('vendor_phone_input');
+            if (phoneInput) {
+              phoneInput.value = formatPhoneNumber(phoneInput.value);
+              phoneInput.addEventListener('input', function(e) {
+                e.target.value = formatPhoneNumber(e.target.value);
+              });
+            }
+
+            var importBtn = document.getElementById('import_contact_btn');
+            if ('contacts' in navigator && 'ContactsManager' in window) {
+              importBtn.style.display = 'block';
+              importBtn.addEventListener('click', async function() {
+                try {
+                  const contacts = await navigator.contacts.select(['name', 'tel'], { multiple: false });
+                  if (contacts.length > 0) {
+                    const contact = contacts[0];
+                    if (contact.tel && contact.tel.length > 0) {
+                      phoneInput.value = formatPhoneNumber(contact.tel[0]);
+                    }
+                    const nameInput = document.getElementById('vendor_name');
+                    if (nameInput && !nameInput.value && contact.name && contact.name.length > 0) {
+                      nameInput.value = contact.name[0];
+                    }
+                  }
+                } catch (ex) {
+                  console.error('연락처 불러오기 실패:', ex);
+                }
+              });
+            }
+          });
+        </script>
 
         <%# 메모 %>
         <div>
