@@ -697,6 +697,7 @@ class ProjectsController < ApplicationController
     params.require(:project).permit(
       :project_name,
       :client_name,
+      :client_phone,
       :address,
       :common_entrance_password,
       :private_entrance_password,

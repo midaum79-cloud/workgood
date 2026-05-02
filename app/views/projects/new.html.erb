@@ -52,15 +52,21 @@
         </div>
 
         <!-- 직접입력 UI -->
-        <div id="vendorDirectArea" style="display:none;">
+        <div id="vendorDirectArea" style="display:none; flex-direction:column; gap:8px;">
           <input type="text" id="vendorDirectInput"
             placeholder="업체명 또는 고객명을 입력하세요"
             oninput="document.getElementById('project_client_name').value = this.value;"
+            style="width:100%; padding:14px 16px; border:1px solid #dcdfe4; border-radius:14px; font-size:16px; box-sizing:border-box;">
+            
+          <input type="tel" id="vendorDirectPhoneInput"
+            placeholder="연락처를 입력하세요 (선택)"
+            oninput="document.getElementById('project_client_phone').value = this.value;"
             style="width:100%; padding:14px 16px; border:1px solid #dcdfe4; border-radius:14px; font-size:16px; box-sizing:border-box;">
         </div>
 
         <!-- 실제 hidden field -->
         <%= form.hidden_field :client_name, id: "project_client_name" %>
+        <%= form.hidden_field :client_phone, id: "project_client_phone" %>
       </div>
 
 
