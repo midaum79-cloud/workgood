@@ -259,16 +259,18 @@
             style: "width:100%; padding:14px 16px; border:1px solid #dcdfe4; border-radius:14px; font-size:16px; box-sizing:border-box; resize:none;" %>
       </div>
 
-      <div style="display:flex; flex-direction:column; gap:10px; margin-top:4px;">
-        <%= form.submit "수정 저장하기",
-            style: "width:100%; padding:16px; border:none; border-radius:14px; background:#2563eb; color:white; font-size:18px; font-weight:800; cursor:pointer;" %>
+    </div> <!-- End of main white card -->
 
-        <%= link_to "현장으로 돌아가기",
-            project_path(@project),
-            style: "display:block; text-align:center; width:100%; padding:16px; border:none; border-radius:14px; background:#e5e7eb; color:#374151; font-size:18px; font-weight:800; text-decoration:none; box-sizing:border-box;" %>
-      </div>
+    <!-- 하단 고정 바 -->
+    <div style="position:fixed; bottom:0; left:0; right:0; background:white; padding:16px; padding-bottom:calc(16px + env(safe-area-inset-bottom)); border-top:1px solid #e5e7eb; z-index:50; display:flex; flex-direction:column; gap:10px; box-shadow:0 -4px 20px rgba(0,0,0,0.05);">
+      <%= form.submit "수정 저장하기",
+          style: "width:100%; padding:16px; border:none; border-radius:14px; background:#2563eb; color:white; font-size:18px; font-weight:900; cursor:pointer;" %>
 
+      <%= link_to "현장으로 돌아가기",
+          project_path(@project),
+          style: "display:block; text-align:center; width:100%; padding:16px; border:none; border-radius:14px; background:#e5e7eb; color:#374151; font-size:18px; font-weight:800; text-decoration:none; box-sizing:border-box;" %>
     </div>
+
   <% end %>
 </div>
 
