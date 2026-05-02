@@ -148,23 +148,49 @@
             }
 
             var importBtn = document.getElementById('import_contact_btn');
-            if ('contacts' in navigator && 'ContactsManager' in window) {
+            var isCapacitor = !!(window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform());
+
+            if (isCapacitor || ('contacts' in navigator && 'ContactsManager' in window)) {
               importBtn.style.display = 'block';
               importBtn.addEventListener('click', async function() {
-                try {
-                  const contacts = await navigator.contacts.select(['name', 'tel'], { multiple: false });
-                  if (contacts.length > 0) {
-                    const contact = contacts[0];
-                    if (contact.tel && contact.tel.length > 0) {
-                      phoneInput.value = formatPhoneNumber(contact.tel[0]);
+                if (isCapacitor && window.Capacitor.Plugins.Contacts) {
+                  try {
+                    const permission = await window.Capacitor.Plugins.Contacts.requestPermissions();
+                    if (permission.contacts === 'granted') {
+                      const result = await window.Capacitor.Plugins.Contacts.pickContact({ projection: { name: true, phones: true } });
+                      if (result && result.contact) {
+                        const contact = result.contact;
+                        if (contact.phones && contact.phones.length > 0) {
+                          phoneInput.value = formatPhoneNumber(contact.phones[0].number);
+                        }
+                        const nameInput = document.getElementById('vendor_name');
+                        if (nameInput && !nameInput.value && contact.name && contact.name.display) {
+                          nameInput.value = contact.name.display;
+                        }
+                      }
+                    } else {
+                      alert('연락처 접근 권한이 거부되었습니다.');
                     }
-                    const nameInput = document.getElementById('vendor_name');
-                    if (nameInput && !nameInput.value && contact.name && contact.name.length > 0) {
-                      nameInput.value = contact.name[0];
-                    }
+                  } catch (err) {
+                    console.error('Capacitor 연락처 에러:', err);
                   }
-                } catch (ex) {
-                  console.error('연락처 불러오기 실패:', ex);
+                } else {
+                  // 브라우저 Web API
+                  try {
+                    const contacts = await navigator.contacts.select(['name', 'tel'], { multiple: false });
+                    if (contacts.length > 0) {
+                      const contact = contacts[0];
+                      if (contact.tel && contact.tel.length > 0) {
+                        phoneInput.value = formatPhoneNumber(contact.tel[0]);
+                      }
+                      const nameInput = document.getElementById('vendor_name');
+                      if (nameInput && !nameInput.value && contact.name && contact.name.length > 0) {
+                        nameInput.value = contact.name[0];
+                      }
+                    }
+                  } catch (ex) {
+                    console.error('연락처 불러오기 실패:', ex);
+                  }
                 }
               });
             }
