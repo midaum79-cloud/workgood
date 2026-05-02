@@ -37,7 +37,7 @@
           <div>
             <label style="font-size:12px; font-weight:800; color:#6b7280; display:block; margin-bottom:6px;">전화번호</label>
             <%= f.text_field :phone, name: "user[phone]", value: current_user.phone,
-                placeholder: "010-0000-0000",
+                id: "user_phone_input", placeholder: "010-0000-0000",
                 style: "width:100%; height:46px; border:1.5px solid #e5e7eb; border-radius:12px; padding:0 14px; font-size:15px; font-family:inherit; outline:none; box-sizing:border-box;",
                 onfocus: "this.style.borderColor='#2563eb'", onblur: "this.style.borderColor='#e5e7eb'" %>
           </div>
@@ -47,6 +47,46 @@
               style: "width:100%; height:46px; background:#111827; color:white; border:none; border-radius:12px; font-size:15px; font-weight:900; cursor:pointer; font-family:inherit;" %>
         </div>
       <% end %>
+
+      <script>
+      (function() {
+        function formatPhoneNumber(value) {
+          if (!value) return value;
+          value = value.replace(/[^0-9]/g, '');
+          if (!value) return '';
+          
+          if (value.startsWith('02')) {
+            if (value.length <= 2) return value;
+            if (value.length <= 5) return value.replace(/(\d{2})(\d{1,3})/, '$1-$2');
+            if (value.length <= 9) return value.replace(/(\d{2})(\d{3})(\d{1,4})/, '$1-$2-$3');
+            return value.replace(/(\d{2})(\d{4})(\d{1,4})/, '$1-$2-$3');
+          } else if (value.startsWith('15') || value.startsWith('16') || value.startsWith('18')) {
+            if (value.length <= 4) return value;
+            return value.replace(/(\d{4})(\d{1,4})/, '$1-$2');
+          } else {
+            if (value.length <= 3) return value;
+            if (value.length <= 7) return value.replace(/(\d{3})(\d{1,3})/, '$1-$2');
+            return value.replace(/(\d{3})(\d{4})(\d{1,4})/, '$1-$2-$3');
+          }
+        }
+
+        function initPhoneFormat() {
+          var phoneInput = document.getElementById('user_phone_input');
+          if (phoneInput && !phoneInput.dataset.formatted) {
+            phoneInput.dataset.formatted = 'true';
+            phoneInput.value = formatPhoneNumber(phoneInput.value);
+            phoneInput.addEventListener('input', function(e) {
+              e.target.value = formatPhoneNumber(e.target.value);
+            });
+          }
+        }
+
+        initPhoneFormat();
+        document.addEventListener('turbo:load', initPhoneFormat);
+        document.addEventListener('turbo:render', initPhoneFormat);
+      })();
+      </script>
+
     </div>
 
     <%# ── 3. 알림 설정 (알림함에서 설정) ── %>
