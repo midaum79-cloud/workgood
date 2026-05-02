@@ -434,7 +434,13 @@ class ProjectsController < ApplicationController
   def new
     @project = Project.new
     @project.client_name = params[:client_name] if params[:client_name].present?
+    @project.project_name = params[:project_name] if params[:project_name].present?
     @project.start_date = params[:start_date] if params[:start_date].present?
+    @project.end_date = params[:end_date] if params[:end_date].present?
+    @project.address = params[:address] if params[:address].present?
+    @project.common_entrance_password = params[:common_entrance_password] if params[:common_entrance_password].present?
+    @project.private_entrance_password = params[:private_entrance_password] if params[:private_entrance_password].present?
+    @project.memo = params[:memo] if params[:memo].present?
   end
 
   def edit

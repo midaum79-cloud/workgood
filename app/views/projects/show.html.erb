@@ -106,6 +106,94 @@
       <span style="font-size:20px;">📅</span> 거래처 일정표
     <% end %>
 
+    <button onclick="shareSchedule()" style="display:flex; justify-content:center; align-items:center; gap:8px; padding:16px; background:#10b981; color:white; border:none; border-radius:18px; font-size:17px; font-weight:900; box-shadow:0 4px 12px rgba(16,185,129,0.2); cursor:pointer; width:100%;">
+      <span style="font-size:20px;">📤</span> 팀원에게 현장정보 공유
+    </button>
+
+    <script>
+    function shareSchedule() {
+      let textLines = [];
+      textLines.push("[현장 정보 공유]");
+      textLines.push("현장: <%= j(@project.client_name.presence || @project.project_name) %>");
+      textLines.push("일정: <%= @project.start_date %> ~ <%= @project.end_date %>");
+      textLines.push("주소: <%= j(@project.address) %>");
+      <% if @project.common_entrance_password.present? %>
+      textLines.push("공동현관: <%= j(@project.common_entrance_password) %>");
+      <% end %>
+      <% if @project.private_entrance_password.present? %>
+      textLines.push("호실현관: <%= j(@project.private_entrance_password) %>");
+      <% end %>
+      <% if @project.memo.present? %>
+      textLines.push("");
+      textLines.push("메모:");
+      textLines.push("<%= j(@project.memo) %>");
+      <% end %>
+
+      // 일잘러 앱으로 일정 자동 등록하는 딥링크 생성
+      const teamLeaderName = "<%= j(current_user.try(:name).presence || current_user.email.split('@').first) %>";
+      const projectName = "<%= j(@project.client_name.presence || @project.project_name) %>";
+      
+      const baseUrl = window.location.origin + "/projects/new";
+      const queryParams = new URLSearchParams({
+        client_name: teamLeaderName,
+        project_name: projectName,
+        start_date: "<%= @project.start_date %>",
+        end_date: "<%= @project.end_date %>",
+        address: "<%= j(@project.address) %>"
+      });
+      <% if @project.common_entrance_password.present? %>
+      queryParams.append("common_entrance_password", "<%= j(@project.common_entrance_password) %>");
+      <% end %>
+      <% if @project.private_entrance_password.present? %>
+      queryParams.append("private_entrance_password", "<%= j(@project.private_entrance_password) %>");
+      <% end %>
+      <% if @project.memo.present? %>
+      queryParams.append("memo", "<%= j(@project.memo) %>");
+      <% end %>
+
+      const shareUrl = `${baseUrl}?${queryParams.toString()}`;
+
+      textLines.push("");
+      textLines.push("👉 내 일잘러 앱에 일정 자동 등록하기:");
+      textLines.push(shareUrl);
+
+      const shareText = textLines.join("\\n");
+
+      if (navigator.share) {
+        navigator.share({
+          text: shareText
+        }).catch(err => {
+          console.error("Share failed:", err);
+          fallbackCopyTextToClipboard(shareText);
+        });
+      } else {
+        fallbackCopyTextToClipboard(shareText);
+      }
+    }
+
+    function fallbackCopyTextToClipboard(text) {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(() => {
+          alert('현장 정보가 클립보드에 복사되었습니다.');
+        }).catch(console.error);
+      } else {
+        const textArea = document.createElement("textarea");
+        textArea.value = text;
+        textArea.style.position = "fixed";
+        document.body.appendChild(textArea);
+        textArea.focus();
+        textArea.select();
+        try {
+          document.execCommand('copy');
+          alert('현장 정보가 클립보드에 복사되었습니다.');
+        } catch (err) {
+          console.error('Fallback copy failed', err);
+        }
+        document.body.removeChild(textArea);
+      }
+    }
+    </script>
+
     <!-- 기본 기록 사항 -->
     <div style="background:white; border-radius:20px; padding:18px; box-shadow:0 2px 10px rgba(0,0,0,0.04);">
       <div style="font-size:16px; font-weight:900; color:#111827; margin-bottom:14px;">💰 기본 기록 사항</div>
