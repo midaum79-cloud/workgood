@@ -454,12 +454,19 @@
           @keyframes flashOut { from { opacity:1; transform:translateX(-50%) translateY(0); } to { opacity:0; transform:translateX(-50%) translateY(-20px); } }
         </style>
         <script>
-          document.querySelectorAll('.flash-toast').forEach(function(el) {
-            setTimeout(function() {
-              el.style.animation = 'flashOut 0.3s ease-in forwards';
-              setTimeout(function() { el.remove(); }, 300);
-            }, 2000);
-          });
+          function initFlashToasts() {
+            document.querySelectorAll('.flash-toast').forEach(function(el) {
+              if (el.dataset.initialized) return;
+              el.dataset.initialized = 'true';
+              setTimeout(function() {
+                el.style.animation = 'flashOut 0.3s ease-in forwards';
+                setTimeout(function() { el.remove(); }, 300);
+              }, 2000);
+            });
+          }
+          initFlashToasts();
+          document.addEventListener('turbo:load', initFlashToasts);
+          document.addEventListener('turbo:render', initFlashToasts);
         </script>
         <%= yield %>
       </div>
