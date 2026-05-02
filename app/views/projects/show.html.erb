@@ -110,13 +110,37 @@
       <span style="font-size:20px;">📤</span> 팀원에게 현장정보 공유
     </button>
 
+    <!-- 공유 모달 (안드로이드/iOS User Gesture 보존용) -->
+    <div id="shareModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:9999; align-items:center; justify-content:center;">
+      <div style="background:white; padding:20px; border-radius:16px; width:85%; max-width:320px; box-shadow:0 10px 25px rgba(0,0,0,0.2);">
+        <div style="font-size:16px; font-weight:900; color:#111827; margin-bottom:10px;">📤 팀원에게 공유</div>
+        <div style="font-size:13px; color:#6b7280; margin-bottom:15px; line-height:1.4;">팀원의 일정표에 '고객명(오더 출처)'으로 등록될 <strong style="color:#2563eb;">본인의 이름 또는 상호명</strong>을 입력해주세요.</div>
+        <input type="text" id="shareSenderName" value="<%= j(current_user.try(:name).presence || current_user.email.split('@').first) %>" style="width:100%; padding:12px; border:1px solid #dcdfe4; border-radius:10px; font-size:15px; margin-bottom:15px; box-sizing:border-box;">
+        <div style="display:flex; gap:10px;">
+          <button type="button" onclick="closeShareModal()" style="flex:1; padding:12px; background:#f3f4f6; color:#4b5563; border:none; border-radius:10px; font-size:14px; font-weight:800; cursor:pointer;">취소</button>
+          <button type="button" onclick="executeShare()" style="flex:1; padding:12px; background:#2563eb; color:white; border:none; border-radius:10px; font-size:14px; font-weight:900; cursor:pointer;">공유하기</button>
+        </div>
+      </div>
+    </div>
+
     <script>
     function shareSchedule() {
-      // 발신자 이름 입력받기
+      // prompt() 대신 커스텀 모달 띄우기 (User Gesture 컨텍스트 보존)
+      const modal = document.getElementById('shareModal');
+      modal.style.display = 'flex';
+    }
+
+    function closeShareModal() {
+      const modal = document.getElementById('shareModal');
+      modal.style.display = 'none';
+    }
+
+    function executeShare() {
+      let senderName = document.getElementById('shareSenderName').value.trim();
       let defaultName = "<%= j(current_user.try(:name).presence || current_user.email.split('@').first) %>";
-      let senderName = prompt("팀원 일정표에 '고객명(오더 출처)'으로 등록될 본인의 이름 또는 상호명을 입력해주세요:", defaultName);
-      if (senderName === null) return; // 취소 시 공유 중단
-      if (senderName.trim() === "") senderName = defaultName;
+      if (senderName === "") senderName = defaultName;
+
+      closeShareModal(); // 모달 닫기
 
       let textLines = [];
       textLines.push("[현장 정보 공유]");
@@ -135,9 +159,8 @@
       textLines.push("<%= j(@project.memo) %>");
       <% end %>
 
-      // 짧은 공유 링크에 발신자 이름 추가
       const baseShortUrl = "<%= shared_project_url(@project.signed_id(purpose: :share_schedule)) rescue 'https://workgood.co.kr' %>";
-      const shortUrl = baseShortUrl + "?s=" + encodeURIComponent(senderName.trim());
+      const shortUrl = baseShortUrl + "?s=" + encodeURIComponent(senderName);
 
       textLines.push("");
       textLines.push("👉 현장정보 상세보기 & 일정 자동등록:");
@@ -145,6 +168,7 @@
 
       const shareText = textLines.join("\n");
 
+      // 브라우저 네이티브 공유 API
       if (navigator.share) {
         navigator.share({
           text: shareText
