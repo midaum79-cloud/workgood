@@ -48,6 +48,8 @@
         
         <input type="text" id="bcPhoneInput" placeholder="전화번호를 입력하세요" style="width:100%; padding:14px; border-radius:12px; border:1px solid #cbd5e1; font-weight:800; font-size:14px; color:#1e293b; box-sizing:border-box;" value="<%= current_user.phone %>" maxlength="13" oninput="autoFormatPhone(this)">
         
+        <input type="email" id="bcEmailInput" placeholder="이메일 주소를 입력하세요 (선택)" style="width:100%; padding:14px; border-radius:12px; border:1px solid #cbd5e1; font-weight:800; font-size:14px; color:#1e293b; box-sizing:border-box;" value="<%= current_user.email %>">
+        
         <button type="button" id="bcAddressBtn" onclick="execDaumPostcode()" style="width:100%; text-align:left; padding:14px; border-radius:12px; border:1px solid #cbd5e1; font-weight:800; font-size:14px; background:white; cursor:pointer; box-sizing:border-box; display:flex; justify-content:space-between; align-items:center;">
           <span id="bcAddressBtnText" style="color:<%= current_user.address.present? ? '#1e293b' : '#94a3b8' %>; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;"><%= current_user.address.presence || "🔍 우편번호 검색 (클릭)" %></span>
           <span style="color:#64748b; font-size:12px; background:#f1f5f9; padding:4px 8px; border-radius:6px; white-space:nowrap; flex-shrink:0; margin-left:8px;">주소 검색</span>
@@ -74,150 +76,176 @@
         <!-- Template A: 웜미니멀 -->
         <div id="bcTemplateA" style="position:relative; width:100%; aspect-ratio:1.8; border-radius:10px; background:#fffcf9; color:#4a4036; box-shadow:0 10px 25px rgba(0,0,0,0.15); overflow:hidden; border:1px solid #e7e5e4;">
           <div style="position:absolute; top:24px; right:24px; display:flex; align-items:center; gap:8px;">
-            <img class="bcLogoImg" src="" style="display:none; max-width:50px; max-height:20px; object-fit:contain;">
-            <div class="bcTeamEl" style="font-size:14px; font-weight:900; letter-spacing:1px; color:#4a4036;"></div>
+            <img class="bcLogoImg" src="" style="display:none; max-width:100px; max-height:40px; object-fit:contain;">
+            <div class="bcTeamEl" style="font-size:28px; font-weight:900; letter-spacing:1px; color:#4a4036;"></div>
           </div>
           <div style="position:absolute; top:40%; left:28px; transform:translateY(-50%);">
-            <div class="bcNameEl" style="font-size:20px; font-weight:900; letter-spacing:3px; margin-bottom:4px;"></div>
-            <div class="bcRoleEl" style="font-size:11px; font-weight:600; color:#78716c;"></div>
+            <div class="bcNameEl" style="font-size:36px; font-weight:900; letter-spacing:3px; margin-bottom:4px;"></div>
+            <div class="bcRoleEl" style="font-size:22px; font-weight:600; color:#78716c;"></div>
           </div>
-          <div style="position:absolute; bottom:36px; left:28px; display:flex; flex-direction:column; gap:6px;">
-            <div style="display:flex; align-items:center; gap:8px;">
-              <span style="font-size:10px; font-weight:900; width:12px;">M</span>
-              <div class="bcPhoneEl" style="font-size:11px; font-weight:600; color:#57534e;"></div>
+          <div style="position:absolute; bottom:24px; left:28px; display:flex; flex-direction:column; gap:8px;">
+            <div style="display:flex; align-items:center; gap:10px;">
+              <span style="font-size:20px; font-weight:900; width:20px;">M</span>
+              <div class="bcPhoneEl" style="font-size:22px; font-weight:600; color:#57534e;"></div>
             </div>
-            <div class="bcAddrWrap" style="display:none; align-items:flex-start; gap:8px;">
-              <span style="font-size:10px; font-weight:900; width:12px;">A</span>
-              <div class="bcAddrEl" style="font-size:11px; font-weight:600; color:#57534e; max-width:220px; line-height:1.3;"></div>
+            <div class="bcEmailWrap" style="display:none; align-items:center; gap:10px;">
+              <span style="font-size:20px; font-weight:900; width:20px;">E</span>
+              <div class="bcEmailEl" style="font-size:22px; font-weight:600; color:#57534e;"></div>
+            </div>
+            <div class="bcAddrWrap" style="display:none; align-items:flex-start; gap:10px;">
+              <span style="font-size:20px; font-weight:900; width:20px;">A</span>
+              <div class="bcAddrEl" style="font-size:22px; font-weight:600; color:#57534e; max-width:85%; line-height:1.3;"></div>
             </div>
           </div>
-          <div style="position:absolute; bottom:16px; left:28px; right:28px; height:2px; background:#4a4036;"></div>
+          <div style="position:absolute; bottom:12px; left:28px; right:28px; height:2px; background:#4a4036;"></div>
         </div>
         
         <!-- Template B: 센터포인트 -->
         <div id="bcTemplateB" style="display:none; position:relative; width:100%; aspect-ratio:1.8; border-radius:10px; background:#f4f4f5; color:#18181b; box-shadow:0 10px 25px rgba(0,0,0,0.15); overflow:hidden; border:1px solid #e4e4e7;">
           <div style="position:absolute; top:0; left:0; width:100%; height:100%; background:radial-gradient(circle at 10% 20%, #ffffff 0%, transparent 40%), radial-gradient(circle at 90% 80%, #ffffff 0%, transparent 40%); opacity:0.6;"></div>
-          <div style="position:absolute; top:0; left:50%; transform:translateX(-50%); width:32px; height:100%; background:#18181b; display:flex; flex-direction:column; justify-content:center; align-items:center; gap:16px; z-index:2;">
-            <div style="width:16px; height:16px; background:#ffffff; border-radius:2px; display:flex; justify-content:center; align-items:center;">
-              <svg style="width:8px; fill:#18181b;" viewBox="0 0 512 512"><path d="M164.9 24.6c-7.7-18.6-28-28.5-47.4-23.2l-88 24C12.1 30.2 0 46 0 64C0 311.4 200.6 512 448 512c18 0 33.8-12.1 38.6-29.5l24-88c5.3-19.4-4.6-39.7-23.2-47.4l-96-40c-16.3-6.8-35.2-2.1-46.3 11.6L304.7 368C234.3 334.7 177.3 277.7 144 207.3L193.3 167c13.7-11.2 18.4-30 11.6-46.3l-40-96z"/></svg>
+          <div style="position:absolute; top:0; left:50%; transform:translateX(-50%); width:48px; height:100%; background:#18181b; display:flex; flex-direction:column; justify-content:center; align-items:center; gap:20px; z-index:2;">
+            <div style="width:24px; height:24px; background:#ffffff; border-radius:4px; display:flex; justify-content:center; align-items:center;">
+              <svg style="width:12px; fill:#18181b;" viewBox="0 0 512 512"><path d="M164.9 24.6c-7.7-18.6-28-28.5-47.4-23.2l-88 24C12.1 30.2 0 46 0 64C0 311.4 200.6 512 448 512c18 0 33.8-12.1 38.6-29.5l24-88c5.3-19.4-4.6-39.7-23.2-47.4l-96-40c-16.3-6.8-35.2-2.1-46.3 11.6L304.7 368C234.3 334.7 177.3 277.7 144 207.3L193.3 167c13.7-11.2 18.4-30 11.6-46.3l-40-96z"/></svg>
             </div>
-            <div class="bcAddrIcon" style="width:16px; height:16px; background:#ffffff; border-radius:2px; display:flex; justify-content:center; align-items:center;">
-              <svg style="width:8px; fill:#18181b;" viewBox="0 0 384 512"><path d="M215.7 499.2C267 435 384 279.4 384 192C384 86 298 0 192 0S0 86 0 192c0 87.4 117 243 168.3 307.2c12.3 15.3 35.1 15.3 47.4 0zM192 128a64 64 0 1 1 0 128 64 64 0 1 1 0-128z"/></svg>
+            <div class="bcEmailIcon" style="width:24px; height:24px; background:#ffffff; border-radius:4px; display:none; justify-content:center; align-items:center;">
+              <svg style="width:12px; fill:#18181b;" viewBox="0 0 512 512"><path d="M48 64C21.5 64 0 85.5 0 112c0 15.1 7.1 29.3 19.2 38.4L236.8 313.6c11.4 8.5 27 8.5 38.4 0L492.8 150.4c12.1-9.1 19.2-23.3 19.2-38.4c0-26.5-21.5-48-48-48H48zM0 176V384c0 35.3 28.7 64 64 64H448c35.3 0 64-28.7 64-64V176L294.4 339.2c-22.8 17.1-54 17.1-76.8 0L0 176z"/></svg>
             </div>
-            <div style="width:16px; height:16px; background:#ffffff; border-radius:2px; display:flex; justify-content:center; align-items:center;">
-              <svg style="width:8px; fill:#18181b;" viewBox="0 0 512 512"><path d="M384 48H128c-26.5 0-48 21.5-48 48v320c0 26.5 21.5 48 48 48h256c26.5 0 48-21.5 48-48V96c0-26.5-21.5-48-48-48zm-128 368c-17.7 0-32-14.3-32-32s14.3-32 32-32 32 14.3 32 32-14.3 32-32 32zm128-112H128V96h256v208z"/></svg>
+            <div class="bcAddrIcon" style="width:24px; height:24px; background:#ffffff; border-radius:4px; display:none; justify-content:center; align-items:center;">
+              <svg style="width:12px; fill:#18181b;" viewBox="0 0 384 512"><path d="M215.7 499.2C267 435 384 279.4 384 192C384 86 298 0 192 0S0 86 0 192c0 87.4 117 243 168.3 307.2c12.3 15.3 35.1 15.3 47.4 0zM192 128a64 64 0 1 1 0 128 64 64 0 1 1 0-128z"/></svg>
+            </div>
+            <div style="width:24px; height:24px; background:#ffffff; border-radius:4px; display:flex; justify-content:center; align-items:center;">
+              <svg style="width:12px; fill:#18181b;" viewBox="0 0 512 512"><path d="M384 48H128c-26.5 0-48 21.5-48 48v320c0 26.5 21.5 48 48 48h256c26.5 0 48-21.5 48-48V96c0-26.5-21.5-48-48-48zm-128 368c-17.7 0-32-14.3-32-32s14.3-32 32-32 32 14.3 32 32-14.3 32-32 32zm128-112H128V96h256v208z"/></svg>
             </div>
           </div>
           <div style="position:absolute; top:50%; right:55%; transform:translateY(-50%); text-align:right; z-index:3;">
-            <div class="bcNameEl" style="font-size:18px; font-weight:800; letter-spacing:1px; color:#18181b;"></div>
-            <div class="bcRoleEl" style="font-size:10px; font-weight:500; color:#52525b; margin-top:4px;"></div>
+            <div class="bcNameEl" style="font-size:32px; font-weight:800; letter-spacing:1px; color:#18181b;"></div>
+            <div class="bcRoleEl" style="font-size:20px; font-weight:500; color:#52525b; margin-top:8px;"></div>
           </div>
-          <div style="position:absolute; top:50%; left:55%; transform:translateY(-50%); display:flex; flex-direction:column; gap:16px; z-index:3;">
-            <div class="bcPhoneEl" style="font-size:9px; font-weight:600; color:#3f3f46;"></div>
-            <div class="bcAddrWrap" style="display:none; flex-direction:column;">
-              <div class="bcAddrEl" style="font-size:9px; font-weight:600; color:#3f3f46; max-width:140px; line-height:1.3;"></div>
+          <div style="position:absolute; top:50%; left:55%; transform:translateY(-50%); display:flex; flex-direction:column; gap:20px; z-index:3;">
+            <div class="bcPhoneEl" style="font-size:18px; font-weight:600; color:#3f3f46;"></div>
+            <div class="bcEmailWrap" style="display:none; flex-direction:column;">
+              <div class="bcEmailEl" style="font-size:18px; font-weight:600; color:#3f3f46; max-width:90%; overflow:hidden; text-overflow:ellipsis;"></div>
             </div>
-            <div style="display:flex; align-items:center; gap:4px;">
-              <img class="bcLogoImg" src="" style="display:none; max-width:30px; max-height:12px; object-fit:contain;">
-              <div class="bcTeamEl" style="font-size:10px; font-weight:800; color:#18181b;"></div>
+            <div class="bcAddrWrap" style="display:none; flex-direction:column;">
+              <div class="bcAddrEl" style="font-size:18px; font-weight:600; color:#3f3f46; max-width:90%; line-height:1.3;"></div>
+            </div>
+            <div style="display:flex; align-items:center; gap:6px;">
+              <img class="bcLogoImg" src="" style="display:none; max-width:40px; max-height:20px; object-fit:contain;">
+              <div class="bcTeamEl" style="font-size:20px; font-weight:800; color:#18181b;"></div>
             </div>
           </div>
         </div>
-
+        
         <!-- Template C: 클래식 -->
         <div id="bcTemplateC" style="display:none; position:relative; width:100%; aspect-ratio:1.8; border-radius:10px; background:#ffffff; color:#334155; box-shadow:0 10px 25px rgba(0,0,0,0.1); border:1px solid #f1f5f9; overflow:hidden;">
-          <div style="position:absolute; top:24px; right:24px; display:flex; flex-direction:column; align-items:center; gap:4px;">
-            <img class="bcLogoImg" src="" style="display:none; max-width:40px; max-height:20px; object-fit:contain;">
-            <div class="bcTeamEl" style="font-size:12px; font-weight:800; letter-spacing:2px; color:#475569; text-transform:uppercase;"></div>
+          <div style="position:absolute; top:16px; right:16px; display:flex; flex-direction:column; align-items:center; gap:4px;">
+            <img class="bcLogoImg" src="" style="display:none; max-width:60px; max-height:30px; object-fit:contain;">
+            <div class="bcTeamEl" style="font-size:20px; font-weight:800; letter-spacing:2px; color:#475569; text-transform:uppercase;"></div>
           </div>
-          <div style="position:absolute; top:45%; left:28px; transform:translateY(-50%);">
-            <div class="bcNameEl" style="font-size:18px; font-weight:600; letter-spacing:2px; color:#1e293b; font-family:serif;"></div>
-            <div class="bcRoleEl" style="font-size:10px; font-weight:700; color:#64748b; margin-top:2px;"></div>
+          <div style="position:absolute; top:45%; left:24px; transform:translateY(-50%);">
+            <div class="bcNameEl" style="font-size:32px; font-weight:600; letter-spacing:2px; color:#1e293b; font-family:serif;"></div>
+            <div class="bcRoleEl" style="font-size:20px; font-weight:700; color:#64748b; margin-top:4px;"></div>
           </div>
-          <div style="position:absolute; top:60%; left:28px; right:28px; height:1px; background:#cbd5e1;"></div>
-          <div style="position:absolute; top:calc(60% + 12px); left:28px; display:flex; flex-direction:column; gap:4px;">
-            <div class="bcTeamEl" style="font-size:10px; font-weight:800; color:#334155;"></div>
+          <div style="position:absolute; top:65%; left:24px; right:24px; height:1px; background:#cbd5e1;"></div>
+          <div style="position:absolute; top:calc(65% + 10px); left:24px; display:flex; flex-direction:column; gap:6px;">
+            <div class="bcTeamEl" style="font-size:20px; font-weight:800; color:#334155;"></div>
             <div class="bcAddrWrap" style="display:none;">
-              <div class="bcAddrEl" style="font-size:9px; font-weight:500; color:#64748b; max-width:180px; line-height:1.3;"></div>
+              <div class="bcAddrEl" style="font-size:16px; font-weight:500; color:#64748b; max-width:240px; line-height:1.3;"></div>
             </div>
           </div>
-          <div style="position:absolute; top:calc(60% + 12px); right:28px; display:flex; flex-direction:column; gap:4px;">
-            <div style="display:flex; gap:6px;">
-              <span style="font-size:9px; font-weight:800; color:#334155;">P:</span>
-              <div class="bcPhoneEl" style="font-size:9px; font-weight:500; color:#64748b;"></div>
+          <div style="position:absolute; top:calc(65% + 10px); right:24px; display:flex; flex-direction:column; gap:6px;">
+            <div style="display:flex; gap:8px;">
+              <span style="font-size:16px; font-weight:800; color:#334155;">P:</span>
+              <div class="bcPhoneEl" style="font-size:16px; font-weight:500; color:#64748b;"></div>
+            </div>
+            <div class="bcEmailWrap" style="display:none; gap:8px;">
+              <span style="font-size:16px; font-weight:800; color:#334155;">E:</span>
+              <div class="bcEmailEl" style="font-size:16px; font-weight:500; color:#64748b;"></div>
             </div>
           </div>
         </div>
-
+        
         <!-- Template D: 모던심플 -->
         <div id="bcTemplateD" style="display:none; position:relative; width:100%; aspect-ratio:1.8; border-radius:10px; background:#f4f4f5; color:#27272a; box-shadow:0 10px 25px rgba(0,0,0,0.1); border:1px solid #e4e4e7; overflow:hidden;">
-          <div style="position:absolute; top:24px; right:32px; display:flex; flex-direction:column; align-items:center; gap:4px;">
-            <div style="width:32px; height:32px; border:2px solid #27272a; display:flex; justify-content:center; align-items:center; background:transparent;">
-              <img class="bcLogoImg" src="" style="display:none; max-width:24px; max-height:24px; object-fit:contain;">
-              <span class="bcTeamFirstLetter" style="font-size:16px; font-weight:900;"></span>
+          <div style="position:absolute; top:16px; right:24px; display:flex; flex-direction:column; align-items:center; gap:4px;">
+            <div style="width:48px; height:48px; border:2px solid #27272a; display:flex; justify-content:center; align-items:center; background:transparent;">
+              <img class="bcLogoImg" src="" style="display:none; max-width:36px; max-height:36px; object-fit:contain;">
+              <span class="bcTeamFirstLetter" style="font-size:28px; font-weight:900;"></span>
             </div>
-            <div class="bcTeamEl" style="font-size:8px; font-weight:800; letter-spacing:2px; text-transform:uppercase;"></div>
+            <div class="bcTeamEl" style="font-size:14px; font-weight:800; letter-spacing:2px; text-transform:uppercase;"></div>
           </div>
-          <div style="position:absolute; top:35%; left:32px;">
-            <div class="bcNameEl" style="font-size:22px; font-weight:300; letter-spacing:-0.5px;"></div>
-            <div class="bcRoleEl" style="font-size:10px; font-weight:600; color:#52525b; margin-top:2px;"></div>
-            <div style="width:24px; height:2px; background:#27272a; margin-top:10px;"></div>
+          <div style="position:absolute; top:35%; left:24px;">
+            <div class="bcNameEl" style="font-size:36px; font-weight:300; letter-spacing:-0.5px;"></div>
+            <div class="bcRoleEl" style="font-size:20px; font-weight:600; color:#52525b; margin-top:4px;"></div>
+            <div style="width:36px; height:3px; background:#27272a; margin-top:12px;"></div>
           </div>
-          <div style="position:absolute; bottom:24px; left:32px; display:flex; flex-direction:column; gap:5px;">
-            <div style="display:flex; gap:6px;">
-              <span style="font-size:9px; font-weight:800; color:#27272a;">P:</span>
-              <div class="bcPhoneEl" style="font-size:9px; font-weight:600; color:#52525b;"></div>
+          <div style="position:absolute; bottom:16px; left:24px; display:flex; flex-direction:column; gap:6px;">
+            <div style="display:flex; gap:8px;">
+              <span style="font-size:16px; font-weight:800; color:#27272a;">P:</span>
+              <div class="bcPhoneEl" style="font-size:16px; font-weight:600; color:#52525b;"></div>
             </div>
-            <div class="bcAddrWrap" style="display:none; gap:6px; margin-top:2px;">
-              <div class="bcAddrEl" style="font-size:9px; font-weight:600; color:#52525b; max-width:240px; line-height:1.3;"></div>
+            <div class="bcEmailWrap" style="display:none; gap:8px;">
+              <span style="font-size:16px; font-weight:800; color:#27272a;">E:</span>
+              <div class="bcEmailEl" style="font-size:16px; font-weight:600; color:#52525b;"></div>
+            </div>
+            <div class="bcAddrWrap" style="display:none; gap:8px;">
+              <div class="bcAddrEl" style="font-size:16px; font-weight:600; color:#52525b; max-width:85%; line-height:1.3;"></div>
             </div>
           </div>
         </div>
-
+        
         <!-- Template E: 버티컬 -->
         <div id="bcTemplateE" style="display:none; position:relative; width:100%; aspect-ratio:1.8; border-radius:10px; background:#ffffff; color:#3f3f46; box-shadow:0 10px 25px rgba(0,0,0,0.08); border:1px solid #f4f4f5; overflow:hidden;">
-          <div style="position:absolute; top:45%; left:50%; transform:translate(-50%, -50%); display:flex; align-items:center; gap:20px; width:80%;">
+          <div style="position:absolute; top:40%; left:50%; transform:translate(-50%, -50%); display:flex; align-items:center; gap:24px; width:90%;">
             <div style="flex:1; text-align:right;">
-              <div class="bcNameEl" style="font-size:20px; font-weight:800; letter-spacing:1px; color:#27272a;"></div>
-              <div class="bcRoleEl" style="font-size:10px; font-weight:600; color:#71717a; letter-spacing:1px; margin-top:2px;"></div>
+              <div class="bcNameEl" style="font-size:36px; font-weight:800; letter-spacing:1px; color:#27272a;"></div>
+              <div class="bcRoleEl" style="font-size:20px; font-weight:600; color:#71717a; letter-spacing:1px; margin-top:4px;"></div>
             </div>
-            <div style="width:1px; height:40px; background:#d4d4d8;"></div>
-            <div style="flex:1; display:flex; flex-direction:column; gap:6px;">
-              <div style="display:flex; align-items:center; gap:6px;">
-                <svg style="width:10px; fill:#52525b;" viewBox="0 0 512 512"><path d="M164.9 24.6c-7.7-18.6-28-28.5-47.4-23.2l-88 24C12.1 30.2 0 46 0 64C0 311.4 200.6 512 448 512c18 0 33.8-12.1 38.6-29.5l24-88c5.3-19.4-4.6-39.7-23.2-47.4l-96-40c-16.3-6.8-35.2-2.1-46.3 11.6L304.7 368C234.3 334.7 177.3 277.7 144 207.3L193.3 167c13.7-11.2 18.4-30 11.6-46.3l-40-96z"/></svg>
-                <div class="bcPhoneEl" style="font-size:10px; font-weight:600; color:#3f3f46;"></div>
+            <div style="width:2px; height:60px; background:#d4d4d8;"></div>
+            <div style="flex:1; display:flex; flex-direction:column; gap:10px;">
+              <div style="display:flex; align-items:center; gap:8px;">
+                <svg style="width:16px; fill:#52525b;" viewBox="0 0 512 512"><path d="M164.9 24.6c-7.7-18.6-28-28.5-47.4-23.2l-88 24C12.1 30.2 0 46 0 64C0 311.4 200.6 512 448 512c18 0 33.8-12.1 38.6-29.5l24-88c5.3-19.4-4.6-39.7-23.2-47.4l-96-40c-16.3-6.8-35.2-2.1-46.3 11.6L304.7 368C234.3 334.7 177.3 277.7 144 207.3L193.3 167c13.7-11.2 18.4-30 11.6-46.3l-40-96z"/></svg>
+                <div class="bcPhoneEl" style="font-size:18px; font-weight:600; color:#3f3f46;"></div>
               </div>
-              <div style="display:flex; align-items:center; gap:6px;">
-                <svg style="width:10px; fill:#52525b;" viewBox="0 0 512 512"><path d="M384 48H128c-26.5 0-48 21.5-48 48v320c0 26.5 21.5 48 48 48h256c26.5 0 48-21.5 48-48V96c0-26.5-21.5-48-48-48zm-128 368c-17.7 0-32-14.3-32-32s14.3-32 32-32 32 14.3 32 32-14.3 32-32 32zm128-112H128V96h256v208z"/></svg>
-                <div class="bcTeamEl" style="font-size:10px; font-weight:600; color:#3f3f46;"></div>
+              <div class="bcEmailWrap" style="display:none; align-items:center; gap:8px;">
+                <svg style="width:16px; fill:#52525b;" viewBox="0 0 512 512"><path d="M48 64C21.5 64 0 85.5 0 112c0 15.1 7.1 29.3 19.2 38.4L236.8 313.6c11.4 8.5 27 8.5 38.4 0L492.8 150.4c12.1-9.1 19.2-23.3 19.2-38.4c0-26.5-21.5-48-48-48H48zM0 176V384c0 35.3 28.7 64 64 64H448c35.3 0 64-28.7 64-64V176L294.4 339.2c-22.8 17.1-54 17.1-76.8 0L0 176z"/></svg>
+                <div class="bcEmailEl" style="font-size:18px; font-weight:600; color:#3f3f46;"></div>
+              </div>
+              <div style="display:flex; align-items:center; gap:8px;">
+                <svg style="width:16px; fill:#52525b;" viewBox="0 0 512 512"><path d="M384 48H128c-26.5 0-48 21.5-48 48v320c0 26.5 21.5 48 48 48h256c26.5 0 48-21.5 48-48V96c0-26.5-21.5-48-48-48zm-128 368c-17.7 0-32-14.3-32-32s14.3-32 32-32 32 14.3 32 32-14.3 32-32 32zm128-112H128V96h256v208z"/></svg>
+                <div class="bcTeamEl" style="font-size:18px; font-weight:600; color:#3f3f46;"></div>
               </div>
             </div>
           </div>
-          <div class="bcAddrWrap" style="position:absolute; bottom:24px; left:0; width:100%; display:none; justify-content:center; align-items:center; gap:6px;">
-            <svg style="width:10px; fill:#52525b;" viewBox="0 0 384 512"><path d="M215.7 499.2C267 435 384 279.4 384 192C384 86 298 0 192 0S0 86 0 192c0 87.4 117 243 168.3 307.2c12.3 15.3 35.1 15.3 47.4 0zM192 128a64 64 0 1 1 0 128 64 64 0 1 1 0-128z"/></svg>
-            <div class="bcAddrEl" style="font-size:9px; font-weight:600; color:#52525b; letter-spacing:1px; max-width:80%; text-align:center;"></div>
+          <div class="bcAddrWrap" style="position:absolute; bottom:16px; left:0; width:100%; display:none; justify-content:center; align-items:center; gap:8px;">
+            <svg style="width:16px; fill:#52525b;" viewBox="0 0 384 512"><path d="M215.7 499.2C267 435 384 279.4 384 192C384 86 298 0 192 0S0 86 0 192c0 87.4 117 243 168.3 307.2c12.3 15.3 35.1 15.3 47.4 0zM192 128a64 64 0 1 1 0 128 64 64 0 1 1 0-128z"/></svg>
+            <div class="bcAddrEl" style="font-size:16px; font-weight:600; color:#52525b; letter-spacing:1px; max-width:80%; text-align:center;"></div>
           </div>
         </div>
-
+        
         <!-- Template F: 프리미엄 -->
         <div id="bcTemplateF" style="display:none; position:relative; width:100%; aspect-ratio:1.8; border-radius:10px; background:#18181b; color:#e4e4e7; box-shadow:0 10px 25px rgba(0,0,0,0.25); overflow:hidden;">
-          <div style="position:absolute; top:0; left:0; right:0; height:3px; background:#d4af37;"></div>
-          <div style="position:absolute; top:24px; right:24px; display:flex; align-items:center; gap:8px;">
-            <div class="bcTeamEl" style="font-size:12px; font-weight:800; color:#d4af37; letter-spacing:2px; text-transform:uppercase;"></div>
-            <img class="bcLogoImg" src="" style="display:none; max-width:40px; max-height:20px; object-fit:contain;">
+          <div style="position:absolute; top:0; left:0; right:0; height:4px; background:#d4af37;"></div>
+          <div style="position:absolute; top:16px; right:20px; display:flex; align-items:center; gap:10px;">
+            <div class="bcTeamEl" style="font-size:20px; font-weight:800; color:#d4af37; letter-spacing:2px; text-transform:uppercase;"></div>
+            <img class="bcLogoImg" src="" style="display:none; max-width:60px; max-height:30px; object-fit:contain;">
           </div>
-          <div style="position:absolute; top:50%; left:28px; transform:translateY(-50%);">
-            <div class="bcNameEl" style="font-size:22px; font-weight:800; letter-spacing:2px; color:#ffffff;"></div>
-            <div class="bcRoleEl" style="font-size:11px; font-weight:600; color:#a1a1aa; margin-top:4px;"></div>
+          <div style="position:absolute; top:45%; left:24px; transform:translateY(-50%);">
+            <div class="bcNameEl" style="font-size:36px; font-weight:800; letter-spacing:2px; color:#ffffff;"></div>
+            <div class="bcRoleEl" style="font-size:20px; font-weight:600; color:#a1a1aa; margin-top:4px;"></div>
           </div>
-          <div style="position:absolute; bottom:24px; left:28px; display:flex; flex-direction:column; gap:5px;">
-            <div style="display:flex; gap:6px;">
-              <span style="font-size:10px; font-weight:800; color:#d4af37;">T.</span>
-              <div class="bcPhoneEl" style="font-size:10px; font-weight:500; color:#e4e4e7;"></div>
+          <div style="position:absolute; bottom:16px; left:24px; display:flex; flex-direction:column; gap:6px;">
+            <div style="display:flex; gap:8px;">
+              <span style="font-size:16px; font-weight:800; color:#d4af37;">T.</span>
+              <div class="bcPhoneEl" style="font-size:18px; font-weight:500; color:#e4e4e7;"></div>
             </div>
-            <div class="bcAddrWrap" style="display:none; gap:6px;">
-              <span style="font-size:10px; font-weight:800; color:#d4af37;">A.</span>
-              <div class="bcAddrEl" style="font-size:10px; font-weight:500; color:#e4e4e7; max-width:240px; line-height:1.3;"></div>
+            <div class="bcEmailWrap" style="display:none; gap:8px;">
+              <span style="font-size:16px; font-weight:800; color:#d4af37;">E.</span>
+              <div class="bcEmailEl" style="font-size:18px; font-weight:500; color:#e4e4e7;"></div>
+            </div>
+            <div class="bcAddrWrap" style="display:none; gap:8px;">
+              <span style="font-size:16px; font-weight:800; color:#d4af37;">A.</span>
+              <div class="bcAddrEl" style="font-size:18px; font-weight:500; color:#e4e4e7; max-width:85%; line-height:1.3;"></div>
             </div>
           </div>
         </div>
@@ -360,10 +388,16 @@
     var bRoleInfo = document.getElementById('bcRoleInput');
     var bNameInfo = document.getElementById('bcNameInput');
     var bPhoneInfo = document.getElementById('bcPhoneInput');
+    var bEmailInfo = document.getElementById('bcEmailInput');
     var logoInput = document.getElementById('bcLogoInput');
     
     if(!bTeamInfo || bTeamInfo.dataset.initialized) return;
     bTeamInfo.dataset.initialized = 'true';
+
+    // 전화번호 폼 초기 자동 하이픈 포맷 적용
+    if(bPhoneInfo && bPhoneInfo.value) {
+      autoFormatPhone(bPhoneInfo);
+    }
 
     function updateAll() {
       if(!bTeamInfo) return;
@@ -371,6 +405,7 @@
       var roleVal = bRoleInfo.value || '직책';
       var nameVal = bNameInfo.value || '일잘러';
       var phoneVal = bPhoneInfo.value || '전화번호';
+      var emailVal = bEmailInfo ? bEmailInfo.value : '';
       var addrVal = [document.getElementById('bcAddressInput').value, document.getElementById('bcAddressDetailInput').value].filter(function(v){return v.trim();}).join(' ');
 
       // 모든 템플릿 한번에 업데이트
@@ -378,6 +413,10 @@
       document.querySelectorAll('.bcRoleEl').forEach(function(el){ el.textContent = roleVal; });
       document.querySelectorAll('.bcPhoneEl').forEach(function(el){ el.textContent = phoneVal; });
       
+      document.querySelectorAll('.bcEmailWrap').forEach(function(el){ el.style.display = emailVal ? 'flex' : 'none'; });
+      document.querySelectorAll('.bcEmailIcon').forEach(function(el){ el.style.display = emailVal ? 'flex' : 'none'; });
+      document.querySelectorAll('.bcEmailEl').forEach(function(el){ el.textContent = emailVal; });
+
       document.querySelectorAll('.bcNameEl').forEach(function(el){
         el.textContent = nameVal;
       });
@@ -417,6 +456,7 @@
     bRoleInfo.addEventListener('input', updateAll);
     bNameInfo.addEventListener('input', updateAll);
     bPhoneInfo.addEventListener('input', updateAll);
+    if(bEmailInfo) bEmailInfo.addEventListener('input', updateAll);
     document.getElementById('bcAddressInput').addEventListener('input', updateAll);
     document.getElementById('bcAddressDetailInput').addEventListener('input', updateAll);
     updateAll();
@@ -430,6 +470,7 @@
     role: "<%= j current_user.role.to_s %>",
     name: "<%= j current_user.name.to_s %>",
     phone: "<%= j current_user.phone.to_s %>",
+    email: "<%= j current_user.email.to_s %>",
     address: "<%= j current_user.address.to_s %>"
   };
 
@@ -439,6 +480,7 @@
       document.getElementById('bcRoleInput').value !== originalData.role ||
       document.getElementById('bcNameInput').value !== originalData.name ||
       document.getElementById('bcPhoneInput').value !== originalData.phone ||
+      document.getElementById('bcEmailInput').value !== originalData.email ||
       document.getElementById('bcAddressInput').value !== originalData.address
     );
 
@@ -463,6 +505,7 @@
         originalData.role = document.getElementById('bcRoleInput').value;
         originalData.name = document.getElementById('bcNameInput').value;
         originalData.phone = document.getElementById('bcPhoneInput').value;
+        originalData.email = document.getElementById('bcEmailInput').value;
         originalData.address = [document.getElementById('bcAddressInput').value, document.getElementById('bcAddressDetailInput').value].filter(function(v){return v.trim();}).join(' ');
       }
       
@@ -479,6 +522,7 @@
       formData.append('user[role]', document.getElementById('bcRoleInput').value);
       formData.append('user[name]', document.getElementById('bcNameInput').value);
       formData.append('user[phone]', document.getElementById('bcPhoneInput').value);
+      formData.append('user[email]', document.getElementById('bcEmailInput').value);
       formData.append('user[address]', [document.getElementById('bcAddressInput').value, document.getElementById('bcAddressDetailInput').value].filter(function(v){return v.trim();}).join(' '));
       formData.append('business_card_base64_direct', canvas.toDataURL('image/png'));
       
