@@ -49,9 +49,10 @@
           <div class="field-label">현장명</div>
           <div class="field-value"><%= @project.client_name.presence || @project.project_name %></div>
         </div>
+<% dates_str = @project.project_schedules.order(:work_date).pluck(:work_date).map { |d| "#{d.month}/#{d.day}" }.join(', ') %>
         <div class="field">
           <div class="field-label">일정</div>
-          <div class="field-value"><%= @project.start_date %> ~ <%= @project.end_date %></div>
+          <div class="field-value"><%= dates_str.presence || "#{@project.start_date} ~ #{@project.end_date}" %></div>
         </div>
         <div class="field">
           <div class="field-label">주소</div>
@@ -85,10 +86,12 @@
         project_name = @project.client_name.presence || @project.project_name
         
         query_params = {
+          auto_register: "true",
           client_name: team_leader_name,
           project_name: project_name,
           start_date: @project.start_date,
           end_date: @project.end_date,
+          dates: @project.project_schedules.order(:work_date).pluck(:work_date).map(&:to_s).join(','),
           address: @project.address
         }
         query_params[:common_entrance_password] = @project.common_entrance_password if @project.common_entrance_password.present?

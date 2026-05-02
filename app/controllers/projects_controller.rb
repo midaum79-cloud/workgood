@@ -431,6 +431,40 @@ class ProjectsController < ApplicationController
   end
 
   def new
+    if params[:auto_register] == 'true'
+      color_palette = %w[blue orange green red purple pink sky yellow teal indigo]
+      project_count = current_user.projects.count
+
+      @project = Project.new(
+        user: current_user,
+        client_name: params[:client_name] || params[:project_name] || "공유받은 현장",
+        project_name: params[:project_name] || params[:client_name] || "공유받은 현장",
+        start_date: params[:start_date],
+        end_date: params[:end_date],
+        address: params[:address],
+        common_entrance_password: params[:common_entrance_password],
+        private_entrance_password: params[:private_entrance_password],
+        memo: params[:memo],
+        status: "예정",
+        payment_status: "미결제",
+        color: color_palette[project_count % color_palette.size]
+      )
+
+      if @project.save
+        if params[:dates].present?
+          params[:dates].split(',').each do |d|
+            @project.project_schedules.create(work_date: d.strip) rescue nil
+          end
+        elsif @project.start_date && @project.end_date
+          (@project.start_date..@project.end_date).each do |d|
+            @project.project_schedules.create(work_date: d) rescue nil
+          end
+        end
+        redirect_to @project, notice: "공유받은 일정이 내 캘린더에 자동 등록되었습니다! 🎉"
+        return
+      end
+    end
+
     @project = Project.new
     @project.client_name = params[:client_name] if params[:client_name].present?
     @project.project_name = params[:project_name] if params[:project_name].present?
