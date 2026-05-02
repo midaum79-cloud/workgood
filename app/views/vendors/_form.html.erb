@@ -153,12 +153,11 @@
             if (isCapacitor || ('contacts' in navigator && 'ContactsManager' in window)) {
               importBtn.style.display = 'block';
               importBtn.addEventListener('click', async function() {
-                if (isCapacitor) {
+                if (isCapacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.Contacts) {
                   try {
-                    const Contacts = window.Capacitor.registerPlugin('Contacts');
-                    const permission = await Contacts.requestPermissions();
+                    const permission = await window.Capacitor.Plugins.Contacts.requestPermissions();
                     if (permission.contacts === 'granted') {
-                      const result = await Contacts.pickContact({ projection: { name: true, phones: true } });
+                      const result = await window.Capacitor.Plugins.Contacts.pickContact({ projection: { name: true, phones: true } });
                       if (result && result.contact) {
                         const contact = result.contact;
                         if (contact.phones && contact.phones.length > 0) {
