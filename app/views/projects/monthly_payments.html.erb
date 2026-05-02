@@ -34,46 +34,19 @@
 
   <%# 기간 선택 %>
   <div style="background:white; padding:14px 16px; border-bottom:1px solid #f3f4f6;">
-    <!-- Flatpickr (Custom Date Picker) -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
-    <script src="https://npmcdn.com/flatpickr/dist/l10n/ko.js"></script>
-    
     <form action="<%= monthly_payments_projects_path %>" method="get" style="display:flex; flex-direction:column; gap:10px;">
       <input type="hidden" name="tab" id="form_tab_input" value="<%= params[:tab] || 'stats' %>">
       <div style="display:flex; gap:8px; align-items:center;">
-        <input type="text" name="start_date" id="start_date_picker" value="<%= @start_date %>"
-          style="flex:1; width:100%; padding:10px 12px; border:1px solid #dcdfe4; border-radius:10px; font-size:14px; box-sizing:border-box; background:white; color:#111827;" readonly>
+        <input type="date" name="start_date" id="start_date_picker" value="<%= @start_date %>" lang="ko-KR"
+          style="flex:1; width:100%; padding:10px 12px; border:1px solid #dcdfe4; border-radius:10px; font-size:14px; box-sizing:border-box; background:white; color:#111827;">
         <span style="color:#9ca3af; font-weight:700; flex-shrink:0;">~</span>
-        <input type="text" name="end_date" id="end_date_picker" value="<%= @end_date %>"
-          style="flex:1; width:100%; padding:10px 12px; border:1px solid #dcdfe4; border-radius:10px; font-size:14px; box-sizing:border-box; background:white; color:#111827;" readonly>
+        <input type="date" name="end_date" id="end_date_picker" value="<%= @end_date %>" lang="ko-KR"
+          style="flex:1; width:100%; padding:10px 12px; border:1px solid #dcdfe4; border-radius:10px; font-size:14px; box-sizing:border-box; background:white; color:#111827;">
       </div>
       <button type="submit" style="width:100%; padding:12px; border:none; border-radius:10px; background:#2563eb; color:white; font-size:14px; font-weight:900; cursor:pointer; text-align:center;">
         조회
       </button>
     </form>
-
-    <script>
-      document.addEventListener('turbo:load', function() {
-        if (typeof flatpickr !== 'undefined') {
-          flatpickr("#start_date_picker", {
-            locale: "ko",
-            dateFormat: "Y-m-d",
-            disableMobile: true // 네이티브 모바일 피커 대신 커스텀 UI 사용
-          });
-          flatpickr("#end_date_picker", {
-            locale: "ko",
-            dateFormat: "Y-m-d",
-            disableMobile: true
-          });
-        }
-      });
-      // 초기 로드 시에도 실행
-      if (typeof flatpickr !== 'undefined') {
-        flatpickr("#start_date_picker", { locale: "ko", dateFormat: "Y-m-d", disableMobile: true });
-        flatpickr("#end_date_picker", { locale: "ko", dateFormat: "Y-m-d", disableMobile: true });
-      }
-    </script>
   </div>
 
   <%# ===== 탭 1: 수입통계 ===== %>
