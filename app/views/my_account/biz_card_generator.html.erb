@@ -173,21 +173,24 @@
             <div class="bcTeamEl" style="font-size:9px; font-weight:800; letter-spacing:2px; text-transform:uppercase;"></div>
           </div>
           <div style="position:absolute; top:35%; left:24px;">
-            <div class="bcNameEl" style="font-size:24px; font-weight:300; letter-spacing:-0.5px;"></div>
-            <div class="bcRoleEl" style="font-size:11px; font-weight:600; color:#52525b; margin-top:4px;"></div>
+            <div style="display:flex; align-items:baseline; gap:8px;">
+              <div class="bcNameEl" style="font-size:24px; font-weight:300; letter-spacing:-0.5px;"></div>
+              <div class="bcRoleEl" style="font-size:11px; font-weight:600; color:#52525b;"></div>
+            </div>
             <div style="width:36px; height:3px; background:#27272a; margin-top:12px;"></div>
           </div>
-          <div style="position:absolute; bottom:16px; left:24px; display:flex; flex-direction:column; gap:6px;">
-            <div style="display:flex; gap:8px;">
+          <div style="position:absolute; bottom:16px; left:24px; right:24px; display:flex; flex-direction:column; gap:6px;">
+            <div style="display:flex; align-items:center; gap:8px;">
               <span style="font-size:10px; font-weight:800; color:#27272a;">P:</span>
               <div class="bcPhoneEl" style="font-size:10px; font-weight:600; color:#52525b;"></div>
             </div>
-            <div class="bcEmailWrap" style="display:none; gap:8px;">
+            <div class="bcEmailWrap" style="display:none; align-items:center; gap:8px;">
               <span style="font-size:10px; font-weight:800; color:#27272a;">E:</span>
               <div class="bcEmailEl" style="font-size:10px; font-weight:600; color:#52525b;"></div>
             </div>
-            <div class="bcAddrWrap" style="display:none; gap:8px;">
-              <div class="bcAddrEl" style="font-size:10px; font-weight:600; color:#52525b; max-width:85%; line-height:1.3;"></div>
+            <div class="bcAddrWrap" style="display:none; align-items:center; gap:8px; width:100%;">
+              <span style="font-size:10px; font-weight:800; color:#27272a;">A:</span>
+              <div class="bcAddrEl" style="font-size:10px; font-weight:600; color:#52525b; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;"></div>
             </div>
           </div>
         </div>
