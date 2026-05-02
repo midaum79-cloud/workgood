@@ -284,19 +284,29 @@
 
 <script>
   async function shareImage(filename, title, text) {
+    const shareUrl = 'https://workgood.co.kr/d/<%= current_user.document_share_token %>?docs=card';
     try {
-      if (navigator.share) {
+      if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.Share) {
+        await window.Capacitor.Plugins.Share.share({
+          title: title,
+          text: text,
+          url: shareUrl,
+          dialogTitle: '명함 공유하기'
+        });
+      } else if (navigator.share) {
         await navigator.share({
           title: title,
           text: text,
-          url: 'https://workgood.co.kr/d/<%= current_user.document_share_token %>?docs=card'
+          url: shareUrl
         });
       } else {
         alert("현재 기기에서는 공유를 지원하지 않습니다.\n대신 '갤러리에 저장'을 이용해주세요.");
       }
     } catch (e) {
       console.error(e);
-      alert("공유 중 오류가 발생했습니다.");
+      if (e.name !== 'AbortError' && e.message !== 'Share canceled') {
+        alert("공유 중 오류가 발생했습니다.");
+      }
     }
   }
 

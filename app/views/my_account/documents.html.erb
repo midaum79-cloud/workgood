@@ -185,7 +185,17 @@
                 alert("복사 기능이 지원되지 않는 브라우저입니다.");
               }
             } else if (method === 'share') {
-              if (navigator.share) {
+              if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.Share) {
+                window.Capacitor.Plugins.Share.share({
+                  title: '일잘러 - 서류 안내',
+                  text: dynamicText,
+                  url: shareUrl,
+                  dialogTitle: '서류 공유하기'
+                }).then(() => {
+                  document.getElementById('shareModal').style.display='none';
+                  showShareSuccess('공유가');
+                }).catch((e) => {});
+              } else if (navigator.share) {
                 navigator.share({
                   title: '일잘러 - 서류 안내',
                   text: dynamicText,
