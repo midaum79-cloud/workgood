@@ -56,6 +56,22 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     }
 
     func application(_ app: UIApplication, open url: URL, options: [UIApplication.OpenURLOptionsKey: Any] = [:]) -> Bool {
+        // Handle workgood:// deep links natively
+        if url.scheme == "workgood" {
+            let targetPath = url.path.isEmpty ? "/" : url.path
+            var urlString = "https://workgood.co.kr" + targetPath
+            if let query = url.query {
+                urlString += "?" + query
+            }
+            if let targetUrl = URL(string: urlString) {
+                DispatchQueue.main.async {
+                    if let webView = self.findWebView(in: self.window) {
+                        webView.load(URLRequest(url: targetUrl))
+                    }
+                }
+            }
+        }
+        
         // Called when the app was launched with a url. Feel free to add additional processing here,
         // but if you want the App API to support tracking app url opens, make sure to keep this call
         return ApplicationDelegateProxy.shared.application(app, open: url, options: options)

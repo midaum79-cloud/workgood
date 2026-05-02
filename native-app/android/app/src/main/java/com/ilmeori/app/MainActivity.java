@@ -58,6 +58,20 @@ public class MainActivity extends BridgeActivity {
                 getBridge().getWebView().post(() -> {
                     getBridge().getWebView().loadUrl(loginUrl);
                 });
+            } else {
+                String targetPath = uri.getPath();
+                String query = uri.getQuery();
+                if (targetPath == null) targetPath = "";
+                
+                String fullUrl = SERVER_URL + targetPath;
+                if (query != null && !query.isEmpty()) {
+                    fullUrl += "?" + query;
+                }
+                
+                final String finalUrl = fullUrl;
+                getBridge().getWebView().post(() -> {
+                    getBridge().getWebView().loadUrl(finalUrl);
+                });
             }
         }
     }
