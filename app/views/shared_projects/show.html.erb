@@ -81,72 +81,7 @@
         <% end %>
       </div>
 
-      <%
-        team_leader_name = params[:s].presence || @team_leader.try(:name).presence || @team_leader.email.split('@').first
-        project_name = @project.client_name.presence || @project.project_name
-        
-        query_params = {
-          auto_register: "true",
-          client_name: team_leader_name,
-          project_name: project_name,
-          start_date: @project.start_date,
-          end_date: @project.end_date,
-          dates: @project.project_schedules.order(:work_date).pluck(:work_date).map(&:to_s).join(','),
-          address: @project.address
-        }
-        query_params[:common_entrance_password] = @project.common_entrance_password if @project.common_entrance_password.present?
-        query_params[:private_entrance_password] = @project.private_entrance_password if @project.private_entrance_password.present?
-        query_params[:memo] = @project.memo if @project.memo.present?
-        
-        query_string = query_params.to_query
-        web_link = new_project_url(query_params)
-        path_and_query = "projects/new?#{query_string}"
-        
-        android_intent = "intent://#{path_and_query}#Intent;scheme=workgood;package=com.workgood.mobile;end"
-        ios_scheme = "workgood://#{path_and_query}"
-      %>
-      <a href="javascript:void(0)" onclick="openNativeApp('<%= j(web_link) %>', '<%= j(android_intent) %>', '<%= j(ios_scheme) %>')" class="action-btn">
-        👉 내 캘린더에 일정 자동 등록하기
-      </a>
-      <div style="text-align: center; margin-top: 16px; font-size: 13px; color: #6b7280; font-weight: 700;">
-        (버튼 클릭 시 일잘러 앱이 바로 열립니다)
-      </div>
-      
-      <script>
-      function openNativeApp(webUrl, androidIntent, iosScheme) {
-        var ua = navigator.userAgent || navigator.vendor || window.opera;
-        var isCapacitor = !!(window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform());
 
-        if (isCapacitor) {
-          // 앱 내부에서는 딥링크(Intent/Scheme)를 호출하면 404(루프)가 발생할 수 있으므로 바로 웹 URL로 이동
-          window.location.href = webUrl;
-          return;
-        }
-
-        var isAndroid = /android/i.test(ua);
-        var isIOS = /iPad|iPhone|iPod/.test(ua) && !window.MSStream;
-
-        if (isAndroid) {
-          // 안드로이드는 Intent URI를 사용하면 앱이 없을 때 플레이스토어로 자동 이동함
-          window.location.href = androidIntent;
-        } else if (isIOS) {
-          // iOS는 커스텀 스킴 시도 후 실패하면 폴백 타이머 작동
-          window.location.href = iosScheme;
-          setTimeout(function() {
-            if (!document.hidden) {
-              if (confirm("일잘러 앱이 없거나 열 수 없습니다. 앱스토어로 이동하시겠습니까?\n(취소 시 웹에서 계속 진행합니다)")) {
-                window.location.href = "https://apps.apple.com/us/app/일잘러-공사-일정-관리-앱-매니저/id6761646076";
-              } else {
-                window.location.href = webUrl;
-              }
-            }
-          }, 1500);
-        } else {
-          // PC 등 기타 환경
-          window.location.href = webUrl;
-        }
-      }
-      </script>
     </div>
   </div>
 </body>
