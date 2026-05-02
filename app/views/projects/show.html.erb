@@ -145,7 +145,17 @@
       let textLines = [];
       textLines.push("[현장 정보 공유]");
       textLines.push("현장: <%= j(@project.client_name.presence || @project.project_name) %>");
-      textLines.push("일정: <%= @project.start_date %> ~ <%= @project.end_date %>");
+      
+      <% 
+        dates = @project.project_schedules.order(:work_date).pluck(:work_date)
+        if dates.any?
+          dates_str = dates.map { |d| d.strftime("%-m/%-d") }.join(", ")
+        else
+          dates_str = "#{@project.start_date} ~ #{@project.end_date}"
+        end
+      %>
+      textLines.push("일정: <%= dates_str %>");
+      
       textLines.push("주소: <%= j(@project.address) %>");
       <% if @project.common_entrance_password.present? %>
       textLines.push("공동현관: <%= j(@project.common_entrance_password) %>");
