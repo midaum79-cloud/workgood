@@ -178,8 +178,18 @@
 
       const shareText = textLines.join("\n");
 
+      // 네이티브 앱 공유 (Capacitor Share 플러그인)
+      if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.Share) {
+        window.Capacitor.Plugins.Share.share({
+          title: "현장 정보 공유",
+          text: shareText
+        }).catch(err => {
+          console.error("Capacitor Share failed:", err);
+          fallbackCopyTextToClipboard(shareText);
+        });
+      } 
       // 브라우저 네이티브 공유 API
-      if (navigator.share) {
+      else if (navigator.share) {
         navigator.share({
           text: shareText
         }).catch(err => {
