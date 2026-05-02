@@ -1,5 +1,5 @@
 class SharedProjectsController < ApplicationController
-  skip_before_action :require_login, only: [:show]
+
   layout false
 
   def show
