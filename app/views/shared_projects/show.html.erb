@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>[현장 공유] <%= @project.client_name.presence || @project.project_name %></title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0">
+  
+  <!-- Open Graph Tags for Kakao/Message Preview -->
+  <meta property="og:title" content="[현장 공유] <%= @project.client_name.presence || @project.project_name %>">
+  <meta property="og:description" content="일정: <%= @project.start_date %> ~ <%= @project.end_date %>\n주소: <%= @project.address.presence || '주소 미입력' %>">
+  <meta property="og:image" content="https://workgood.co.kr/logo.png">
+  <meta property="og:url" content="<%= request.original_url %>">
+  <meta property="og:type" content="website">
+
+  <style>
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #f5f5f5; margin: 0; padding: 0; color: #111827; }
+    .container { max-width: 500px; margin: 0 auto; min-height: 100vh; background: white; box-shadow: 0 0 20px rgba(0,0,0,0.05); }
+    .header { background: #111827; color: white; padding: 20px 20px 24px 20px; text-align: center; border-bottom-left-radius: 20px; border-bottom-right-radius: 20px;}
+    .header img { height: 44px; margin-bottom: 12px; }
+    .app-links { display: flex; gap: 10px; justify-content: center; padding: 16px; background: white; margin-top: 10px; }
+    .app-link-btn { flex: 1; padding: 14px; border-radius: 14px; text-align: center; font-size: 15px; font-weight: 800; text-decoration: none; display: flex; align-items: center; justify-content: center; gap: 6px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+    .ios-btn { background: #000; color: #fff; }
+    .android-btn { background: #10b981; color: #fff; }
+    .content { padding: 20px; }
+    .card { background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 16px; padding: 20px; margin-bottom: 24px; box-shadow: 0 2px 10px rgba(0,0,0,0.02); }
+    .field { margin-bottom: 18px; }
+    .field:last-child { margin-bottom: 0; }
+    .field-label { font-size: 13px; font-weight: 800; color: #6b7280; margin-bottom: 6px; }
+    .field-value { font-size: 16px; font-weight: 800; color: #111827; line-height: 1.5; word-break: break-word; }
+    .memo-value { font-size: 15px; font-weight: 700; color: #374151; white-space: pre-wrap; line-height: 1.6; background: white; padding: 16px; border-radius: 12px; border: 1px solid #e5e7eb; }
+    .action-btn { display: block; width: 100%; padding: 20px; text-align: center; background: #2563eb; color: white; border-radius: 16px; font-size: 18px; font-weight: 900; text-decoration: none; box-shadow: 0 4px 14px rgba(37,99,235,0.3); box-sizing: border-box; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <img src="/logo.png" alt="일잘러" onerror="this.style.display='none'">
+      <div style="font-size: 20px; font-weight: 900; letter-spacing: -0.5px;">현장 정보 및 일정 공유</div>
+      <div style="font-size: 14px; font-weight: 700; color: #9ca3af; margin-top: 8px;"><%= @team_leader.try(:name).presence || @team_leader.email.split("@").first %>님이 현장을 공유했습니다.</div>
+    </div>
+    
+    <div class="app-links">
+      <a href="https://apps.apple.com/kr/app/id6470000000" class="app-link-btn ios-btn" target="_blank">🍎 앱스토어</a>
+      <a href="https://play.google.com/store/apps/details?id=com.workgood.mobile" class="app-link-btn android-btn" target="_blank">🤖 구글 플레이</a>
+    </div>
+
+    <div class="content">
+      <div class="card">
+        <div class="field">
+          <div class="field-label">현장명</div>
+          <div class="field-value"><%= @project.client_name.presence || @project.project_name %></div>
+        </div>
+        <div class="field">
+          <div class="field-label">일정</div>
+          <div class="field-value"><%= @project.start_date %> ~ <%= @project.end_date %></div>
+        </div>
+        <div class="field">
+          <div class="field-label">주소</div>
+          <div class="field-value"><%= @project.address.presence || "주소 미입력" %></div>
+        </div>
+        
+        <% if @project.common_entrance_password.present? %>
+          <div class="field">
+            <div class="field-label">공동현관 비밀번호</div>
+            <div class="field-value">🏢 <%= @project.common_entrance_password %></div>
+          </div>
+        <% end %>
+        
+        <% if @project.private_entrance_password.present? %>
+          <div class="field">
+            <div class="field-label">호실현관 비밀번호</div>
+            <div class="field-value">🚪 <%= @project.private_entrance_password %></div>
+          </div>
+        <% end %>
+
+        <% if @project.memo.present? %>
+          <div class="field" style="margin-top: 24px;">
+            <div class="field-label">팀장 전달 메모</div>
+            <div class="memo-value"><%= @project.memo %></div>
+          </div>
+        <% end %>
+      </div>
+
+      <%
+        team_leader_name = @team_leader.try(:name).presence || @team_leader.email.split('@').first
+        project_name = @project.client_name.presence || @project.project_name
+        
+        query_params = {
+          client_name: team_leader_name,
+          project_name: project_name,
+          start_date: @project.start_date,
+          end_date: @project.end_date,
+          address: @project.address
+        }
+        query_params[:common_entrance_password] = @project.common_entrance_password if @project.common_entrance_password.present?
+        query_params[:private_entrance_password] = @project.private_entrance_password if @project.private_entrance_password.present?
+        query_params[:memo] = @project.memo if @project.memo.present?
+        
+        query_string = query_params.to_query
+        web_link = new_project_url(query_params)
+        path_and_query = "projects/new?#{query_string}"
+        
+        android_intent = "intent://#{path_and_query}#Intent;scheme=workgood;package=com.workgood.mobile;end"
+        ios_scheme = "일잘러://#{path_and_query}"
+      %>
+      <a href="javascript:void(0)" onclick="openNativeApp('<%= j(web_link) %>', '<%= j(android_intent) %>', '<%= j(ios_scheme) %>')" class="action-btn">
+        👉 내 캘린더에 일정 자동 등록하기
+      </a>
+      <div style="text-align: center; margin-top: 16px; font-size: 13px; color: #6b7280; font-weight: 700;">
+        (버튼 클릭 시 일잘러 앱이 바로 열립니다)
+      </div>
+      
+      <script>
+      function openNativeApp(webUrl, androidIntent, iosScheme) {
+        var ua = navigator.userAgent || navigator.vendor || window.opera;
+        var isAndroid = /android/i.test(ua);
+        var isIOS = /iPad|iPhone|iPod/.test(ua) && !window.MSStream;
+
+        if (isAndroid) {
+          // 안드로이드는 Intent URI를 사용하면 앱이 없을 때 플레이스토어로 자동 이동함
+          window.location.href = androidIntent;
+        } else if (isIOS) {
+          // iOS는 커스텀 스킴 시도 후 실패하면 폴백 타이머 작동
+          window.location.href = iosScheme;
+          setTimeout(function() {
+            if (!document.hidden) {
+              if (confirm("일잘러 앱이 없거나 열 수 없습니다. 앱스토어로 이동하시겠습니까?\\n(취소 시 웹에서 계속 진행합니다)")) {
+                window.location.href = "https://apps.apple.com/kr/app/id6470000000";
+              } else {
+                window.location.href = webUrl;
+              }
+            }
+          }, 1500);
+        } else {
+          // PC 등 기타 환경
+          window.location.href = webUrl;
+        }
+      }
+      </script>
+    </div>
+  </div>
+</body>
+</html>

@@ -21,6 +21,7 @@ Rails.application.routes.draw do
 
 
   get "/d/:token", to: "shared_documents#show", as: :shared_document
+  get "/s/:token", to: "shared_projects#show", as: :shared_project
 
   # 프리미엄: 세금 관리
   get  "tax_report",          to: "tax_reports#index",  as: :tax_report

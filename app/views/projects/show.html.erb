@@ -129,35 +129,14 @@
       textLines.push("<%= j(@project.memo) %>");
       <% end %>
 
-      // 일잘러 앱으로 일정 자동 등록하는 딥링크 생성
-      const teamLeaderName = "<%= j(current_user.try(:name).presence || current_user.email.split('@').first) %>";
-      const projectName = "<%= j(@project.client_name.presence || @project.project_name) %>";
-      
-      const baseUrl = window.location.origin + "/projects/new";
-      const queryParams = new URLSearchParams({
-        client_name: teamLeaderName,
-        project_name: projectName,
-        start_date: "<%= @project.start_date %>",
-        end_date: "<%= @project.end_date %>",
-        address: "<%= j(@project.address) %>"
-      });
-      <% if @project.common_entrance_password.present? %>
-      queryParams.append("common_entrance_password", "<%= j(@project.common_entrance_password) %>");
-      <% end %>
-      <% if @project.private_entrance_password.present? %>
-      queryParams.append("private_entrance_password", "<%= j(@project.private_entrance_password) %>");
-      <% end %>
-      <% if @project.memo.present? %>
-      queryParams.append("memo", "<%= j(@project.memo) %>");
-      <% end %>
-
-      const shareUrl = `${baseUrl}?${queryParams.toString()}`;
+      // 짧은 공유 링크 생성
+      const shortUrl = "<%= shared_project_url(@project.signed_id(purpose: :share_schedule)) rescue 'https://workgood.co.kr' %>";
 
       textLines.push("");
-      textLines.push("👉 내 일잘러 앱에 일정 자동 등록하기:");
-      textLines.push(shareUrl);
+      textLines.push("👉 현장정보 상세보기 & 일정 자동등록:");
+      textLines.push(shortUrl);
 
-      const shareText = textLines.join("\\n");
+      const shareText = textLines.join("\n");
 
       if (navigator.share) {
         navigator.share({
