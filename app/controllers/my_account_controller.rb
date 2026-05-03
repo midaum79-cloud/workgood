@@ -15,6 +15,15 @@ class MyAccountController < ApplicationController
     @view_mode = "drawer"
   end
 
+  def increment_document_scan
+    if current_user.premium? || current_user.subscription_plan == 'premium' || current_user.document_scans_count.to_i < 10
+      current_user.increment!(:document_scans_count)
+      render json: { success: true }
+    else
+      render json: { success: false, limit_reached: true }
+    end
+  end
+
   def update_documents
     user_params = params.fetch(:user, {}).permit(
       :business_card, :business_registration,

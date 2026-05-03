@@ -13,6 +13,7 @@ Rails.application.routes.draw do
   
   get "my_account/biz_card_generator", to: "my_account#biz_card_generator", as: :biz_card_generator
   get "my_account/document_scanner", to: "my_account#document_scanner", as: :document_scanner
+  post "my_account/increment_document_scan", to: "my_account#increment_document_scan", as: :increment_document_scan
   post "my_account/increment_biz_card_gen", to: "my_account#increment_biz_card_gen", as: :increment_biz_card_gen
   get "my_account/bank_card_generator", to: "my_account#bank_card_generator", as: :bank_card_generator
   post "my_account/increment_bank_card_gen", to: "my_account#increment_bank_card_gen", as: :increment_bank_card_gen
