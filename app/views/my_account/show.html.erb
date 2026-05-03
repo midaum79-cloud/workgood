@@ -66,9 +66,9 @@
     <%# Promo Code %>
     <div style="background:white; border-radius:20px; padding:18px; box-shadow:0 2px 8px rgba(0,0,0,0.02); margin-bottom:2px;">
       <div style="font-size:14px; font-weight:900; color:#111827; margin-bottom:12px;">🎁 프로모션 쿠폰 등록</div>
-      <%= form_with url: apply_promo_code_path, method: :post, local: true, style: "display:flex; gap:8px;" do |f| %>
-        <%= f.text_field :code, placeholder: "쿠폰 번호를 입력하세요", style: "flex:1; padding:12px; border:1px solid #e5e7eb; border-radius:12px; font-size:14px; font-weight:700; box-sizing:border-box;" %>
-        <button type="submit" style="padding:0 16px; background:#111827; color:white; border:none; border-radius:12px; font-size:13px; font-weight:800; cursor:pointer;">등록</button>
+      <%= form_with url: apply_promo_code_path, method: :post, local: true, style: "display:flex; gap:8px; width:100%; box-sizing:border-box;" do |f| %>
+        <%= f.text_field :code, placeholder: "쿠폰 번호를 입력하세요", style: "flex:1; min-width:0; padding:12px; border:1px solid #e5e7eb; border-radius:12px; font-size:14px; font-weight:700; box-sizing:border-box;" %>
+        <button type="submit" style="white-space:nowrap; padding:0 16px; background:#111827; color:white; border:none; border-radius:12px; font-size:13px; font-weight:800; cursor:pointer;">등록</button>
       <% end %>
     </div>
 
