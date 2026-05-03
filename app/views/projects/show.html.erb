@@ -234,35 +234,10 @@
       <div style="font-size:16px; font-weight:900; color:#111827; margin-bottom:14px;">💰 기본 기록 사항</div>
 
       <div style="display:flex; flex-direction:column; gap:10px;">
-        <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+        <div style="display:grid; grid-template-columns:1fr; gap:10px;">
           <div style="background:#f9fafb; border-radius:14px; padding:12px;">
             <div style="font-size:11px; font-weight:800; color:#6b7280; margin-bottom:4px;">견적금액</div>
             <div style="font-size:15px; font-weight:900; color:#111827;"><%= number_with_delimiter(@project.estimate_amount.to_i) %>원</div>
-          </div>
-          <div style="background:#f9fafb; border-radius:14px; padding:12px;">
-            <div style="font-size:11px; font-weight:800; color:#6b7280; margin-bottom:4px;">계약금</div>
-            <div style="font-size:15px; font-weight:900; color:#111827;"><%= number_with_delimiter(@project.deposit_amount.to_i) %>원</div>
-          </div>
-        </div>
-
-        <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
-          <div style="background:#f9fafb; border-radius:14px; padding:12px;">
-            <div style="font-size:11px; font-weight:800; color:#6b7280; margin-bottom:4px;">중도금</div>
-            <div style="font-size:15px; font-weight:900; color:#111827;"><%= number_with_delimiter(@project.mid_payment.to_i) %>원</div>
-          </div>
-          <div style="background:#f9fafb; border-radius:14px; padding:14px;">
-            <div style="font-size:12px; font-weight:800; color:#6b7280; margin-bottom:6px;">&nbsp;</div>
-            <div style="font-size:12px; font-weight:700; color:#9ca3af;">견적-계약금-중도금</div>
-          </div>
-        <% is_fully_paid = (@project.payment_status == '완납') %>
-        <% mathematical_balance = [@project.estimate_amount.to_i - @project.deposit_amount.to_i - @project.mid_payment.to_i, 0].max %>
-        <div style="background:#fff7ed; border:1px solid #fed7aa; border-radius:14px; padding:12px;">
-          <div style="font-size:12px; font-weight:800; color:#ea580c; margin-bottom:4px;">💰 잔금</div>
-          <div style="font-size:16px; font-weight:900; color:#ea580c;">
-             <%= number_with_delimiter(mathematical_balance) %>원
-             <% if is_fully_paid && mathematical_balance > 0 %>
-               <span style="font-size:12px; font-weight:700; color:#9ca3af; margin-left:4px;">(완납처리)</span>
-             <% end %>
           </div>
         </div>
 
@@ -281,9 +256,7 @@
           <div style="display:flex; flex-wrap:wrap; gap:6px;">
             <% show_options = [
               { label: '미결제', value: '미결제' },
-              { label: '계약금결제', value: '계약금결제' },
-              { label: '중도금결제', value: '중도금결제' },
-              { label: '잔금결제(완납)', value: '완납' }
+              { label: '완납', value: '완납' }
             ] %>
             <% show_options.each do |opt| %>
               <% is_active = (@project.payment_status == opt[:value]) %>

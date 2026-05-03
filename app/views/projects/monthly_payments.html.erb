@@ -71,7 +71,7 @@
       <div style="background:white; border-radius:16px; padding:16px; box-shadow:0 2px 8px rgba(0,0,0,0.05);">
         <div style="font-size:11px; font-weight:800; color:#16a34a; margin-bottom:6px;">✅ 총 수금액</div>
         <div style="font-size:20px; font-weight:900; color:#166534;"><%= number_with_delimiter(@total_collected) %>원</div>
-        <div style="font-size:11px; color:#9ca3af; margin-top:4px; font-weight:600;">계약금+중도금</div>
+        <div style="font-size:11px; color:#9ca3af; margin-top:4px; font-weight:600;">받은 돈 합계</div>
       </div>
       <div style="background:white; border-radius:16px; padding:16px; box-shadow:0 2px 8px rgba(0,0,0,0.05);">
         <div style="font-size:11px; font-weight:800; color:#dc2626; margin-bottom:6px;">⚠️ 미수금 합계</div>
@@ -80,21 +80,11 @@
       </div>
     </div>
 
-    <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px; margin-bottom:16px;">
+    <div style="display:grid; grid-template-columns:1fr; gap:8px; margin-bottom:16px;">
       <div style="background:white; border-radius:14px; padding:12px; text-align:center; box-shadow:0 2px 8px rgba(0,0,0,0.04);">
-        <div style="font-size:10px; font-weight:800; color:#6b7280; margin-bottom:4px;">계약금</div>
-        <div style="font-size:15px; font-weight:900; color:#374151;"><%= number_with_delimiter(@total_deposit) %></div>
-        <div style="font-size:10px; color:#9ca3af;">원</div>
-      </div>
-      <div style="background:white; border-radius:14px; padding:12px; text-align:center; box-shadow:0 2px 8px rgba(0,0,0,0.04);">
-        <div style="font-size:10px; font-weight:800; color:#6b7280; margin-bottom:4px;">중도금</div>
-        <div style="font-size:15px; font-weight:900; color:#374151;"><%= number_with_delimiter(@total_mid) %></div>
-        <div style="font-size:10px; color:#9ca3af;">원</div>
-      </div>
-      <div style="background:white; border-radius:14px; padding:12px; text-align:center; box-shadow:0 2px 8px rgba(0,0,0,0.04);">
-        <div style="font-size:10px; font-weight:800; color:#6b7280; margin-bottom:4px;">현장 수</div>
-        <div style="font-size:15px; font-weight:900; color:#374151;"><%= @projects.size %></div>
-        <div style="font-size:10px; color:#9ca3af;">개</div>
+        <div style="font-size:10px; font-weight:800; color:#6b7280; margin-bottom:4px;">해당 기간 총 현장 수</div>
+        <div style="font-size:20px; font-weight:900; color:#374151;"><%= @projects.size %></div>
+        <div style="font-size:11px; color:#9ca3af;">개 현장 진행</div>
       </div>
     </div>
 
@@ -160,10 +150,7 @@
               </div>
               <div style="display:flex; flex-direction:column; gap:4px; font-size:13px; font-weight:700;">
                 <div style="display:flex; justify-content:space-between; color:#374151;"><span>견적금액</span><span><%= number_with_delimiter(est) %>원</span></div>
-                <div style="display:flex; justify-content:space-between; color:#16a34a;"><span>계약금</span><span><%= number_with_delimiter(dep) %>원</span></div>
-                <% if mid > 0 %>
-                  <div style="display:flex; justify-content:space-between; color:#0891b2;"><span>중도금</span><span><%= number_with_delimiter(mid) %>원</span></div>
-                <% end %>
+                <div style="display:flex; justify-content:space-between; color:#16a34a;"><span>결제완료액</span><span><%= number_with_delimiter(dep + mid) %>원</span></div>
                 <% if out > 0 %>
                   <div style="display:flex; justify-content:space-between; color:#dc2626; font-weight:900;"><span>⚠️ 미수금</span><span><%= number_with_delimiter(out) %>원</span></div>
                 <% end %>

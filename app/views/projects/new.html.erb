@@ -153,42 +153,9 @@
           </div>
 
           <div>
-            <div style="font-size:13px; font-weight:800; color:#374151; margin-bottom:6px;">계약금</div>
-            <div style="position:relative;">
-              <%= form.text_field :deposit_amount,
-                  id: "new_deposit_amount",
-                  class: "amount-input",
-                  pattern: "[0-9,]*", inputmode: "numeric",
-                  placeholder: "계약금이 있다면 입력하세요",
-                  style: "width:100%; padding:14px 16px; border:1px solid #dcdfe4; border-radius:12px; font-size:16px; box-sizing:border-box; background:white;",
-                  value: @project.deposit_amount.present? ? number_with_delimiter(@project.deposit_amount) : "" %>
-              <span style="position:absolute; right:14px; top:50%; transform:translateY(-50%); font-size:14px; color:#9ca3af; font-weight:700;">원</span>
-            </div>
-          </div>
-
-          <div>
-            <div style="font-size:13px; font-weight:800; color:#374151; margin-bottom:6px;">중도금</div>
-            <div style="position:relative;">
-              <%= form.text_field :mid_payment,
-                  id: "new_mid_payment",
-                  class: "amount-input",
-                  pattern: "[0-9,]*", inputmode: "numeric",
-                  placeholder: "중도금이 있다면 입력하세요",
-                  style: "width:100%; padding:14px 16px; border:1px solid #dcdfe4; border-radius:12px; font-size:16px; box-sizing:border-box; background:white;",
-                  value: @project.mid_payment.present? ? number_with_delimiter(@project.mid_payment) : "" %>
-              <span style="position:absolute; right:14px; top:50%; transform:translateY(-50%); font-size:14px; color:#9ca3af; font-weight:700;">원</span>
-            </div>
-          </div>
-
-          <div style="background:#fff7ed; border:1px solid #fed7aa; border-radius:12px; padding:12px 14px; display:flex; justify-content:space-between; align-items:center;">
-            <div style="font-size:13px; font-weight:800; color:#ea580c;">💰 잔금</div>
-            <div id="new_balance_display" style="font-size:18px; font-weight:900; color:#ea580c;">0원</div>
-          </div>
-
-          <div>
             <div style="font-size:13px; font-weight:800; color:#374151; margin-bottom:6px;">결제여부</div>
             <div style="display:flex; gap:8px; overflow-x:auto; padding-bottom:4px; -webkit-overflow-scrolling:touch;">
-              <% ['미결제', '계약금결제', '중도금결제', '잔금결제', '완납'].each do |status| %>
+              <% ['미결제', '완납'].each do |status| %>
                 <label style="cursor:pointer;">
                   <%= form.radio_button :payment_status, status, style: "display:none;", id: "new_payment_status_#{status}" %>
                   <span onclick="this.previousElementSibling.click();"
@@ -979,23 +946,7 @@
     });
   });
 
-  // 잔금 자동 계산
-  function updateNewBalance() {
-    var est = parseInt((document.getElementById('new_estimate_amount').value || "0").replace(/,/g, '')) || 0;
-    var dep = parseInt((document.getElementById('new_deposit_amount').value || "0").replace(/,/g, '')) || 0;
-    var mid = parseInt((document.getElementById('new_mid_payment').value || "0").replace(/,/g, '')) || 0;
-    var bal = Math.max(est - dep - mid, 0);
 
-    var isFullyPaid = document.getElementById('new_payment_status_완납') && document.getElementById('new_payment_status_완납').checked;
-    if (isFullyPaid) {
-      bal = 0;
-    }
-
-    document.getElementById('new_balance_display').textContent = bal.toLocaleString() + '원';
-  }
-  document.getElementById('new_estimate_amount').addEventListener('input', updateNewBalance);
-  document.getElementById('new_deposit_amount').addEventListener('input', updateNewBalance);
-  document.getElementById('new_mid_payment').addEventListener('input', updateNewBalance);
 
   function previewNewPhotos(input) {
     var preview = document.getElementById('new-photo-preview');
