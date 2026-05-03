@@ -182,6 +182,7 @@ GEM
     hashie (5.1.0)
       logger
     hkdf (0.3.0)
+    holidays (9.2.0)
     httparty (0.24.2)
       csv
       mini_mime (>= 1.0.0)
@@ -513,6 +514,7 @@ DEPENDENCIES
   capybara
   debug
   gemini-ai (~> 4.3)
+  holidays (~> 9.2)
   httparty
   image_processing (~> 1.2)
   importmap-rails

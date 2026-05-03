@@ -80,3 +80,5 @@ gem "gemini-ai", "~> 4.3"
 # SEO
 gem "meta-tags"
 gem "sitemap_generator"
+
+gem "holidays", "~> 9.2"

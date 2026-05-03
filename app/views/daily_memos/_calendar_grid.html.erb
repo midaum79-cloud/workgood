@@ -5,9 +5,13 @@
       is_today = date == Date.today
       memo = @memos_by_date[date]
       
+      holidays = Holidays.on(date, :kr)
+      is_holiday = holidays.any?
+      holiday_name = holidays.first[:name] if is_holiday
+
       # 텍스트 컬러 지정
       text_color = if !is_current_month; '#d1d5db'
-                   elsif date.wday == 0; '#ef4444' # 일
+                   elsif date.wday == 0 || is_holiday; '#ef4444' # 일, 공휴일
                    elsif date.wday == 6; '#3b82f6' # 토
                    else; '#111827' end
       
@@ -17,9 +21,14 @@
     <%= link_to daily_memo_path(memo_date: date), style: "text-decoration:none; color:inherit; display:flex; flex-direction:column; align-items:center; background:#{bg_color}; border-right:#{date.wday == 6 ? 'none' : '1px solid #f0f0f0'}; border-bottom:1px solid #f0f0f0; padding:10px 2px; height:108px; position:relative;" do %>
       
       <!-- 날짜 번호 -->
-      <div style="font-size:18px; font-weight:900; margin-bottom:8px; color:<%= text_color %>;">
+      <div style="font-size:18px; font-weight:900; margin-bottom:2px; color:<%= text_color %>;">
         <%= date.day %>
       </div>
+      <% if is_holiday && is_current_month %>
+        <div style="font-size:8px; font-weight:800; color:#ef4444; text-align:center; margin-bottom:4px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
+          <%= holiday_name %>
+        </div>
+      <% end %>
       
       <!-- 메모 표시 영역 -->
       <% if memo.present? %>

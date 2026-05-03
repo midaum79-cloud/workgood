@@ -6,9 +6,13 @@
         <% is_today = (day == Date.current) %>
         <% day_projects = @projects_by_date[day] || [] %>
 
+        <% holidays = Holidays.on(day, :kr) %>
+        <% is_holiday = holidays.any? %>
+        <% holiday_name = holidays.first[:name] if is_holiday %>
+
         <% date_text_color = if !is_current_month
             '#9ca3af'
-          elsif day.sunday?
+          elsif day.sunday? || is_holiday
             '#ef4444'
           elsif day.saturday?
             '#3b82f6'
@@ -44,6 +48,11 @@
               background:<%= is_today ? '#f59e0b' : 'transparent' %>;
             "><%= format('%02d', day.day) %></span>
           </div>
+          <% if is_holiday && is_current_month %>
+            <div style="font-size:8px; font-weight:800; color:#ef4444; text-align:center; margin-top:-2px; margin-bottom:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
+              <%= holiday_name %>
+            </div>
+          <% end %>
 
           <% if is_current_month %>
             <% day_projects.each do |proj| %>
