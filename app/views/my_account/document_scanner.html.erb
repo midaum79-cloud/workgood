@@ -25,8 +25,11 @@
     <img id="scanResultImg" src="" style="width:100%; border-radius:12px; border:1px solid #e5e7eb; margin-bottom:16px;">
     
     <div style="display:flex; gap:10px;">
-      <button onclick="shareScannedImage()" style="flex:1; background:#6366f1; color:white; border:none; border-radius:12px; padding:14px; font-size:15px; font-weight:800; cursor:pointer; box-shadow:0 2px 8px rgba(99,102,241,0.2);">
+      <button onclick="shareScannedImage()" style="flex:2; background:#6366f1; color:white; border:none; border-radius:12px; padding:14px; font-size:15px; font-weight:800; cursor:pointer; box-shadow:0 2px 8px rgba(99,102,241,0.2);">
         공유 및 저장하기
+      </button>
+      <button onclick="deleteScannedImage()" style="flex:1; background:#ef4444; color:white; border:none; border-radius:12px; padding:14px; font-size:15px; font-weight:800; cursor:pointer; box-shadow:0 2px 8px rgba(239,68,68,0.2);">
+        삭제
       </button>
     </div>
   </div>
@@ -78,6 +81,14 @@
       }, 500);
     } catch (e) {
       console.error(e);
+    }
+  }
+
+  function deleteScannedImage() {
+    if (confirm("스캔한 이미지를 지우시겠습니까?")) {
+      document.getElementById('scanResultArea').style.display = 'none';
+      document.getElementById('scanResultImg').src = '';
+      lastScannedFilePath = null;
     }
   }
 </script>
