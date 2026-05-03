@@ -16,7 +16,7 @@ class MyAccountController < ApplicationController
       :business_card, :business_registration,
       :bankbook_copy, :business_bankbook_copy,
       :bank_name, :bank_account_number, :bank_account_holder,
-      :team_name, :role, :name, :phone, :address
+      :team_name, :role, :name, :phone, :address, :detail_address
     )
 
     update_file_attribute(:business_card_b64, user_params[:business_card])
