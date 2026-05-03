@@ -400,6 +400,15 @@
     <script>
       (function() {
         var splash = document.getElementById('app-splash');
+        var isCapacitor = !!(window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform());
+        
+        // 안드로이드/iOS 네이티브 앱인 경우 이중 스플래시(더블 로고)를 방지하기 위해 웹 스플래시를 즉시 숨김
+        if (isCapacitor) {
+          splash.style.display = 'none';
+          sessionStorage.setItem('splashShown', '1');
+          return;
+        }
+
         // Show splash only once per session
         if (sessionStorage.getItem('splashShown')) {
           splash.style.display = 'none';

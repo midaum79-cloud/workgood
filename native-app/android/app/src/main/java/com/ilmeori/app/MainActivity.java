@@ -25,6 +25,9 @@ public class MainActivity extends BridgeActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        // 타이틀바 원천 차단 (super.onCreate 이전에 호출 필수)
+        requestWindowFeature(android.view.Window.FEATURE_NO_TITLE);
+
         // Android 15+ Edge-to-Edge 디스플레이 대응
         EdgeToEdge.enable(this);
         super.onCreate(savedInstanceState);
@@ -32,6 +35,11 @@ public class MainActivity extends BridgeActivity {
         // 확실하게 Action Bar 숨김 처리 (안드로이드 테마 충돌 방지)
         if (getSupportActionBar() != null) {
             getSupportActionBar().hide();
+        }
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.HONEYCOMB) {
+            if (getActionBar() != null) {
+                getActionBar().hide();
+            }
         }
         
         // 앱이 처음 시작될 때 deep link 확인

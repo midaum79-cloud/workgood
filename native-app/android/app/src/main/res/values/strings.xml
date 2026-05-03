@@ -6,4 +6,6 @@
     <string name="custom_url_scheme">workgood</string>
     <string name="widget_description">오늘/내일 공정 일정을 홈 화면에서 확인하세요</string>
     <string name="calendar_widget_description">월간 캘린더를 홈 화면에 표시합니다</string>
+    <string name="server_client_id">944339730636-oft69s2rqriu7dkibggi6s3eieqa9nth.apps.googleusercontent.com</string>
+    <string name="default_web_client_id">944339730636-oft69s2rqriu7dkibggi6s3eieqa9nth.apps.googleusercontent.com</string>
 </resources>
