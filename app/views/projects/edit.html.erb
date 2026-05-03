@@ -88,20 +88,7 @@
                placeholder="상세주소 입력"
                style="margin-top:8px; width:100%; padding:14px 16px; border:1px solid #dcdfe4; border-radius:14px; font-size:16px; box-sizing:border-box;">
 
-        <div style="display:flex; flex-direction:column; gap:8px; margin-top:12px;">
-          <div style="position:relative;">
-            <span style="position:absolute; left:14px; top:50%; transform:translateY(-50%); font-size:16px;">🏢</span>
-            <%= form.text_field :common_entrance_password,
-                placeholder: "공동출입구 비밀번호",
-                style: "width:100%; padding:14px 16px 14px 40px; border:1px solid #dcdfe4; border-radius:14px; font-size:15px; box-sizing:border-box; background:#f9fafb;" %>
-          </div>
-          <div style="position:relative;">
-            <span style="position:absolute; left:14px; top:50%; transform:translateY(-50%); font-size:16px;">🚪</span>
-            <%= form.text_field :private_entrance_password,
-                placeholder: "호실 현관 비밀번호",
-                style: "width:100%; padding:14px 16px 14px 40px; border:1px solid #dcdfe4; border-radius:14px; font-size:15px; box-sizing:border-box; background:#f9fafb;" %>
-          </div>
-        </div>
+
       </div>
 
       <!-- 시작일/종료일 hidden fields -->
@@ -255,7 +242,7 @@
         <div style="font-size:14px; font-weight:800; color:#374151; margin-bottom:8px;">메모</div>
         <%= form.text_area :memo,
             rows: 4,
-            placeholder: "현장 관련 메모를 입력하세요",
+            placeholder: "비밀번호 등 전달내용을 적어주세요\n(예: 공동현관 1234*, 현관 1234*)",
             style: "width:100%; padding:14px 16px; border:1px solid #dcdfe4; border-radius:14px; font-size:16px; box-sizing:border-box; resize:none;" %>
       </div>
 
