@@ -34,7 +34,13 @@
 
   <%# 기간 선택 %>
   <div style="background:white; padding:14px 16px; border-bottom:1px solid #f3f4f6;">
-    <form action="<%= monthly_payments_projects_path %>" method="get" style="display:flex; flex-direction:column; gap:10px;">
+    <div style="display:flex; gap:6px; margin-bottom:10px; overflow-x:auto; padding-bottom:4px; white-space:nowrap; -webkit-overflow-scrolling:touch;">
+      <button onclick="setQuickDate(1)" style="padding:6px 12px; border-radius:8px; border:1px solid #e5e7eb; background:white; font-size:12px; font-weight:800; color:#374151; cursor:pointer; flex-shrink:0; box-shadow:0 1px 2px rgba(0,0,0,0.05);">최근 1달</button>
+      <button onclick="setQuickDate(3)" style="padding:6px 12px; border-radius:8px; border:1px solid #e5e7eb; background:white; font-size:12px; font-weight:800; color:#374151; cursor:pointer; flex-shrink:0; box-shadow:0 1px 2px rgba(0,0,0,0.05);">3개월</button>
+      <button onclick="setQuickDate(6)" style="padding:6px 12px; border-radius:8px; border:1px solid #e5e7eb; background:white; font-size:12px; font-weight:800; color:#374151; cursor:pointer; flex-shrink:0; box-shadow:0 1px 2px rgba(0,0,0,0.05);">6개월</button>
+      <button onclick="setQuickDate(12)" style="padding:6px 12px; border-radius:8px; border:1px solid #e5e7eb; background:white; font-size:12px; font-weight:800; color:#374151; cursor:pointer; flex-shrink:0; box-shadow:0 1px 2px rgba(0,0,0,0.05);">1년</button>
+    </div>
+    <form action="<%= monthly_payments_projects_path %>" id="searchForm" method="get" style="display:flex; flex-direction:column; gap:10px;">
       <input type="hidden" name="tab" id="form_tab_input" value="<%= params[:tab] || 'stats' %>">
       <div style="display:flex; gap:8px; align-items:center;">
         <input type="date" name="start_date" id="start_date_picker" value="<%= @start_date %>" lang="ko-KR"
@@ -307,4 +313,20 @@
 
   // 초기 탭 설정
   switchTab(currentTab);
+
+  function setQuickDate(months) {
+    var end = new Date();
+    var start = new Date();
+    start.setMonth(start.getMonth() - months);
+    
+    function fmt(d) {
+      var mm = d.getMonth() + 1;
+      var dd = d.getDate();
+      return [d.getFullYear(), (mm>9 ? '' : '0') + mm, (dd>9 ? '' : '0') + dd].join('-');
+    }
+    
+    document.getElementById('start_date_picker').value = fmt(start);
+    document.getElementById('end_date_picker').value = fmt(end);
+    document.getElementById('searchForm').submit();
+  }
 </script>
