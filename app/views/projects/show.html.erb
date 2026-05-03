@@ -145,41 +145,10 @@
 
       closeShareModal(); // 모달 닫기
 
-      let textLines = [];
-      textLines.push("[현장 정보 공유]");
-      textLines.push("현장: <%= j(@project.client_name.presence || @project.project_name) %>");
-      
-      <% 
-        dates = @project.project_schedules.order(:work_date).pluck(:work_date)
-        if dates.any?
-          dates_str = dates.map { |d| d.strftime("%-m/%-d") }.join(", ")
-        else
-          dates_str = "#{@project.start_date} ~ #{@project.end_date}"
-        end
-      %>
-      textLines.push("일정: <%= dates_str %>");
-      
-      textLines.push("주소: <%= j(@project.address) %>");
-      <% if @project.common_entrance_password.present? %>
-      textLines.push("공동현관: <%= j(@project.common_entrance_password) %>");
-      <% end %>
-      <% if @project.private_entrance_password.present? %>
-      textLines.push("호실현관: <%= j(@project.private_entrance_password) %>");
-      <% end %>
-      <% if @project.memo.present? %>
-      textLines.push("");
-      textLines.push("메모:");
-      textLines.push("<%= j(@project.memo) %>");
-      <% end %>
-
       const baseShortUrl = "<%= request.base_url + shared_project_path(@project.signed_id(purpose: :share_schedule)) %>";
       const shortUrl = baseShortUrl + "?s=" + encodeURIComponent(senderName);
 
-      textLines.push("");
-      textLines.push("👉 현장정보 상세보기 & 일정 자동등록:");
-      textLines.push(shortUrl);
-
-      const shareText = textLines.join("\n");
+      const shareText = shortUrl;
 
       const isCapacitor = !!(window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform());
 
