@@ -31,8 +31,8 @@
 
         <div id="vendorSearchArea" style="display:none;">
           <div id="vendorListArea">
-            <div style="font-size:12px; font-weight:700; color:#9ca3af; margin-bottom:6px;">▼ 거래처를 선택하세요 (가나다순)</div>
-            <div id="vendorList" style="max-height:305px; overflow-y:auto; border:1px solid #e5e7eb; border-radius:14px; background:white; box-shadow:0 2px 8px rgba(0,0,0,0.06);">
+            <input type="text" id="vendorSearchInput" placeholder="거래처명 검색 (초성 검색 가능)" oninput="filterVendorList()" style="width:100%; padding:10px 14px; border:1px solid #dcdfe4; border-radius:10px; font-size:14px; margin-bottom:8px; box-sizing:border-box;">
+            <div id="vendorList" style="max-height:195px; overflow-y:auto; border:1px solid #e5e7eb; border-radius:14px; background:white; box-shadow:0 2px 8px rgba(0,0,0,0.06);">
               <div style="padding:14px; text-align:center; color:#9ca3af; font-size:13px;">불러오는 중...</div>
             </div>
           </div>
@@ -601,34 +601,87 @@
     }
   }
 
+  var allVendors = [];
+
   function loadVendorList(vendorType) {
     var listContainer = document.getElementById('vendorList');
     listContainer.innerHTML = '<div style="padding:14px; text-align:center; color:#9ca3af; font-size:13px;">불러오는 중...</div>';
+    
+    // 탭 변경 시 검색어 초기화
+    var searchInput = document.getElementById('vendorSearchInput');
+    if(searchInput) searchInput.value = '';
 
     fetch('/vendors/search?vendor_type=' + encodeURIComponent(vendorType) + '&q=', { headers: { 'Accept': 'application/json' } })
     .then(function(res) { return res.json(); })
     .then(function(vendors) {
-      listContainer.innerHTML = '';
       if (vendors.length === 0) {
+        allVendors = [];
         listContainer.innerHTML = '<div style="padding:20px; text-align:center; color:#9ca3af; font-size:13px; font-weight:700;">' +
           (vendorType === 'company' ? '등록된 업체가 없습니다' : '등록된 개인 거래처가 없습니다') +
           '<br><span style="font-size:12px; color:#d1d5db;">햄버거 메뉴 → 거래처 관리에서 추가하세요</span></div>';
         return;
       }
-      vendors.sort(function(a, b) { return a.name.localeCompare(b.name, 'ko'); });
-      vendors.forEach(function(v, idx) {
-        var item = document.createElement('div');
-        item.style.cssText = 'padding:13px 16px; cursor:pointer; border-bottom:' + (idx < vendors.length - 1 ? '1px solid #f3f4f6' : 'none') + '; transition:background 0.15s;';
-        item.onclick = function() { selectVendor(v); };
-        item.innerHTML = '<div style="font-size:15px; font-weight:800; color:#111827;">' + (v.vendor_type === 'company' ? '🏢 ' : '👤 ') + v.name + '</div>';
-        if (v.contact_name || v.phone) {
-          var infoParts = [];
-          if (v.contact_name) infoParts.push(v.contact_name);
-          if (v.phone) infoParts.push(v.phone);
-          item.innerHTML += '<div style="font-size:12px; color:#6b7280; font-weight:600; margin-top:3px;">' + infoParts.join(' · ') + '</div>';
-        }
-        listContainer.appendChild(item);
-      });
+      vendors.sort(function(a, b) { return (a.name || '').localeCompare(b.name || '', 'ko'); });
+      allVendors = vendors;
+      renderVendorList(allVendors);
+    });
+  }
+
+  function getChosung(str) {
+    var cho = ["ㄱ","ㄲ","ㄴ","ㄷ","ㄸ","ㄹ","ㅁ","ㅂ","ㅃ","ㅅ","ㅆ","ㅇ","ㅈ","ㅉ","ㅊ","ㅋ","ㅌ","ㅍ","ㅎ"];
+    var result = "";
+    for(var i=0; i<str.length; i++) {
+      var code = str.charCodeAt(i) - 44032;
+      if(code > -1 && code < 11172) result += cho[Math.floor(code/588)];
+      else result += str.charAt(i);
+    }
+    return result;
+  }
+
+  function filterVendorList() {
+    var query = document.getElementById('vendorSearchInput').value.trim().toLowerCase();
+    if (!query) {
+      renderVendorList(allVendors);
+      return;
+    }
+    
+    var queryCho = getChosung(query);
+    var filtered = allVendors.filter(function(v) {
+      var name = (v.name || '').toLowerCase();
+      var nameCho = getChosung(name);
+      return name.includes(query) || nameCho.includes(queryCho);
+    });
+    
+    renderVendorList(filtered);
+  }
+
+  function renderVendorList(vendorsToRender) {
+    var listContainer = document.getElementById('vendorList');
+    listContainer.innerHTML = '';
+    
+    if (vendorsToRender.length === 0) {
+      listContainer.innerHTML = '<div style="padding:14px; text-align:center; color:#9ca3af; font-size:13px;">검색 결과가 없습니다</div>';
+      return;
+    }
+
+    vendorsToRender.forEach(function(v, idx) {
+      var item = document.createElement('div');
+      item.style.cssText = 'padding:13px 16px; cursor:pointer; border-bottom:' + (idx < vendorsToRender.length - 1 ? '1px solid #f3f4f6' : 'none') + '; transition:background 0.15s;';
+      
+      item.ontouchstart = function() { item.style.background = '#eff6ff'; };
+      item.ontouchend = function() { item.style.background = 'white'; };
+      item.onmouseenter = function() { item.style.background = '#f9fafb'; };
+      item.onmouseleave = function() { item.style.background = 'white'; };
+      item.onclick = function() { selectVendor(v); };
+      
+      item.innerHTML = '<div style="font-size:15px; font-weight:800; color:#111827;">' + (v.vendor_type === 'company' ? '🏢 ' : '👤 ') + (v.name || '') + '</div>';
+      if (v.contact_name || v.phone) {
+        var infoParts = [];
+        if (v.contact_name) infoParts.push(v.contact_name);
+        if (v.phone) infoParts.push(v.phone);
+        item.innerHTML += '<div style="font-size:12px; color:#6b7280; font-weight:600; margin-top:3px;">' + infoParts.join(' · ') + '</div>';
+      }
+      listContainer.appendChild(item);
     });
   }
 
