@@ -169,7 +169,7 @@ class Project < ApplicationRecord
     if payment_status == "완납"
       0
     else
-      [estimate_amount.to_i - total_collected, 0].max
+      [ estimate_amount.to_i - total_collected, 0 ].max
     end
   end
 

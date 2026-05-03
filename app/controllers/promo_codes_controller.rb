@@ -28,7 +28,7 @@ class PromoCodesController < ApplicationController
     ActiveRecord::Base.transaction do
       PromoCodeUsage.create!(user: current_user, promo_code: promo_code)
       promo_code.increment!(:current_uses)
-      
+
       current_user.subscription_plan = "premium"
       if current_user.subscription_expires_at.nil? || current_user.subscription_expires_at < Time.current
         current_user.subscription_expires_at = Time.current + promo_code.reward_days.days

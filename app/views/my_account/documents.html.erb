@@ -35,7 +35,7 @@
         }
       </script>
 
-      <%= form_with model: current_user, url: update_my_account_documents_path, method: :patch, local: true, html: { multipart: true } do |f| %>
+      <%= form_with(model: current_user, url: update_my_account_documents_path, method: :patch, local: true, html: { multipart: true }) do |f| %>
         <div style="display:flex; flex-direction:column; gap:12px; margin-bottom:16px;">
           <% [
             { key: :business_card, label: '🪪 명함 이미지' },

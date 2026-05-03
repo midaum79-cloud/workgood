@@ -16,7 +16,7 @@ class MyAccountController < ApplicationController
   end
 
   def increment_document_scan
-    if current_user.premium? || current_user.subscription_plan == 'premium' || current_user.document_scans_count.to_i < 10
+    if current_user.premium? || current_user.subscription_plan == "premium" || current_user.document_scans_count.to_i < 10
       current_user.increment!(:document_scans_count)
       render json: { success: true }
     else
@@ -29,7 +29,7 @@ class MyAccountController < ApplicationController
       :business_card, :business_registration,
       :bankbook_copy, :business_bankbook_copy,
       :bank_name, :bank_account_number, :bank_account_holder,
-      :team_name, :role, :name, :phone, :address, :detail_address
+      :team_name, :name, :phone, :address, :detail_address
     )
 
     update_file_attribute(:business_card_b64, user_params[:business_card])
@@ -108,10 +108,10 @@ class MyAccountController < ApplicationController
     base64_data = Rails.cache.read("image_download_#{safe_uuid}")
 
     if base64_data.present?
-      image_data = Base64.decode64(base64_data.split(',').last)
+      image_data = Base64.decode64(base64_data.split(",").last)
       send_data image_data,
-                type: 'image/png',
-                disposition: 'inline',
+                type: "image/png",
+                disposition: "inline",
                 filename: "일잘러_이미지_#{safe_uuid[0..5]}.png"
     else
       render plain: "이미지 링크가 만료되었거나 찾을 수 없습니다. (10분 한정)\n앱으로 돌아가 다시 시도해주세요.", status: 404

@@ -1,5 +1,4 @@
 class SharedProjectsController < ApplicationController
-
   layout false
 
   def show

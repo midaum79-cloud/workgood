@@ -1,4 +1,4 @@
-require 'ostruct'
+require "ostruct"
 
 class NativeGoogleAuthController < ApplicationController
   skip_before_action :verify_authenticity_token

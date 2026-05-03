@@ -49,7 +49,7 @@ class User < ApplicationRecord
         [ auth.info.first_name, auth.info.last_name ].compact.join(" ")
       end
       u.name = apple_name.presence || auth.info.name.presence || u.name.presence || u.email.split("@").first
-      
+
       # OAuth users get a random secure password they never need to use
       unless u.persisted?
         generated_password = SecureRandom.hex(24)

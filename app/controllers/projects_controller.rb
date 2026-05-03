@@ -431,7 +431,7 @@ class ProjectsController < ApplicationController
   end
 
   def new
-    if params[:auto_register] == 'true'
+    if params[:auto_register] == "true"
       color_palette = %w[blue orange green red purple pink sky yellow teal indigo]
       project_count = current_user.projects.count
 
@@ -452,7 +452,7 @@ class ProjectsController < ApplicationController
 
       if @project.save
         if params[:dates].present?
-          params[:dates].split(',').each do |d|
+          params[:dates].split(",").each do |d|
             @project.project_schedules.create(work_date: d.strip) rescue nil
           end
         elsif @project.start_date && @project.end_date

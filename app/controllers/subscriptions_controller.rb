@@ -44,23 +44,23 @@ class SubscriptionsController < ApplicationController
     expected_amount = User::PLAN_PRICES[plan]
 
     # [백엔드 보안 패치] RevenueCat API를 호출하여 실제 권한(Entitlement)이 있는지 검증합니다.
-    require 'net/http'
-    require 'json'
+    require "net/http"
+    require "json"
 
-    rc_key = ENV['REVENUECAT_GOOGLE_API_KEY'] || ENV['REVENUECAT_APPLE_API_KEY']
+    rc_key = ENV["REVENUECAT_GOOGLE_API_KEY"] || ENV["REVENUECAT_APPLE_API_KEY"]
     begin
       uri = URI("https://api.revenuecat.com/v1/subscribers/#{current_user.id}")
       req = Net::HTTP::Get.new(uri)
-      req['Authorization'] = "Bearer #{rc_key}"
-      req['Accept'] = "application/json"
+      req["Authorization"] = "Bearer #{rc_key}"
+      req["Accept"] = "application/json"
 
       res = Net::HTTP.start(uri.hostname, uri.port, use_ssl: true) { |http| http.request(req) }
       data = JSON.parse(res.body)
 
       entitlements = data.dig("subscriber", "entitlements") || {}
       target_entitlement = entitlements[plan]
-      
-      is_active = target_entitlement.present? && 
+
+      is_active = target_entitlement.present? &&
                   (target_entitlement["expires_date"].nil? || Time.parse(target_entitlement["expires_date"]) > Time.current)
 
       unless is_active

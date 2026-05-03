@@ -14,7 +14,7 @@ class ReceiptsController < ApplicationController
                             .where.not(image_data: nil)
                             .where(receipt_date: @current_date.beginning_of_month..@current_date.end_of_month)
                             .order(receipt_date: :asc, created_at: :asc)
-    
+
     # 캘린더용으로 날짜별 그룹핑
     @receipts_by_date = @receipts.group_by(&:receipt_date)
   end
@@ -38,10 +38,10 @@ class ReceiptsController < ApplicationController
     end
 
     if @receipt.image_data.present? && @receipt.save
-      redirect_to receipts_path(year: @receipt.receipt_date.year, month: @receipt.receipt_date.month), notice: '영수증이 저장되었습니다.'
+      redirect_to receipts_path(year: @receipt.receipt_date.year, month: @receipt.receipt_date.month), notice: "영수증이 저장되었습니다."
     else
       @selected_date = params.dig(:receipt, :receipt_date) || Date.current.to_s
-      flash.now[:alert] = '이미지를 선택해주세요.' if @receipt.image_data.blank?
+      flash.now[:alert] = "이미지를 선택해주세요." if @receipt.image_data.blank?
       render :new, status: :unprocessable_entity
     end
   rescue => e
@@ -55,8 +55,8 @@ class ReceiptsController < ApplicationController
     if receipt.image_data.present?
       expires_in 1.hour, public: false
       send_data receipt.image_data,
-                type: receipt.image_content_type || 'image/jpeg',
-                disposition: 'inline'
+                type: receipt.image_content_type || "image/jpeg",
+                disposition: "inline"
     else
       head :not_found
     end
@@ -67,7 +67,7 @@ class ReceiptsController < ApplicationController
     month = @receipt.receipt_date.month
     year = @receipt.receipt_date.year
     @receipt.destroy
-    redirect_to receipts_path(year: year, month: month), notice: '영수증이 삭제되었습니다.'
+    redirect_to receipts_path(year: year, month: month), notice: "영수증이 삭제되었습니다."
   end
 
   private
@@ -75,7 +75,7 @@ class ReceiptsController < ApplicationController
   # 이미지를 800px로 리사이즈하고 JPEG 70% 품질로 압축
   # 원본 ~3-5MB → 압축 후 ~30-80KB
   def compress_image(uploaded_file)
-    require 'image_processing/vips'
+    require "image_processing/vips"
 
     processed = ImageProcessing::Vips
       .source(uploaded_file.tempfile)
@@ -86,7 +86,7 @@ class ReceiptsController < ApplicationController
 
     {
       data: processed.read,
-      content_type: 'image/jpeg'
+      content_type: "image/jpeg"
     }
   rescue => e
     # 압축 실패 시 원본 그대로 저장
@@ -100,7 +100,7 @@ class ReceiptsController < ApplicationController
 
   def require_standard_for_receipts!
     unless current_user.standard_or_above?
-      redirect_to subscription_path, alert: '월별 영수증 관리는 스탠다드 이상 요금제 전용 기능입니다. 📊'
+      redirect_to subscription_path, alert: "월별 영수증 관리는 스탠다드 이상 요금제 전용 기능입니다. 📊"
     end
   end
 end

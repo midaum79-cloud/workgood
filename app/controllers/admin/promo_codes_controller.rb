@@ -1,5 +1,5 @@
 class Admin::PromoCodesController < Admin::BaseController
-  layout 'application'
+  layout "application"
 
   def index
     @promo_codes = PromoCode.order(created_at: :desc)

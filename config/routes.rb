@@ -10,14 +10,14 @@ Rails.application.routes.draw do
   get "my_account/documents", to: "my_account#documents", as: :my_account_documents
   patch "my_account/documents", to: "my_account#update_documents", as: :update_my_account_documents
   delete "my_account/documents/:type", to: "my_account#delete_document", as: :delete_my_account_document
-  
+
   get "my_account/biz_card_generator", to: "my_account#biz_card_generator", as: :biz_card_generator
   get "my_account/document_scanner", to: "my_account#document_scanner", as: :document_scanner
   post "my_account/increment_document_scan", to: "my_account#increment_document_scan", as: :increment_document_scan
   post "my_account/increment_biz_card_gen", to: "my_account#increment_biz_card_gen", as: :increment_biz_card_gen
   get "my_account/bank_card_generator", to: "my_account#bank_card_generator", as: :bank_card_generator
   post "my_account/increment_bank_card_gen", to: "my_account#increment_bank_card_gen", as: :increment_bank_card_gen
-  
+
   post "my_account/cache_image_for_download", to: "my_account#cache_image_for_download", as: :cache_image_for_download
   get "my_account/download_cached_image/:uuid", to: "my_account#download_cached_image", as: :download_cached_image
 
@@ -73,13 +73,13 @@ Rails.application.routes.draw do
   patch "subscription",        to: "subscriptions#update"
   get   "subscription/verify_mobile", to: "subscriptions#verify_mobile", as: :verify_mobile_subscription
   delete "subscription",       to: "subscriptions#cancel", as: :cancel_subscription
-  post  "promo_codes/apply",   to: "promo_codes#apply",    as: :apply_promo_code
+  post "promo_codes/apply",   to: "promo_codes#apply",    as: :apply_promo_code
 
   namespace :admin do
-    resources :promo_codes, only: [:index, :create]
+    resources :promo_codes, only: [ :index, :create ]
   end
 
-  resources :receipts, only: [:index, :new, :create, :destroy] do
+  resources :receipts, only: [ :index, :new, :create, :destroy ] do
     member do
       get :serve_image
     end
