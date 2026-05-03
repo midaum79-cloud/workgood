@@ -28,6 +28,12 @@ public class MainActivity extends BridgeActivity {
         // Android 15+ Edge-to-Edge 디스플레이 대응
         EdgeToEdge.enable(this);
         super.onCreate(savedInstanceState);
+        
+        // 확실하게 Action Bar 숨김 처리 (안드로이드 테마 충돌 방지)
+        if (getSupportActionBar() != null) {
+            getSupportActionBar().hide();
+        }
+        
         // 앱이 처음 시작될 때 deep link 확인
         handleDeepLink(getIntent());
     }
