@@ -11,6 +11,10 @@ class MyAccountController < ApplicationController
   def documents
   end
 
+  def document_scanner
+    @view_mode = "drawer"
+  end
+
   def update_documents
     user_params = params.fetch(:user, {}).permit(
       :business_card, :business_registration,
