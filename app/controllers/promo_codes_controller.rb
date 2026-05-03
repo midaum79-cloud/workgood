@@ -6,22 +6,22 @@ class PromoCodesController < ApplicationController
     promo_code = PromoCode.find_by(code: code_string)
 
     if promo_code.nil?
-      redirect_to subscription_path, alert: "유효하지 않은 프로모션 코드입니다."
+      redirect_back fallback_location: subscription_path, alert: "유효하지 않은 프로모션 쿠폰입니다."
       return
     end
 
     unless promo_code.active?
-      redirect_to subscription_path, alert: "이미 만료된 프로모션 코드입니다."
+      redirect_back fallback_location: subscription_path, alert: "이미 만료된 쿠폰입니다."
       return
     end
 
     if promo_code.max_uses.present? && promo_code.current_uses >= promo_code.max_uses
-      redirect_to subscription_path, alert: "이미 한도가 초과된 프로모션 코드입니다."
+      redirect_back fallback_location: subscription_path, alert: "선착순 사용 인원이 초과된 쿠폰입니다."
       return
     end
 
     if current_user.promo_code_usages.exists?(promo_code: promo_code)
-      redirect_to subscription_path, alert: "이미 사용하신 프로모션 코드입니다."
+      redirect_back fallback_location: subscription_path, alert: "이미 사용하신 쿠폰입니다."
       return
     end
 
@@ -38,8 +38,8 @@ class PromoCodesController < ApplicationController
       current_user.save!
     end
 
-    redirect_to subscription_path, notice: "🎉 프로모션 코드가 성공적으로 적용되었습니다! (#{promo_code.reward_days}일 추가)"
+    redirect_back fallback_location: subscription_path, notice: "🎉 쿠폰이 성공적으로 적용되었습니다! (프리미엄 #{promo_code.reward_days}일 추가)"
   rescue => e
-    redirect_to subscription_path, alert: "프로모션 코드 적용 중 오류가 발생했습니다."
+    redirect_back fallback_location: subscription_path, alert: "쿠폰 등록 중 오류가 발생했습니다."
   end
 end
