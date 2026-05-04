@@ -82,3 +82,5 @@ gem "meta-tags"
 gem "sitemap_generator"
 
 gem "holidays", "~> 9.2"
+
+gem "whenever", "~> 1.1"
