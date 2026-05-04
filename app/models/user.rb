@@ -64,7 +64,7 @@ class User < ApplicationRecord
   end
 
   def subscription_plan
-    return "premium" if TESTING_PERIOD
+    return "premium" if is_admin? || TESTING_PERIOD
 
     plan = self[:subscription_plan].presence || "free"
     # 체험 만료 체크: 유료 플랜 + 만료일 지남 + 결제(빌링키) 없음 → 무료로 다운그레이드
@@ -152,10 +152,6 @@ class User < ApplicationRecord
 
   def is_admin?
     self[:is_admin] || email == "midaum79@gmail.com"
-  end
-
-  def subscription_plan
-    is_admin? ? "premium" : super
   end
 
   def plan_label

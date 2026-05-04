@@ -31,6 +31,14 @@ public class MainActivity extends BridgeActivity {
         // Android 15+ Edge-to-Edge 디스플레이 대응
         EdgeToEdge.enable(this);
         super.onCreate(savedInstanceState);
+        setTitle("");
+
+        // 안드로이드 텍스트 크기 축소 (-2포인트 체감, 시스템 폰트 배율 반영)
+        if (getBridge() != null && getBridge().getWebView() != null) {
+            WebView webView = getBridge().getWebView();
+            int currentZoom = webView.getSettings().getTextZoom();
+            webView.getSettings().setTextZoom((int)(currentZoom * 0.88));
+        }
         
         // 확실하게 Action Bar 숨김 처리 (안드로이드 테마 충돌 방지)
         if (getSupportActionBar() != null) {
