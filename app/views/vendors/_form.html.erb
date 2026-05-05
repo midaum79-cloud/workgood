@@ -186,18 +186,28 @@
                     const result = await window.Capacitor.Plugins.Contacts.pickContact({ projection: { name: true, phones: true } });
                     if (result && result.contact) {
                       const contact = result.contact;
-                      let phoneVal = null;
-                      if (contact.phones && contact.phones.length > 0) {
-                        phoneVal = contact.phones[0].number || contact.phones[0];
-                        if (phoneVal && typeof phoneVal === 'object') phoneVal = phoneVal.number;
-                        const phoneInput = document.getElementById('vendor_phone_input');
-                        if (phoneVal && phoneInput) {
-                          phoneInput.value = formatPhoneNumber(phoneVal);
-                        }
-                      }
+                      
+                      // 이름 세팅
                       const nameInput = document.getElementById('vendor_name');
                       if (nameInput && !nameInput.value && contact.name && contact.name.display) {
                         nameInput.value = contact.name.display;
+                      }
+
+                      // 번호 세팅
+                      if (contact.phones && contact.phones.length > 0) {
+                        if (contact.phones.length === 1) {
+                          // 번호가 1개일 땐 바로 세팅
+                          let phoneVal = contact.phones[0].number || contact.phones[0];
+                          if (phoneVal && typeof phoneVal === 'object') phoneVal = phoneVal.number;
+                          const phoneInput = document.getElementById('vendor_phone_input');
+                          if (phoneVal && phoneInput) phoneInput.value = formatPhoneNumber(phoneVal);
+                        } else {
+                          // 번호가 여러 개일 때 모달 띄우기
+                          showPhoneSelector(contact.phones, function(selectedPhone) {
+                            const phoneInput = document.getElementById('vendor_phone_input');
+                            if (selectedPhone && phoneInput) phoneInput.value = formatPhoneNumber(selectedPhone);
+                          });
+                        }
                       }
                     }
                   } else if ('contacts' in navigator && 'ContactsManager' in window) {
@@ -205,13 +215,20 @@
                       const contacts = await navigator.contacts.select(['name', 'tel'], { multiple: false });
                       if (contacts.length > 0) {
                         const contact = contacts[0];
-                        const phoneInput = document.getElementById('vendor_phone_input');
-                        if (contact.tel && contact.tel.length > 0 && phoneInput) {
-                          phoneInput.value = formatPhoneNumber(contact.tel[0]);
-                        }
                         const nameInput = document.getElementById('vendor_name');
                         if (nameInput && !nameInput.value && contact.name && contact.name.length > 0) {
                           nameInput.value = contact.name[0];
+                        }
+                        if (contact.tel && contact.tel.length > 0) {
+                          if (contact.tel.length === 1) {
+                            const phoneInput = document.getElementById('vendor_phone_input');
+                            if (phoneInput) phoneInput.value = formatPhoneNumber(contact.tel[0]);
+                          } else {
+                            showPhoneSelector(contact.tel, function(selectedPhone) {
+                              const phoneInput = document.getElementById('vendor_phone_input');
+                              if (selectedPhone && phoneInput) phoneInput.value = formatPhoneNumber(selectedPhone);
+                            });
+                          }
                         }
                       }
                     } catch (ex) {
@@ -225,6 +242,88 @@
                   alert('연락처 플러그인 에러: ' + (err.message || JSON.stringify(err)));
                 }
               });
+            }
+
+            // 다중 연락처 선택용 바텀 시트 UI
+            function showPhoneSelector(phones, callback) {
+              const overlay = document.createElement('div');
+              overlay.style.position = 'fixed';
+              overlay.style.top = '0'; overlay.style.left = '0'; overlay.style.right = '0'; overlay.style.bottom = '0';
+              overlay.style.backgroundColor = 'rgba(0,0,0,0.5)';
+              overlay.style.zIndex = '99999';
+              overlay.style.display = 'flex';
+              overlay.style.alignItems = 'flex-end';
+              
+              const sheet = document.createElement('div');
+              sheet.style.width = '100%';
+              sheet.style.backgroundColor = '#fff';
+              sheet.style.borderTopLeftRadius = '24px';
+              sheet.style.borderTopRightRadius = '24px';
+              sheet.style.padding = '24px 20px 40px 20px';
+              sheet.style.boxSizing = 'border-box';
+              sheet.style.transform = 'translateY(100%)';
+              sheet.style.transition = 'transform 0.3s ease-out';
+              
+              const title = document.createElement('div');
+              title.textContent = '저장할 연락처를 선택해주세요';
+              title.style.fontSize = '18px';
+              title.style.fontWeight = '900';
+              title.style.marginBottom = '20px';
+              title.style.textAlign = 'center';
+              sheet.appendChild(title);
+
+              phones.forEach((p) => {
+                let pNum = p.number || p;
+                if (typeof pNum === 'object') pNum = pNum.number;
+                
+                const btn = document.createElement('button');
+                btn.type = 'button';
+                btn.style.width = '100%';
+                btn.style.padding = '16px';
+                btn.style.marginBottom = '12px';
+                btn.style.backgroundColor = '#f9fafb';
+                btn.style.border = '1px solid #e5e7eb';
+                btn.style.borderRadius = '16px';
+                btn.style.fontSize = '16px';
+                btn.style.fontWeight = '800';
+                btn.style.color = '#111827';
+                btn.style.cursor = 'pointer';
+                
+                let labelText = formatPhoneNumber(pNum);
+                if (p.label) labelText += ` (${p.label})`;
+                else if (p.type && typeof p.type === 'string') labelText += ` (${p.type})`;
+                btn.textContent = labelText;
+                
+                btn.onclick = () => {
+                  closeSheet();
+                  callback(pNum);
+                };
+                sheet.appendChild(btn);
+              });
+              
+              const cancelBtn = document.createElement('button');
+              cancelBtn.type = 'button';
+              cancelBtn.style.width = '100%';
+              cancelBtn.style.padding = '16px';
+              cancelBtn.style.backgroundColor = 'transparent';
+              cancelBtn.style.border = 'none';
+              cancelBtn.style.fontSize = '15px';
+              cancelBtn.style.fontWeight = '700';
+              cancelBtn.style.color = '#6b7280';
+              cancelBtn.style.cursor = 'pointer';
+              cancelBtn.textContent = '취소';
+              cancelBtn.onclick = () => { closeSheet(); };
+              sheet.appendChild(cancelBtn);
+
+              overlay.appendChild(sheet);
+              document.body.appendChild(overlay);
+
+              setTimeout(() => { sheet.style.transform = 'translateY(0)'; }, 10);
+
+              function closeSheet() {
+                sheet.style.transform = 'translateY(100%)';
+                setTimeout(() => { document.body.removeChild(overlay); }, 300);
+              }
             }
           })();
         </script>
