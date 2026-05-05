@@ -612,13 +612,13 @@
                 <div style="font-size:10px; font-weight:800; color:<%= current_user.subscription_plan == 'free' ? '#111827' : '#6b7280' %>;">FREE</div>
                 <div style="font-size:11px; font-weight:900; color:<%= current_user.subscription_plan == 'free' ? '#111827' : '#6b7280' %>; margin-top:1px;">₩0</div>
               </div>
-              <div style="flex:1; padding:8px 4px; text-align:center; border-radius:8px; transition:all 0.2s; <%= current_user.subscription_plan == 'standard' ? 'background:white; box-shadow:0 1px 4px rgba(0,0,0,0.08);' : 'opacity:0.6;' %>">
-                <div style="font-size:10px; font-weight:800; color:<%= current_user.subscription_plan == 'standard' ? '#007AFF' : '#6b7280' %>;">STANDARD</div>
-                <div style="font-size:11px; font-weight:900; color:<%= current_user.subscription_plan == 'standard' ? '#111827' : '#6b7280' %>; margin-top:1px;">₩4,400</div>
+              <div style="flex:1; padding:8px 4px; text-align:center; border-radius:8px; transition:all 0.2s; <%= current_user.subscription_plan == 'standard' ? 'background:linear-gradient(135deg, #f0f9ff, #e0f2fe); box-shadow:0 1px 4px rgba(0,0,0,0.08);' : 'opacity:0.6;' %>">
+                <div style="font-size:10px; font-weight:800; color:<%= current_user.subscription_plan == 'standard' ? '#0284c7' : '#6b7280' %>;">STANDARD</div>
+                <div style="font-size:11px; font-weight:900; color:<%= current_user.subscription_plan == 'standard' ? '#0369a1' : '#6b7280' %>; margin-top:1px;">₩4,400</div>
               </div>
-              <div style="flex:1; padding:8px 4px; text-align:center; border-radius:8px; transition:all 0.2s; <%= current_user.subscription_plan == 'premium' ? 'background:white; box-shadow:0 1px 4px rgba(0,0,0,0.08);' : 'opacity:0.6;' %>">
-                <div style="font-size:10px; font-weight:800; color:<%= current_user.subscription_plan == 'premium' ? '#5856D6' : '#6b7280' %>;">PREMIUM</div>
-                <div style="font-size:11px; font-weight:900; color:<%= current_user.subscription_plan == 'premium' ? '#111827' : '#6b7280' %>; margin-top:1px;">₩9,900</div>
+              <div style="flex:1; padding:8px 4px; text-align:center; border-radius:8px; transition:all 0.2s; <%= current_user.subscription_plan == 'premium' ? 'background:linear-gradient(135deg, #fffbeb, #fef08a); box-shadow:0 1px 4px rgba(0,0,0,0.08);' : 'opacity:0.6;' %>">
+                <div style="font-size:10px; font-weight:800; color:<%= current_user.subscription_plan == 'premium' ? '#ca8a04' : '#6b7280' %>;">PREMIUM</div>
+                <div style="font-size:11px; font-weight:900; color:<%= current_user.subscription_plan == 'premium' ? '#a16207' : '#6b7280' %>; margin-top:1px;">₩9,900</div>
               </div>
             </div>
           <% end %>
@@ -630,31 +630,31 @@
 
         <!-- 사용 방법 안내 -->
         <%= link_to guide_path, class: "drawer-item", onclick: "closeDrawer()" do %>
-          <span class="drawer-item-icon">📘</span> 일잘러 사용 설명서 <span style="margin-left:auto; font-size:10px; font-weight:800; background:#f3f4f6; color:#ef4444; padding:2px 8px; border-radius:999px;">NEW</span>
+          <span class="drawer-item-icon">📘</span> 일잘러 사용 설명서 <span style="margin-left:auto; font-size:10px; font-weight:800; background:#fef2f2; color:#ef4444; padding:2px 8px; border-radius:999px;">NEW</span>
         <% end %>
         <%= link_to biz_card_generator_path, class: "drawer-item", onclick: "closeDrawer()" do %>
           <span class="drawer-item-icon">🪪</span> 명함 자동 생성기
-          <span style="margin-left:auto; font-size:10px; font-weight:800; background:#f3f4f6; color:#6b7280; padding:2px 8px; border-radius:999px;">무료 30회</span>
+          <span style="margin-left:auto; font-size:10px; font-weight:800; background:#ecfdf5; color:#059669; padding:2px 8px; border-radius:999px;">무료 30회</span>
         <% end %>
         <%= link_to document_scanner_path, class: "drawer-item", onclick: "closeDrawer()" do %>
           <span class="drawer-item-icon">📄</span> 스마트 문서 스캐너
-          <span style="margin-left:auto; font-size:10px; font-weight:800; background:#f3f4f6; color:#6b7280; padding:2px 8px; border-radius:999px;">무료 10회</span>
+          <span style="margin-left:auto; font-size:10px; font-weight:800; background:#ecfdf5; color:#059669; padding:2px 8px; border-radius:999px;">무료 10회</span>
         <% end %>
         <%= link_to bank_card_generator_path, class: "drawer-item", onclick: "closeDrawer()" do %>
           <span class="drawer-item-icon">💳</span> 스마트통장 이미지
-          <span style="margin-left:auto; font-size:10px; font-weight:800; background:#f3f4f6; color:#6b7280; padding:2px 8px; border-radius:999px;">무료 30회</span>
+          <span style="margin-left:auto; font-size:10px; font-weight:800; background:#ecfdf5; color:#059669; padding:2px 8px; border-radius:999px;">무료 30회</span>
         <% end %>
         <%= link_to my_account_documents_path, class: "drawer-item", onclick: "closeDrawer()" do %>
           <span class="drawer-item-icon">💼</span> 비즈니스 서류 지갑
-          <span style="margin-left:auto; font-size:10px; font-weight:800; background:#f3f4f6; color:#6b7280; padding:2px 8px; border-radius:999px;">문자 무제한</span>
+          <span style="margin-left:auto; font-size:10px; font-weight:800; background:#eff6ff; color:#2563eb; padding:2px 8px; border-radius:999px;">문자 무제한</span>
         <% end %>
         <%= link_to daily_memos_list_path, class: "drawer-item", onclick: "closeDrawer()" do %>
           <span class="drawer-item-icon">📝</span> 일일 다이어리
-          <span style="margin-left:auto; font-size:10px; font-weight:800; background:#f3f4f6; color:#6b7280; padding:2px 8px; border-radius:999px;">STANDARD+</span>
+          <span style="margin-left:auto; font-size:10px; font-weight:800; background:#fff7ed; color:#ea580c; padding:2px 8px; border-radius:999px;">STANDARD+</span>
         <% end %>
         <%= link_to receipts_path, class: "drawer-item", onclick: "closeDrawer()" do %>
           <span class="drawer-item-icon">📸</span> 영수증 관리
-          <span style="margin-left:auto; font-size:10px; font-weight:800; background:#f3f4f6; color:#6b7280; padding:2px 8px; border-radius:999px;">STANDARD+</span>
+          <span style="margin-left:auto; font-size:10px; font-weight:800; background:#fff7ed; color:#ea580c; padding:2px 8px; border-radius:999px;">STANDARD+</span>
         <% end %>
 
         <div class="drawer-divider"></div>
