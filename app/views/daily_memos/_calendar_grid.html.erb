@@ -17,15 +17,17 @@
     
     <%= link_to daily_memo_path(memo_date: date), style: "text-decoration:none; color:inherit; display:flex; flex-direction:column; align-items:center; background:transparent; border-right:#{date.wday == 6 ? 'none' : '1px solid #f3f4f6'}; border-bottom:1px solid #f3f4f6; padding:6px 2px; height:108px; position:relative;" do %>
       
-      <!-- 날짜 번호 (오늘 날짜는 원형 배경) -->
-      <div style="
-        display:flex; align-items:center; justify-content:center;
-        width:26px; height:26px; border-radius:50%;
-        font-size:15px; font-weight:700; margin-bottom:4px;
-        color:<%= is_today ? 'white' : text_color %>;
-        background:<%= is_today ? '#3b82f6' : 'transparent' %>;
-      ">
-        <%= date.day %>
+      <!-- 날짜 번호 (가로바 스타일) -->
+      <div style="width:100%; padding:0 2px; margin-bottom:4px; box-sizing:border-box;">
+        <div style="
+          display:flex; align-items:center; justify-content:center;
+          width:100%; height:20px; border-radius:4px;
+          font-size:14px; font-weight:800;
+          color:<%= is_today ? 'white' : text_color %>;
+          background:<%= is_today ? '#3b82f6' : 'transparent' %>;
+        ">
+          <%= date.day %>
+        </div>
       </div>
       
       <!-- 메모 표시 영역 (모던한 블록 스타일) -->
