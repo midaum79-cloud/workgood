@@ -94,11 +94,15 @@
       <div style="padding:16px 18px; border-bottom:1px solid #f3f4f6; display:flex; align-items:center; gap:10px;">
         <span style="font-size:18px;">🔔</span>
         <span style="font-size:16px; font-weight:900; color:#111827;">알림 설정</span>
+        <span style="font-size:10px; font-weight:800; background:#fef08a; color:#a16207; padding:2px 6px; border-radius:6px;">PREMIUM</span>
       </div>
       <%= link_to notifications_path(tab: 'settings'), style: "display:flex; justify-content:space-between; align-items:center; padding:16px 18px; text-decoration:none;" do %>
         <div>
           <div style="font-size:14px; font-weight:800; color:#111827;">아침·저녁·미수금 알림 관리</div>
-          <div style="font-size:12px; color:#9ca3af; margin-top:2px;">알림함에서 알림 시간과 종류를 설정하세요</div>
+          <div style="font-size:12px; color:#9ca3af; margin-top:4px; line-height:1.4;">
+            📱 안드로이드: 알림 시간 및 수신 설정 가능<br>
+            🍎 아이폰: 애플 정책상 추후 업데이트 예정
+          </div>
         </div>
         <div style="font-size:16px; color:#9ca3af;">→</div>
       <% end %>
