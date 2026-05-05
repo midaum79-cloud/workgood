@@ -99,10 +99,25 @@
       <%= link_to notifications_path(tab: 'settings'), style: "display:flex; justify-content:space-between; align-items:center; padding:16px 18px; text-decoration:none;" do %>
         <div>
           <div style="font-size:14px; font-weight:800; color:#111827;">아침·저녁·미수금 알림 관리</div>
-          <div style="font-size:12px; color:#9ca3af; margin-top:4px; line-height:1.4;">
-            📱 안드로이드: 알림 시간 및 수신 설정 가능<br>
-            🍎 아이폰: 애플 정책상 추후 업데이트 예정
+          <div id="notification_platform_desc" style="font-size:12px; color:#9ca3af; margin-top:4px; line-height:1.4;">
+            알림함에서 알림 시간과 종류를 설정하세요
           </div>
+          <script>
+            document.addEventListener('DOMContentLoaded', function() {
+              var descEl = document.getElementById('notification_platform_desc');
+              if (window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform()) {
+                if (window.Capacitor.getPlatform() === 'ios') {
+                  descEl.innerHTML = "🍎 아이폰: 애플 정책상 추후 업데이트 예정입니다.";
+                  descEl.style.color = "#ef4444"; // 눈에 띄게 빨간색으로
+                } else if (window.Capacitor.getPlatform() === 'android') {
+                  descEl.innerHTML = "📱 기기 알림 시간 및 수신 여부를 설정할 수 있습니다.";
+                }
+              } else {
+                // 웹 브라우저
+                descEl.innerHTML = "웹 브라우저 및 안드로이드 앱에서 설정 가능합니다.";
+              }
+            });
+          </script>
         </div>
         <div style="font-size:16px; color:#9ca3af;">→</div>
       <% end %>
