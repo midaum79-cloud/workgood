@@ -365,10 +365,18 @@
     <%# OneSignal - 네이티브 푸시 알림 초기화 (Capacitor 앱에서만 동작) %>
     <script>
       (function() {
+        var retryCount = 0;
         function initOneSignal() {
           if (!window.Capacitor || !window.Capacitor.isNativePlatform || !window.Capacitor.isNativePlatform()) return;
+          
+          // 안드로이드가 아닌 경우(iOS 등) 플러그인 설치가 안되어 있을 수 있으므로 방어 로직 추가
           if (!window.plugins || !window.plugins.OneSignal) {
-             setTimeout(initOneSignal, 500);
+             retryCount++;
+             if (retryCount < 10) {
+               setTimeout(initOneSignal, 500);
+             } else {
+               console.warn('[일잘러] OneSignal 플러그인을 찾을 수 없습니다. (iOS 등 미설치 환경)');
+             }
              return;
           }
           try {
