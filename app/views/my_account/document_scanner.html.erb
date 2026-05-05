@@ -69,6 +69,7 @@
       const { DocumentScanner } = window.Capacitor.Plugins;
       const { scannedImages } = await DocumentScanner.scanDocument({
         letUserAdjustCrop: true,
+        reviewCapturedDocument: true,
         maxNumDocuments: 1
       });
       
