@@ -358,6 +358,40 @@
         opacity: 1;
       }
     </style>
+
+    <% if logged_in? %>
+      <script>window.__currentUserId = <%= current_user.id.to_json %>;</script>
+    <% end %>
+    <%# OneSignal - 네이티브 푸시 알림 초기화 (Capacitor 앱에서만 동작) %>
+    <script>
+      (function() {
+        function initOneSignal() {
+          if (!window.Capacitor || !window.Capacitor.isNativePlatform || !window.Capacitor.isNativePlatform()) return;
+          if (!window.plugins || !window.plugins.OneSignal) {
+             setTimeout(initOneSignal, 500);
+             return;
+          }
+          try {
+            var OneSignal = window.plugins.OneSignal;
+            OneSignal.initialize('os_v2_app_zgepfx6vsrc2fl5fgz4r4e2rv4ywhmb24dlehefsokbovjfagaywbim6fsvpnqntwlogljx7cr2xuevr7fcufuksas2tervixelcr6i');
+            OneSignal.Notifications.requestPermission(true).then(function(accepted) {
+              console.log("[OneSignal] User accepted notifications: " + accepted);
+            });
+            if (window.__currentUserId) {
+               OneSignal.login(window.__currentUserId.toString());
+            }
+            console.log('[일잘러] OneSignal initialized');
+          } catch(e) {
+            console.warn('[일잘러] OneSignal init error:', e);
+          }
+        }
+        if (document.readyState === 'loading') {
+          document.addEventListener('DOMContentLoaded', function() { setTimeout(initOneSignal, 300); });
+        } else {
+          setTimeout(initOneSignal, 300);
+        }
+      })();
+    </script>
   </head>
 
   <body>

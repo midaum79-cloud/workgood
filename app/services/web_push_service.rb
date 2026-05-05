@@ -39,8 +39,47 @@ class WebPushService
 
   # Send notification to all subscriptions for a user
   def self.notify_user(user, title:, body:, path: "/")
+    # 1. PWA Web Push 전송
     user.web_push_subscriptions.find_each do |sub|
       send_notification(sub, title: title, body: body, path: path)
+    end
+
+    # 2. OneSignal Native Push 전송
+    send_onesignal_notification(user, title: title, body: body, path: path)
+  end
+
+  def self.send_onesignal_notification(user, title:, body:, path: "/")
+    app_id = "os_v2_app_zgepfx6vsrc2fl5fgz4r4e2rv4ywhmb24dlehefsokbovjfagaywbim6fsvpnqntwlogljx7cr2xuevr7fcufuksas2tervixelcr6i"
+    api_key = ENV['ONESIGNAL_REST_API_KEY']
+    return if api_key.blank?
+
+    require 'net/http'
+    require 'uri'
+    require 'json'
+
+    uri = URI.parse("https://api.onesignal.com/notifications")
+    request = Net::HTTP::Post.new(uri)
+    request.content_type = "application/json"
+    request["Authorization"] = "Basic #{api_key}"
+    request["accept"] = "application/json"
+    
+    request.body = JSON.dump({
+      "app_id" => app_id,
+      "include_aliases" => { "external_id" => [user.id.to_s] },
+      "target_channel" => "push",
+      "headings" => { "en" => title, "ko" => title },
+      "contents" => { "en" => body, "ko" => body },
+      "data" => { "path" => path }
+    })
+
+    req_options = { use_ssl: uri.scheme == "https" }
+    begin
+      response = Net::HTTP.start(uri.hostname, uri.port, req_options) do |http|
+        http.request(request)
+      end
+      Rails.logger.info "[OneSignal] Sent to user #{user.id}: #{response.code} #{response.body}"
+    rescue => e
+      Rails.logger.error "[OneSignal] Failed to send to user #{user.id}: #{e.class} #{e.message}"
     end
   end
 
