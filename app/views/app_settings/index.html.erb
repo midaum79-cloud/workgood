@@ -103,20 +103,29 @@
             알림함에서 알림 시간과 종류를 설정하세요
           </div>
           <script>
-            document.addEventListener('DOMContentLoaded', function() {
-              var descEl = document.getElementById('notification_platform_desc');
-              if (window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform()) {
-                if (window.Capacitor.getPlatform() === 'ios') {
-                  descEl.innerHTML = "🍎 아이폰: 애플 정책상 추후 업데이트 예정입니다.";
-                  descEl.style.color = "#ef4444"; // 눈에 띄게 빨간색으로
-                } else if (window.Capacitor.getPlatform() === 'android') {
-                  descEl.innerHTML = "📱 기기 알림 시간 및 수신 여부를 설정할 수 있습니다.";
+            (function() {
+              function updateDesc() {
+                var descEl = document.getElementById('notification_platform_desc');
+                if (!descEl) return;
+                
+                if (window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform()) {
+                  if (window.Capacitor.getPlatform() === 'ios') {
+                    descEl.innerHTML = "🍎 아이폰: 기기 알림은 추후 업데이트 예정입니다.";
+                    descEl.style.color = "#ef4444";
+                  } else if (window.Capacitor.getPlatform() === 'android') {
+                    descEl.innerHTML = "📱 기기 알림 시간 및 수신 여부를 설정할 수 있습니다.";
+                    descEl.style.color = "#2563eb";
+                  }
+                } else {
+                  descEl.innerHTML = "웹 브라우저 및 안드로이드 앱에서 설정 가능합니다.";
                 }
-              } else {
-                // 웹 브라우저
-                descEl.innerHTML = "웹 브라우저 및 안드로이드 앱에서 설정 가능합니다.";
               }
-            });
+              
+              // 즉시 실행 (Turbo)
+              updateDesc();
+              // Capacitor 로드 대기 (새로고침 시)
+              setTimeout(updateDesc, 500);
+            })();
           </script>
         </div>
         <div style="font-size:16px; color:#9ca3af;">→</div>
