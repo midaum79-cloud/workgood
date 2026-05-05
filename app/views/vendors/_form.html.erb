@@ -147,40 +147,62 @@
               });
             }
 
-            var importBtn = document.getElementById('import_contact_btn');
+          // 연락처 불러오기 로직
+          function checkContactSupport() {
             var isCapacitor = !!(window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform());
-
             if (isCapacitor || ('contacts' in navigator && 'ContactsManager' in window)) {
-              importBtn.style.display = 'block';
-              importBtn.addEventListener('click', async function() {
-                if (isCapacitor && window.Capacitor.nativePromise) {
+              var importBtn = document.getElementById('import_contact_btn');
+              if (importBtn) importBtn.style.display = 'block';
+            }
+          }
+
+          // Capacitor 플러그인 로드 시간을 고려하여 약간 지연 후 확인
+          setTimeout(checkContactSupport, 500);
+
+          var importBtn = document.getElementById('import_contact_btn');
+          if (importBtn) {
+            importBtn.addEventListener('click', async function() {
+              try {
+                if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.Contacts) {
+                  // Native Capacitor App
                   try {
-                    const permission = await window.Capacitor.nativePromise('Contacts', 'requestPermissions', {});
-                    if (permission.contacts === 'granted') {
-                      const result = await window.Capacitor.nativePromise('Contacts', 'pickContact', { projection: { name: true, phones: true } });
-                      if (result && result.contact) {
-                        const contact = result.contact;
-                        if (contact.phones && contact.phones.length > 0) {
-                          phoneInput.value = formatPhoneNumber(contact.phones[0].number);
-                        }
-                        const nameInput = document.getElementById('vendor_name');
-                        if (nameInput && !nameInput.value && contact.name && contact.name.display) {
-                          nameInput.value = contact.name.display;
-                        }
+                    const perm = await window.Capacitor.Plugins.Contacts.checkPermissions();
+                    if (perm.contacts !== 'granted') {
+                      const req = await window.Capacitor.Plugins.Contacts.requestPermissions();
+                      if (req.contacts !== 'granted') {
+                        alert('연락처 접근 권한이 거부되어 있습니다.\n\n스마트폰의 [설정] 앱을 열고 [일잘러]를 찾아 연락처 접근 권한을 허용(켬)으로 변경한 뒤 다시 시도해 주세요.');
+                        return;
                       }
-                    } else {
-                      alert('연락처 접근 권한이 거부되어 있습니다.\n\n스마트폰의 [설정] 앱을 열고 [일잘러]를 찾아 연락처 접근 권한을 허용(켬)으로 변경한 뒤 다시 시도해 주세요.');
                     }
-                  } catch (err) {
-                    console.error('Capacitor 연락처 에러:', err);
+                  } catch(e) {
+                    console.warn('Permission check not supported or failed', e);
                   }
-                } else {
-                  // 브라우저 Web API
+                  
+                  const result = await window.Capacitor.Plugins.Contacts.pickContact({ projection: { name: true, phones: true } });
+                  if (result && result.contact) {
+                    const contact = result.contact;
+                    let phoneVal = null;
+                    if (contact.phones && contact.phones.length > 0) {
+                      phoneVal = contact.phones[0].number || contact.phones[0];
+                      if (phoneVal && typeof phoneVal === 'object') phoneVal = phoneVal.number;
+                      const phoneInput = document.getElementById('vendor_phone_input');
+                      if (phoneVal && phoneInput) {
+                        phoneInput.value = formatPhoneNumber(phoneVal);
+                      }
+                    }
+                    const nameInput = document.getElementById('vendor_name');
+                    if (nameInput && !nameInput.value && contact.name && contact.name.display) {
+                      nameInput.value = contact.name.display;
+                    }
+                  }
+                } else if ('contacts' in navigator && 'ContactsManager' in window) {
+                  // Web PWA
                   try {
                     const contacts = await navigator.contacts.select(['name', 'tel'], { multiple: false });
                     if (contacts.length > 0) {
                       const contact = contacts[0];
-                      if (contact.tel && contact.tel.length > 0) {
+                      const phoneInput = document.getElementById('vendor_phone_input');
+                      if (contact.tel && contact.tel.length > 0 && phoneInput) {
                         phoneInput.value = formatPhoneNumber(contact.tel[0]);
                       }
                       const nameInput = document.getElementById('vendor_name');
@@ -191,10 +213,16 @@
                   } catch (ex) {
                     console.error('연락처 불러오기 실패:', ex);
                   }
+                } else {
+                  alert('이 기기에서는 연락처 불러오기를 지원하지 않습니다.');
                 }
-              });
-            }
-          });
+              } catch (err) {
+                console.error('Contact error:', err && err.message ? err.message : err);
+                // 사용자가 취소한 경우는 무시
+              }
+            });
+          }
+        });
         </script>
 
         <%# 메모 %>
