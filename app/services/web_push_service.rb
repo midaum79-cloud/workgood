@@ -49,7 +49,7 @@ class WebPushService
   end
 
   def self.send_onesignal_notification(user, title:, body:, path: "/")
-    app_id = "os_v2_app_zgepfx6vsrc2fl5fgz4r4e2rv4ywhmb24dlehefsokbovjfagaywbim6fsvpnqntwlogljx7cr2xuevr7fcufuksas2tervixelcr6i"
+    app_id = "c988f2df-d594-45a2-afa5-36791e1351af"
     api_key = ENV['ONESIGNAL_REST_API_KEY']
     return if api_key.blank?
 
