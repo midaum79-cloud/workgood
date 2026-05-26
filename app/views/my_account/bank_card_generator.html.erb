@@ -25,11 +25,11 @@
           🏦 통장사본 이미지 생성기
         </div>
         <span style="background:#bae6fd; color:#0369a1; font-size:10px; font-weight:900; padding:4px 8px; border-radius:99px;">
-          남은 횟수: <%= [30 - current_user.bank_card_generations_count.to_i, 0].max %>회
+          무제한 이용 가능 🚀
         </span>
       </div>
       <div style="font-size:12px; color:#0284c7; font-weight:600; margin-bottom:16px; line-height:1.5;">
-        계좌번호를 입력하면 실제 통장사본과 동일한 형태의 이미지가 생성됩니다. 거래처에 통장사본을 보낼 때 활용하세요.
+        계좌번호를 입력하면 실제 통장사본과 동일한 형태의 이미지가 생성됩니다. 거래처에 통장사본을 보낼 때 활용하세요. 무제한 무료 제공됩니다.
       </div>
 
       <!-- Inputs -->
@@ -424,12 +424,7 @@
           }
         });
         const data = await response.json();
-        
-        if (!data.success && data.limit_reached) {
-          alert("⚠️ 무료 체험 횟수(30회)를 모두 소진하셨습니다!\n\n무제한 생성을 원하시면 프리미엄 플랜을 구독해주세요.");
-          window.location.href = '<%= subscription_path %>';
-          return;
-        }
+        // 무제한 혜택 적용으로 한도 제한 없음
 
         originalData.bank = document.getElementById('bankNameInput').value;
         originalData.account = document.getElementById('bankAccountInput').value;

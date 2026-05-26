@@ -132,8 +132,6 @@ class TaxReportsController < ApplicationController
   private
 
   def require_premium
-    unless current_user.premium? || User::TESTING_PERIOD
-      redirect_to subscription_path, alert: "프리미엄 플랜에서 이용 가능한 기능입니다."
-    end
+    # 모든 가입자가 세금/매출 리포트 서비스를 무상 이용할 수 있도록 허용
   end
 end

@@ -69,10 +69,79 @@ class User < ApplicationRecord
     plan = self[:subscription_plan].presence || "free"
     # 체험 만료 체크: 유료 플랜 + 만료일 지남 + 결제(빌링키) 없음 → 무료로 다운그레이드
     if plan != "free" && subscription_expires_at.present? && subscription_expires_at < Time.current && billing_key.blank?
-      update_columns(subscription_plan: "free")
-      return "free"
+      # RevenueCat 구독인지 실시간 확인 시도
+      synced_plan = sync_revenuecat_subscription
+      if synced_plan
+        return synced_plan
+      else
+        # RevenueCat에서도 구독이 없거나 만료된 경우 무료로 다운그레이드
+        update_columns(subscription_plan: "free", subscription_expires_at: nil)
+        return "free"
+      end
     end
     plan
+  end
+
+  def sync_revenuecat_subscription
+    # RevenueCat API 키 확인 (Google/Apple 키 중 하나 사용)
+    rc_key = ENV["REVENUECAT_GOOGLE_API_KEY"] || ENV["REVENUECAT_APPLE_API_KEY"]
+    return nil if rc_key.blank?
+
+    require "net/http"
+    require "json"
+
+    begin
+      uri = URI("https://api.revenuecat.com/v1/subscribers/#{id}")
+      req = Net::HTTP::Get.new(uri)
+      req["Authorization"] = "Bearer #{rc_key}"
+      req["Accept"] = "application/json"
+
+      res = Net::HTTP.start(uri.hostname, uri.port, use_ssl: true) do |http|
+        http.open_timeout = 3 # 3초 타임아웃으로 웹 요청 지연 최소화
+        http.read_timeout = 3
+        http.request(req)
+      end
+
+      if res.code == "200"
+        data = JSON.parse(res.body)
+        entitlements = data.dig("subscriber", "entitlements") || {}
+
+        # premium과 standard 중 활성화된 최고 플랜 선택
+        active_plan = nil
+        latest_expires_at = nil
+
+        %w[premium standard].each do |plan_name|
+          entitlement = entitlements[plan_name]
+          next if entitlement.blank?
+
+          expires_date_str = entitlement["expires_date"]
+          is_active = expires_date_str.nil? || Time.parse(expires_date_str) > Time.current
+
+          if is_active
+            expires_at = expires_date_str.present? ? Time.parse(expires_date_str) : nil
+            
+            # 최고 플랜 우선 (premium > standard)
+            if active_plan.nil? || (active_plan == "standard" && plan_name == "premium")
+              active_plan = plan_name
+              latest_expires_at = expires_at
+            end
+          end
+        end
+
+        if active_plan
+          # 갱신 완료: DB 업데이트
+          update_columns(
+            subscription_plan: active_plan,
+            subscription_expires_at: latest_expires_at
+          )
+          return active_plan
+        end
+      end
+    rescue => e
+      Rails.logger.error "[RevenueCat Sync] Failed to sync subscription for User #{id}: #{e.message}"
+    end
+
+    nil
   end
 
   def trial?
@@ -91,51 +160,48 @@ class User < ApplicationRecord
 
   def project_limit_reached?
     return false if plan_limit == Float::INFINITY
-    projects.where(created_at: Time.current.beginning_of_month..Time.current.end_of_month).count >= plan_limit
+    projects.count >= plan_limit
   end
 
   def can_use_ai_import?
-    return true if premium?
-    standard_or_above? && (ai_imports_count || 0) < 10
+    true
   end
 
   def ai_imports_remaining
-    return "무제한" if premium?
-    return 0 if free?
-    [ 10 - (ai_imports_count || 0), 0 ].max
+    "무제한"
   end
 
-  # ── 기능 권한 (플랜별 차별화) ──────────────────────────────────────
+  # ── 기능 권한 (모든 요금제에 100% 무료 제공) ──────────────────────────
   def can_view_stats?
-    standard_or_above?
+    true
   end
 
   def can_view_vendor_analysis?
-    standard_or_above?
+    true
   end
 
   def can_manage_receivables?
-    standard_or_above?
+    true
   end
 
   def can_export_excel?
-    premium?
+    true
   end
 
   def can_use_tax_report?
-    premium?
+    true
   end
 
   def can_use_widget?
-    premium?
+    true
   end
 
   def can_use_auto_alert?
-    premium?
+    true
   end
 
   def can_use_daily_diary?
-    standard_or_above?
+    true
   end
 
   def premium?

@@ -16,12 +16,8 @@ class MyAccountController < ApplicationController
   end
 
   def increment_document_scan
-    if current_user.premium? || current_user.subscription_plan == "premium" || current_user.document_scans_count.to_i < 10
-      current_user.increment!(:document_scans_count)
-      render json: { success: true }
-    else
-      render json: { success: false, limit_reached: true }
-    end
+    current_user.increment!(:document_scans_count)
+    render json: { success: true }
   end
 
   def update_documents
@@ -72,24 +68,16 @@ class MyAccountController < ApplicationController
   end
 
   def increment_biz_card_gen
-    if current_user.biz_card_generations_count.to_i < 30
-      current_user.increment!(:biz_card_generations_count)
-      render json: { success: true }
-    else
-      render json: { success: false, limit_reached: true }
-    end
+    current_user.increment!(:biz_card_generations_count)
+    render json: { success: true }
   end
 
   def bank_card_generator
   end
 
   def increment_bank_card_gen
-    if current_user.bank_card_generations_count.to_i < 30
-      current_user.increment!(:bank_card_generations_count)
-      render json: { success: true }
-    else
-      render json: { success: false, limit_reached: true }
-    end
+    current_user.increment!(:bank_card_generations_count)
+    render json: { success: true }
   end
 
   def cache_image_for_download

@@ -720,8 +720,6 @@ class ProjectsController < ApplicationController
   end
 
   def require_premium_for_money!
-    unless current_user.premium? || User::TESTING_PERIOD
-      redirect_to subscription_path, alert: "돈 관리는 프리미엄 요금제 전용 기능입니다. 💰"
-    end
+    # 모든 사용자가 금액/미수금 분석 등 수입 통계 기능을 활용할 수 있도록 허용
   end
 end
