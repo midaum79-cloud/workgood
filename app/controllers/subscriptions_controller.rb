@@ -1,6 +1,6 @@
 class SubscriptionsController < ApplicationController
   before_action :require_login
-  skip_before_action :verify_authenticity_token, only: [ :verify ]
+  skip_before_action :verify_authenticity_token, only: [ :verify_mobile ]
 
   def index
     @current_plan = current_user.subscription_plan
@@ -24,7 +24,8 @@ class SubscriptionsController < ApplicationController
         subscription_plan: "free",
         billing_key: nil,
         customer_uid: nil,
-        billing_started_at: nil
+        billing_started_at: nil,
+        subscription_expires_at: nil
       )
       redirect_to subscription_path, notice: "무료 플랜으로 전환되었습니다." and return
     end
@@ -54,7 +55,11 @@ class SubscriptionsController < ApplicationController
       req["Authorization"] = "Bearer #{rc_key}"
       req["Accept"] = "application/json"
 
-      res = Net::HTTP.start(uri.hostname, uri.port, use_ssl: true) { |http| http.request(req) }
+      res = Net::HTTP.start(uri.hostname, uri.port, use_ssl: true) do |http|
+        http.open_timeout = 5
+        http.read_timeout = 5
+        http.request(req)
+      end
       data = JSON.parse(res.body)
 
       entitlements = data.dig("subscriber", "entitlements") || {}
@@ -107,7 +112,8 @@ class SubscriptionsController < ApplicationController
       subscription_plan: "free",
       billing_key: nil,
       customer_uid: nil,
-      billing_started_at: nil
+      billing_started_at: nil,
+      subscription_expires_at: nil
     )
     redirect_to subscription_path, notice: "구독이 해지되었습니다. 무료 플랜으로 전환됩니다."
   end
