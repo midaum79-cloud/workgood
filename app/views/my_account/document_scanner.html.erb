@@ -1,3 +1,20 @@
+<style>
+  #cropCanvas { display: block; touch-action: none; }
+  .crop-handle {
+    position: absolute;
+    width: 36px; height: 36px;
+    background: #22d3ee;
+    border: 3px solid white;
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    cursor: grab;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+    z-index: 10;
+    touch-action: none;
+  }
+  .crop-handle:active { cursor: grabbing; background: #06b6d4; }
+</style>
+
 <div style="min-height:100vh; background:#f5f5f5; padding:16px 16px 100px 16px;">
   <div class="safe-sticky-header" style="background:white; padding:18px 20px 14px 20px; border-bottom:1px solid #ececec; position:sticky; top:0; z-index:20; margin:-16px -16px 16px -16px;">
     <div style="display:flex; justify-content:space-between; align-items:center;">
@@ -29,23 +46,70 @@
     <img id="scanResultImg" src="" style="width:100%; border-radius:12px; border:1px solid #e5e7eb; margin-bottom:16px;">
     
     <div style="display:flex; gap:10px;">
-      <button onclick="shareScannedImage()" style="flex:2; background:#6366f1; color:white; border:none; border-radius:12px; padding:14px; font-size:15px; font-weight:800; cursor:pointer; box-shadow:0 2px 8px rgba(99,102,241,0.2);">
-        공유 및 저장하기
+      <button onclick="openCropEditor()" style="flex:1; background:#0891b2; color:white; border:none; border-radius:12px; padding:14px; font-size:14px; font-weight:800; cursor:pointer; box-shadow:0 2px 8px rgba(8,145,178,0.2);">
+        ✏️ 모서리 조정
       </button>
-      <button onclick="deleteScannedImage()" style="flex:1; background:#ef4444; color:white; border:none; border-radius:12px; padding:14px; font-size:15px; font-weight:800; cursor:pointer; box-shadow:0 2px 8px rgba(239,68,68,0.2);">
+      <button onclick="shareScannedImage()" style="flex:2; background:#6366f1; color:white; border:none; border-radius:12px; padding:14px; font-size:14px; font-weight:800; cursor:pointer; box-shadow:0 2px 8px rgba(99,102,241,0.2);">
+        공유 및 저장
+      </button>
+      <button onclick="deleteScannedImage()" style="flex:1; background:#ef4444; color:white; border:none; border-radius:12px; padding:14px; font-size:14px; font-weight:800; cursor:pointer; box-shadow:0 2px 8px rgba(239,68,68,0.2);">
         삭제
       </button>
     </div>
   </div>
 </div>
 
+<!-- ── 모서리 조정 오버레이 ────────────────────────────────── -->
+<div id="cropEditorOverlay" style="display:none; position:fixed; inset:0; background:#000; z-index:9999; flex-direction:column;">
+
+  <!-- 헤더 -->
+  <div style="background:#111827; padding:14px 16px; display:flex; align-items:center; justify-content:space-between; flex-shrink:0;">
+    <button onclick="cancelCropEditor()" style="background:rgba(255,255,255,0.12); color:white; border:none; border-radius:10px; padding:8px 16px; font-size:14px; font-weight:700; cursor:pointer;">
+      취소
+    </button>
+    <div style="color:white; font-size:16px; font-weight:900;">모서리 조정</div>
+    <button onclick="applyCropEditor()" style="background:#22d3ee; color:#0f172a; border:none; border-radius:10px; padding:8px 16px; font-size:14px; font-weight:800; cursor:pointer;">
+      완료 ✓
+    </button>
+  </div>
+
+  <!-- 안내 텍스트 -->
+  <div style="color:#94a3b8; font-size:12px; font-weight:600; text-align:center; padding:8px 16px; flex-shrink:0;">
+    파란 점을 드래그하여 문서 모서리를 맞춰주세요
+  </div>
+
+  <!-- 캔버스 영역 -->
+  <div id="cropCanvasContainer" style="flex:1; position:relative; overflow:hidden; display:flex; align-items:center; justify-content:center;">
+    <canvas id="cropCanvas"></canvas>
+    <!-- 4 corner handles -->
+    <div class="crop-handle" id="handle0" data-idx="0"></div>
+    <div class="crop-handle" id="handle1" data-idx="1"></div>
+    <div class="crop-handle" id="handle2" data-idx="2"></div>
+    <div class="crop-handle" id="handle3" data-idx="3"></div>
+  </div>
+
+  <!-- 하단 버튼 -->
+  <div style="background:#111827; padding:16px; display:flex; gap:10px; flex-shrink:0;">
+    <button onclick="resetCropCorners()" style="flex:1; background:rgba(255,255,255,0.1); color:white; border:none; border-radius:12px; padding:14px; font-size:14px; font-weight:700; cursor:pointer;">
+      🔄 초기화
+    </button>
+    <button onclick="applyCropEditor()" style="flex:2; background:#22d3ee; color:#0f172a; border:none; border-radius:12px; padding:14px; font-size:15px; font-weight:900; cursor:pointer;">
+      모서리 조정 완료 ✓
+    </button>
+  </div>
+</div>
+
 <script>
   let lastScannedFilePath = null;
-  const isPremium = true;
-  const scansCount = 0;
+  let cropOriginalSrc = null;      // 원본 이미지 dataURL (취소 시 복원)
+  let cropImage = new Image();
+  let cropCorners = [];            // 캔버스 좌표계 [{x,y} x4]
+  let canvasRect = null;           // canvas getBoundingClientRect()
+  let canvasOffsetX = 0, canvasOffsetY = 0; // 캔버스가 컨테이너 내에서 떠있는 오프셋
+  let activeHandle = null;
 
+  // ── 스캔 시작 ─────────────────────────────────────────────
   document.getElementById('startScanBtn').addEventListener('click', async function() {
-
     if (!window.Capacitor || !window.Capacitor.Plugins.DocumentScanner) {
       alert("문서 스캐너는 일잘러 모바일 앱에서만 지원되는 기능입니다.\n아이폰/안드로이드 앱을 이용해주세요!");
       return;
@@ -53,56 +117,66 @@
     
     try {
       const { DocumentScanner } = window.Capacitor.Plugins;
-      const { scannedImages } = await DocumentScanner.scanDocument({
+      // iOS/Android 모두 maxNumDocuments 없이 호출 → 네이티브 완료 버튼 사용
+      // letUserAdjustCrop: true 를 유지하되, 웹 편집기로 일관성 확보
+      const result = await DocumentScanner.scanDocument({
         letUserAdjustCrop: true,
-        reviewCapturedDocument: true,
-        maxNumDocuments: 1
+        reviewCapturedDocument: true
       });
       
+      const scannedImages = result.scannedImages;
       if (scannedImages && scannedImages.length > 0) {
         lastScannedFilePath = scannedImages[0];
         const webPath = window.Capacitor.convertFileSrc(lastScannedFilePath);
         
         document.getElementById('scanResultImg').src = webPath;
         document.getElementById('scanResultArea').style.display = 'block';
+        document.getElementById('scanResultArea').scrollIntoView({ behavior: 'smooth', block: 'start' });
 
-        // 서버에 카운트 증가 요청
+        // 서버 카운트
         fetch('<%= increment_document_scan_path %>', {
           method: 'POST',
           headers: {
             'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').content,
             'Accept': 'application/json'
           }
-        }).then(res => res.json()).then(data => {
-          if (data.success && !isPremium) {
-            // 새로고침 없이 숫자를 줄여 보여주고 싶을 수 있지만, 심플하게 놔두거나
-            // 원한다면 DOM 업데이트 가능. 일단은 페이지 리로드 될때 바뀌게 둠.
-          }
         }).catch(err => console.error(err));
       }
     } catch (e) {
-      if (e.message && !e.message.includes("User cancelled") && !e.message.includes("canceled")) {
+      if (e.message && !e.message.includes("User cancelled") && !e.message.includes("canceled") && !e.message.includes("cancel")) {
         alert("스캔 중 오류가 발생했습니다: " + e.message);
       }
     }
   });
 
+  // ── 공유 ────────────────────────────────────────────────
   async function shareScannedImage() {
-    if (!lastScannedFilePath || !window.Capacitor) return;
-    try {
-      const { Share } = window.Capacitor.Plugins;
-      await Share.share({
-        title: '스캔된 문서',
-        text: '일잘러 앱에서 스캔한 문서입니다.',
-        url: lastScannedFilePath,
-      });
-      
-      // iOS 등에서 저장이 완료된 후의 체감 알림
-      setTimeout(() => {
-        alert("스캔본이 저장/공유 되었습니다!");
-      }, 500);
-    } catch (e) {
-      console.error(e);
+    const imgSrc = document.getElementById('scanResultImg').src;
+    if (!imgSrc) return;
+
+    // 편집된 이미지(dataURL)인 경우 파일로 변환하여 공유
+    if (imgSrc.startsWith('data:')) {
+      try {
+        const blob = await (await fetch(imgSrc)).blob();
+        const file = new File([blob], 'scanned_document.png', { type: 'image/png' });
+        if (navigator.canShare && navigator.canShare({ files: [file] })) {
+          await navigator.share({ files: [file], title: '스캔된 문서', text: '일잘러 앱에서 스캔한 문서입니다.' });
+          return;
+        }
+      } catch(e) { console.error(e); }
+    }
+
+    // 원본 파일 경로로 공유 (Capacitor Share)
+    if (lastScannedFilePath && window.Capacitor) {
+      try {
+        const shareTarget = imgSrc.startsWith('data:') ? imgSrc : lastScannedFilePath;
+        await window.Capacitor.Plugins.Share.share({
+          title: '스캔된 문서',
+          text: '일잘러 앱에서 스캔한 문서입니다.',
+          url: shareTarget,
+        });
+        setTimeout(() => { alert("스캔본이 저장/공유 되었습니다!"); }, 500);
+      } catch(e) { console.error(e); }
     }
   }
 
@@ -112,5 +186,242 @@
       document.getElementById('scanResultImg').src = '';
       lastScannedFilePath = null;
     }
+  }
+
+  // ── 모서리 조정 편집기 ────────────────────────────────────
+
+  function openCropEditor() {
+    const imgEl = document.getElementById('scanResultImg');
+    if (!imgEl.src) return;
+
+    cropOriginalSrc = imgEl.src;
+
+    // 이미지 로드
+    cropImage = new Image();
+    cropImage.crossOrigin = 'anonymous';
+    cropImage.onload = function() {
+      initCropCanvas();
+      document.getElementById('cropEditorOverlay').style.display = 'flex';
+    };
+    cropImage.src = cropOriginalSrc;
+  }
+
+  function cancelCropEditor() {
+    document.getElementById('cropEditorOverlay').style.display = 'none';
+  }
+
+  function initCropCanvas() {
+    const container = document.getElementById('cropCanvasContainer');
+    const canvas = document.getElementById('cropCanvas');
+
+    const maxW = container.clientWidth - 32;
+    const maxH = container.clientHeight - 16;
+    const imgAspect = cropImage.naturalWidth / cropImage.naturalHeight;
+    const containerAspect = maxW / maxH;
+
+    let drawW, drawH;
+    if (imgAspect > containerAspect) {
+      drawW = maxW;
+      drawH = maxW / imgAspect;
+    } else {
+      drawH = maxH;
+      drawW = maxH * imgAspect;
+    }
+
+    canvas.width = drawW;
+    canvas.height = drawH;
+    canvas.style.width = drawW + 'px';
+    canvas.style.height = drawH + 'px';
+
+    // 캔버스가 컨테이너 내에서 차지하는 오프셋 계산
+    canvasOffsetX = (container.clientWidth - drawW) / 2;
+    canvasOffsetY = (container.clientHeight - drawH) / 2;
+
+    resetCropCorners(drawW, drawH);
+    drawCropCanvas();
+    updateHandlePositions();
+    attachHandleEvents();
+  }
+
+  function resetCropCorners(w, h) {
+    const canvas = document.getElementById('cropCanvas');
+    const cw = w || canvas.width;
+    const ch = h || canvas.height;
+    const inset = 0.06;
+    cropCorners = [
+      { x: cw * inset,       y: ch * inset },        // 좌상
+      { x: cw * (1 - inset), y: ch * inset },        // 우상
+      { x: cw * (1 - inset), y: ch * (1 - inset) },  // 우하
+      { x: cw * inset,       y: ch * (1 - inset) }   // 좌하
+    ];
+    drawCropCanvas();
+    updateHandlePositions();
+  }
+
+  function drawCropCanvas() {
+    const canvas = document.getElementById('cropCanvas');
+    const ctx = canvas.getContext('2d');
+    const W = canvas.width, H = canvas.height;
+
+    ctx.clearRect(0, 0, W, H);
+
+    // 전체 이미지 그리기 (어둡게)
+    ctx.globalAlpha = 0.45;
+    ctx.drawImage(cropImage, 0, 0, W, H);
+    ctx.globalAlpha = 1.0;
+
+    // 선택 영역만 선명하게
+    ctx.save();
+    ctx.beginPath();
+    ctx.moveTo(cropCorners[0].x, cropCorners[0].y);
+    ctx.lineTo(cropCorners[1].x, cropCorners[1].y);
+    ctx.lineTo(cropCorners[2].x, cropCorners[2].y);
+    ctx.lineTo(cropCorners[3].x, cropCorners[3].y);
+    ctx.closePath();
+    ctx.clip();
+    ctx.drawImage(cropImage, 0, 0, W, H);
+    ctx.restore();
+
+    // 선택 영역 테두리
+    ctx.strokeStyle = '#22d3ee';
+    ctx.lineWidth = 2.5;
+    ctx.setLineDash([]);
+    ctx.beginPath();
+    ctx.moveTo(cropCorners[0].x, cropCorners[0].y);
+    ctx.lineTo(cropCorners[1].x, cropCorners[1].y);
+    ctx.lineTo(cropCorners[2].x, cropCorners[2].y);
+    ctx.lineTo(cropCorners[3].x, cropCorners[3].y);
+    ctx.closePath();
+    ctx.stroke();
+
+    // 중간 가이드선 (격자)
+    ctx.strokeStyle = 'rgba(34,211,238,0.35)';
+    ctx.lineWidth = 1;
+    // 가로 1/3
+    const t1 = lerp2D(cropCorners[0], cropCorners[3], 1/3);
+    const t2 = lerp2D(cropCorners[1], cropCorners[2], 1/3);
+    const t3 = lerp2D(cropCorners[0], cropCorners[3], 2/3);
+    const t4 = lerp2D(cropCorners[1], cropCorners[2], 2/3);
+    ctx.beginPath(); ctx.moveTo(t1.x, t1.y); ctx.lineTo(t2.x, t2.y); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(t3.x, t3.y); ctx.lineTo(t4.x, t4.y); ctx.stroke();
+    // 세로 1/3
+    const t5 = lerp2D(cropCorners[0], cropCorners[1], 1/3);
+    const t6 = lerp2D(cropCorners[3], cropCorners[2], 1/3);
+    const t7 = lerp2D(cropCorners[0], cropCorners[1], 2/3);
+    const t8 = lerp2D(cropCorners[3], cropCorners[2], 2/3);
+    ctx.beginPath(); ctx.moveTo(t5.x, t5.y); ctx.lineTo(t6.x, t6.y); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(t7.x, t7.y); ctx.lineTo(t8.x, t8.y); ctx.stroke();
+  }
+
+  function lerp2D(a, b, t) {
+    return { x: a.x + (b.x - a.x) * t, y: a.y + (b.y - a.y) * t };
+  }
+
+  function updateHandlePositions() {
+    const container = document.getElementById('cropCanvasContainer');
+    cropCorners.forEach((corner, i) => {
+      const handle = document.getElementById('handle' + i);
+      // 핸들은 컨테이너 기준 절대 좌표
+      handle.style.left = (canvasOffsetX + corner.x) + 'px';
+      handle.style.top  = (canvasOffsetY + corner.y) + 'px';
+    });
+  }
+
+  function attachHandleEvents() {
+    [0, 1, 2, 3].forEach(i => {
+      const handle = document.getElementById('handle' + i);
+      // 기존 이벤트 제거 (재초기화 시 중복 방지)
+      handle.replaceWith(handle.cloneNode(true));
+    });
+
+    [0, 1, 2, 3].forEach(i => {
+      const handle = document.getElementById('handle' + i);
+      const canvas  = document.getElementById('cropCanvas');
+
+      handle.addEventListener('touchstart', function(e) {
+        e.preventDefault();
+        activeHandle = i;
+      }, { passive: false });
+
+      handle.addEventListener('mousedown', function(e) {
+        e.preventDefault();
+        activeHandle = i;
+      });
+    });
+
+    const container = document.getElementById('cropCanvasContainer');
+
+    container.addEventListener('touchmove', function(e) {
+      if (activeHandle === null) return;
+      e.preventDefault();
+      const touch = e.touches[0];
+      const rect = container.getBoundingClientRect();
+      const x = Math.max(0, Math.min(document.getElementById('cropCanvas').width,  touch.clientX - rect.left  - canvasOffsetX));
+      const y = Math.max(0, Math.min(document.getElementById('cropCanvas').height, touch.clientY - rect.top   - canvasOffsetY));
+      cropCorners[activeHandle] = { x, y };
+      drawCropCanvas();
+      updateHandlePositions();
+    }, { passive: false });
+
+    container.addEventListener('mousemove', function(e) {
+      if (activeHandle === null) return;
+      const rect = container.getBoundingClientRect();
+      const x = Math.max(0, Math.min(document.getElementById('cropCanvas').width,  e.clientX - rect.left  - canvasOffsetX));
+      const y = Math.max(0, Math.min(document.getElementById('cropCanvas').height, e.clientY - rect.top   - canvasOffsetY));
+      cropCorners[activeHandle] = { x, y };
+      drawCropCanvas();
+      updateHandlePositions();
+    });
+
+    document.addEventListener('touchend', function() { activeHandle = null; });
+    document.addEventListener('mouseup',  function() { activeHandle = null; });
+  }
+
+  function applyCropEditor() {
+    const canvas = document.getElementById('cropCanvas');
+
+    // 4개의 꼭짓점에서 바운딩 박스 계산
+    const xs = cropCorners.map(c => c.x);
+    const ys = cropCorners.map(c => c.y);
+    const minX = Math.min(...xs), maxX = Math.max(...xs);
+    const minY = Math.min(...ys), maxY = Math.max(...ys);
+    const cropW = Math.max(1, maxX - minX);
+    const cropH = Math.max(1, maxY - minY);
+
+    // 원본 이미지 좌표로 변환
+    const scaleX = cropImage.naturalWidth  / canvas.width;
+    const scaleY = cropImage.naturalHeight / canvas.height;
+
+    const resultCanvas = document.createElement('canvas');
+    resultCanvas.width  = Math.round(cropW * scaleX);
+    resultCanvas.height = Math.round(cropH * scaleY);
+
+    const ctx = resultCanvas.getContext('2d');
+
+    // 선택 영역의 쿼드를 클리핑하여 원본 이미지 그리기
+    ctx.save();
+    ctx.beginPath();
+    cropCorners.forEach((c, i) => {
+      const px = (c.x - minX) * scaleX;
+      const py = (c.y - minY) * scaleY;
+      i === 0 ? ctx.moveTo(px, py) : ctx.lineTo(px, py);
+    });
+    ctx.closePath();
+    ctx.clip();
+    ctx.drawImage(
+      cropImage,
+      minX * scaleX, minY * scaleY,
+      cropW * scaleX, cropH * scaleY,
+      0, 0,
+      resultCanvas.width, resultCanvas.height
+    );
+    ctx.restore();
+
+    const croppedDataURL = resultCanvas.toDataURL('image/jpeg', 0.95);
+
+    // 결과 이미지 업데이트
+    document.getElementById('scanResultImg').src = croppedDataURL;
+    document.getElementById('scanResultArea').style.display = 'block';
+    document.getElementById('cropEditorOverlay').style.display = 'none';
   }
 </script>
