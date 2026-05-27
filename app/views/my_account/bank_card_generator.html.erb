@@ -96,7 +96,7 @@
 
           <!-- 계좌번호 -->
           <div style="display:flex; border-bottom:1px solid #e5e7eb;">
-            <div style="width:85px; flex-shrink:0; background:#f8fafc; padding:14px 16px; font-size:12px; font-weight:800; color:#64748b; display:flex; align-items:center; border-right:1px solid #e5e7eb;">
+            <div style="width:100px; flex-shrink:0; background:#f8fafc; padding:14px 16px; font-size:12px; font-weight:800; color:#64748b; display:flex; align-items:center; border-right:1px solid #e5e7eb;">
               계좌번호
             </div>
             <div id="fieldAccountNumber" style="flex:1; padding:14px 16px; font-size:15px; font-weight:900; color:#111827; font-family:'Courier New', Courier, monospace; letter-spacing:0.5px; display:flex; align-items:center; overflow-wrap:anywhere; word-break:break-all;">
@@ -105,21 +105,12 @@
           </div>
 
           <!-- 예금주 -->
-          <div style="display:flex; border-bottom:1px solid #e5e7eb;">
+          <div style="display:flex;">
             <div style="width:100px; flex-shrink:0; background:#f8fafc; padding:14px 16px; font-size:12px; font-weight:800; color:#64748b; display:flex; align-items:center; border-right:1px solid #e5e7eb;">
               예금주
             </div>
             <div id="fieldHolderName" style="flex:1; padding:14px 16px; font-size:16px; font-weight:900; color:#111827; display:flex; align-items:center;">
               김일잘
-            </div>
-          </div>
-
-          <!-- 개설지점 -->
-          <div style="display:flex;">
-            <div style="width:100px; flex-shrink:0; background:#f8fafc; padding:14px 16px; font-size:12px; font-weight:800; color:#64748b; display:flex; align-items:center; border-right:1px solid #e5e7eb;">
-              발급일
-            </div>
-            <div id="fieldIssueDate" style="flex:1; padding:14px 16px; font-size:13px; font-weight:700; color:#6b7280; display:flex; align-items:center;">
             </div>
           </div>
         </div>
@@ -378,11 +369,6 @@
       document.getElementById('fieldAccountType').textContent = typeInput.value || '보통예금';
       document.getElementById('fieldAccountNumber').textContent = accountInput.value || '110-123-456789';
       document.getElementById('fieldHolderName').textContent = holderInput.value || '김일잘';
-      
-      // 발급일
-      var today = new Date();
-      document.getElementById('fieldIssueDate').textContent = 
-        today.getFullYear() + '년 ' + (today.getMonth()+1) + '월 ' + today.getDate() + '일';
     }
 
     nameInput.addEventListener('change', updateCard);
