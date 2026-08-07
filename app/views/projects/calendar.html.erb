@@ -1319,3 +1319,53 @@ document.addEventListener('DOMContentLoaded', function() {
 })();
 </script>
 
+<script>
+// 바텀시트 스와이프 다운 닫기 기능
+document.addEventListener('DOMContentLoaded', function() {
+  function enableSwipeToClose(sheetId, closeFunc) {
+    var sheet = document.getElementById(sheetId);
+    if (!sheet) return;
+    
+    var startY = 0;
+    var currentY = 0;
+    var isDragging = false;
+    
+    sheet.addEventListener('touchstart', function(e) {
+      if (sheet.scrollTop <= 0) {
+        startY = e.touches[0].clientY;
+        currentY = startY;
+        isDragging = true;
+        sheet.style.transition = 'none';
+      }
+    }, { passive: true });
+    
+    sheet.addEventListener('touchmove', function(e) {
+      if (!isDragging) return;
+      currentY = e.touches[0].clientY;
+      var diff = currentY - startY;
+      
+      // 아래로 당길 때만 드래그 적용
+      if (diff > 0 && sheet.scrollTop <= 0) {
+        if (e.cancelable) e.preventDefault(); 
+        sheet.style.transform = 'translateY(' + diff + 'px)';
+      }
+    }, { passive: false });
+    
+    sheet.addEventListener('touchend', function(e) {
+      if (!isDragging) return;
+      isDragging = false;
+      sheet.style.transition = 'transform 0.35s cubic-bezier(0.4,0,0.2,1)';
+      
+      var diff = currentY - startY;
+      if (diff > 80) { // 80px 이상 드래그 시 닫기
+        closeFunc();
+      } else {
+        sheet.style.transform = 'translateY(0)';
+      }
+    });
+  }
+
+  enableSwipeToClose('bottomSheet', closeBottomSheet);
+  enableSwipeToClose('chipBottomSheet', closeChipMenu);
+});
+</script>
