@@ -271,6 +271,30 @@
     <button type="button" onclick="closeDaumPostcodeConsultation()" style="position:absolute;top:10px;right:10px;background:#333;color:#fff;border:none;border-radius:4px;padding:8px 12px;font-size:14px;font-weight:bold;z-index:10000;cursor:pointer;">닫기</button>
   </div>
 
+  <div id="bsConsultationView" style="display:none; padding:0 16px 20px 16px;">
+    <button onclick="bsGoBack()" style="background:none; border:none; font-size:14px; font-weight:800; color:#10b981; cursor:pointer; padding:0 0 12px 0; font-family:inherit;">← 이전으로</button>
+    <div style="display:flex; flex-direction:column; gap:12px;">
+      <div style="font-size:20px; font-weight:900; color:#111827;" id="vName"></div>
+      <div style="display:flex; flex-direction:column; gap:8px; margin-top:8px; border:1px solid #f3f4f6; border-radius:12px; padding:16px; background:#f9fafb;">
+        <div style="font-size:14px; font-weight:800; color:#4b5563; display:flex; align-items:center; gap:8px;">
+          <span style="font-size:16px;">⏰</span> <span id="vTime" style="color:#111827;"></span>
+        </div>
+        <div style="font-size:14px; font-weight:800; color:#4b5563; display:flex; align-items:center; gap:8px;">
+          <span style="font-size:16px;">📞</span> <span id="vPhone" style="color:#111827;"></span>
+        </div>
+        <div style="font-size:14px; font-weight:800; color:#4b5563; display:flex; align-items:flex-start; gap:8px;">
+          <span style="font-size:16px;">📍</span> <span id="vAddress" style="color:#111827; flex:1;"></span>
+        </div>
+      </div>
+      <div style="font-size:14px; font-weight:700; color:#4b5563; background:#f3f4f6; padding:16px; border-radius:12px; min-height:80px; white-space:pre-wrap;" id="vMemo"></div>
+      
+      <div style="display:flex; gap:8px; margin-top:8px;">
+        <button type="button" onclick="bsDeleteConsultation()" style="flex:1; height:46px; border:none; border-radius:12px; background:#fef2f2; color:#dc2626; font-size:15px; font-weight:900; cursor:pointer;">삭제</button>
+        <button type="button" id="vEditBtn" style="flex:2; height:46px; border:none; border-radius:12px; background:#3b82f6; color:white; font-size:15px; font-weight:900; cursor:pointer;">수정하기</button>
+      </div>
+    </div>
+  </div>
+
   <div id="bsConsultationForm" style="display:none; padding:0 16px 20px 16px;">
     <button onclick="bsGoBack()" style="background:none; border:none; font-size:14px; font-weight:800; color:#10b981; cursor:pointer; padding:0 0 12px 0; font-family:inherit;">← 이전으로</button>
     <div style="display:flex; flex-direction:column; gap:12px;">
@@ -376,7 +400,7 @@ function openBottomSheet(dateStr) {
     } else {
       var html = '';
       dateConsultations.forEach(function(c) {
-        html += '<div onclick="bsEditConsultation(' + c.id + ')" style="border:1px solid #f3f4f6; border-radius:16px; padding:16px; margin-bottom:8px; cursor:pointer; background:white; box-shadow:0 1px 3px rgba(0,0,0,0.05);">' +
+        html += '<div onclick="bsViewConsultation(' + c.id + ')" style="border:1px solid #f3f4f6; border-radius:16px; padding:16px; margin-bottom:8px; cursor:pointer; background:white; box-shadow:0 1px 3px rgba(0,0,0,0.05);">' +
           '<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">' +
             '<div style="font-size:16px; font-weight:900; color:#111827;">' + c.name + '</div>' +
             (c.time ? '<div style="background:#d1fae5; color:#047857; padding:4px 8px; border-radius:6px; font-size:13px; font-weight:800;">' + c.time + '</div>' : '') +
@@ -411,11 +435,37 @@ function closeBottomSheet() {
 function bsGoBack() {
   document.getElementById('bsStep1').style.display = 'block';
   document.getElementById('bsConsultationForm').style.display = 'none';
+  var viewEl = document.getElementById('bsConsultationView');
+  if(viewEl) viewEl.style.display = 'none';
   document.getElementById('bsTitle').textContent = '일정 관리';
+}
+
+function bsViewConsultation(id) {
+  var c = calendarConsultations.find(function(x) { return x.id === id; });
+  if(!c) return;
+  bsSelectedDate = c.date;
+  var parts = bsSelectedDate.split('-');
+  document.getElementById('bsSubtitle').textContent = parts[0] + '년 ' + parseInt(parts[1]) + '월 ' + parseInt(parts[2]) + '일';
+  
+  document.getElementById('bsStep1').style.display = 'none';
+  document.getElementById('bsConsultationForm').style.display = 'none';
+  document.getElementById('bsConsultationView').style.display = 'block';
+  document.getElementById('bsTitle').textContent = '상담 일정 상세';
+  
+  document.getElementById('vName').textContent = c.name;
+  document.getElementById('vTime').textContent = c.time || '시간 미지정';
+  document.getElementById('vPhone').textContent = c.phone || '연락처 없음';
+  document.getElementById('vAddress').textContent = c.address || '주소 미지정';
+  document.getElementById('vMemo').textContent = c.memo || '메모가 없습니다.';
+  
+  document.getElementById('vEditBtn').onclick = function() { bsEditConsultation(id); };
+  document.getElementById('cId').value = id; // set ID for delete
 }
 
 function bsOpenAddConsultation() {
   document.getElementById('bsStep1').style.display = 'none';
+  var viewEl = document.getElementById('bsConsultationView');
+  if(viewEl) viewEl.style.display = 'none';
   document.getElementById('bsConsultationForm').style.display = 'block';
   document.getElementById('bsTitle').textContent = '상담 일정 추가';
   document.getElementById('cId').value = '';
@@ -436,6 +486,8 @@ function bsEditConsultation(id) {
   document.getElementById('bsSubtitle').textContent = parts[0] + '년 ' + parseInt(parts[1]) + '월 ' + parseInt(parts[2]) + '일';
   
   document.getElementById('bsStep1').style.display = 'none';
+  var viewEl = document.getElementById('bsConsultationView');
+  if(viewEl) viewEl.style.display = 'none';
   document.getElementById('bsConsultationForm').style.display = 'block';
   document.getElementById('bsTitle').textContent = '상담 일정 수정';
   document.getElementById('cId').value = c.id;
