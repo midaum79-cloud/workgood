@@ -84,8 +84,8 @@ class User < ApplicationRecord
   end
 
   def sync_revenuecat_subscription
-    # RevenueCat API 키 확인 (Google/Apple 키 중 하나 사용)
-    rc_key = ENV["REVENUECAT_GOOGLE_API_KEY"] || ENV["REVENUECAT_APPLE_API_KEY"]
+    # RevenueCat API 키 확인 (Secret API Key 사용)
+    rc_key = ENV["REVENUECAT_SECRET_KEY"]
     return nil if rc_key.blank?
 
     require "net/http"

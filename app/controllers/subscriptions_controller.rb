@@ -48,7 +48,11 @@ class SubscriptionsController < ApplicationController
     require "net/http"
     require "json"
 
-    rc_key = ENV["REVENUECAT_GOOGLE_API_KEY"] || ENV["REVENUECAT_APPLE_API_KEY"]
+    rc_key = ENV["REVENUECAT_SECRET_KEY"]
+    if rc_key.blank?
+      Rails.logger.error "[RevenueCat] Secret API key is missing!"
+      return redirect_to subscription_path, alert: "서버 설정 오류입니다. 관리자에게 문의해주세요."
+    end
     begin
       uri = URI("https://api.revenuecat.com/v1/subscribers/#{current_user.id}")
       req = Net::HTTP::Get.new(uri)
@@ -94,7 +98,7 @@ class SubscriptionsController < ApplicationController
 
     # 구독 플랜 업그레이드 (핵심 처리)
     begin
-      current_user.update!(
+      current_user.update_columns(
         subscription_plan: plan,
         billing_started_at: Time.current,
         subscription_expires_at: 1.month.from_now
