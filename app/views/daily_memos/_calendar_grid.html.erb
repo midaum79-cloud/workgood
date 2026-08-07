@@ -5,8 +5,8 @@
       is_today = date == Date.today
       memo = @memos_by_date[date]
       
-      holidays = Holidays.on(date, :kr)
-      is_holiday = holidays.any?
+      holiday = HolidayHelper.get_holiday(date)
+      is_holiday = holiday.present?
 
       # 텍스트 컬러 지정 (세련된 색상 톤)
       text_color = if !is_current_month; '#d1d5db'

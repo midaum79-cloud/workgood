@@ -7,9 +7,9 @@
         <% day_projects = @projects_by_date[day] || [] %>
         <% day_consultations = @consultations_by_date && @consultations_by_date[day] || [] %>
 
-        <% holidays = Holidays.on(day, :kr) %>
-        <% is_holiday = holidays.any? %>
-        <% holiday_name = holidays.first[:name] if is_holiday %>
+        <% holiday = HolidayHelper.get_holiday(day) %>
+        <% is_holiday = holiday.present? %>
+        <% holiday_name = holiday[:name] if is_holiday %>
 
         <% date_text_color = if !is_current_month
             '#9ca3af'
