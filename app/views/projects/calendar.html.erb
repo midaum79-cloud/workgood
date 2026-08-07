@@ -546,7 +546,6 @@ function openDaumPostcode() {
   new daum.Postcode({
     oncomplete: function(data) {
       document.getElementById('cAddress').value = data.address;
-      document.getElementById('cDetailAddress').focus();
       closeDaumPostcodeConsultation();
     },
     onresize: function(size) {
