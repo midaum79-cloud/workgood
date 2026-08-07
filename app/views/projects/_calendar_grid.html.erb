@@ -5,6 +5,7 @@
         <% is_current_month = (day.month == @calendar_month) %>
         <% is_today = (day == Date.current) %>
         <% day_projects = @projects_by_date[day] || [] %>
+        <% day_consultations = @consultations_by_date && @consultations_by_date[day] || [] %>
 
         <% holidays = Holidays.on(day, :kr) %>
         <% is_holiday = holidays.any? %>
@@ -74,6 +75,28 @@
                     -webkit-user-select:none;
                    ">
                 <%= proj.client_name.presence || proj.project_name %>
+              </div>
+            <% end %>
+            <% day_consultations.each do |consult| %>
+              <div class="schedule-chip consultation-chip"
+                   onclick="if(typeof bsEditConsultation === 'function') { event.stopPropagation(); bsEditConsultation(<%= consult.id %>); }"
+                   style="
+                    font-size:9px;
+                    font-weight:800;
+                    color:#065f46;
+                    background:#d1fae5;
+                    border:1px solid #10b981;
+                    border-radius:4px;
+                    padding:2px 3px;
+                    margin-bottom:1px;
+                    overflow:hidden;
+                    white-space:nowrap;
+                    text-overflow:ellipsis;
+                    cursor:pointer;
+                    user-select:none;
+                    -webkit-user-select:none;
+                   ">
+                📞 <%= consult.customer_name %>
               </div>
             <% end %>
           <% end %>

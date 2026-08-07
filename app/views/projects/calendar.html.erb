@@ -224,13 +224,20 @@
 
   <div style="padding:8px 20px 14px 20px; display:flex; justify-content:space-between; align-items:center;">
     <div>
-      <div id="bsTitle" style="font-size:20px; font-weight:900; color:#111827;">현장 추가</div>
+      <div id="bsTitle" style="font-size:20px; font-weight:900; color:#111827;">일정 관리</div>
       <div id="bsSubtitle" style="font-size:13px; font-weight:700; color:#9ca3af; margin-top:2px;"></div>
     </div>
     <div onclick="closeBottomSheet()" style="font-size:22px; color:#9ca3af; cursor:pointer; padding:4px 8px;">✕</div>
   </div>
 
-  <div style="padding:0 16px 20px 16px;">
+  <div id="bsStep1" style="padding:0 16px 20px 16px;">
+    <div style="margin-bottom:20px;">
+      <button type="button" onclick="bsOpenAddConsultation()" style="width:100%; padding:14px; border:none; border-radius:12px; background:#10b981; color:white; font-size:16px; font-weight:900; cursor:pointer; display:flex; justify-content:center; align-items:center; gap:8px;">
+        <span style="font-size:18px;">📞</span> 상담 일정 등록하기
+      </button>
+    </div>
+
+    <div style="font-size:15px; font-weight:800; color:#111827; margin-bottom:12px;">🏢 현장 추가</div>
     <div style="display:flex; gap:8px; margin-bottom:14px;">
       <button type="button" id="bsTabCompany" onclick="bsSwitchTab('company')" style="flex:1; padding:10px; border:none; border-radius:12px; font-size:14px; font-weight:800; cursor:pointer; background:#111827; color:white;">🏢 업체</button>
       <button type="button" id="bsTabPersonal" onclick="bsSwitchTab('personal')" style="flex:1; padding:10px; border:none; border-radius:12px; font-size:14px; font-weight:800; cursor:pointer; background:#f3f4f6; color:#6b7280;">👤 개인</button>
@@ -248,6 +255,26 @@
         style="width:100%; padding:14px; border:none; border-radius:12px; background:#2563eb; color:white; font-size:16px; font-weight:900; cursor:pointer;">
         일정에 바로 추가하기
       </button>
+    </div>
+  </div>
+
+  <div id="bsConsultationForm" style="display:none; padding:0 16px 20px 16px;">
+    <button onclick="bsGoBack()" style="background:none; border:none; font-size:14px; font-weight:800; color:#10b981; cursor:pointer; padding:0 0 12px 0; font-family:inherit;">← 이전으로</button>
+    <div style="display:flex; flex-direction:column; gap:12px;">
+      <input type="hidden" id="cId">
+      <input type="text" id="cName" placeholder="고객명 (필수)" style="height:46px; border:1px solid #dcdcdc; border-radius:12px; padding:0 14px; font-size:15px; font-weight:700;">
+      <input type="tel" id="cPhone" placeholder="연락처" style="height:46px; border:1px solid #dcdcdc; border-radius:12px; padding:0 14px; font-size:15px; font-weight:700;">
+      <input type="text" id="cAddress" placeholder="주소" style="height:46px; border:1px solid #dcdcdc; border-radius:12px; padding:0 14px; font-size:15px; font-weight:700;">
+      <div style="display:flex; flex-direction:column; gap:4px;">
+        <label for="cTime" style="font-size:13px; font-weight:800; color:#6b7280; padding-left:4px;">상담 시간</label>
+        <input type="time" id="cTime" style="height:46px; border:1px solid #dcdcdc; border-radius:12px; padding:0 14px; font-size:15px; font-weight:700; background:white;">
+      </div>
+      <textarea id="cMemo" placeholder="메모 / 특이사항" style="height:80px; border:1px solid #dcdcdc; border-radius:12px; padding:12px 14px; font-size:15px; font-weight:700; resize:none;"></textarea>
+      
+      <div style="display:flex; gap:8px; margin-top:8px;">
+        <button type="button" id="cDeleteBtn" onclick="bsDeleteConsultation()" style="display:none; flex:1; height:46px; border:none; border-radius:12px; background:#fef2f2; color:#dc2626; font-size:15px; font-weight:900; cursor:pointer;">삭제</button>
+        <button type="button" onclick="bsSaveConsultation()" style="flex:2; height:46px; border:none; border-radius:12px; background:#10b981; color:white; font-size:15px; font-weight:900; cursor:pointer;">저장하기</button>
+      </div>
     </div>
   </div>
 </div>
@@ -306,6 +333,20 @@
 var bsSelectedDate = null;
 var bsCurrentTab = 'company';
 
+var calendarConsultations = [
+  <% current_user.consultations.where(consultation_date: @calendar_rows.flatten.compact.first..@calendar_rows.flatten.compact.last).each do |c| %>
+  {
+    id: <%= c.id %>,
+    name: '<%= j(c.customer_name.to_s) %>',
+    phone: '<%= j(c.contact_number.to_s) %>',
+    address: '<%= j(c.address.to_s) %>',
+    date: '<%= c.consultation_date.to_s %>',
+    time: '<%= j(c.consultation_time.to_s) %>',
+    memo: '<%= j(c.memo.to_s) %>'
+  },
+  <% end %>
+];
+
 function openBottomSheet(dateStr) {
   bsSelectedDate = dateStr;
   var parts = dateStr.split('-');
@@ -313,6 +354,8 @@ function openBottomSheet(dateStr) {
   document.getElementById('bsSearchResults').innerHTML = '';
   document.getElementById('bsDirectName').value = '';
   bsSwitchTab('company');
+  
+  bsGoBack(); // Reset to step 1
 
   document.getElementById('bsOverlay').style.opacity = '1';
   document.getElementById('bsOverlay').style.visibility = 'visible';
@@ -325,6 +368,118 @@ function closeBottomSheet() {
   document.getElementById('bsOverlay').style.visibility = 'hidden';
   document.getElementById('bottomSheet').style.transform = 'translateY(100%)';
   document.body.style.overflow = '';
+}
+
+function bsGoBack() {
+  document.getElementById('bsStep1').style.display = 'block';
+  document.getElementById('bsConsultationForm').style.display = 'none';
+  document.getElementById('bsTitle').textContent = '일정 관리';
+}
+
+function bsOpenAddConsultation() {
+  document.getElementById('bsStep1').style.display = 'none';
+  document.getElementById('bsConsultationForm').style.display = 'block';
+  document.getElementById('bsTitle').textContent = '상담 일정 추가';
+  document.getElementById('cId').value = '';
+  document.getElementById('cName').value = '';
+  document.getElementById('cPhone').value = '';
+  document.getElementById('cAddress').value = '';
+  document.getElementById('cTime').value = '';
+  document.getElementById('cMemo').value = '';
+  document.getElementById('cDeleteBtn').style.display = 'none';
+}
+
+function bsEditConsultation(id) {
+  var c = calendarConsultations.find(function(x) { return x.id === id; });
+  if(!c) return;
+  bsSelectedDate = c.date; // Ensure selected date is set
+  var parts = bsSelectedDate.split('-');
+  document.getElementById('bsSubtitle').textContent = parts[0] + '년 ' + parseInt(parts[1]) + '월 ' + parseInt(parts[2]) + '일';
+  
+  document.getElementById('bsStep1').style.display = 'none';
+  document.getElementById('bsConsultationForm').style.display = 'block';
+  document.getElementById('bsTitle').textContent = '상담 일정 수정';
+  document.getElementById('cId').value = c.id;
+  document.getElementById('cName').value = c.name;
+  document.getElementById('cPhone').value = c.phone || '';
+  document.getElementById('cAddress').value = c.address || '';
+  document.getElementById('cTime').value = c.time || '';
+  document.getElementById('cMemo').value = c.memo || '';
+  document.getElementById('cDeleteBtn').style.display = 'block';
+  
+  document.getElementById('bsOverlay').style.opacity = '1';
+  document.getElementById('bsOverlay').style.visibility = 'visible';
+  document.getElementById('bottomSheet').style.transform = 'translateY(0)';
+  document.body.style.overflow = 'hidden';
+}
+
+function bsSaveConsultation() {
+  var id = document.getElementById('cId').value;
+  var name = document.getElementById('cName').value.trim();
+  if(!name) { alert('고객명을 입력해주세요.'); return; }
+  
+  var payload = {
+    consultation: {
+      customer_name: name,
+      contact_number: document.getElementById('cPhone').value.trim(),
+      address: document.getElementById('cAddress').value.trim(),
+      consultation_date: bsSelectedDate,
+      consultation_time: document.getElementById('cTime').value,
+      memo: document.getElementById('cMemo').value.trim()
+    }
+  };
+
+  var url = id ? '/consultations/' + id : '/consultations';
+  var method = id ? 'PATCH' : 'POST';
+
+  fetch(url, {
+    method: method,
+    headers: {
+      'Content-Type': 'application/json',
+      'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').content,
+      'Accept': 'application/json'
+    },
+    body: JSON.stringify(payload)
+  })
+  .then(function(res) { return res.json(); })
+  .then(function(data) {
+    if(data.success) {
+      window.location.reload();
+    } else {
+      alert(data.error || '저장에 실패했습니다.');
+    }
+  })
+  .catch(function(err) {
+    console.error(err);
+    alert('네트워크 오류가 발생했습니다.');
+  });
+}
+
+function bsDeleteConsultation() {
+  var id = document.getElementById('cId').value;
+  if(!id) return;
+  if(!confirm('이 상담 일정을 삭제하시겠습니까?')) return;
+  
+  fetch('/consultations/' + id, {
+    method: 'DELETE',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').content,
+      'Accept': 'application/json'
+    }
+  })
+  .then(function(res) { return res.json(); })
+  .then(function(data) {
+    if(data.success) {
+      window.location.reload();
+    } else {
+      alert(data.error || '삭제에 실패했습니다.');
+    }
+  })
+  .catch(function(err) {
+    console.error(err);
+    alert('네트워크 오류가 발생했습니다.');
+  });
 }
 
 function bsSwitchTab(tab) {

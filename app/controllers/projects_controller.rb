@@ -217,6 +217,8 @@ class ProjectsController < ApplicationController
       @projects_by_date[schedule.work_date] << schedule.project unless @projects_by_date[schedule.work_date].include?(schedule.project)
     end
 
+    @consultations_by_date = current_user.consultations.where(consultation_date: calendar_start..calendar_end).group_by(&:consultation_date)
+
     # 바 레이아웃은 더 이상 사용하지 않음 (날짜별 칩으로 대체)
     @calendar_bars_by_row = {}
     @calendar_row_heights = {}
@@ -267,6 +269,8 @@ class ProjectsController < ApplicationController
       @projects_by_date[schedule.work_date] ||= []
       @projects_by_date[schedule.work_date] << schedule.project unless @projects_by_date[schedule.work_date].include?(schedule.project)
     end
+
+    @consultations_by_date = current_user.consultations.where(consultation_date: calendar_start..calendar_end).group_by(&:consultation_date)
 
     render partial: "projects/calendar_grid", layout: false
   end
@@ -665,7 +669,9 @@ class ProjectsController < ApplicationController
       pbd[s.work_date] << s.project unless pbd[s.work_date].include?(s.project)
     end
 
-    { year: year, month: month, rows: rows, projects_by_date: pbd }
+    cbd = Consultation.where(user_id: user_id, consultation_date: cal_start..cal_end).group_by(&:consultation_date)
+
+    { year: year, month: month, rows: rows, projects_by_date: pbd, consultations_by_date: cbd }
   end
 
   # 특정 월의 캘린더 데이터 빌드 (프로젝트 캘린더용)

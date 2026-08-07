@@ -118,6 +118,7 @@ Rails.application.routes.draw do
     end
   end
 
+  resources :consultations, only: [ :create, :update, :destroy ]
   resources :work_processes
   resources :vendors do
     collection do

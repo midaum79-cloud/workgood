@@ -11,6 +11,7 @@ class User < ApplicationRecord
   has_many :vendors, dependent: :destroy
   has_many :receipts, dependent: :destroy
   has_many :promo_code_usages, dependent: :destroy
+  has_many :consultations, dependent: :destroy
   has_many :used_promo_codes, through: :promo_code_usages, source: :promo_code
 
   has_secure_token :document_share_token
@@ -20,7 +21,7 @@ class User < ApplicationRecord
 
   before_save :downcase_email
 
-  PLAN_LIMITS  = { "free" => 10, "standard" => 20, "premium" => Float::INFINITY }.freeze
+  PLAN_LIMITS  = { "free" => 200, "standard" => 500, "premium" => Float::INFINITY }.freeze
   PLAN_PRICES  = { "free" => 0, "standard" => 4_400, "premium" => 9_900 }.freeze
   PLAN_LABELS  = { "free" => "무료", "standard" => "스탠다드", "premium" => "프리미엄" }.freeze
 
