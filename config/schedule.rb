@@ -5,7 +5,7 @@
 
 # 크론 작업의 로그를 저장할 파일 지정
 set :output, "log/cron.log"
-env :PATH, ENV['PATH']
+env :PATH, ENV["PATH"]
 
 # 매 1시간마다 만료된 구독자 정리 Rake Task 실행
 every 1.hour do

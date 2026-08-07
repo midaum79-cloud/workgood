@@ -20,10 +20,10 @@ module HolidayHelper
     (1..4).each do |i|
       prev_date = date - i.days
       prev_holidays = Holidays.on(prev_date, :kr)
-      
+
       if prev_holidays.any?
         name = prev_holidays.first[:name]
-        
+
         # 대체공휴일 적용 대상 공휴일인 경우
         if SUBSTITUTE_TARGETS.include?(name)
           # 해당 공휴일이 주말(토/일)과 겹쳤는지 확인
@@ -34,10 +34,10 @@ module HolidayHelper
             all_off = between_days.all? do |d|
               d.saturday? || d.sunday? || Holidays.on(d, :kr).any?
             end
-            
+
             # 사이가 모두 휴일이었다면, 첫 번째 평일인 오늘이 대체공휴일
             if all_off
-              return { name: "대체공휴일(#{name})", regions: [:kr] }
+              return { name: "대체공휴일(#{name})", regions: [ :kr ] }
             end
           end
         end

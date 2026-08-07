@@ -50,22 +50,22 @@ class WebPushService
 
   def self.send_onesignal_notification(user, title:, body:, path: "/")
     app_id = "c988f2df-d594-45a2-afa5-36791e1351af"
-    api_key = ENV['ONESIGNAL_REST_API_KEY']
+    api_key = ENV["ONESIGNAL_REST_API_KEY"]
     return if api_key.blank?
 
-    require 'net/http'
-    require 'uri'
-    require 'json'
+    require "net/http"
+    require "uri"
+    require "json"
 
     uri = URI.parse("https://api.onesignal.com/notifications")
     request = Net::HTTP::Post.new(uri)
     request.content_type = "application/json"
     request["Authorization"] = "Basic #{api_key}"
     request["accept"] = "application/json"
-    
+
     request.body = JSON.dump({
       "app_id" => app_id,
-      "include_aliases" => { "external_id" => [user.id.to_s] },
+      "include_aliases" => { "external_id" => [ user.id.to_s ] },
       "target_channel" => "push",
       "headings" => { "en" => title, "ko" => title },
       "contents" => { "en" => body, "ko" => body },

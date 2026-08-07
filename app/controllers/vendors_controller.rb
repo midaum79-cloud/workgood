@@ -10,7 +10,7 @@ class VendorsController < ApplicationController
       else
         current_user.vendors.where(vendor_type: [ "company", nil, "" ])
       end
-    
+
     # 가나다순(대소문자 무시) 명시적 정렬
     @vendors = base_vendors.to_a.sort_by { |v| v.name.to_s.downcase }
     @unread_notifications_count = current_user.notifications.where(status: "unread").count

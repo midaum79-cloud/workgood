@@ -120,7 +120,7 @@ class User < ApplicationRecord
 
           if is_active
             expires_at = expires_date_str.present? ? Time.parse(expires_date_str) : nil
-            
+
             # 최고 플랜 우선 (premium > standard)
             if active_plan.nil? || (active_plan == "standard" && plan_name == "premium")
               active_plan = plan_name
