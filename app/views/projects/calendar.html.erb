@@ -231,13 +231,20 @@
   </div>
 
   <div id="bsStep1" style="padding:0 16px 20px 16px;">
-    <div style="margin-bottom:20px;">
-      <button type="button" onclick="bsOpenAddConsultation()" style="width:100%; padding:14px; border:none; border-radius:12px; background:#10b981; color:white; font-size:16px; font-weight:900; cursor:pointer; display:flex; justify-content:center; align-items:center; gap:8px;">
-        <span style="font-size:18px;">📞</span> 상담 일정 등록하기
+    <!-- 상담 일정 섹션 -->
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+      <div style="font-size:16px; font-weight:900; color:#111827; display:flex; align-items:center; gap:6px;">
+        <span style="font-size:18px;">📞</span> 상담 일정
+      </div>
+      <button type="button" onclick="bsOpenAddConsultation()" style="background:#10b981; color:white; border:none; border-radius:8px; padding:8px 12px; font-size:13px; font-weight:800; cursor:pointer;">
+        + 상담 추가
       </button>
     </div>
+    <div id="bsConsultationList" style="display:flex; flex-direction:column; margin-bottom:24px;"></div>
 
-    <div style="font-size:15px; font-weight:800; color:#111827; margin-bottom:12px;">🏢 현장 추가</div>
+    <div style="font-size:16px; font-weight:900; color:#111827; margin-bottom:12px; display:flex; align-items:center; gap:6px;">
+      <span style="font-size:18px;">🏗️</span> 현장에 공정 추가
+    </div>
     <div style="display:flex; gap:8px; margin-bottom:14px;">
       <button type="button" id="bsTabCompany" onclick="bsSwitchTab('company')" style="flex:1; padding:10px; border:none; border-radius:12px; font-size:14px; font-weight:800; cursor:pointer; background:#111827; color:white;">🏢 업체</button>
       <button type="button" id="bsTabPersonal" onclick="bsSwitchTab('personal')" style="flex:1; padding:10px; border:none; border-radius:12px; font-size:14px; font-weight:800; cursor:pointer; background:#f3f4f6; color:#6b7280;">👤 개인</button>
@@ -360,6 +367,28 @@ function openBottomSheet(dateStr) {
   bsSelectedDate = dateStr;
   var parts = dateStr.split('-');
   document.getElementById('bsSubtitle').textContent = parts[0] + '년 ' + parseInt(parts[1]) + '월 ' + parseInt(parts[2]) + '일';
+  
+  var listEl = document.getElementById('bsConsultationList');
+  if (listEl) {
+    var dateConsultations = calendarConsultations.filter(function(c) { return c.date === dateStr; });
+    if (dateConsultations.length === 0) {
+      listEl.innerHTML = '<div style="text-align:center; padding:16px; color:#9ca3af; font-size:14px; font-weight:700;">등록된 상담 일정이 없습니다.</div>';
+    } else {
+      var html = '';
+      dateConsultations.forEach(function(c) {
+        html += '<div onclick="bsEditConsultation(' + c.id + ')" style="border:1px solid #f3f4f6; border-radius:16px; padding:16px; margin-bottom:8px; cursor:pointer; background:white; box-shadow:0 1px 3px rgba(0,0,0,0.05);">' +
+          '<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">' +
+            '<div style="font-size:16px; font-weight:900; color:#111827;">' + c.name + '</div>' +
+            (c.time ? '<div style="background:#d1fae5; color:#047857; padding:4px 8px; border-radius:6px; font-size:13px; font-weight:800;">' + c.time + '</div>' : '') +
+          '</div>' +
+          (c.phone ? '<div style="font-size:14px; font-weight:700; display:flex; align-items:center; gap:6px; margin-bottom:6px;"><span style="font-size:14px; filter:grayscale(100%);">📞</span> <a href="tel:' + c.phone + '" style="color:#2563eb; text-decoration:none;">' + c.phone + '</a></div>' : '') +
+          (c.address ? '<div style="font-size:14px; color:#4b5563; font-weight:600; display:flex; align-items:flex-start; gap:6px;"><span style="font-size:14px;">📍</span> <span style="flex:1;">' + c.address + '</span></div>' : '') +
+        '</div>';
+      });
+      listEl.innerHTML = html;
+    }
+  }
+
   document.getElementById('bsSearchResults').innerHTML = '';
   document.getElementById('bsDirectName').value = '';
   bsSwitchTab('company');

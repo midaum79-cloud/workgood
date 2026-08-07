@@ -79,7 +79,7 @@
             <% end %>
             <% day_consultations.each do |consult| %>
               <div class="schedule-chip consultation-chip"
-                   onclick="if(typeof bsEditConsultation === 'function') { event.stopPropagation(); bsEditConsultation(<%= consult.id %>); }"
+                   onclick="if(typeof openBottomSheet === 'function') { event.stopPropagation(); openBottomSheet('<%= day.to_s %>'); }"
                    style="
                     font-size:9px;
                     font-weight:800;
@@ -96,7 +96,7 @@
                     user-select:none;
                     -webkit-user-select:none;
                    ">
-                📞 <%= consult.customer_name %>
+                📞 상담
               </div>
             <% end %>
           <% end %>
