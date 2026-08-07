@@ -32,6 +32,6 @@ class ConsultationsController < ApplicationController
   end
 
   def consultation_params
-    params.require(:consultation).permit(:customer_name, :contact_number, :address, :consultation_date, :consultation_time, :memo)
+    params.require(:consultation).permit(:customer_name, :contact_number, :address, :detail_address, :consultation_date, :consultation_time, :memo)
   end
 end

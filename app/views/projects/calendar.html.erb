@@ -380,6 +380,7 @@ var calendarConsultations = [
     name: '<%= j(c.customer_name.to_s) %>',
     phone: '<%= j(c.contact_number.to_s) %>',
     address: '<%= j(c.address.to_s) %>',
+    detail_address: '<%= j(c.detail_address.to_s) %>',
     date: '<%= c.consultation_date.to_s %>',
     time: '<%= j(c.consultation_time.to_s) %>',
     memo: '<%= j(c.memo.to_s) %>'
@@ -406,7 +407,7 @@ function openBottomSheet(dateStr) {
             (c.time ? '<div style="background:#d1fae5; color:#047857; padding:4px 8px; border-radius:6px; font-size:13px; font-weight:800;">' + c.time + '</div>' : '') +
           '</div>' +
           (c.phone ? '<div style="font-size:14px; font-weight:700; display:flex; align-items:center; gap:6px; margin-bottom:6px;"><span style="font-size:14px; filter:grayscale(100%);">📞</span> <a href="tel:' + c.phone + '" style="color:#2563eb; text-decoration:none;">' + c.phone + '</a></div>' : '') +
-          (c.address ? '<div style="font-size:14px; color:#4b5563; font-weight:600; display:flex; align-items:flex-start; gap:6px;"><span style="font-size:14px;">📍</span> <span style="flex:1;">' + c.address + '</span></div>' : '') +
+          (c.address ? '<div style="font-size:14px; color:#4b5563; font-weight:600; display:flex; align-items:flex-start; gap:6px;"><span style="font-size:14px;">📍</span> <span style="flex:1;">' + c.address + (c.detail_address ? ' ' + c.detail_address : '') + '</span></div>' : '') +
         '</div>';
       });
       listEl.innerHTML = html;
@@ -455,7 +456,9 @@ function bsViewConsultation(id) {
   document.getElementById('vName').textContent = c.name;
   document.getElementById('vTime').textContent = c.time || '시간 미지정';
   document.getElementById('vPhone').textContent = c.phone || '연락처 없음';
-  document.getElementById('vAddress').textContent = c.address || '주소 미지정';
+  var fullAddrDisplay = c.address || '';
+  if (c.detail_address) fullAddrDisplay += ' ' + c.detail_address;
+  document.getElementById('vAddress').textContent = fullAddrDisplay.trim() || '주소 미지정';
   document.getElementById('vMemo').textContent = c.memo || '메모가 없습니다.';
   
   document.getElementById('vEditBtn').onclick = function() { bsEditConsultation(id); };
@@ -494,7 +497,7 @@ function bsEditConsultation(id) {
   document.getElementById('cName').value = c.name;
   document.getElementById('cPhone').value = c.phone || '';
   document.getElementById('cAddress').value = c.address || '';
-  document.getElementById('cDetailAddress').value = '';
+  document.getElementById('cDetailAddress').value = c.detail_address || '';
   document.getElementById('cTime').value = c.time || '';
   document.getElementById('cMemo').value = c.memo || '';
   document.getElementById('cDeleteBtn').style.display = 'block';
@@ -510,15 +513,15 @@ function bsSaveConsultation() {
   var name = document.getElementById('cName').value.trim();
   if(!name) { alert('고객명을 입력해주세요.'); return; }
   
-  var fullAddr = document.getElementById('cAddress').value.trim();
+  var addr = document.getElementById('cAddress').value.trim();
   var detailAddr = document.getElementById('cDetailAddress').value.trim();
-  if (detailAddr) fullAddr += ' ' + detailAddr;
 
   var payload = {
     consultation: {
       customer_name: name,
       contact_number: document.getElementById('cPhone').value.trim(),
-      address: fullAddr,
+      address: addr,
+      detail_address: detailAddr,
       consultation_date: bsSelectedDate,
       consultation_time: document.getElementById('cTime').value,
       memo: document.getElementById('cMemo').value.trim()
