@@ -4,12 +4,15 @@ class VendorsController < ApplicationController
 
   def index
     @vendor_type = params[:vendor_type] || "company"
-    @vendors =
+    base_vendors =
       if @vendor_type == "individual"
-        current_user.vendors.ordered.where(vendor_type: "individual")
+        current_user.vendors.where(vendor_type: "individual")
       else
-        current_user.vendors.ordered.where(vendor_type: [ "company", nil, "" ])
+        current_user.vendors.where(vendor_type: [ "company", nil, "" ])
       end
+    
+    # 가나다순(대소문자 무시) 명시적 정렬
+    @vendors = base_vendors.to_a.sort_by { |v| v.name.to_s.downcase }
     @unread_notifications_count = current_user.notifications.where(status: "unread").count
   end
 
@@ -25,11 +28,16 @@ class VendorsController < ApplicationController
       vendors = vendors.where(vendor_type: vendor_type)
     end
 
+    vendors_list = vendors.to_a
+
     if query.present?
-      vendors = vendors.to_a.select { |v| chosung_match?(v.name, query) }
+      vendors_list = vendors_list.select { |v| chosung_match?(v.name, query) }
     end
 
-    render json: vendors.map { |v|
+    # 가나다순(대소문자 무시) 명시적 정렬
+    vendors_list = vendors_list.sort_by { |v| v.name.to_s.downcase }
+
+    render json: vendors_list.map { |v|
       {
         id: v.id,
         name: v.name,
