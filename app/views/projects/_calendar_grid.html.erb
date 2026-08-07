@@ -77,7 +77,7 @@
                 <%= proj.client_name.presence || proj.project_name %>
               </div>
             <% end %>
-            <% day_consultations.each do |consult| %>
+            <% if day_consultations.any? %>
               <div class="schedule-chip consultation-chip"
                    onclick="if(typeof openBottomSheet === 'function') { event.stopPropagation(); openBottomSheet('<%= day.to_s %>'); }"
                    style="
@@ -97,7 +97,7 @@
                     -webkit-user-select:none;
                     text-align:center;
                    ">
-                상담
+                상담 <%= day_consultations.size > 1 ? "(#{day_consultations.size})" : "" %>
               </div>
             <% end %>
           <% end %>
