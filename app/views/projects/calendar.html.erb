@@ -263,8 +263,14 @@
     <div style="display:flex; flex-direction:column; gap:12px;">
       <input type="hidden" id="cId">
       <input type="text" id="cName" placeholder="고객명 (필수)" style="height:46px; border:1px solid #dcdcdc; border-radius:12px; padding:0 14px; font-size:15px; font-weight:700;">
-      <input type="tel" id="cPhone" placeholder="연락처" style="height:46px; border:1px solid #dcdcdc; border-radius:12px; padding:0 14px; font-size:15px; font-weight:700;">
-      <input type="text" id="cAddress" placeholder="주소" style="height:46px; border:1px solid #dcdcdc; border-radius:12px; padding:0 14px; font-size:15px; font-weight:700;">
+      <input type="tel" id="cPhone" placeholder="연락처" oninput="this.value = this.value.replace(/[^0-9]/g, '').replace(/(^02|^0505|^1[0-9]{3}|^0[0-9]{2})([0-9]+)?([0-9]{4})$/,'$1-$2-$3').replace('--','-');" style="height:46px; border:1px solid #dcdcdc; border-radius:12px; padding:0 14px; font-size:15px; font-weight:700;">
+      
+      <div style="display:flex; gap:8px;">
+        <input type="text" id="cAddress" placeholder="주소" style="flex:1; height:46px; border:1px solid #dcdcdc; border-radius:12px; padding:0 14px; font-size:15px; font-weight:700;">
+        <button type="button" onclick="execDaumPostcodeForConsultation()" style="height:46px; padding:0 16px; border:none; border-radius:12px; background:#4b5563; color:white; font-size:14px; font-weight:800; cursor:pointer; white-space:nowrap;">검색</button>
+      </div>
+      <input type="text" id="cDetailAddress" placeholder="나머지 상세 주소" style="height:46px; border:1px solid #dcdcdc; border-radius:12px; padding:0 14px; font-size:15px; font-weight:700;">
+      
       <div style="display:flex; flex-direction:column; gap:4px;">
         <label for="cTime" style="font-size:13px; font-weight:800; color:#6b7280; padding-left:4px;">상담 시간</label>
         <input type="time" id="cTime" style="height:46px; border:1px solid #dcdcdc; border-radius:12px; padding:0 14px; font-size:15px; font-weight:700; background:white;">
@@ -384,6 +390,7 @@ function bsOpenAddConsultation() {
   document.getElementById('cName').value = '';
   document.getElementById('cPhone').value = '';
   document.getElementById('cAddress').value = '';
+  document.getElementById('cDetailAddress').value = '';
   document.getElementById('cTime').value = '';
   document.getElementById('cMemo').value = '';
   document.getElementById('cDeleteBtn').style.display = 'none';
@@ -403,6 +410,7 @@ function bsEditConsultation(id) {
   document.getElementById('cName').value = c.name;
   document.getElementById('cPhone').value = c.phone || '';
   document.getElementById('cAddress').value = c.address || '';
+  document.getElementById('cDetailAddress').value = '';
   document.getElementById('cTime').value = c.time || '';
   document.getElementById('cMemo').value = c.memo || '';
   document.getElementById('cDeleteBtn').style.display = 'block';
@@ -418,11 +426,15 @@ function bsSaveConsultation() {
   var name = document.getElementById('cName').value.trim();
   if(!name) { alert('고객명을 입력해주세요.'); return; }
   
+  var fullAddr = document.getElementById('cAddress').value.trim();
+  var detailAddr = document.getElementById('cDetailAddress').value.trim();
+  if (detailAddr) fullAddr += ' ' + detailAddr;
+
   var payload = {
     consultation: {
       customer_name: name,
       contact_number: document.getElementById('cPhone').value.trim(),
-      address: document.getElementById('cAddress').value.trim(),
+      address: fullAddr,
       consultation_date: bsSelectedDate,
       consultation_time: document.getElementById('cTime').value,
       memo: document.getElementById('cMemo').value.trim()
@@ -481,6 +493,28 @@ function bsDeleteConsultation() {
     alert('네트워크 오류가 발생했습니다.');
   });
 }
+
+// 주소 검색 연동 (Daum Postcode API)
+function execDaumPostcodeForConsultation() {
+  if (typeof daum === 'undefined' || !daum.Postcode) {
+    var script = document.createElement('script');
+    script.src = '//t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js';
+    script.onload = function() { openDaumPostcode(); };
+    document.head.appendChild(script);
+  } else {
+    openDaumPostcode();
+  }
+}
+
+function openDaumPostcode() {
+  new daum.Postcode({
+    oncomplete: function(data) {
+      document.getElementById('cAddress').value = data.address;
+      document.getElementById('cDetailAddress').focus();
+    }
+  }).open();
+}
+
 
 function bsSwitchTab(tab) {
   bsCurrentTab = tab;
