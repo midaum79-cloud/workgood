@@ -48,35 +48,14 @@
       </button>
     </div>
 
-    <%# VIEW MODE - checklist %>
+    <%# VIEW MODE - notepad %>
     <div id="memoViewMode" style="background:white; border-radius:16px; padding:16px; box-shadow:0 2px 10px rgba(0,0,0,0.04);">
       <div style="display:flex; align-items:center; gap:8px; margin-bottom:12px;">
-        <span style="font-size:18px;">📋</span>
-        <span style="font-size:15px; font-weight:900; color:#111827;">체크리스트</span>
-        <% if @memo.content.present? %>
-          <% total = @memo.content.split("\n").reject { |l| l.strip.empty? }.count %>
-          <% done = @memo.content.split("\n").count { |l| l.strip.match?(/^\[(x|X)\]/) } %>
-          <span style="margin-left:auto; font-size:12px; font-weight:800; color:<%= done == total && total > 0 ? '#16a34a' : '#9ca3af' %>; background:<%= done == total && total > 0 ? '#dcfce7' : '#f3f4f6' %>; padding:3px 10px; border-radius:999px;">
-            <%= done == total && total > 0 ? '🎉 완료!' : "#{done}/#{total}" %>
-          </span>
-        <% end %>
+        <span style="font-size:18px;">📝</span>
+        <span style="font-size:15px; font-weight:900; color:#111827;">메모장</span>
       </div>
       <% if @memo.content.present? %>
-        <div id="checklistArea" style="display:flex; flex-direction:column; gap:4px;">
-          <% @memo.content.to_s.split("\n").each_with_index do |line, idx| %>
-            <% next if line.strip.empty? %>
-            <% checked = line.strip.start_with?("[x]", "[X]") %>
-            <% clean_text = line.strip.sub(/^\[(x|X| )\]\s*/, '') %>
-            <div onclick="toggleCheck(this, <%= idx %>)" style="display:flex; align-items:flex-start; gap:10px; padding:11px 12px; border-radius:12px; cursor:pointer; background:<%= checked ? '#f0fdf4' : '#fafafa' %>; border:1.5px solid <%= checked ? '#bbf7d0' : '#e5e7eb' %>; transition:all 0.2s;">
-              <div style="width:22px; height:22px; min-width:22px; border-radius:6px; border:2px solid <%= checked ? '#16a34a' : '#d1d5db' %>; background:<%= checked ? '#16a34a' : 'white' %>; display:flex; align-items:center; justify-content:center; margin-top:1px; transition:all 0.2s;">
-                <% if checked %>
-                  <span style="color:white; font-size:13px; font-weight:900;">✓</span>
-                <% end %>
-              </div>
-              <span style="font-size:15px; font-weight:700; color:<%= checked ? '#9ca3af' : '#374151' %>; line-height:1.6; <%= 'text-decoration:line-through;' if checked %> transition:all 0.2s;"><%= clean_text %></span>
-            </div>
-          <% end %>
-        </div>
+        <div style="font-size:15px; font-weight:700; color:#374151; line-height:1.7; white-space:pre-wrap; word-break:break-all;"><%= @memo.content %></div>
       <% else %>
         <div style="padding:40px 14px; text-align:center; color:#9ca3af; font-size:14px; font-weight:700; background:#fafafa; border-radius:14px; border:1.5px dashed #d1d5db;">
           📭 아직 작성된 메모가 없습니다.
@@ -93,9 +72,9 @@
             <span style="font-size:18px;">✍️</span>
             <span style="font-size:15px; font-weight:900; color:#111827;">메모 작성</span>
           </div>
-          <div style="font-size:12px; font-weight:600; color:#9ca3af; margin-bottom:10px;">💡 한 줄에 하나씩 작성하면 체크리스트로 표시됩니다</div>
+          <div style="font-size:12px; font-weight:600; color:#9ca3af; margin-bottom:10px;">💡 자유롭게 메모를 작성해보세요</div>
           <textarea name="content" id="memoContent"
-            placeholder="한 줄에 하나씩 작성하세요"
+            placeholder="오늘의 메모를 작성하세요"
             style="scroll-margin-top:140px; width:100%; min-height:250px; padding:14px; border:1.5px solid <%= @is_today ? '#fde68a' : '#bfdbfe' %>; border-radius:14px; font-size:15px; font-weight:700; font-family:inherit; resize:vertical; box-sizing:border-box; background:#fffdf7; line-height:1.7; outline:none;"
           ><%= @memo.content %></textarea>
         </div>
@@ -106,7 +85,13 @@
 </div>
 
 <script>
-var memoLines = <%= raw (@memo.content.to_s.split("\n").map { |l| l.strip }).to_json %>;
+
+
+if (window.visualViewport) {
+  window.visualViewport.addEventListener('resize', function() {
+    // no fixed bar to adjust anymore
+  });
+}
 
 function enterEditMode() {
   document.getElementById('memoViewMode').style.display = 'none';
@@ -122,43 +107,6 @@ function cancelEdit() {
   document.getElementById('memoEditMode').style.display = 'none';
   document.getElementById('actionBarView').style.display = 'flex';
   document.getElementById('actionBarEdit').style.display = 'none';
-}
-
-function toggleCheck(el, lineIdx) {
-  var line = memoLines[lineIdx];
-  if (!line) return;
-  var stripped = line.replace(/^\[(x|X| )\]\s*/, '');
-  if (/^\[(x|X)\]/.test(line)) {
-    memoLines[lineIdx] = '[ ] ' + stripped;
-  } else {
-    memoLines[lineIdx] = '[x] ' + stripped;
-  }
-  var newContent = memoLines.join("\n");
-  fetch('<%= update_daily_memo_path %>', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/x-www-form-urlencoded',
-      'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').content
-    },
-    body: 'memo_date=<%= @memo_date %>&content=' + encodeURIComponent(newContent)
-  });
-  var checked = /^\[(x|X)\]/.test(memoLines[lineIdx]);
-  var textSpan = el.querySelector('span:last-child');
-  var checkBox = el.querySelector('div');
-  el.style.background = checked ? '#f0fdf4' : '#fafafa';
-  el.style.borderColor = checked ? '#bbf7d0' : '#e5e7eb';
-  checkBox.style.borderColor = checked ? '#16a34a' : '#d1d5db';
-  checkBox.style.background = checked ? '#16a34a' : 'white';
-  checkBox.innerHTML = checked ? '<span style="color:white; font-size:13px; font-weight:900;">✓</span>' : '';
-  textSpan.style.color = checked ? '#9ca3af' : '#374151';
-  textSpan.style.textDecoration = checked ? 'line-through' : 'none';
-  document.getElementById('memoContent').value = newContent;
-}
-
-if (window.visualViewport) {
-  window.visualViewport.addEventListener('resize', function() {
-    // no fixed bar to adjust anymore
-  });
 }
 
 <% unless @memo.content.present? %>
