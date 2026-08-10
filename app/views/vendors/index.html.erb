@@ -57,12 +57,12 @@
       </div>
       <div style="width:1px; background:#f3f4f6;"></div>
       <div>
-        <div style="font-size:22px; font-weight:900; color:#16a34a;"><%= @vendors.where.not(phone: [nil, ""]).count %></div>
+        <div style="font-size:22px; font-weight:900; color:#16a34a;"><%= @vendors.count { |v| v.phone.present? } %></div>
         <div style="font-size:12px; font-weight:700; color:#9ca3af;">연락처 등록</div>
       </div>
       <div style="width:1px; background:#f3f4f6;"></div>
       <div>
-        <div style="font-size:22px; font-weight:900; color:#2563eb;"><%= @vendors.where.not(contact_name: [nil, ""]).count %></div>
+        <div style="font-size:22px; font-weight:900; color:#2563eb;"><%= @vendors.count { |v| v.contact_name.present? } %></div>
         <div style="font-size:12px; font-weight:700; color:#9ca3af;">담당자 등록</div>
       </div>
     </div>
