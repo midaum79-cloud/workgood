@@ -49,8 +49,8 @@
       <button onclick="openCropEditor()" style="flex:1; background:#0891b2; color:white; border:none; border-radius:12px; padding:14px; font-size:14px; font-weight:800; cursor:pointer; box-shadow:0 2px 8px rgba(8,145,178,0.2);">
         ✏️ 모서리 조정
       </button>
-      <button onclick="shareScannedImage()" style="flex:2; background:#6366f1; color:white; border:none; border-radius:12px; padding:14px; font-size:14px; font-weight:800; cursor:pointer; box-shadow:0 2px 8px rgba(99,102,241,0.2);">
-        공유 및 저장
+      <button onclick="saveScannedImage()" style="flex:2; background:#6366f1; color:white; border:none; border-radius:12px; padding:14px; font-size:14px; font-weight:800; cursor:pointer; box-shadow:0 2px 8px rgba(99,102,241,0.2);">
+        사진첩에 저장
       </button>
       <button onclick="deleteScannedImage()" style="flex:1; background:#ef4444; color:white; border:none; border-radius:12px; padding:14px; font-size:14px; font-weight:800; cursor:pointer; box-shadow:0 2px 8px rgba(239,68,68,0.2);">
         삭제
@@ -149,34 +149,40 @@
     }
   });
 
-  // ── 공유 ────────────────────────────────────────────────
-  async function shareScannedImage() {
+  // ── 저장 ────────────────────────────────────────────────
+  async function saveScannedImage() {
     const imgSrc = document.getElementById('scanResultImg').src;
     if (!imgSrc) return;
 
-    // 편집된 이미지(dataURL)인 경우 파일로 변환하여 공유
-    if (imgSrc.startsWith('data:')) {
-      try {
-        const blob = await (await fetch(imgSrc)).blob();
-        const file = new File([blob], 'scanned_document.png', { type: 'image/png' });
-        if (navigator.canShare && navigator.canShare({ files: [file] })) {
-          await navigator.share({ files: [file], title: '스캔된 문서', text: '일잘러 앱에서 스캔한 문서입니다.' });
-          return;
-        }
-      } catch(e) { console.error(e); }
+    if (!window.Capacitor || !window.Capacitor.Plugins.Filesystem) {
+      alert("파일 저장 기능을 지원하지 않는 환경입니다. 기기의 일잘러 앱을 최신 버전으로 업데이트해주세요.");
+      return;
     }
 
-    // 원본 파일 경로로 공유 (Capacitor Share)
-    if (lastScannedFilePath && window.Capacitor) {
-      try {
-        const shareTarget = imgSrc.startsWith('data:') ? imgSrc : lastScannedFilePath;
-        await window.Capacitor.Plugins.Share.share({
-          title: '스캔된 문서',
-          text: '일잘러 앱에서 스캔한 문서입니다.',
-          url: shareTarget,
-        });
-        setTimeout(() => { alert("스캔본이 저장/공유 되었습니다!"); }, 500);
-      } catch(e) { console.error(e); }
+    const { Filesystem } = window.Capacitor.Plugins;
+    const fileName = 'scanned_document_' + Date.now() + '.jpeg';
+
+    try {
+      let base64Data = "";
+      
+      if (imgSrc.startsWith('data:')) {
+        base64Data = imgSrc.split(',')[1];
+      } else {
+        // file:// URI인 경우 파일을 읽어서 base64로 변환
+        const contents = await Filesystem.readFile({ path: imgSrc });
+        base64Data = contents.data;
+      }
+
+      await Filesystem.writeFile({
+        path: fileName,
+        data: base64Data,
+        directory: "PICTURES"
+      });
+
+      alert("사진첩(Pictures)에 이미지가 안전하게 저장되었습니다!");
+    } catch(e) {
+      console.error(e);
+      alert("이미지 저장 중 오류가 발생했습니다: " + e.message);
     }
   }
 
