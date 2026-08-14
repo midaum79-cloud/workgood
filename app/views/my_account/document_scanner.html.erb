@@ -168,18 +168,18 @@
       if (imgSrc.startsWith('data:')) {
         base64Data = imgSrc.split(',')[1];
       } else {
-        // file:// URI인 경우 파일을 읽어서 base64로 변환
-        const contents = await Filesystem.readFile({ path: imgSrc });
+        // file:// URI인 경우 원본 파일 경로를 읽어서 base64로 변환
+        const contents = await Filesystem.readFile({ path: lastScannedFilePath });
         base64Data = contents.data;
       }
 
       await Filesystem.writeFile({
         path: fileName,
         data: base64Data,
-        directory: "PICTURES"
+        directory: "DOCUMENTS"
       });
 
-      alert("사진첩(Pictures)에 이미지가 안전하게 저장되었습니다!");
+      alert("문서함(Documents) 또는 사진첩에 이미지가 안전하게 저장되었습니다!");
     } catch(e) {
       console.error(e);
       alert("이미지 저장 중 오류가 발생했습니다: " + e.message);
