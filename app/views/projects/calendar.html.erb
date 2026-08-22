@@ -96,7 +96,7 @@
     </div>
 
     <!-- 요일 헤더 (고정) -->
-    <div style="display:grid; grid-template-columns:repeat(7, 1fr); border-bottom:1px solid #f0f0f0; background:white;">
+    <div style="display:grid; grid-template-columns:repeat(7, minmax(0, 1fr)); border-bottom:1px solid #f0f0f0; background:white;">
       <% ["일", "월", "화", "수", "목", "금", "토"].each do |weekday| %>
         <% header_color = case weekday
             when "일" then "#ef4444"
