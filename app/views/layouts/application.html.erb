@@ -35,6 +35,7 @@
 
     <%= stylesheet_link_tag "application", "data-turbo-track": "reload" %>
     <%= javascript_importmap_tags %>
+    <script src="/onesignal-capacitor.js"></script>
 
     <style>
       * {
@@ -380,7 +381,13 @@
              return;
           }
           try {
-            var OneSignal = window.plugins.OneSignal;
+            var OneSignal = (window.OneSignalCapacitorPlugin && window.OneSignalCapacitorPlugin.default) ? window.OneSignalCapacitorPlugin.default : (window.plugins && window.plugins.OneSignal);
+            
+            if (!OneSignal) {
+              console.warn('[일잘러] OneSignal 플러그인을 아직 로드하지 못했습니다.');
+              return;
+            }
+            
             OneSignal.initialize('c988f2df-d594-45a2-afa5-36791e1351af');
             OneSignal.Notifications.requestPermission(true).then(function(accepted) {
               console.log("[OneSignal] User accepted notifications: " + accepted);

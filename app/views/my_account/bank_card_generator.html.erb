@@ -228,26 +228,12 @@
   async function saveToGallery(filename) {
     const src = document.getElementById('downloadedImagePreview').src;
     try {
-      if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.Filesystem) {
-        const { Filesystem } = window.Capacitor.Plugins;
-        let base64Data = "";
-        if (src.startsWith('data:')) {
-          base64Data = src.split(',')[1];
-        } else {
-          const res = await fetch(src);
-          const blob = await res.blob();
-          const reader = new FileReader();
-          base64Data = await new Promise((resolve) => {
-            reader.onloadend = () => resolve(reader.result.split(',')[1]);
-            reader.readAsDataURL(blob);
-          });
-        }
-        await Filesystem.writeFile({
-          path: filename,
-          data: base64Data,
-          directory: "DOCUMENTS"
+      if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.Media) {
+        const { Media } = window.Capacitor.Plugins;
+        await Media.savePhoto({
+          path: src
         });
-        alert("문서함(Documents) 또는 사진첩에 이미지가 안전하게 저장되었습니다!");
+        alert("사진첩(갤러리)에 이미지가 안전하게 저장되었습니다!");
         return;
       }
       

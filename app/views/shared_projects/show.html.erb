@@ -289,7 +289,13 @@
         <div class="icon-box">📍</div>
         <div class="text-box">
           <div class="info-label">주소</div>
-          <div class="info-value"><%= @project.address.presence || "주소 미입력" %></div>
+          <% if @project.address.present? %>
+            <a href="https://map.naver.com/p/search/<%= CGI.escape(@project.address) %>" target="_blank" class="info-value" style="color:#2563eb; text-decoration:underline;">
+              <%= @project.address %>
+            </a>
+          <% else %>
+            <div class="info-value">주소 미입력</div>
+          <% end %>
         </div>
       </div>
       

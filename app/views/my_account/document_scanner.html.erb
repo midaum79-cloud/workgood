@@ -149,37 +149,25 @@
     }
   });
 
-  // ── 저장 ────────────────────────────────────────────────
   async function saveScannedImage() {
     const imgSrc = document.getElementById('scanResultImg').src;
     if (!imgSrc) return;
 
-    if (!window.Capacitor || !window.Capacitor.Plugins.Filesystem) {
+    if (!window.Capacitor) {
       alert("파일 저장 기능을 지원하지 않는 환경입니다. 기기의 일잘러 앱을 최신 버전으로 업데이트해주세요.");
       return;
     }
 
-    const { Filesystem } = window.Capacitor.Plugins;
-    const fileName = 'scanned_document_' + Date.now() + '.jpeg';
-
     try {
-      let base64Data = "";
-      
-      if (imgSrc.startsWith('data:')) {
-        base64Data = imgSrc.split(',')[1];
+      if (window.Capacitor.Plugins.Media) {
+        const { Media } = window.Capacitor.Plugins;
+        await Media.savePhoto({
+          path: imgSrc
+        });
+        alert("사진첩(갤러리)에 이미지가 안전하게 저장되었습니다!");
       } else {
-        // file:// URI인 경우 원본 파일 경로를 읽어서 base64로 변환
-        const contents = await Filesystem.readFile({ path: lastScannedFilePath });
-        base64Data = contents.data;
+        alert("현재 기기에서는 앱 업데이트가 필요합니다.");
       }
-
-      await Filesystem.writeFile({
-        path: fileName,
-        data: base64Data,
-        directory: "DOCUMENTS"
-      });
-
-      alert("문서함(Documents) 또는 사진첩에 이미지가 안전하게 저장되었습니다!");
     } catch(e) {
       console.error(e);
       alert("이미지 저장 중 오류가 발생했습니다: " + e.message);

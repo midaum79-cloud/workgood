@@ -53,8 +53,18 @@
         📅 <%= @project.start_date %> ~ <%= @project.end_date %>
       </div>
 
-      <div style="background:#f7f7f7; border-radius:12px; padding:12px 14px; margin-bottom:10px; color:#4b5563; font-size:15px; font-weight:600;">
-        📍 <%= @project.address %>
+      <div style="background:#f7f7f7; border-radius:12px; padding:12px 14px; margin-bottom:10px; font-size:15px; font-weight:600;">
+        <% if @project.address.present? %>
+          <a href="https://map.naver.com/p/search/<%= CGI.escape(@project.address) %>" target="_blank" style="color:#2563eb; text-decoration:underline; display:flex; align-items:flex-start; gap:6px;">
+            <span>📍</span>
+            <span><%= @project.address %></span>
+          </a>
+        <% else %>
+          <span style="color:#4b5563; display:flex; align-items:flex-start; gap:6px;">
+            <span>📍</span>
+            <span>주소 미입력</span>
+          </span>
+        <% end %>
       </div>
 
       <% vendor = current_user.vendors.find_by(name: @project.client_name) %>
