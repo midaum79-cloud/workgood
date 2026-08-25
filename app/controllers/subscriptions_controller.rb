@@ -74,7 +74,8 @@ class SubscriptionsController < ApplicationController
 
       unless is_active
         Rails.logger.warn "[Security] Unauthorized mobile upgrade attempt by User #{current_user.id} for plan #{plan}"
-        return redirect_to subscription_path, alert: "결제 권한이 확인되지 않았습니다. 잠시 후 다시 시도해주세요."
+        error_msg = res.code == "200" ? "활성화된 구독이 없습니다." : "RC 에러: #{res.code} #{res.body}"
+        return redirect_to subscription_path, alert: "결제 권한이 확인되지 않았습니다. (#{error_msg})"
       end
     rescue => e
       Rails.logger.error "[RevenueCat] Verification failed: #{e.message}"
