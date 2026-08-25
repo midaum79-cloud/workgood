@@ -106,6 +106,16 @@ class User < ApplicationRecord
         http.request(req)
       end
 
+      # Secret Key 오류 시 Public Key로 재시도
+      if res.code == "401" && ENV["REVENUECAT_GOOGLE_API_KEY"].present?
+        req["Authorization"] = "Bearer #{ENV['REVENUECAT_GOOGLE_API_KEY']}"
+        res = Net::HTTP.start(uri.hostname, uri.port, use_ssl: true) do |http|
+          http.open_timeout = 3
+          http.read_timeout = 3
+          http.request(req)
+        end
+      end
+
       if res.code == "200"
         data = JSON.parse(res.body)
         entitlements = data.dig("subscriber", "entitlements") || {}

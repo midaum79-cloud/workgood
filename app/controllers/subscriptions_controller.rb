@@ -64,6 +64,17 @@ class SubscriptionsController < ApplicationController
         http.read_timeout = 5
         http.request(req)
       end
+
+      # 만약 Secret Key가 만료/잘못되어 401이 뜬다면 Public Key로 재시도
+      if res.code == "401" && ENV["REVENUECAT_GOOGLE_API_KEY"].present?
+        req["Authorization"] = "Bearer #{ENV['REVENUECAT_GOOGLE_API_KEY']}"
+        res = Net::HTTP.start(uri.hostname, uri.port, use_ssl: true) do |http|
+          http.open_timeout = 5
+          http.read_timeout = 5
+          http.request(req)
+        end
+      end
+
       data = JSON.parse(res.body)
 
       entitlements = data.dig("subscriber", "entitlements") || {}
