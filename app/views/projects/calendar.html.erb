@@ -236,18 +236,28 @@
       <div style="font-size:16px; font-weight:900; color:#111827; display:flex; align-items:center; gap:6px;">
         <span style="font-size:18px;">📞</span> 상담 일정
       </div>
-      <button type="button" onclick="bsOpenAddConsultation()" style="background:#10b981; color:white; border:none; border-radius:8px; padding:8px 12px; font-size:13px; font-weight:800; cursor:pointer;">
+      <button type="button" onclick="bsOpenAddConsultation('consultation')" style="background:#10b981; color:white; border:none; border-radius:8px; padding:8px 12px; font-size:13px; font-weight:800; cursor:pointer;">
         + 상담 추가
       </button>
     </div>
     <div id="bsConsultationList" style="display:flex; flex-direction:column; margin-bottom:24px;"></div>
+
+    <!-- AS 일정 섹션 -->
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+      <div style="font-size:16px; font-weight:900; color:#111827; display:flex; align-items:center; gap:6px;">
+        <span style="font-size:18px;">🔧</span> AS 일정
+      </div>
+      <button type="button" onclick="bsOpenAddConsultation('as')" style="background:#ef4444; color:white; border:none; border-radius:8px; padding:8px 12px; font-size:13px; font-weight:800; cursor:pointer;">
+        + AS 추가
+      </button>
+    </div>
+    <div id="bsAsList" style="display:flex; flex-direction:column; margin-bottom:24px;"></div>
 
     <div style="font-size:16px; font-weight:900; color:#111827; margin-bottom:12px; display:flex; align-items:center; gap:6px;">
       <span style="font-size:18px;">🏗️</span> 공사일정 추가
     </div>
     <div style="display:flex; gap:8px; margin-bottom:14px;">
       <button type="button" id="bsTabCompany" onclick="bsSwitchTab('company')" style="flex:1; padding:10px; border:none; border-radius:12px; font-size:14px; font-weight:800; cursor:pointer; background:#111827; color:white;">🏢 업체</button>
-      <button type="button" id="bsTabPersonal" onclick="bsSwitchTab('personal')" style="flex:1; padding:10px; border:none; border-radius:12px; font-size:14px; font-weight:800; cursor:pointer; background:#f3f4f6; color:#6b7280;">👤 개인</button>
       <button type="button" id="bsTabDirect" onclick="bsSwitchTab('direct')" style="flex:1; padding:10px; border:none; border-radius:12px; font-size:14px; font-weight:800; cursor:pointer; background:#f3f4f6; color:#6b7280;">✏️ 직접입력</button>
     </div>
 
@@ -299,6 +309,7 @@
     <button onclick="bsGoBack()" style="background:none; border:none; font-size:14px; font-weight:800; color:#10b981; cursor:pointer; padding:0 0 12px 0; font-family:inherit;">← 이전으로</button>
     <div style="display:flex; flex-direction:column; gap:12px;">
       <input type="hidden" id="cId">
+      <input type="hidden" id="cType" value="consultation">
       <input type="text" id="cName" placeholder="고객명 (필수)" style="height:46px; border:1px solid #dcdcdc; border-radius:12px; padding:0 14px; font-size:15px; font-weight:700;">
       <input type="tel" id="cPhone" placeholder="연락처" oninput="this.value = this.value.replace(/[^0-9]/g, '').replace(/(^02|^0505|^1[0-9]{3}|^0[0-9]{2})([0-9]+)?([0-9]{4})$/,'$1-$2-$3').replace('--','-');" style="height:46px; border:1px solid #dcdcdc; border-radius:12px; padding:0 14px; font-size:15px; font-weight:700;">
       
@@ -383,7 +394,8 @@ var calendarConsultations = [
     detail_address: '<%= j(c.detail_address.to_s) %>',
     date: '<%= c.consultation_date.to_s %>',
     time: '<%= j(c.consultation_time.to_s) %>',
-    memo: '<%= j(c.memo.to_s) %>'
+    memo: '<%= j(c.memo.to_s) %>',
+    type: '<%= c.schedule_type || 'consultation' %>'
   },
   <% end %>
 ];
@@ -394,8 +406,9 @@ function openBottomSheet(dateStr) {
   document.getElementById('bsSubtitle').textContent = parts[0] + '년 ' + parseInt(parts[1]) + '월 ' + parseInt(parts[2]) + '일';
   
   var listEl = document.getElementById('bsConsultationList');
+  var asListEl = document.getElementById('bsAsList');
   if (listEl) {
-    var dateConsultations = calendarConsultations.filter(function(c) { return c.date === dateStr; });
+    var dateConsultations = calendarConsultations.filter(function(c) { return c.date === dateStr && c.type === 'consultation'; });
     if (dateConsultations.length === 0) {
       listEl.innerHTML = '<div style="text-align:center; padding:16px; color:#9ca3af; font-size:14px; font-weight:700;">등록된 상담 일정이 없습니다.</div>';
     } else {
@@ -411,6 +424,26 @@ function openBottomSheet(dateStr) {
         '</div>';
       });
       listEl.innerHTML = html;
+    }
+  }
+
+  if (asListEl) {
+    var dateAs = calendarConsultations.filter(function(c) { return c.date === dateStr && c.type === 'as'; });
+    if (dateAs.length === 0) {
+      asListEl.innerHTML = '<div style="text-align:center; padding:16px; color:#9ca3af; font-size:14px; font-weight:700;">등록된 AS 일정이 없습니다.</div>';
+    } else {
+      var html = '';
+      dateAs.forEach(function(c) {
+        html += '<div onclick="bsViewConsultation(' + c.id + ')" style="border:1px solid #fee2e2; border-radius:16px; padding:16px; margin-bottom:8px; cursor:pointer; background:#fff5f5; box-shadow:0 1px 3px rgba(0,0,0,0.05);">' +
+          '<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">' +
+            '<div style="font-size:16px; font-weight:900; color:#b91c1c;">' + c.name + '</div>' +
+            (c.time ? '<div style="background:#fee2e2; color:#b91c1c; padding:4px 8px; border-radius:6px; font-size:13px; font-weight:800;">' + c.time + '</div>' : '') +
+          '</div>' +
+          (c.phone ? '<div style="font-size:14px; font-weight:700; display:flex; align-items:center; gap:6px; margin-bottom:6px;"><span style="font-size:14px; filter:grayscale(100%);">📞</span> <a href="tel:' + c.phone + '" style="color:#2563eb; text-decoration:none;">' + c.phone + '</a></div>' : '') +
+          (c.address ? '<div style="font-size:14px; color:#4b5563; font-weight:600; display:flex; align-items:flex-start; gap:6px;"><span style="font-size:14px;">📍</span> <span style="flex:1;">' + c.address + (c.detail_address ? ' ' + c.detail_address : '') + '</span></div>' : '') +
+        '</div>';
+      });
+      asListEl.innerHTML = html;
     }
   }
 
@@ -451,7 +484,7 @@ function bsViewConsultation(id) {
   document.getElementById('bsStep1').style.display = 'none';
   document.getElementById('bsConsultationForm').style.display = 'none';
   document.getElementById('bsConsultationView').style.display = 'block';
-  document.getElementById('bsTitle').textContent = '상담 일정 상세';
+  document.getElementById('bsTitle').textContent = c.type === 'as' ? 'AS 일정 상세' : '상담 일정 상세';
   
   document.getElementById('vName').textContent = c.name;
   document.getElementById('vTime').textContent = c.time || '시간 미지정';
@@ -465,12 +498,13 @@ function bsViewConsultation(id) {
   document.getElementById('cId').value = id; // set ID for delete
 }
 
-function bsOpenAddConsultation() {
+function bsOpenAddConsultation(type = 'consultation') {
   document.getElementById('bsStep1').style.display = 'none';
   var viewEl = document.getElementById('bsConsultationView');
   if(viewEl) viewEl.style.display = 'none';
   document.getElementById('bsConsultationForm').style.display = 'block';
-  document.getElementById('bsTitle').textContent = '상담 일정 추가';
+  document.getElementById('bsTitle').textContent = type === 'as' ? 'AS 일정 추가' : '상담 일정 추가';
+  document.getElementById('cType').value = type;
   document.getElementById('cId').value = '';
   document.getElementById('cName').value = '';
   document.getElementById('cPhone').value = '';
@@ -492,7 +526,8 @@ function bsEditConsultation(id) {
   var viewEl = document.getElementById('bsConsultationView');
   if(viewEl) viewEl.style.display = 'none';
   document.getElementById('bsConsultationForm').style.display = 'block';
-  document.getElementById('bsTitle').textContent = '상담 일정 수정';
+  document.getElementById('bsTitle').textContent = c.type === 'as' ? 'AS 일정 수정' : '상담 일정 수정';
+  document.getElementById('cType').value = c.type;
   document.getElementById('cId').value = c.id;
   document.getElementById('cName').value = c.name;
   document.getElementById('cPhone').value = c.phone || '';
@@ -524,7 +559,8 @@ function bsSaveConsultation() {
       detail_address: detailAddr,
       consultation_date: bsSelectedDate,
       consultation_time: document.getElementById('cTime').value,
-      memo: document.getElementById('cMemo').value.trim()
+      memo: document.getElementById('cMemo').value.trim(),
+      schedule_type: document.getElementById('cType').value
     }
   };
 
@@ -618,7 +654,7 @@ function closeDaumPostcodeConsultation() {
 
 function bsSwitchTab(tab) {
   bsCurrentTab = tab;
-  var tabs = {company: 'bsTabCompany', personal: 'bsTabPersonal', direct: 'bsTabDirect'};
+  var tabs = {company: 'bsTabCompany', direct: 'bsTabDirect'};
   Object.keys(tabs).forEach(function(k) {
     var el = document.getElementById(tabs[k]);
     if (k === tab) {

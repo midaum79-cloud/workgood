@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_08_07_092424) do
+ActiveRecord::Schema[8.1].define(version: 2026_08_25_093626) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -61,6 +61,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_07_092424) do
     t.string "customer_name"
     t.string "detail_address"
     t.text "memo"
+    t.string "schedule_type"
     t.datetime "updated_at", null: false
     t.bigint "user_id", null: false
     t.index ["user_id"], name: "index_consultations_on_user_id"

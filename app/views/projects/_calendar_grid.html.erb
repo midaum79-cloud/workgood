@@ -77,15 +77,19 @@
                 <%= proj.client_name.presence || proj.project_name %>
               </div>
             <% end %>
-            <% if day_consultations.any? %>
+            <%
+              day_as_items = day_consultations.select { |c| c.schedule_type == 'as' }
+              day_couns_items = day_consultations.reject { |c| c.schedule_type == 'as' }
+            %>
+            <% if day_couns_items.any? %>
               <div class="schedule-chip consultation-chip"
                    onclick="if(typeof openBottomSheet === 'function') { event.stopPropagation(); openBottomSheet('<%= day.to_s %>'); }"
                    style="
                     font-size:9px;
                     font-weight:800;
-                    color:#065f46;
-                    background:#d1fae5;
-                    border:1px solid #10b981;
+                    color:#92400e;
+                    background:#fef3c7;
+                    border:1px solid #f59e0b;
                     border-radius:4px;
                     padding:2px 3px;
                     margin-bottom:1px;
@@ -97,7 +101,30 @@
                     -webkit-user-select:none;
                     text-align:center;
                    ">
-                상담 <%= day_consultations.size > 1 ? "(#{day_consultations.size})" : "" %>
+                상담 <%= day_couns_items.size > 1 ? day_couns_items.size : "" %>
+              </div>
+            <% end %>
+            <% if day_as_items.any? %>
+              <div class="schedule-chip as-chip"
+                   onclick="if(typeof openBottomSheet === 'function') { event.stopPropagation(); openBottomSheet('<%= day.to_s %>'); }"
+                   style="
+                    font-size:9px;
+                    font-weight:800;
+                    color:#991b1b;
+                    background:#fee2e2;
+                    border:1px solid #ef4444;
+                    border-radius:4px;
+                    padding:2px 3px;
+                    margin-bottom:1px;
+                    overflow:hidden;
+                    white-space:nowrap;
+                    text-overflow:ellipsis;
+                    cursor:pointer;
+                    user-select:none;
+                    -webkit-user-select:none;
+                    text-align:center;
+                   ">
+                AS <%= day_as_items.size > 1 ? day_as_items.size : "" %>
               </div>
             <% end %>
           <% end %>
