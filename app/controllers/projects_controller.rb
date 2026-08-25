@@ -549,7 +549,7 @@ class ProjectsController < ApplicationController
 
     @project = current_user.projects.new(
       client_name:    params[:client_name],
-      project_name:   params[:client_name],
+      project_name:   params[:project_name] || params[:client_name],
       start_date:     params[:date],
       end_date:       params[:date],
       payment_status: "미결제",

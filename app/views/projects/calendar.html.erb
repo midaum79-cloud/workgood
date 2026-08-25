@@ -267,9 +267,11 @@
     </div>
 
     <div id="bsDirectArea" style="display:none;">
-      <input type="text" id="bsDirectName" placeholder="거래처명을 입력하세요"
+      <input type="text" id="bsDirectProjectName" placeholder="캘린더명(현장명/일내용)을 입력하세요"
         style="width:100%; padding:14px 16px; border:1px solid #dcdfe4; border-radius:12px; font-size:15px; box-sizing:border-box; margin-bottom:10px;">
-      <button type="button" onclick="bsGoToNewProject(document.getElementById('bsDirectName').value)"
+      <input type="text" id="bsDirectClientName" placeholder="업체명을 입력하세요 (선택)"
+        style="width:100%; padding:14px 16px; border:1px solid #dcdfe4; border-radius:12px; font-size:15px; box-sizing:border-box; margin-bottom:10px;">
+      <button type="button" onclick="bsGoToNewProject(document.getElementById('bsDirectClientName').value, document.getElementById('bsDirectProjectName').value)"
         style="width:100%; padding:14px; border:none; border-radius:12px; background:#2563eb; color:white; font-size:16px; font-weight:900; cursor:pointer;">
         일정에 바로 추가하기
       </button>
@@ -452,7 +454,8 @@ function openBottomSheet(dateStr) {
   document.getElementById('bsSearchResults').innerHTML = '';
   var searchInput = document.getElementById('bsSearchInput');
   if (searchInput) searchInput.value = '';
-  document.getElementById('bsDirectName').value = '';
+  document.getElementById('bsDirectProjectName').value = '';
+  document.getElementById('bsDirectClientName').value = '';
   bsSwitchTab('company');
   
   bsGoBack(); // Reset to step 1
@@ -742,8 +745,11 @@ function bsFilterVendors(query) {
   });
 }
 
-function bsGoToNewProject(clientName) {
-  if (!clientName || !clientName.trim()) { alert('거래처명을 입력해주세요.'); return; }
+function bsGoToNewProject(clientName, projectName) {
+  var pName = projectName || clientName;
+  var cName = clientName;
+
+  if (!pName || !pName.trim()) { alert('일정 이름이나 업체명을 입력해주세요.'); return; }
   
   fetch('<%= quick_create_projects_path %>', {
     method: 'POST',
@@ -754,7 +760,8 @@ function bsGoToNewProject(clientName) {
     },
     body: JSON.stringify({
       date: bsSelectedDate,
-      client_name: clientName.trim()
+      client_name: cName ? cName.trim() : null,
+      project_name: pName.trim()
     })
   })
   .then(function(res) { return res.json(); })
