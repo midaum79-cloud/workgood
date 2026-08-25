@@ -2,7 +2,7 @@ require "csv"
 
 class TaxReportsController < ApplicationController
   before_action :require_login
-  before_action :require_premium
+  before_action :require_premium, except: [:daily_worker_tax]
 
   def index
     @year = (params[:year] || Date.current.year).to_i
@@ -132,6 +132,8 @@ class TaxReportsController < ApplicationController
   private
 
   def require_premium
-    # 모든 가입자가 세금/매출 리포트 서비스를 무상 이용할 수 있도록 허용
+    unless current_user.premium? || User::TESTING_PERIOD
+      redirect_to subscription_path, alert: "세금 관리는 프리미엄 요금제 전용 기능입니다."
+    end
   end
 end

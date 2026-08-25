@@ -42,6 +42,10 @@
         style="flex:1; padding:14px; background:#f3f4f6; color:#374151; border:none; border-radius:14px; font-size:15px; font-weight:800; cursor:pointer; font-family:inherit;">
         ↩️ 취소
       </button>
+      <button type="button" onclick="deleteMemo()"
+        style="flex:1; padding:14px; background:#fef2f2; color:#dc2626; border:none; border-radius:14px; font-size:15px; font-weight:800; cursor:pointer; font-family:inherit;">
+        🗑️ 삭제
+      </button>
       <button type="button" onclick="document.getElementById('memoForm').submit()"
         style="flex:2; padding:14px; background:#16a34a; color:white; border:none; border-radius:14px; font-size:16px; font-weight:900; cursor:pointer; font-family:inherit; box-shadow:0 4px 12px rgba(22,163,74,0.3);">
         💾 저장 완료
@@ -109,7 +113,56 @@ function cancelEdit() {
   document.getElementById('actionBarEdit').style.display = 'none';
 }
 
+function deleteMemo() {
+  if (confirm("메모를 삭제하시겠습니까?")) {
+    document.getElementById('memoContent').value = "";
+    document.getElementById('memoForm').submit();
+  }
+}
+
 <% unless @memo.content.present? %>
   enterEditMode();
 <% end %>
+
+// 자동저장 로직
+var initialMemo = document.getElementById('memoContent').value;
+var isDeleting = false;
+
+function saveMemoSilent() {
+  if (isDeleting) return;
+  var ta = document.getElementById('memoContent');
+  if (!ta) return;
+  var currentMemo = ta.value;
+  
+  if (currentMemo !== initialMemo && document.getElementById('memoEditMode').style.display !== 'none') {
+    var form = document.getElementById('memoForm');
+    var formData = new FormData(form);
+    
+    fetch(form.action, {
+      method: 'POST',
+      body: formData,
+      headers: {
+        'X-Requested-With': 'XMLHttpRequest'
+      }
+    }).then(function() {
+      initialMemo = currentMemo;
+    }).catch(console.error);
+  }
+}
+
+// 여러 이벤트에 자동저장 연결
+window.addEventListener('beforeunload', saveMemoSilent);
+document.addEventListener('visibilitychange', function() {
+  if (document.visibilityState === 'hidden') saveMemoSilent();
+});
+document.addEventListener('turbo:before-visit', saveMemoSilent);
+
+var formEl = document.getElementById('memoForm');
+if (formEl) {
+  formEl.addEventListener('submit', function() {
+    if (document.getElementById('memoContent').value === "") {
+      isDeleting = true;
+    }
+  });
+}
 </script>
