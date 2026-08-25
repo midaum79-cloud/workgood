@@ -47,11 +47,10 @@
       <%= form.hidden_field :project_name, id: "hidden_project_name" %>
 
       <div>
-        <div style="font-size:14px; font-weight:800; color:#374151; margin-bottom:8px;">업체명 / 고객명</div>
-        <!-- 탭 선택: 업체 / 개인 / 직접입력 -->
+        <div style="font-size:14px; font-weight:800; color:#374151; margin-bottom:8px;">업체명</div>
+        <!-- 탭 선택: 업체 / 직접입력 -->
         <div style="display:flex; background:#f3f4f6; border-radius:10px; padding:3px; margin-bottom:10px;">
           <div id="vendorTabCompany" onclick="switchVendorTab('company')" style="flex:1; text-align:center; padding:8px; font-size:13px; font-weight:800; border-radius:8px; cursor:pointer; background:white; color:#2563eb; box-shadow:0 1px 3px rgba(0,0,0,0.08);">🏢 업체</div>
-          <div id="vendorTabIndividual" onclick="switchVendorTab('individual')" style="flex:1; text-align:center; padding:8px; font-size:13px; font-weight:800; border-radius:8px; cursor:pointer; color:#6b7280;">👤 개인</div>
           <div id="vendorTabDirect" onclick="switchVendorTab('direct')" style="flex:1; text-align:center; padding:8px; font-size:13px; font-weight:800; border-radius:8px; cursor:pointer; color:#6b7280;">✏️ 직접입력</div>
         </div>
 
@@ -68,7 +67,7 @@
             </div>
           </div>
           <div id="vendorListArea">
-            <input type="text" id="vendorSearchInput" placeholder="거래처명 검색 (초성 검색 가능)" oninput="filterVendorList()" style="width:100%; padding:10px 14px; border:1px solid #dcdfe4; border-radius:10px; font-size:14px; margin-bottom:8px; box-sizing:border-box;">
+            <input type="text" id="vendorSearchInput" placeholder="업체명 검색 (초성 검색 가능)" oninput="filterVendorList()" style="width:100%; padding:10px 14px; border:1px solid #dcdfe4; border-radius:10px; font-size:14px; margin-bottom:8px; box-sizing:border-box;">
             <div id="vendorList" style="max-height:195px; overflow-y:auto; border:1px solid #e5e7eb; border-radius:14px; background:white; box-shadow:0 2px 8px rgba(0,0,0,0.06);">
               <div style="padding:14px; text-align:center; color:#9ca3af; font-size:13px;">불러오는 중...</div>
             </div>
@@ -77,9 +76,14 @@
 
         <!-- 직접입력 UI -->
         <div id="vendorDirectArea" style="display:none; flex-direction:column; gap:8px;">
-          <input type="text" id="vendorDirectInput"
-            placeholder="업체명 또는 고객명을 입력하세요"
+          <input type="text" id="vendorDirectNameInput"
+            placeholder="업체명을 입력하세요 (선택)"
             oninput="document.getElementById('project_client_name').value = this.value;"
+            style="width:100%; padding:14px 16px; border:1px solid #dcdfe4; border-radius:14px; font-size:16px; box-sizing:border-box;">
+            
+          <input type="text" id="vendorDirectProjectNameInput"
+            placeholder="캘린더에 표시될 이름 (현장명/일내용)"
+            oninput="document.getElementById('hidden_project_name').value = this.value;"
             style="width:100%; padding:14px 16px; border:1px solid #dcdfe4; border-radius:14px; font-size:16px; box-sizing:border-box;">
             
           <input type="tel" id="vendorDirectPhoneInput"
@@ -699,12 +703,12 @@
 
   function switchVendorTab(tab) {
     currentVendorTab = tab;
-    var tabs = ['Company', 'Individual', 'Direct'];
+    var tabs = ['Company', 'Direct'];
     tabs.forEach(function(t) {
       var el = document.getElementById('vendorTab' + t);
       if (t.toLowerCase() === tab) {
         el.style.background = 'white';
-        el.style.color = tab === 'company' ? '#2563eb' : tab === 'individual' ? '#ea580c' : '#374151';
+        el.style.color = tab === 'company' ? '#2563eb' : '#374151';
         el.style.boxShadow = '0 1px 3px rgba(0,0,0,0.08)';
       } else {
         el.style.background = 'transparent';
@@ -720,7 +724,8 @@
     } else {
       document.getElementById('vendorSearchArea').style.display = 'block';
       document.getElementById('vendorDirectArea').style.display = 'none';
-      document.getElementById('vendorDirectInput').value = '';
+      document.getElementById('vendorDirectNameInput').value = '';
+      document.getElementById('vendorDirectProjectNameInput').value = '';
       clearVendorSelection();
       loadVendorList(tab);
     }
@@ -744,7 +749,7 @@
       if (vendors.length === 0) {
         allVendors = [];
         listContainer.innerHTML = '<div style="padding:20px; text-align:center; color:#9ca3af; font-size:13px; font-weight:700;">' +
-          (vendorType === 'company' ? '등록된 업체가 없습니다' : '등록된 개인 거래처가 없습니다') +
+          (vendorType === 'company' ? '등록된 업체가 없습니다' : '등록된 업체가 없습니다') +
           '<br><span style="font-size:12px; color:#d1d5db;">햄버거 메뉴 → 거래처 관리에서 추가하세요</span></div>';
         return;
       }
@@ -814,7 +819,7 @@
 
       var nameDiv = document.createElement('div');
       nameDiv.style.cssText = 'font-size:15px; font-weight:800; color:#111827;';
-      nameDiv.textContent = (v.vendor_type === 'company' ? '🏢 ' : '👤 ') + (v.name || '');
+      nameDiv.textContent = '🏢 ' + (v.name || '');
       item.appendChild(nameDiv);
 
       if (v.contact_name || v.phone) {
@@ -833,7 +838,7 @@
 
   function selectVendor(vendor) {
     document.getElementById('project_client_name').value = vendor.name;
-    document.getElementById('vendorSelectedName').textContent = (vendor.vendor_type === 'company' ? '🏢 ' : '👤 ') + vendor.name;
+    document.getElementById('vendorSelectedName').textContent = '🏢 ' + vendor.name;
     var infoParts = [];
     if (vendor.contact_name) infoParts.push('담당: ' + vendor.contact_name);
     if (vendor.phone) infoParts.push('📞 ' + vendor.phone);
