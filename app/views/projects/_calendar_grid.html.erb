@@ -52,80 +52,54 @@
 
 
           <% if is_current_month %>
-            <% day_projects.each do |proj| %>
-              <div class="schedule-chip"
-                   draggable="true"
-                   data-project-id="<%= proj.id %>"
-                   data-date="<%= day.to_s %>"
-                   onclick="if(typeof openChipMenu === 'function') { openChipMenu(event, '<%= proj.id %>', '<%= j(proj.client_name.presence || proj.project_name) %>', '<%= day.to_s %>'); } else { window.location.href='<%= "/projects/#{proj.id}" %>'; }"
-                   style="
-                    font-size:9px;
-                    font-weight:800;
-                    color:<%= proj.theme_color_hex %>;
-                    background:<%= proj.theme_color_hex %>1a;
-                    border:1px solid <%= proj.theme_color_hex %>4d;
-                    border-radius:4px;
-                    padding:2px 3px;
-                    margin-bottom:1px;
-                    overflow:hidden;
-                    white-space:nowrap;
-                    text-overflow:ellipsis;
-                    cursor:grab;
-                    user-select:none;
-                    -webkit-user-select:none;
-                   ">
-                <%= proj.client_name.presence || proj.project_name %>
-              </div>
-            <% end %>
             <%
               day_as_items = day_consultations.select { |c| c.schedule_type == 'as' }
               day_couns_items = day_consultations.reject { |c| c.schedule_type == 'as' }
+              
+              calendar_items = []
+              if day_couns_items.any?
+                calendar_items << { type: 'consultation', label: "상담 #{day_couns_items.size > 1 ? day_couns_items.size : ''}".strip }
+              end
+              if day_as_items.any?
+                calendar_items << { type: 'as', label: "AS #{day_as_items.size > 1 ? day_as_items.size : ''}".strip }
+              end
+              
+              day_projects.each do |proj|
+                calendar_items << { type: 'project', label: (proj.client_name.presence || proj.project_name), id: proj.id }
+              end
             %>
-            <% if day_couns_items.any? %>
-              <div class="schedule-chip consultation-chip"
-                   onclick="if(typeof openBottomSheet === 'function') { event.stopPropagation(); openBottomSheet('<%= day.to_s %>'); }"
-                   style="
-                    font-size:9px;
-                    font-weight:800;
-                    color:#92400e;
-                    background:#fef3c7;
-                    border:1px solid #f59e0b;
-                    border-radius:4px;
-                    padding:2px 3px;
-                    margin-bottom:1px;
-                    overflow:hidden;
-                    white-space:nowrap;
-                    text-overflow:ellipsis;
-                    cursor:pointer;
-                    user-select:none;
-                    -webkit-user-select:none;
-                    text-align:center;
-                   ">
-                상담 <%= day_couns_items.size > 1 ? day_couns_items.size : "" %>
-              </div>
-            <% end %>
-            <% if day_as_items.any? %>
-              <div class="schedule-chip as-chip"
-                   onclick="if(typeof openBottomSheet === 'function') { event.stopPropagation(); openBottomSheet('<%= day.to_s %>'); }"
-                   style="
-                    font-size:9px;
-                    font-weight:800;
-                    color:#991b1b;
-                    background:#fee2e2;
-                    border:1px solid #ef4444;
-                    border-radius:4px;
-                    padding:2px 3px;
-                    margin-bottom:1px;
-                    overflow:hidden;
-                    white-space:nowrap;
-                    text-overflow:ellipsis;
-                    cursor:pointer;
-                    user-select:none;
-                    -webkit-user-select:none;
-                    text-align:center;
-                   ">
-                AS <%= day_as_items.size > 1 ? day_as_items.size : "" %>
-              </div>
+            <% calendar_items.each_with_index do |item, idx| %>
+              <%
+                color_style = case idx
+                  when 0 then "color:#1d4ed8; background:#dbeafe; border:1px solid #93c5fd;"
+                  when 1 then "color:#6d28d9; background:#ede9fe; border:1px solid #c4b5fd;"
+                  when 2 then "color:#15803d; background:#dcfce7; border:1px solid #86efac;"
+                  when 3 then "color:#ea580c; background:#ffedd5; border:1px solid #fdba74;"
+                  else        "color:#be123c; background:#ffe4e6; border:1px solid #fda4af;"
+                  end
+              %>
+              <% if item[:type] == 'project' %>
+                <div class="schedule-chip"
+                     draggable="true"
+                     data-project-id="<%= item[:id] %>"
+                     data-date="<%= day.to_s %>"
+                     onclick="if(typeof openChipMenu === 'function') { openChipMenu(event, '<%= item[:id] %>', '<%= j(item[:label]) %>', '<%= day.to_s %>'); } else { window.location.href='<%= "/projects/#{item[:id]}" %>'; }"
+                     style="font-size:10px; font-weight:800; <%= color_style %> border-radius:4px; padding:3px 4px; margin-bottom:2px; overflow:hidden; white-space:nowrap; text-overflow:ellipsis; cursor:grab; user-select:none; -webkit-user-select:none; text-align:center;">
+                  <%= item[:label] %>
+                </div>
+              <% elsif item[:type] == 'consultation' %>
+                <div class="schedule-chip consultation-chip"
+                     onclick="if(typeof openBottomSheet === 'function') { event.stopPropagation(); openBottomSheet('<%= day.to_s %>'); }"
+                     style="font-size:10px; font-weight:800; <%= color_style %> border-radius:4px; padding:3px 4px; margin-bottom:2px; overflow:hidden; white-space:nowrap; text-overflow:ellipsis; cursor:pointer; user-select:none; -webkit-user-select:none; text-align:center;">
+                  <%= item[:label] %>
+                </div>
+              <% elsif item[:type] == 'as' %>
+                <div class="schedule-chip as-chip"
+                     onclick="if(typeof openBottomSheet === 'function') { event.stopPropagation(); openBottomSheet('<%= day.to_s %>'); }"
+                     style="font-size:10px; font-weight:800; <%= color_style %> border-radius:4px; padding:3px 4px; margin-bottom:2px; overflow:hidden; white-space:nowrap; text-overflow:ellipsis; cursor:pointer; user-select:none; -webkit-user-select:none; text-align:center;">
+                  <%= item[:label] %>
+                </div>
+              <% end %>
             <% end %>
           <% end %>
         </div>
