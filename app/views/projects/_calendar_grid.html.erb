@@ -84,20 +84,20 @@
                      data-project-id="<%= item[:id] %>"
                      data-date="<%= day.to_s %>"
                      onclick="if(typeof openChipMenu === 'function') { openChipMenu(event, '<%= item[:id] %>', '<%= j(item[:label]) %>', '<%= day.to_s %>'); } else { window.location.href='<%= "/projects/#{item[:id]}" %>'; }"
-                     style="font-size:10px; font-weight:800; <%= color_style %> border-radius:4px; padding:3px 4px; margin-bottom:2px; overflow:hidden; white-space:nowrap; text-overflow:ellipsis; cursor:grab; user-select:none; -webkit-user-select:none; text-align:center;">
-                  <%= item[:label] %>
+                     style="font-size:10px; letter-spacing:-0.5px; font-weight:800; <%= color_style %> border-radius:4px; padding:3px 1px; margin-bottom:2px; overflow:hidden; white-space:nowrap; text-overflow:ellipsis; cursor:grab; user-select:none; -webkit-user-select:none; text-align:center;">
+                  <%= item[:label].length > 5 ? "#{item[:label][0...5]}.." : item[:label] %>
                 </div>
               <% elsif item[:type] == 'consultation' %>
                 <div class="schedule-chip consultation-chip"
                      onclick="if(typeof openBottomSheet === 'function') { event.stopPropagation(); openBottomSheet('<%= day.to_s %>'); }"
-                     style="font-size:10px; font-weight:800; <%= color_style %> border-radius:4px; padding:3px 4px; margin-bottom:2px; overflow:hidden; white-space:nowrap; text-overflow:ellipsis; cursor:pointer; user-select:none; -webkit-user-select:none; text-align:center;">
-                  <%= item[:label] %>
+                     style="font-size:10px; letter-spacing:-0.5px; font-weight:800; <%= color_style %> border-radius:4px; padding:3px 1px; margin-bottom:2px; overflow:hidden; white-space:nowrap; text-overflow:ellipsis; cursor:pointer; user-select:none; -webkit-user-select:none; text-align:center;">
+                  <%= item[:label].length > 5 ? "#{item[:label][0...5]}.." : item[:label] %>
                 </div>
               <% elsif item[:type] == 'as' %>
                 <div class="schedule-chip as-chip"
                      onclick="if(typeof openBottomSheet === 'function') { event.stopPropagation(); openBottomSheet('<%= day.to_s %>'); }"
-                     style="font-size:10px; font-weight:800; <%= color_style %> border-radius:4px; padding:3px 4px; margin-bottom:2px; overflow:hidden; white-space:nowrap; text-overflow:ellipsis; cursor:pointer; user-select:none; -webkit-user-select:none; text-align:center;">
-                  <%= item[:label] %>
+                     style="font-size:10px; letter-spacing:-0.5px; font-weight:800; <%= color_style %> border-radius:4px; padding:3px 1px; margin-bottom:2px; overflow:hidden; white-space:nowrap; text-overflow:ellipsis; cursor:pointer; user-select:none; -webkit-user-select:none; text-align:center;">
+                  <%= item[:label].length > 5 ? "#{item[:label][0...5]}.." : item[:label] %>
                 </div>
               <% end %>
             <% end %>
