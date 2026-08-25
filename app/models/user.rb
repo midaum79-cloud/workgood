@@ -200,15 +200,15 @@ class User < ApplicationRecord
   end
 
   def can_manage_receivables?
-    true
+    premium?
   end
 
   def can_export_excel?
-    true
+    premium?
   end
 
   def can_use_tax_report?
-    true
+    premium?
   end
 
   def can_use_widget?
