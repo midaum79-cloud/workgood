@@ -72,12 +72,15 @@ class User < ApplicationRecord
     if plan != "free" && subscription_expires_at.present? && subscription_expires_at < Time.current && billing_key.blank?
       # RevenueCat 구독인지 실시간 확인 시도
       synced_plan = sync_revenuecat_subscription
-      if synced_plan
-        return synced_plan
-      else
-        # RevenueCat에서도 구독이 없거나 만료된 경우 무료로 다운그레이드
+      if synced_plan == :error || synced_plan.nil?
+        # 네트워크 오류 등 통신 실패 시 함부로 다운그레이드하지 않음 (유예)
+        return plan
+      elsif synced_plan == false
+        # RevenueCat에서 정상적으로 확인했으나 활성 구독이 없는 경우 다운그레이드
         update_columns(subscription_plan: "free", subscription_expires_at: nil)
         return "free"
+      else
+        return synced_plan
       end
     end
     plan
@@ -136,13 +139,18 @@ class User < ApplicationRecord
             subscription_expires_at: latest_expires_at
           )
           return active_plan
+        else
+          # 200 OK를 받았지만 활성화된 플랜이 없음 (구독 만료/취소 확실)
+          return false
         end
+      else
+        Rails.logger.error "[RevenueCat Sync] Error response: #{res.code} #{res.body}"
+        return :error
       end
     rescue => e
       Rails.logger.error "[RevenueCat Sync] Failed to sync subscription for User #{id}: #{e.message}"
+      return :error
     end
-
-    nil
   end
 
   def trial?
