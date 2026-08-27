@@ -2,7 +2,7 @@ require "csv"
 
 class TaxReportsController < ApplicationController
   before_action :require_login
-  before_action :require_premium, except: [:daily_worker_tax]
+  before_action :require_premium, except: [ :daily_worker_tax ]
 
   def index
     @year = (params[:year] || Date.current.year).to_i

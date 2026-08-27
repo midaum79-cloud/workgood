@@ -148,18 +148,18 @@ class User < ApplicationRecord
             subscription_plan: active_plan,
             subscription_expires_at: latest_expires_at
           )
-          return active_plan
+          active_plan
         else
           # 200 OK를 받았지만 활성화된 플랜이 없음 (구독 만료/취소 확실)
-          return false
+          false
         end
       else
         Rails.logger.error "[RevenueCat Sync] Error response: #{res.code} #{res.body}"
-        return :error
+        :error
       end
     rescue => e
       Rails.logger.error "[RevenueCat Sync] Failed to sync subscription for User #{id}: #{e.message}"
-      return :error
+      :error
     end
   end
 
