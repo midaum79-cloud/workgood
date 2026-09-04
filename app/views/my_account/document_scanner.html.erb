@@ -160,9 +160,26 @@
 
     try {
       if (window.Capacitor.Plugins.Media) {
-        const { Media } = window.Capacitor.Plugins;
+        const { Media, Filesystem } = window.Capacitor.Plugins;
+        let pathToSave = lastScannedFilePath;
+
+        if (imgSrc.startsWith('data:')) {
+          if (Filesystem) {
+            const base64Data = imgSrc.split(',')[1];
+            const fileName = 'scanned_' + new Date().getTime() + '.jpeg';
+            const savedFile = await Filesystem.writeFile({
+              path: fileName,
+              data: base64Data,
+              directory: 'CACHE'
+            });
+            pathToSave = savedFile.uri;
+          } else {
+            throw new Error("Filesystem plugin is missing");
+          }
+        }
+
         await Media.savePhoto({
-          path: imgSrc
+          path: pathToSave
         });
         alert("사진첩(갤러리)에 이미지가 안전하게 저장되었습니다!");
       } else {
