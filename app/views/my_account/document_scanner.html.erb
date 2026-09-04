@@ -163,19 +163,27 @@
         const { Share, Filesystem } = window.Capacitor.Plugins;
         let pathToShare = lastScannedFilePath;
 
-        if (imgSrc.startsWith('data:')) {
-          if (Filesystem) {
-            const base64Data = imgSrc.split(',')[1];
-            const fileName = 'scanned_' + new Date().getTime() + '.jpeg';
-            const savedFile = await Filesystem.writeFile({
-              path: fileName,
-              data: base64Data,
-              directory: 'CACHE'
-            });
-            pathToShare = savedFile.uri;
+        if (Filesystem) {
+          let base64Data;
+          if (imgSrc.startsWith('data:')) {
+            base64Data = imgSrc.split(',')[1];
           } else {
-            throw new Error("Filesystem plugin is missing");
+            // 원본 스캔 이미지(웹 URL)를 fetch로 읽어서 Base64로 변환
+            const response = await fetch(imgSrc);
+            const blob = await response.blob();
+            base64Data = await new Promise((resolve) => {
+              const reader = new FileReader();
+              reader.onloadend = () => resolve(reader.result.split(',')[1]);
+              reader.readAsDataURL(blob);
+            });
           }
+          const fileName = 'scanned_' + new Date().getTime() + '.jpeg';
+          const savedFile = await Filesystem.writeFile({
+            path: fileName,
+            data: base64Data,
+            directory: 'CACHE'
+          });
+          pathToShare = savedFile.uri;
         }
 
         await Share.share({
