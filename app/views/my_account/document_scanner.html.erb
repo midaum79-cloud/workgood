@@ -215,8 +215,8 @@
     cropImage = new Image();
     cropImage.crossOrigin = 'anonymous';
     cropImage.onload = function() {
-      initCropCanvas();
       document.getElementById('cropEditorOverlay').style.display = 'flex';
+      setTimeout(() => initCropCanvas(), 10);
     };
     cropImage.src = cropOriginalSrc;
   }
