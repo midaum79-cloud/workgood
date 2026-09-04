@@ -49,8 +49,8 @@
       <button onclick="openCropEditor()" style="flex:1; background:#0891b2; color:white; border:none; border-radius:12px; padding:14px; font-size:14px; font-weight:800; cursor:pointer; box-shadow:0 2px 8px rgba(8,145,178,0.2);">
         ✏️ 모서리 조정
       </button>
-      <button onclick="saveScannedImage()" style="flex:2; background:#6366f1; color:white; border:none; border-radius:12px; padding:14px; font-size:14px; font-weight:800; cursor:pointer; box-shadow:0 2px 8px rgba(99,102,241,0.2);">
-        사진첩에 저장
+      <button onclick="shareScannedImage()" style="flex:2; background:#6366f1; color:white; border:none; border-radius:12px; padding:14px; font-size:14px; font-weight:800; cursor:pointer; box-shadow:0 2px 8px rgba(99,102,241,0.2);">
+        공유하기 (저장가능)
       </button>
       <button onclick="deleteScannedImage()" style="flex:1; background:#ef4444; color:white; border:none; border-radius:12px; padding:14px; font-size:14px; font-weight:800; cursor:pointer; box-shadow:0 2px 8px rgba(239,68,68,0.2);">
         삭제
@@ -149,19 +149,19 @@
     }
   });
 
-  async function saveScannedImage() {
+  async function shareScannedImage() {
     const imgSrc = document.getElementById('scanResultImg').src;
     if (!imgSrc) return;
 
     if (!window.Capacitor) {
-      alert("파일 저장 기능을 지원하지 않는 환경입니다. 기기의 일잘러 앱을 최신 버전으로 업데이트해주세요.");
+      alert("공유 기능을 지원하지 않는 환경입니다. 기기의 일잘러 앱을 최신 버전으로 업데이트해주세요.");
       return;
     }
 
     try {
-      if (window.Capacitor.Plugins.Media) {
-        const { Media, Filesystem } = window.Capacitor.Plugins;
-        let pathToSave = lastScannedFilePath;
+      if (window.Capacitor.Plugins.Share) {
+        const { Share, Filesystem } = window.Capacitor.Plugins;
+        let pathToShare = lastScannedFilePath;
 
         if (imgSrc.startsWith('data:')) {
           if (Filesystem) {
@@ -172,22 +172,26 @@
               data: base64Data,
               directory: 'CACHE'
             });
-            pathToSave = savedFile.uri;
+            pathToShare = savedFile.uri;
           } else {
             throw new Error("Filesystem plugin is missing");
           }
         }
 
-        await Media.savePhoto({
-          path: pathToSave
+        await Share.share({
+          title: '스캔된 문서',
+          text: '일잘러 앱에서 스캔한 문서입니다.',
+          url: pathToShare,
+          dialogTitle: '문서 공유 또는 저장'
         });
-        alert("사진첩(갤러리)에 이미지가 안전하게 저장되었습니다!");
       } else {
         alert("현재 기기에서는 앱 업데이트가 필요합니다.");
       }
     } catch(e) {
       console.error(e);
-      alert("이미지 저장 중 오류가 발생했습니다: " + e.message);
+      if (e.message && !e.message.includes("User cancelled") && !e.message.includes("canceled") && !e.message.includes("cancel")) {
+        alert("이미지 공유 중 오류가 발생했습니다: " + e.message);
+      }
     }
   }
 
