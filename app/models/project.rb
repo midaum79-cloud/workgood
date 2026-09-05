@@ -21,10 +21,8 @@ class Project < ApplicationRecord
     end
   end
 
-  # 스케줄 날짜에서 시작일/종료일 자동 재계산
   def recalculate_dates_from_schedules!
     dates = project_schedules.pluck(:work_date).sort
-    return if dates.empty?
     update_columns(start_date: dates.first, end_date: dates.last)
   end
 

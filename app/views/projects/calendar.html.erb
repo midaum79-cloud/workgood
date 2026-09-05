@@ -267,11 +267,29 @@
     </div>
 
     <div id="bsDirectArea" style="display:none;">
+      <!-- AI 등록 기능 (프리미엄 전용) -->
+      <div style="margin-bottom:16px; padding:12px; border:1px solid #c7d2fe; border-radius:12px; background:#eef2ff;">
+        <div style="font-size:14px; font-weight:800; color:#3730a3; margin-bottom:8px; display:flex; justify-content:space-between; align-items:center;">
+          <span>🤖 AI 문자 자동 등록</span>
+          <% unless current_user.premium? %>
+            <span style="font-size:11px; background:#fff; padding:2px 6px; border-radius:4px; border:1px solid #818cf8;">👑 프리미엄</span>
+          <% end %>
+        </div>
+        <textarea id="aiRegistrationText" placeholder="고객명, 업체명, 연락처, 주소가 포함된 문자를 복사해서 붙여넣으세요." style="width:100%; height:80px; padding:10px; border:1px solid #a5b4fc; border-radius:8px; font-size:13px; box-sizing:border-box; resize:none; margin-bottom:8px;"></textarea>
+        <button type="button" onclick="analyzeAiRegistrationText()" style="width:100%; padding:10px; border:none; border-radius:8px; background:#4f46e5; color:white; font-size:14px; font-weight:900; cursor:pointer;">
+          AI 자동 분석하기
+        </button>
+      </div>
+
       <input type="text" id="bsDirectProjectName" placeholder="캘린더명(현장명/일내용)을 입력하세요"
         style="width:100%; padding:14px 16px; border:1px solid #dcdfe4; border-radius:12px; font-size:15px; box-sizing:border-box; margin-bottom:10px;">
       <input type="text" id="bsDirectClientName" placeholder="업체명을 입력하세요 (선택)"
         style="width:100%; padding:14px 16px; border:1px solid #dcdfe4; border-radius:12px; font-size:15px; box-sizing:border-box; margin-bottom:10px;">
-      <button type="button" onclick="bsGoToNewProject(document.getElementById('bsDirectClientName').value, document.getElementById('bsDirectProjectName').value)"
+      <input type="text" id="bsDirectClientPhone" placeholder="연락처를 입력하세요 (선택)"
+        style="width:100%; padding:14px 16px; border:1px solid #dcdfe4; border-radius:12px; font-size:15px; box-sizing:border-box; margin-bottom:10px;">
+      <input type="text" id="bsDirectAddress" placeholder="주소를 입력하세요 (선택)"
+        style="width:100%; padding:14px 16px; border:1px solid #dcdfe4; border-radius:12px; font-size:15px; box-sizing:border-box; margin-bottom:10px;">
+      <button type="button" onclick="bsGoToNewProject(document.getElementById('bsDirectClientName').value, document.getElementById('bsDirectProjectName').value, document.getElementById('bsDirectClientPhone').value, document.getElementById('bsDirectAddress').value)"
         style="width:100%; padding:14px; border:none; border-radius:12px; background:#2563eb; color:white; font-size:16px; font-weight:900; cursor:pointer;">
         일정에 바로 추가하기
       </button>
@@ -456,6 +474,9 @@ function openBottomSheet(dateStr) {
   if (searchInput) searchInput.value = '';
   document.getElementById('bsDirectProjectName').value = '';
   document.getElementById('bsDirectClientName').value = '';
+  document.getElementById('bsDirectClientPhone').value = '';
+  document.getElementById('bsDirectAddress').value = '';
+  document.getElementById('aiRegistrationText').value = '';
   bsSwitchTab('company');
   
   bsGoBack(); // Reset to step 1
@@ -745,9 +766,11 @@ function bsFilterVendors(query) {
   });
 }
 
-function bsGoToNewProject(clientName, projectName) {
+function bsGoToNewProject(clientName, projectName, clientPhone, address) {
   var pName = projectName || clientName;
   var cName = clientName;
+  var phone = clientPhone || '';
+  var addr = address || '';
 
   if (!pName || !pName.trim()) { alert('일정 이름이나 업체명을 입력해주세요.'); return; }
   
@@ -761,7 +784,9 @@ function bsGoToNewProject(clientName, projectName) {
     body: JSON.stringify({
       date: bsSelectedDate,
       client_name: cName ? cName.trim() : null,
-      project_name: pName.trim()
+      project_name: pName.trim(),
+      client_phone: phone.trim(),
+      address: addr.trim()
     })
   })
   .then(function(res) { return res.json(); })
@@ -775,6 +800,54 @@ function bsGoToNewProject(clientName, projectName) {
   .catch(function(err) {
     console.error('Quick create error:', err);
     alert('네트워크 오류가 발생했습니다.');
+  });
+}
+
+function analyzeAiRegistrationText() {
+  <% unless current_user.premium? %>
+  alert("프리미엄 플랜 전용 기능입니다.");
+  return;
+  <% end %>
+
+  var text = document.getElementById('aiRegistrationText').value.trim();
+  if (!text) {
+    alert("분석할 텍스트를 입력해주세요.");
+    return;
+  }
+
+  // 로딩 상태 표시
+  var btn = document.querySelector('button[onclick="analyzeAiRegistrationText()"]');
+  var origText = btn.textContent;
+  btn.textContent = "분석 중...";
+  btn.disabled = true;
+
+  fetch('/ai_registrations/analyze_text', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').content,
+      'Accept': 'application/json'
+    },
+    body: JSON.stringify({ text: text })
+  })
+  .then(function(res) { return res.json(); })
+  .then(function(data) {
+    if (data.success) {
+      if(data.data.project_name) document.getElementById('bsDirectProjectName').value = data.data.project_name;
+      if(data.data.client_name) document.getElementById('bsDirectClientName').value = data.data.client_name;
+      if(data.data.client_phone) document.getElementById('bsDirectClientPhone').value = data.data.client_phone;
+      if(data.data.address) document.getElementById('bsDirectAddress').value = data.data.address;
+    } else {
+      alert(data.error || "분석에 실패했습니다.");
+    }
+  })
+  .catch(function(err) {
+    console.error(err);
+    alert('네트워크 오류가 발생했습니다.');
+  })
+  .finally(function() {
+    btn.textContent = origText;
+    btn.disabled = false;
   });
 }
 </script>

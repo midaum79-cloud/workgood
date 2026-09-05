@@ -1,0 +1,1 @@
+Brakeman 8.0.5 is not the latest version 8.0.6

@@ -163,6 +163,8 @@ Rails.application.routes.draw do
     end
   end
 
+  post "ai_registrations/analyze_text", to: "ai_registrations#analyze_text"
+
   # Widget API
   namespace :api do
     post "widget/token", to: "widget#token"

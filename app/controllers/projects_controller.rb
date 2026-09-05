@@ -5,7 +5,7 @@ class ProjectsController < ApplicationController
   before_action :require_premium_for_money!, only: %i[monthly_payments]
 
   def index
-    @selected_status = params[:status].presence || "all"
+    @selected_status = params[:status].presence || "예정"
     @view_mode = params[:view_mode].presence || "month"
 
     all_projects = current_user.projects
@@ -550,6 +550,8 @@ class ProjectsController < ApplicationController
     @project = current_user.projects.new(
       client_name:    params[:client_name],
       project_name:   params[:project_name] || params[:client_name],
+      client_phone:   params[:client_phone],
+      address:        params[:address],
       start_date:     params[:date],
       end_date:       params[:date],
       payment_status: "미결제",
@@ -586,7 +588,7 @@ class ProjectsController < ApplicationController
     @project = current_user.projects.find(params[:id])
     photo = @project.photos.find(params[:photo_id])
     photo.purge
-    redirect_to edit_project_path(@project), notice: "사진이 삭제되었습니다."
+    redirect_to edit_project_path(@project), status: :see_other, notice: "사진이 삭제되었습니다."
   end
 
   def update_payment
@@ -629,7 +631,7 @@ class ProjectsController < ApplicationController
 
   def destroy
     @project.destroy
-    redirect_to projects_path, notice: "현장이 삭제되었습니다."
+    redirect_to projects_path, status: :see_other, notice: "현장이 삭제되었습니다."
   end
 
   private
