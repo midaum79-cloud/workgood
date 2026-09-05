@@ -171,30 +171,35 @@
       const baseShortUrl = "<%= request.base_url + shared_project_path(@project.signed_id(purpose: :share_schedule)) %>";
       const shortUrl = baseShortUrl + "?s=" + encodeURIComponent(senderName);
 
-      const shareText = shortUrl;
+      const shareTitle = "[현장 공유] <%= j(@project.project_name.presence || @project.client_name) %>";
+      const shareText = "현장: <%= j(@project.project_name.presence || @project.client_name) %>\n일정: <%= j(@project.start_date.to_s) %> ~ <%= j(@project.end_date.to_s) %>\n주소: <%= j(@project.address.presence || '주소 미입력') %>";
 
       const isCapacitor = !!(window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform());
 
       // 네이티브 앱 공유 (Capacitor Share 플러그인)
       if (isCapacitor && window.Capacitor.nativePromise) {
         window.Capacitor.nativePromise('Share', 'share', {
-          title: "현장 정보 공유",
-          text: shareText
+          title: shareTitle,
+          text: shareText,
+          url: shortUrl,
+          dialogTitle: "현장 공유하기"
         }).catch(err => {
           console.error("Capacitor Share failed:", err);
-          fallbackCopyTextToClipboard(shareText);
+          fallbackCopyTextToClipboard(shareTitle + "\n" + shareText + "\n" + shortUrl);
         });
       } 
       // 브라우저 네이티브 공유 API
       else if (navigator.share) {
         navigator.share({
-          text: shareText
+          title: shareTitle,
+          text: shareText,
+          url: shortUrl
         }).catch(err => {
           console.error("Share failed:", err);
-          fallbackCopyTextToClipboard(shareText);
+          fallbackCopyTextToClipboard(shareTitle + "\n" + shareText + "\n" + shortUrl);
         });
       } else {
-        fallbackCopyTextToClipboard(shareText);
+        fallbackCopyTextToClipboard(shareTitle + "\n" + shareText + "\n" + shortUrl);
       }
     }
 
