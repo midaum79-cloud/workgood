@@ -79,12 +79,20 @@
         <% end %>
       </div>
 
-      <div style="background:#f7f7f7; border-radius:12px; padding:12px 14px; margin-bottom:10px; font-size:15px; font-weight:600;">
+      <div style="background:#f7f7f7; border-radius:12px; padding:12px 14px; margin-bottom:10px; font-size:15px; font-weight:600; display:flex; align-items:center; justify-content:space-between;">
         <% if @project.address.present? %>
-          <a href="https://map.naver.com/p/search/<%= CGI.escape(@project.address) %>" target="_blank" style="color:#2563eb; text-decoration:underline; display:flex; align-items:flex-start; gap:6px;">
+          <a href="https://map.naver.com/p/search/<%= CGI.escape(@project.address) %>" target="_blank" style="color:#2563eb; text-decoration:underline; display:flex; align-items:flex-start; gap:6px; flex:1; padding-right:10px;">
             <span>📍</span>
-            <span>주소: <%= @project.address %></span>
+            <span style="word-break:keep-all;">주소: <%= @project.address %></span>
           </a>
+          <button type="button" onclick="fallbackCopyTextToClipboard('<%= j(@project.address) %>')" style="
+            display:flex; align-items:center; gap:5px;
+            padding:8px 14px; background:#4b5563; color:white;
+            border-radius:10px; border:none; cursor:pointer;
+            font-size:13px; font-weight:800; flex-shrink:0;
+          ">
+            📋 복사
+          </button>
         <% else %>
           <span style="color:#4b5563; display:flex; align-items:flex-start; gap:6px;">
             <span>📍</span>
