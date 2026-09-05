@@ -283,9 +283,11 @@
         <div style="background:#f9fafb; border-radius:12px; padding:16px; display:flex; justify-content:space-between; align-items:center;">
           <div style="font-size:15px; font-weight:800; color:#374151;">💰 견적비(예산)</div>
           <div style="display:flex; align-items:center; gap:8px;">
-            <span id="settlement_estimate_display" style="font-size:17px; font-weight:900; color:#111827;">
-              <%= number_with_delimiter(@project.estimate_amount.to_i) %>
-            </span>
+            <input type="text" id="settlement_estimate_input"
+                class="amount-input settlement-input"
+                pattern="[0-9,]*" inputmode="numeric"
+                style="width:120px; text-align:right; font-size:17px; font-weight:900; color:#111827; background:transparent; border:none; outline:none; border-bottom:1px solid #dcdfe4;"
+                value="<%= @project.estimate_amount.present? ? number_with_delimiter(@project.estimate_amount) : "" %>">
             <span style="font-size:15px; font-weight:700; color:#6b7280;">원 ✏️</span>
           </div>
         </div>
@@ -648,12 +650,21 @@
     var total_exp = mat + lab + equ;
     var diff = est - total_exp;
     
-    document.getElementById('settlement_estimate_display').textContent = est.toLocaleString();
     document.getElementById('settlement_total_expenses').textContent = total_exp.toLocaleString() + '원';
     document.getElementById('settlement_difference').textContent = diff.toLocaleString() + '원';
   }
   
-  document.getElementById('edit_estimate_amount').addEventListener('input', updateSettlement);
+  document.getElementById('settlement_estimate_input').addEventListener('input', function(e) {
+    document.getElementById('edit_estimate_amount').value = e.target.value;
+    updateSettlement();
+    updateBalance();
+  });
+
+  document.getElementById('edit_estimate_amount').addEventListener('input', function(e) {
+    document.getElementById('settlement_estimate_input').value = e.target.value;
+    updateSettlement();
+  });
+  
   document.getElementById('edit_material_cost').addEventListener('input', updateSettlement);
   document.getElementById('edit_labor_cost').addEventListener('input', updateSettlement);
   document.getElementById('edit_equipment_cost').addEventListener('input', updateSettlement);
