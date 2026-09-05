@@ -550,10 +550,17 @@
             <span>다이어리</span>
           <% end %>
         <% else %>
-          <% add_active = current_path == '/projects/new' ? 'active' : '' %>
-          <%= link_to new_project_path, class: "bottom-nav-item #{add_active}" do %>
-            <span class="bottom-nav-icon">➕</span>
-            <span>현장추가</span>
+          <% if current_user.project_limit_reached? %>
+            <a href="javascript:void(0);" class="bottom-nav-item" onclick="alert('무료 요금제 한도(200개)에 도달하여 더 이상 현장을 추가할 수 없습니다. 플랜을 업그레이드해 주세요.'); window.location.href='<%= subscription_path %>';">
+              <span class="bottom-nav-icon" style="opacity:0.4;">🚫</span>
+              <span style="opacity:0.4;">현장추가</span>
+            </a>
+          <% else %>
+            <% add_active = current_path == '/projects/new' ? 'active' : '' %>
+            <%= link_to new_project_path, class: "bottom-nav-item #{add_active}" do %>
+              <span class="bottom-nav-icon">➕</span>
+              <span>현장추가</span>
+            <% end %>
           <% end %>
         <% end %>
 
