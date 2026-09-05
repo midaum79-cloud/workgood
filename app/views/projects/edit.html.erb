@@ -607,17 +607,32 @@
 
     if (tab === 'direct') {
       document.getElementById('vendorSearchArea').style.display = 'none';
-      document.getElementById('vendorDirectArea').style.display = 'block';
-      clearVendorSelection();
+      document.getElementById('vendorSelected').style.display = 'none';
+      document.getElementById('vendorDirectArea').style.display = 'flex';
+      
+      // 기존 hidden 필드의 값을 직접입력 인풋에 채워넣음 (값 유실 방지)
+      document.getElementById('vendorDirectNameInput').value = document.getElementById('edit_project_client_name').value;
+      document.getElementById('vendorDirectProjectNameInput').value = document.getElementById('hidden_edit_project_name').value;
+      document.getElementById('vendorDirectPhoneInput').value = document.getElementById('edit_project_client_phone').value;
     } else {
-      document.getElementById('vendorSearchArea').style.display = 'block';
       document.getElementById('vendorDirectArea').style.display = 'none';
-      document.getElementById('vendorDirectNameInput').value = '';
-      document.getElementById('vendorDirectProjectNameInput').value = '';
-      document.getElementById('vendorDirectPhoneInput').value = '';
-      document.getElementById('aiRegistrationTextEdit').value = '';
-      clearVendorSelection();
-      loadVendorList(tab);
+      
+      var currentClient = document.getElementById('edit_project_client_name').value;
+      if (currentClient && currentClient.trim() !== '') {
+        document.getElementById('vendorSelected').style.display = 'block';
+        document.getElementById('vendorSearchArea').style.display = 'none';
+        document.getElementById('vendorSelectedName').textContent = '🏢 ' + currentClient;
+        var currentPhone = document.getElementById('edit_project_client_phone').value;
+        if (currentPhone) {
+          document.getElementById('vendorSelectedInfo').textContent = '📞 ' + currentPhone;
+        } else {
+          document.getElementById('vendorSelectedInfo').textContent = '(기존 업체/입력명)';
+        }
+      } else {
+        document.getElementById('vendorSelected').style.display = 'none';
+        document.getElementById('vendorSearchArea').style.display = 'block';
+        loadVendorList(tab);
+      }
     }
   }
 
@@ -708,6 +723,7 @@
   function selectVendor(vendor) {
     document.getElementById('edit_project_client_name').value = vendor.name;
     document.getElementById('hidden_edit_project_name').value = vendor.name;
+    document.getElementById('edit_project_client_phone').value = vendor.phone || '';
     document.getElementById('vendorSelectedName').textContent = '🏢 ' + vendor.name;
     var infoParts = [];
     if (vendor.contact_name) infoParts.push('담당: ' + vendor.contact_name);
@@ -725,6 +741,7 @@
   function clearVendorSelection() {
     document.getElementById('edit_project_client_name').value = '';
     document.getElementById('hidden_edit_project_name').value = '';
+    document.getElementById('edit_project_client_phone').value = '';
     document.getElementById('vendorSelected').style.display = 'none';
     if (currentVendorTab !== 'direct') document.getElementById('vendorSearchArea').style.display = 'block';
   }
