@@ -722,6 +722,12 @@ class ProjectsController < ApplicationController
       :worker_names,
       :work_description,
       :tax_invoice_issued,
+      :material_cost,
+      :material_details,
+      :labor_cost,
+      :labor_details,
+      :equipment_cost,
+      :equipment_details,
       selected_process_names: [],
       photos: []
     )
