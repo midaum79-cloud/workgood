@@ -20,7 +20,7 @@
 
     <%# + 현장추가하기 Button %>
     <% if current_user.project_limit_reached? %>
-      <a href="javascript:void(0);" onclick="alert('무료 요금제 한도(200개)에 도달하여 더 이상 현장을 추가할 수 없습니다. 플랜을 업그레이드해 주세요.'); window.location.href='<%= subscription_path %>';" style="display:block; width:100%; padding:16px; background:#d1d5db; color:#6b7280; border-radius:16px; text-align:center; text-decoration:none; font-size:17px; font-weight:900; margin-bottom:20px; box-sizing:border-box; cursor:not-allowed;">
+      <a href="javascript:void(0);" onclick="alert('<%= current_user.plan_label %> 요금제 한도(<%= current_user.plan_limit %>개)에 도달하여 더 이상 현장을 추가할 수 없습니다. 플랜을 업그레이드해 주세요.'); window.location.href='<%= subscription_path %>';" style="display:block; width:100%; padding:16px; background:#d1d5db; color:#6b7280; border-radius:16px; text-align:center; text-decoration:none; font-size:17px; font-weight:900; margin-bottom:20px; box-sizing:border-box; cursor:not-allowed;">
         + 현장추가하기 (한도 초과)
       </a>
     <% else %>
