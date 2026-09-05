@@ -1,0 +1,112 @@
+<div style="max-width:430px; margin:0 auto; min-height:100vh; background:#f5f5f5; padding:0; padding-bottom:100px;">
+
+  <%# Sticky Header %>
+  <div style="background:white; padding:18px 20px 14px 20px; border-bottom:1px solid #ececec; position:sticky; top:0; z-index:30; margin-bottom:16px;">
+    <div style="display:flex; justify-content:space-between; align-items:center;">
+      <div style="display:flex; align-items:center; gap:12px;">
+        <%= link_to manage_projects_path, style: "font-size:20px; color:#111827; text-decoration:none; font-weight:900;" do %>←<% end %>
+        <div style="font-size:20px; font-weight:900;">정산 수익 통계</div>
+      </div>
+      <%= link_to notifications_path, style: "position:relative; text-decoration:none;" do %>
+        <div style="font-size:20px;">🔔</div>
+        <% if @unread_notifications_count.to_i > 0 %>
+          <div style="position:absolute; top:-6px; right:-8px; min-width:18px; height:18px; padding:0 5px; border-radius:999px; background:#ef4444; color:white; font-size:11px; font-weight:900; display:flex; align-items:center; justify-content:center; box-sizing:border-box;">
+            <%= @unread_notifications_count %>
+          </div>
+        <% end %>
+      <% end %>
+    </div>
+  </div>
+
+  <div style="padding:0 16px;">
+    
+    <%# Year Summary Card %>
+    <div style="background:linear-gradient(135deg, #111827, #374151); border-radius:20px; padding:24px; color:white; box-shadow:0 10px 25px rgba(0,0,0,0.1); margin-bottom:20px;">
+      <div style="font-size:14px; font-weight:800; color:#9ca3af; margin-bottom:6px;"><%= @year_start.year %>년 전체 누적 순이익</div>
+      <div style="font-size:32px; font-weight:900; margin-bottom:20px;">
+        <%= number_with_delimiter(@yearly_net_profit) %><span style="font-size:20px; margin-left:4px;">원</span>
+      </div>
+      
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+        <div style="background:rgba(255,255,255,0.1); padding:12px; border-radius:14px;">
+          <div style="font-size:12px; font-weight:700; color:#9ca3af; margin-bottom:4px;">총 견적비(수입)</div>
+          <div style="font-size:16px; font-weight:900;"><%= number_with_delimiter(@yearly_estimate) %>원</div>
+        </div>
+        <div style="background:rgba(255,255,255,0.1); padding:12px; border-radius:14px;">
+          <div style="font-size:12px; font-weight:700; color:#9ca3af; margin-bottom:4px;">총 지출(자재+인건 등)</div>
+          <div style="font-size:16px; font-weight:900;"><%= number_with_delimiter(@yearly_expenses) %>원</div>
+        </div>
+      </div>
+    </div>
+
+    <%# Month Filter %>
+    <div style="background:white; border-radius:20px; padding:18px; box-shadow:0 2px 10px rgba(0,0,0,0.04); margin-bottom:20px;">
+      <div style="font-size:16px; font-weight:900; color:#111827; margin-bottom:14px;">📅 월별 상세 내역 조회</div>
+      
+      <%= form_with url: profit_report_projects_path, method: :get, local: true, style: "display:flex; gap:8px; align-items:center;" do |f| %>
+        <input type="month" name="month_filter" id="month_filter" 
+               value="<%= @start_date.strftime('%Y-%m') %>" 
+               style="flex:1; padding:12px; border:1px solid #dcdfe4; border-radius:12px; font-size:15px; font-weight:800; background:#f9fafb;">
+        <%= f.submit "조회", style: "padding:12px 20px; background:#2563eb; color:white; border:none; border-radius:12px; font-size:15px; font-weight:900; cursor:pointer;" %>
+      <% end %>
+
+      <script>
+        document.querySelector('form').addEventListener('submit', function(e) {
+          e.preventDefault();
+          const val = document.getElementById('month_filter').value;
+          if (val) {
+            const [year, month] = val.split('-');
+            const startDate = `${year}-${month}-01`;
+            const endDate = new Date(year, month, 0).toISOString().split('T')[0];
+            window.location.href = "<%= profit_report_projects_path %>?start_date=" + startDate + "&end_date=" + endDate;
+          }
+        });
+      </script>
+    </div>
+
+    <%# Selected Period Report %>
+    <div style="background:white; border-radius:20px; padding:18px; box-shadow:0 2px 10px rgba(0,0,0,0.04); margin-bottom:20px;">
+      <div style="font-size:16px; font-weight:900; color:#111827; margin-bottom:4px;">
+        <%= @start_date.year %>년 <%= @start_date.month %>월 정산 요약
+      </div>
+      <div style="font-size:13px; font-weight:700; color:#6b7280; margin-bottom:18px;">
+        정산된 현장: <%= @projects.count %>건
+      </div>
+
+      <div style="display:flex; flex-direction:column; gap:10px;">
+        <div style="background:#f0fdf4; border:1px solid #bbf7d0; border-radius:14px; padding:16px; display:flex; justify-content:space-between; align-items:center;">
+          <div style="font-size:14px; font-weight:800; color:#166534;">총 견적비 (예산)</div>
+          <div style="font-size:18px; font-weight:900; color:#166534;"><%= number_with_delimiter(@total_estimate) %>원</div>
+        </div>
+
+        <div style="background:#fef2f2; border:1px solid #fecaca; border-radius:14px; padding:16px;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+            <div style="font-size:14px; font-weight:800; color:#991b1b;">총 지출 합계</div>
+            <div style="font-size:18px; font-weight:900; color:#991b1b;"><%= number_with_delimiter(@total_expenses) %>원</div>
+          </div>
+          
+          <div style="display:flex; flex-direction:column; gap:8px; padding-top:12px; border-top:1px dashed #fca5a5;">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+              <div style="font-size:13px; font-weight:700; color:#b91c1c;">자재비 지출</div>
+              <div style="font-size:14px; font-weight:800; color:#b91c1c;"><%= number_with_delimiter(@total_material) %>원</div>
+            </div>
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+              <div style="font-size:13px; font-weight:700; color:#b91c1c;">인건비 지출</div>
+              <div style="font-size:14px; font-weight:800; color:#b91c1c;"><%= number_with_delimiter(@total_labor) %>원</div>
+            </div>
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+              <div style="font-size:13px; font-weight:700; color:#b91c1c;">장비비 지출</div>
+              <div style="font-size:14px; font-weight:800; color:#b91c1c;"><%= number_with_delimiter(@total_equipment) %>원</div>
+            </div>
+          </div>
+        </div>
+
+        <div style="background:#eff6ff; border:1px solid #bfdbfe; border-radius:14px; padding:16px; display:flex; justify-content:space-between; align-items:center; margin-top:4px;">
+          <div style="font-size:15px; font-weight:900; color:#1d4ed8;">월간 순이익</div>
+          <div style="font-size:22px; font-weight:900; color:#1d4ed8;"><%= number_with_delimiter(@net_profit) %>원</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>

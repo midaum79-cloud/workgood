@@ -145,6 +145,7 @@ Rails.application.routes.draw do
       get :manage
       get :archive
       get :monthly_payments
+      get :profit_report
       post :move_schedule
       post :toggle_schedule
       post :quick_create
