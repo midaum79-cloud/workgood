@@ -1,3 +1,7 @@
+require 'net/http'
+require 'uri'
+require 'json'
+
 class AiRegistrationsController < ApplicationController
   before_action :require_login
   before_action :require_premium
