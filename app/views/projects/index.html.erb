@@ -428,7 +428,7 @@
                 <div style="display:flex; align-items:flex-start; gap:10px;">
                   <div style="width:10px; height:10px; min-width:10px; border-radius:50%; background:<%= project.theme_color_hex %>; margin-top:6px;"></div>
                   <div>
-                    <div style="font-size:17px; font-weight:900; color:#111827; margin-bottom:4px;"><%= project.client_name.presence || project.project_name %></div>
+                    <div style="font-size:17px; font-weight:900; color:#111827; margin-bottom:4px;"><%= project.project_name.presence || project.client_name %></div>
                     <div style="font-size:14px; font-weight:700; color:#6b7280; margin-bottom:2px;">📍 <%= project.address.presence || "주소 미입력" %></div>
                     <div style="font-size:13px; font-weight:700; color:#9ca3af;"><%= project.work_description %></div>
                   </div>
@@ -506,7 +506,7 @@
                 <div style="display:flex; align-items:flex-start; gap:10px;">
                   <div style="width:10px; height:10px; min-width:10px; border-radius:50%; background:<%= project.theme_color_hex %>; margin-top:6px;"></div>
                   <div>
-                    <div style="font-size:17px; font-weight:900; color:#111827; margin-bottom:4px;"><%= project.client_name.presence || project.project_name %></div>
+                    <div style="font-size:17px; font-weight:900; color:#111827; margin-bottom:4px;"><%= project.project_name.presence || project.client_name %></div>
                     <div style="font-size:14px; font-weight:700; color:#6b7280; margin-bottom:2px;">📍 <%= project.address.presence || "주소 미입력" %></div>
                     <div style="font-size:13px; font-weight:700; color:#9ca3af;"><%= project.work_description %></div>
                   </div>
@@ -588,7 +588,7 @@
           <div style="flex:1; min-width:0;">
             <div style="display:flex; align-items:center; gap:8px;">
               <div style="font-size:16px; font-weight:900; color:#111827; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
-                <%= project.client_name.presence || project.project_name %>
+                <%= project.project_name.presence || project.client_name %>
               </div>
               <div style="padding:4px 10px; border-radius:999px; font-size:11px; font-weight:800; background:<%= status_bg %>; color:<%= status_color %>; white-space:nowrap; flex-shrink:0;">
                 <%= project.status.presence || '예정' %>
