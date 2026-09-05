@@ -65,7 +65,7 @@
               end
               
               day_projects.each do |proj|
-                calendar_items << { type: 'project', label: (proj.client_name.presence || proj.project_name), id: proj.id }
+                calendar_items << { type: 'project', label: (proj.project_name.presence || proj.client_name), id: proj.id }
               end
             %>
             <% calendar_items.each_with_index do |item, idx| %>

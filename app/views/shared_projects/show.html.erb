@@ -1,11 +1,11 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>[현장 공유] <%= @project.client_name.presence || @project.project_name %></title>
+  <title>[현장 공유] <%= @project.project_name.presence || @project.client_name %></title>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0">
   
   <!-- Open Graph Tags for Kakao/Message Preview -->
-  <meta property="og:title" content="[현장 공유] <%= @project.client_name.presence || @project.project_name %>">
+  <meta property="og:title" content="[현장 공유] <%= @project.project_name.presence || @project.client_name %>">
   <meta property="og:description" content="일정: <%= @project.start_date %> ~ <%= @project.end_date %>\n주소: <%= @project.address.presence || '주소 미입력' %>">
   <meta property="og:image" content="https://workgood.co.kr/logo.png">
   <meta property="og:url" content="<%= request.original_url %>">
@@ -272,7 +272,7 @@
         <div class="icon-box">🏗️</div>
         <div class="text-box">
           <div class="info-label">현장명</div>
-          <div class="info-value"><%= @project.client_name.presence || @project.project_name %></div>
+          <div class="info-value"><%= @project.project_name.presence || @project.client_name %></div>
         </div>
       </div>
 
@@ -333,7 +333,7 @@
     <!-- 숨겨진 복사용 텍스트 요소 -->
     <textarea id="copyContent" class="hidden-text" aria-hidden="true">
 [현장 정보 공유]
-현장: <%= @project.client_name.presence || @project.project_name %>
+현장: <%= @project.project_name.presence || @project.client_name %>
 일정: <%= dates_str.presence || "#{@project.start_date} ~ #{@project.end_date}" %>
 주소: <%= @project.address.presence || "주소 미입력" %>
 <% if @project.common_entrance_password.present? %>공동현관: <%= @project.common_entrance_password %><% end %>
