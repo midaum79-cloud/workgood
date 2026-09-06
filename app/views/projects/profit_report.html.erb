@@ -39,20 +39,73 @@
       </div>
     </div>
 
-    <%# Month Filter %>
+    <%# Filter Section %>
     <div style="background:white; border-radius:20px; padding:18px; box-shadow:0 2px 10px rgba(0,0,0,0.04); margin-bottom:20px;">
-      <div style="font-size:16px; font-weight:900; color:#111827; margin-bottom:14px;">📅 월별 상세 내역 조회</div>
+      <div style="font-size:16px; font-weight:900; color:#111827; margin-bottom:14px;">📅 정산 내역 상세 조회</div>
       
-      <%= form_with url: profit_report_projects_path, method: :get, local: true, style: "display:flex; gap:8px; align-items:center;" do |f| %>
-        <input type="month" name="month_filter" id="month_filter" 
-               value="<%= @start_date.strftime('%Y-%m') %>" 
-               style="flex:1; padding:12px; border:1px solid #dcdfe4; border-radius:12px; font-size:15px; font-weight:800; background:#f9fafb;">
-        <%= f.submit "조회", style: "padding:12px 20px; background:#2563eb; color:white; border:none; border-radius:12px; font-size:15px; font-weight:900; cursor:pointer;" %>
-      <% end %>
+      <!-- 탭 선택 UI -->
+      <div style="display:flex; background:#f3f4f6; border-radius:10px; padding:3px; margin-bottom:14px;">
+        <div id="filterTabYear" onclick="switchFilterTab('year')" style="flex:1; text-align:center; padding:8px; font-size:13px; font-weight:800; border-radius:8px; cursor:pointer; color:#6b7280;">연도별</div>
+        <div id="filterTabMonth" onclick="switchFilterTab('month')" style="flex:1; text-align:center; padding:8px; font-size:13px; font-weight:800; border-radius:8px; cursor:pointer; background:white; color:#2563eb; box-shadow:0 1px 3px rgba(0,0,0,0.08);">월별</div>
+        <div id="filterTabCustom" onclick="switchFilterTab('custom')" style="flex:1; text-align:center; padding:8px; font-size:13px; font-weight:800; border-radius:8px; cursor:pointer; color:#6b7280;">기간설정</div>
+      </div>
+
+      <!-- 연도별 필터 -->
+      <div id="filterAreaYear" style="display:none; gap:8px; align-items:center;">
+        <select id="year_filter" style="flex:1; padding:12px; border:1px solid #dcdfe4; border-radius:12px; font-size:15px; font-weight:800; background:#f9fafb; outline:none;">
+          <% current_year = Date.current.year %>
+          <% ((current_year - 3)..(current_year + 1)).each do |y| %>
+            <option value="<%= y %>" <%= y == @start_date.year ? 'selected' : '' %>><%= y %>년</option>
+          <% end %>
+        </select>
+        <button type="button" onclick="submitYearFilter()" style="padding:12px 20px; background:#2563eb; color:white; border:none; border-radius:12px; font-size:15px; font-weight:900; cursor:pointer;">조회</button>
+      </div>
+
+      <!-- 월별 필터 -->
+      <div id="filterAreaMonth" style="display:flex; gap:8px; align-items:center;">
+        <input type="month" id="month_filter" value="<%= @start_date.strftime('%Y-%m') %>" style="flex:1; padding:12px; border:1px solid #dcdfe4; border-radius:12px; font-size:15px; font-weight:800; background:#f9fafb;">
+        <button type="button" onclick="submitMonthFilter()" style="padding:12px 20px; background:#2563eb; color:white; border:none; border-radius:12px; font-size:15px; font-weight:900; cursor:pointer;">조회</button>
+      </div>
+
+      <!-- 기간설정 필터 -->
+      <div id="filterAreaCustom" style="display:none; flex-direction:column; gap:8px;">
+        <div style="display:flex; align-items:center; gap:8px;">
+          <input type="month" id="custom_start_month" value="<%= @start_date.strftime('%Y-%m') %>" style="flex:1; padding:12px; border:1px solid #dcdfe4; border-radius:12px; font-size:15px; font-weight:800; background:#f9fafb;">
+          <span style="font-weight:900; color:#9ca3af;">~</span>
+          <input type="month" id="custom_end_month" value="<%= @end_date.strftime('%Y-%m') %>" style="flex:1; padding:12px; border:1px solid #dcdfe4; border-radius:12px; font-size:15px; font-weight:800; background:#f9fafb;">
+        </div>
+        <button type="button" onclick="submitCustomFilter()" style="width:100%; padding:12px; background:#2563eb; color:white; border:none; border-radius:12px; font-size:15px; font-weight:900; cursor:pointer;">선택 기간 조회</button>
+      </div>
 
       <script>
-        document.querySelector('form').addEventListener('submit', function(e) {
-          e.preventDefault();
+        function switchFilterTab(tab) {
+          const tabs = ['Year', 'Month', 'Custom'];
+          tabs.forEach(t => {
+            const el = document.getElementById('filterTab' + t);
+            if (t.toLowerCase() === tab) {
+              el.style.background = 'white';
+              el.style.color = '#2563eb';
+              el.style.boxShadow = '0 1px 3px rgba(0,0,0,0.08)';
+              document.getElementById('filterArea' + t).style.display = (tab === 'custom') ? 'flex' : 'flex';
+            } else {
+              el.style.background = 'transparent';
+              el.style.color = '#6b7280';
+              el.style.boxShadow = 'none';
+              document.getElementById('filterArea' + t).style.display = 'none';
+            }
+          });
+        }
+
+        function submitYearFilter() {
+          const year = document.getElementById('year_filter').value;
+          if(year) {
+            const startDate = `${year}-01-01`;
+            const endDate = `${year}-12-31`;
+            window.location.href = "<%= profit_report_projects_path %>?start_date=" + startDate + "&end_date=" + endDate;
+          }
+        }
+
+        function submitMonthFilter() {
           const val = document.getElementById('month_filter').value;
           if (val) {
             const [year, month] = val.split('-');
@@ -60,6 +113,29 @@
             const endDate = new Date(year, month, 0).toISOString().split('T')[0];
             window.location.href = "<%= profit_report_projects_path %>?start_date=" + startDate + "&end_date=" + endDate;
           }
+        }
+
+        function submitCustomFilter() {
+          const startVal = document.getElementById('custom_start_month').value;
+          const endVal = document.getElementById('custom_end_month').value;
+          if (startVal && endVal) {
+            const [sYear, sMonth] = startVal.split('-');
+            const [eYear, eMonth] = endVal.split('-');
+            const startDate = `${sYear}-${sMonth}-01`;
+            const endDate = new Date(eYear, eMonth, 0).toISOString().split('T')[0];
+            window.location.href = "<%= profit_report_projects_path %>?start_date=" + startDate + "&end_date=" + endDate;
+          }
+        }
+        
+        // 초기 로드 시 기간 범위에 따라 탭 활성화 (선택적)
+        document.addEventListener("DOMContentLoaded", function() {
+          <% if @start_date.beginning_of_year == @start_date && @end_date.end_of_year == @end_date %>
+            switchFilterTab('year');
+          <% elsif @start_date.beginning_of_month == @start_date && @end_date.end_of_month == @end_date && @start_date.year == @end_date.year && @start_date.month == @end_date.month %>
+            switchFilterTab('month');
+          <% else %>
+            switchFilterTab('custom');
+          <% end %>
         });
       </script>
     </div>
@@ -67,7 +143,13 @@
     <%# Selected Period Report %>
     <div style="background:white; border-radius:20px; padding:18px; box-shadow:0 2px 10px rgba(0,0,0,0.04); margin-bottom:20px;">
       <div style="font-size:16px; font-weight:900; color:#111827; margin-bottom:4px;">
-        <%= @start_date.year %>년 <%= @start_date.month %>월 정산 요약
+        <% if @start_date.beginning_of_year == @start_date && @end_date.end_of_year == @end_date %>
+          <%= @start_date.year %>년 전체 정산 요약
+        <% elsif @start_date.beginning_of_month == @start_date && @end_date.end_of_month == @end_date && @start_date.year == @end_date.year && @start_date.month == @end_date.month %>
+          <%= @start_date.year %>년 <%= @start_date.month %>월 정산 요약
+        <% else %>
+          <%= @start_date.strftime('%y.%m') %> ~ <%= @end_date.strftime('%y.%m') %> 정산 요약
+        <% end %>
       </div>
       <div style="font-size:13px; font-weight:700; color:#6b7280; margin-bottom:18px;">
         정산된 현장: <%= @projects.count %>건
@@ -102,7 +184,7 @@
         </div>
 
         <div style="background:#eff6ff; border:1px solid #bfdbfe; border-radius:14px; padding:16px; display:flex; justify-content:space-between; align-items:center; margin-top:4px;">
-          <div style="font-size:15px; font-weight:900; color:#1d4ed8;">월간 순이익</div>
+          <div style="font-size:15px; font-weight:900; color:#1d4ed8;">순이익</div>
           <div style="font-size:22px; font-weight:900; color:#1d4ed8;"><%= number_with_delimiter(@net_profit) %>원</div>
         </div>
       </div>
