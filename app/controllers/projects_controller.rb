@@ -161,7 +161,7 @@ class ProjectsController < ApplicationController
       # 종료일(또는 시작일)을 기준으로 기간 내에 끝나는 프로젝트 대상 (정산 대상)
       @projects = current_user.projects
         .where("COALESCE(projects.end_date, projects.start_date) >= ? AND COALESCE(projects.end_date, projects.start_date) <= ?", @start_date, @end_date)
-        .order("COALESCE(projects.end_date, projects.start_date) ASC")
+        .order(Arel.sql("COALESCE(projects.end_date, projects.start_date) ASC"))
 
       @total_estimate = @projects.sum(:estimate_amount).to_i
       @total_material = @projects.sum(:material_cost).to_i
