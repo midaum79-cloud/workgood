@@ -148,41 +148,46 @@ class ProjectsController < ApplicationController
     @unread_notifications_count = current_user.notifications.where(status: "unread").count
 
     # 기간 파라미터 (기본: 이번 달)
-    if params[:start_date].present? && params[:end_date].present?
-      @start_date = Date.parse(params[:start_date])
-      @end_date = Date.parse(params[:end_date])
-    else
-      today = Date.current
-      @start_date = today.beginning_of_month
-      @end_date = today.end_of_month
-    end
+    begin
+      if params[:start_date].present? && params[:end_date].present?
+        @start_date = Date.parse(params[:start_date])
+        @end_date = Date.parse(params[:end_date])
+      else
+        today = Date.current
+        @start_date = today.beginning_of_month
+        @end_date = today.end_of_month
+      end
 
-    # 종료일(또는 시작일)을 기준으로 기간 내에 끝나는 프로젝트 대상 (정산 대상)
-    @projects = current_user.projects
-      .where("COALESCE(projects.end_date, projects.start_date) >= ? AND COALESCE(projects.end_date, projects.start_date) <= ?", @start_date, @end_date)
-      .order("COALESCE(projects.end_date, projects.start_date) ASC")
+      # 종료일(또는 시작일)을 기준으로 기간 내에 끝나는 프로젝트 대상 (정산 대상)
+      @projects = current_user.projects
+        .where("COALESCE(projects.end_date, projects.start_date) >= ? AND COALESCE(projects.end_date, projects.start_date) <= ?", @start_date, @end_date)
+        .order("COALESCE(projects.end_date, projects.start_date) ASC")
 
-    @total_estimate = @projects.sum { |p| p.estimate_amount.to_i }
-    @total_material = @projects.sum { |p| p.material_cost.to_i }
-    @total_labor = @projects.sum { |p| p.labor_cost.to_i }
-    @total_equipment = @projects.sum { |p| p.equipment_cost.to_i }
-    
-    @total_expenses = @total_material + @total_labor + @total_equipment
-    @net_profit = @total_estimate - @total_expenses
-
-    # 연도별 전체 수익 요약 (올해 기준)
-    @year_start = Date.current.beginning_of_year
-    @year_end = Date.current.end_of_year
-    
-    @yearly_projects = current_user.projects
-      .where("COALESCE(projects.end_date, projects.start_date) >= ? AND COALESCE(projects.end_date, projects.start_date) <= ?", @year_start, @year_end)
+      @total_estimate = @projects.sum(:estimate_amount).to_i
+      @total_material = @projects.sum(:material_cost).to_i
+      @total_labor = @projects.sum(:labor_cost).to_i
+      @total_equipment = @projects.sum(:equipment_cost).to_i
       
-    @yearly_estimate = @yearly_projects.sum { |p| p.estimate_amount.to_i }
-    @yearly_material = @yearly_projects.sum { |p| p.material_cost.to_i }
-    @yearly_labor = @yearly_projects.sum { |p| p.labor_cost.to_i }
-    @yearly_equipment = @yearly_projects.sum { |p| p.equipment_cost.to_i }
-    @yearly_expenses = @yearly_material + @yearly_labor + @yearly_equipment
-    @yearly_net_profit = @yearly_estimate - @yearly_expenses
+      @total_expenses = @total_material + @total_labor + @total_equipment
+      @net_profit = @total_estimate - @total_expenses
+
+      # 연도별 전체 수익 요약 (올해 기준)
+      @year_start = Date.current.beginning_of_year
+      @year_end = Date.current.end_of_year
+      
+      @yearly_projects = current_user.projects
+        .where("COALESCE(projects.end_date, projects.start_date) >= ? AND COALESCE(projects.end_date, projects.start_date) <= ?", @year_start, @year_end)
+        
+      @yearly_estimate = @yearly_projects.sum(:estimate_amount).to_i
+      @yearly_material = @yearly_projects.sum(:material_cost).to_i
+      @yearly_labor = @yearly_projects.sum(:labor_cost).to_i
+      @yearly_equipment = @yearly_projects.sum(:equipment_cost).to_i
+      @yearly_expenses = @yearly_material + @yearly_labor + @yearly_equipment
+      @yearly_net_profit = @yearly_estimate - @yearly_expenses
+    rescue => e
+      Rails.logger.error "PROFIT REPORT ERROR: #{e.message}\n#{e.backtrace.join("\n")}"
+      raise e
+    end
   end
 
   def calendar
