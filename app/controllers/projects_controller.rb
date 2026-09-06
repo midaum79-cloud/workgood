@@ -2,7 +2,8 @@ class ProjectsController < ApplicationController
   before_action :require_login
   before_action :require_plan_for_project!, only: %i[new create]
   before_action :set_project, only: %i[show edit update destroy project_calendar project_calendar_panel]
-  before_action :require_premium_for_money!, only: %i[monthly_payments profit_report]
+  before_action :require_premium_for_money!, only: %i[profit_report]
+  before_action :require_standard_for_money!, only: %i[monthly_payments]
 
   def index
     @selected_status = params[:status].presence || "예정"
@@ -781,7 +782,13 @@ class ProjectsController < ApplicationController
 
   def require_premium_for_money!
     unless current_user.premium? || User::TESTING_PERIOD
-      redirect_to subscription_path, alert: "수금 관리는 프리미엄 요금제 전용 기능입니다."
+      redirect_to subscription_path, alert: "해당 기능은 프리미엄 요금제 전용입니다."
+    end
+  end
+
+  def require_standard_for_money!
+    unless current_user.standard_or_above? || User::TESTING_PERIOD
+      redirect_to subscription_path, alert: "수금 관리는 스탠다드 요금제 이상 전용 기능입니다."
     end
   end
 end
