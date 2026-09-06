@@ -1,3 +1,4 @@
+<% if current_user && current_user.created_at >= 100.days.ago %>
 <!-- 캘린더 사용 가이드 -->
 <div style="padding:20px 16px 30px; background:linear-gradient(180deg, #f8fafc 0%, #f0f4ff 100%);">
   <div style="text-align:center; margin-bottom:16px;">
@@ -44,3 +45,4 @@
 
   </div>
 </div>
+<% end %>
