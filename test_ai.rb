@@ -30,7 +30,7 @@ request.body = {
     { "role" => "user", "parts" => [
       { "text" => prompt },
       { "text" => "분석할 텍스트: " + text }
-    ]}
+    ] }
   ]
 }.to_json
 

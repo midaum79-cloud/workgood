@@ -168,17 +168,17 @@ class ProjectsController < ApplicationController
       @total_material = @projects.sum(:material_cost).to_i
       @total_labor = @projects.sum(:labor_cost).to_i
       @total_equipment = @projects.sum(:equipment_cost).to_i
-      
+
       @total_expenses = @total_material + @total_labor + @total_equipment
       @net_profit = @total_estimate - @total_expenses
 
       # 연도별 전체 수익 요약 (올해 기준)
       @year_start = Date.current.beginning_of_year
       @year_end = Date.current.end_of_year
-      
+
       @yearly_projects = current_user.projects
         .where("COALESCE(projects.end_date, projects.start_date) >= ? AND COALESCE(projects.end_date, projects.start_date) <= ?", @year_start, @year_end)
-        
+
       @yearly_estimate = @yearly_projects.sum(:estimate_amount).to_i
       @yearly_material = @yearly_projects.sum(:material_cost).to_i
       @yearly_labor = @yearly_projects.sum(:labor_cost).to_i

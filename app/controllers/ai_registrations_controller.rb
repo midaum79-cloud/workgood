@@ -1,6 +1,6 @@
-require 'net/http'
-require 'uri'
-require 'json'
+require "net/http"
+require "uri"
+require "json"
 
 class AiRegistrationsController < ApplicationController
   before_action :require_login
@@ -35,13 +35,13 @@ class AiRegistrationsController < ApplicationController
 
       uri = URI("https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=#{ENV['GEMINI_API_KEY']}")
       request = Net::HTTP::Post.new(uri, "Content-Type" => "application/json")
-      
+
       request.body = {
         "contents" => [
           { "role" => "user", "parts" => [
             { "text" => prompt },
             { "text" => "분석할 텍스트: " + text }
-          ]}
+          ] }
         ]
       }.to_json
 
@@ -57,7 +57,7 @@ class AiRegistrationsController < ApplicationController
 
       raw_json = parsed_response.dig("candidates", 0, "content", "parts", 0, "text") || "{}"
       clean_json = raw_json.sub(/\A```json\s*/, "").sub(/\s*```\z/, "").strip
-      
+
       parsed_data = JSON.parse(clean_json)
 
       render json: { success: true, data: parsed_data }
