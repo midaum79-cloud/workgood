@@ -73,49 +73,7 @@
       </div>
     </div>
 
-    <%# === 개인관리 === %>
-    <div id="individual-section" style="background:white; border-radius:16px; overflow:hidden; box-shadow:0 2px 8px rgba(0,0,0,0.04); margin-bottom:20px;">
-      <div style="padding:14px 16px; border-bottom:1px solid #f3f4f6; background:#fff7ed; display:flex; justify-content:space-between; align-items:center;">
-        <div style="font-size:15px; font-weight:900; color:#ea580c;">👤 개인관리 (<span id="individual-count"><%= @individual_vendors.count %></span>개)</div>
-        <a href="<%= new_vendor_path(vendor_type: 'individual') %>" style="font-size:13px; font-weight:700; color:#ea580c; text-decoration:none;">+ 개인 추가</a>
-      </div>
 
-
-
-      <%# 개인 목록 %>
-      <div id="individual-list">
-        <% if @individual_vendors.any? %>
-          <% @individual_vendors.each_with_index do |vendor, idx| %>
-            <div class="vendor-item" data-name="<%= vendor.name %>" style="padding:14px 16px; border-bottom:<%= idx == @individual_vendors.length - 1 ? 'none' : '1px solid #f3f4f6' %>;">
-              <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:6px;">
-                <div style="font-size:16px; font-weight:900; color:#111827;"><%= vendor.name %></div>
-                <div style="display:flex; gap:6px;">
-                  <%= link_to "수정", edit_vendor_path(vendor), style: "padding:5px 10px; background:#fff7ed; color:#ea580c; border-radius:8px; font-size:11px; font-weight:800; text-decoration:none;" %>
-                  <%= button_to "삭제", vendor_path(vendor), method: :delete,
-                      data: { confirm: "\"#{vendor.name}\" 거래처를 삭제할까요?" },
-                      style: "padding:5px 10px; background:#fee2e2; color:#dc2626; border:none; border-radius:8px; font-size:11px; font-weight:800; cursor:pointer;" %>
-                </div>
-              </div>
-              <div style="display:flex; flex-direction:column; gap:3px;">
-                <% if vendor.business_number.present? %>
-                  <div style="font-size:12px; color:#6b7280; font-weight:600;">📋 사업자번호: <%= vendor.business_number %></div>
-                <% end %>
-                <% if vendor.address.present? %>
-                  <div style="font-size:12px; color:#6b7280; font-weight:600;">📍 <%= vendor.address %></div>
-                <% end %>
-                <% if vendor.contact_name.present? || vendor.phone.present? %>
-                  <div style="font-size:12px; color:#6b7280; font-weight:600;">👤 <%= vendor.contact_name %> <% if vendor.phone.present? %>· 📞 <%= vendor.phone %><% end %></div>
-                <% end %>
-                <% if vendor.memo.present? %>
-                  <div style="font-size:12px; color:#9ca3af; font-weight:600; margin-top:2px;">💬 <%= vendor.memo %></div>
-                <% end %>
-              </div>
-            </div>
-          <% end %>
-        <% end %>
-        <div id="individual-empty" style="padding:24px; text-align:center; color:#9ca3af; font-size:14px; <%= @individual_vendors.any? ? 'display:none;' : '' %>">등록된 개인 거래처가 없습니다.</div>
-      </div>
-    </div>
 
   </div>
 </div>
@@ -216,27 +174,6 @@ function filterVendors(query) {
     companyEmpty.textContent = query ? '"' + query + '" 검색 결과가 없습니다.' : '등록된 업체가 없습니다.';
   } else {
     companyEmpty.style.display = 'none';
-  }
-
-  // 개인 필터링
-  var individualItems = document.querySelectorAll('#individual-list .vendor-item');
-  var individualVisible = 0;
-  individualItems.forEach(function(item) {
-    var name = item.getAttribute('data-name') || '';
-    if (matchChosung(name, query)) {
-      item.style.display = '';
-      individualVisible++;
-    } else {
-      item.style.display = 'none';
-    }
-  });
-  document.getElementById('individual-count').textContent = individualVisible;
-  var individualEmpty = document.getElementById('individual-empty');
-  if (individualVisible === 0) {
-    individualEmpty.style.display = '';
-    individualEmpty.textContent = query ? '"' + query + '" 검색 결과가 없습니다.' : '등록된 개인 거래처가 없습니다.';
-  } else {
-    individualEmpty.style.display = 'none';
   }
 }
 </script>
