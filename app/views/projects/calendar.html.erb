@@ -758,7 +758,7 @@ function bsFilterVendors(query) {
   filtered.forEach(function(v) {
     var btn = document.createElement('button');
     btn.type = 'button';
-    btn.onclick = function() { bsGoToNewProject(v.name); };
+    btn.onclick = function() { bsGoToNewProject(v.contact_name, v.name, v.phone); };
     btn.style.cssText = 'display:flex; align-items:center; gap:10px; width:100%; padding:14px 16px; border:1px solid #e5e7eb; border-radius:14px; background:white; cursor:pointer; font-family:inherit; text-align:left;';
     btn.innerHTML = '<span style="font-size:16px; font-weight:800; color:#111827;">' + v.name + '</span>' +
       (v.contact_name || v.phone ? '<span style="font-size:13px; color:#9ca3af; margin-left:auto;">' + (v.contact_name || '') + (v.contact_name && v.phone ? ' ' : '') + (v.phone || '') + '</span>' : '') +
