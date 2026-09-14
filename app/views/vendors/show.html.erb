@@ -1,0 +1,86 @@
+<div style="padding-bottom:120px; background:#f9fafb; min-height:100vh;">
+  <%# Header %>
+  <div style="background:white; padding:16px 20px; position:sticky; top:env(safe-area-inset-top, 0); z-index:100; border-bottom:1px solid #f3f4f6; display:flex; align-items:center; gap:16px;">
+    <%= link_to @vendor.vendor_type.present? ? process_templates_path : vendors_path, style: "display:flex; align-items:center; color:#111827; text-decoration:none;" do %>
+      <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg>
+    <% end %>
+    <div style="font-size:18px; font-weight:900; color:#111827; flex:1;">
+      <%= @vendor.name %> 상세
+    </div>
+    <%= link_to edit_vendor_path(@vendor), style: "padding:8px 16px; background:#f3f4f6; color:#374151; border-radius:12px; font-size:14px; font-weight:800; text-decoration:none;" do %>
+      수정
+    <% end %>
+  </div>
+
+  <div style="padding:20px;">
+    <%# Main Info Card %>
+    <div style="background:white; border-radius:20px; padding:24px; box-shadow:0 4px 20px rgba(0,0,0,0.03); margin-bottom:16px;">
+      <div style="display:flex; align-items:center; gap:12px; margin-bottom:20px;">
+        <div style="width:52px; height:52px; background:linear-gradient(135deg, #eff6ff, #dbeafe); border-radius:16px; display:flex; align-items:center; justify-content:center; font-size:24px;">
+          <%= @vendor.vendor_type == 'individual' ? '👤' : '🏢' %>
+        </div>
+        <div>
+          <div style="font-size:22px; font-weight:900; color:#111827; margin-bottom:4px;"><%= @vendor.name %></div>
+          <div style="font-size:14px; font-weight:700; color:#6b7280;">
+            <%= @vendor.vendor_type == 'individual' ? '개인' : '업체' %>
+          </div>
+        </div>
+      </div>
+
+      <div style="display:flex; flex-direction:column; gap:16px;">
+        <% if @vendor.contact_name.present? %>
+          <div>
+            <div style="font-size:12px; font-weight:800; color:#9ca3af; margin-bottom:6px;">담당자</div>
+            <div style="font-size:16px; font-weight:700; color:#374151;"><%= @vendor.contact_name %></div>
+          </div>
+        <% end %>
+
+        <% if @vendor.phone.present? %>
+          <div>
+            <div style="font-size:12px; font-weight:800; color:#9ca3af; margin-bottom:6px;">연락처</div>
+            <div style="display:flex; align-items:center; gap:12px;">
+              <div style="font-size:16px; font-weight:700; color:#374151;"><%= @vendor.phone %></div>
+              <a href="tel:<%= @vendor.phone %>" style="display:flex; align-items:center; justify-content:center; width:36px; height:36px; background:#dcfce7; border-radius:12px; font-size:18px; text-decoration:none;">
+                📞
+              </a>
+            </div>
+          </div>
+        <% end %>
+      </div>
+    </div>
+
+    <%# Detailed Info Card %>
+    <div style="background:white; border-radius:20px; padding:24px; box-shadow:0 4px 20px rgba(0,0,0,0.03);">
+      <div style="font-size:16px; font-weight:900; color:#111827; margin-bottom:20px; display:flex; align-items:center; gap:8px;">
+        <svg width="20" height="20" fill="none" stroke="#6b7280" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+        상세 정보
+      </div>
+
+      <div style="display:flex; flex-direction:column; gap:20px;">
+        <div>
+          <div style="font-size:12px; font-weight:800; color:#9ca3af; margin-bottom:6px;">주소지</div>
+          <div style="font-size:15px; font-weight:600; color:#374151; line-height:1.5;">
+            <%= @vendor.address.presence || "등록된 주소가 없습니다." %>
+          </div>
+        </div>
+
+        <div>
+          <div style="font-size:12px; font-weight:800; color:#9ca3af; margin-bottom:6px;">사업자등록번호</div>
+          <div style="font-size:15px; font-weight:600; color:#374151;">
+            <%= @vendor.business_number.presence || "미등록" %>
+          </div>
+        </div>
+
+        <% if @vendor.memo.present? %>
+          <div>
+            <div style="font-size:12px; font-weight:800; color:#9ca3af; margin-bottom:6px;">메모</div>
+            <div style="font-size:15px; font-weight:600; color:#374151; line-height:1.5; background:#f9fafb; padding:12px; border-radius:12px;">
+              <%= simple_format(@vendor.memo) %>
+            </div>
+          </div>
+        <% end %>
+      </div>
+    </div>
+    
+  </div>
+</div>

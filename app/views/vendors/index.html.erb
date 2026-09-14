@@ -73,6 +73,10 @@
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:<%= (vendor.contact_name.present? || vendor.phone.present? || vendor.memo.present?) ? '10px' : '0' %>;">
               <div style="font-size:17px; font-weight:900; color:#111827;"><%= vendor.name %></div>
               <div style="display:flex; gap:8px;">
+                <%= link_to vendor_path(vendor),
+                    style: "padding:8px 12px; background:#eff6ff; color:#2563eb; border-radius:10px; font-size:13px; font-weight:800; text-decoration:none;" do %>
+                  상세
+                <% end %>
                 <%= link_to edit_vendor_path(vendor),
                     style: "padding:8px 12px; background:#f3f4f6; color:#374151; border-radius:10px; font-size:13px; font-weight:800; text-decoration:none;" do %>
                   수정
