@@ -5,7 +5,7 @@
   <div style="background:white; padding:18px 20px 14px 20px; border-bottom:1px solid #ececec; position:sticky; top:0; z-index:30; margin-bottom:16px;">
     <div style="display:flex; justify-content:space-between; align-items:center;">
       <%= link_to "←", vendors_path, style: "font-size:24px; color:#111; text-decoration:none; font-weight:800;" %>
-      <div style="font-size:20px; font-weight:900;"><%= vendor.new_record? ? "거래처 등록" : "거래처 수정" %></div>
+      <div style="font-size:20px; font-weight:900;"><%= vendor.new_record? ? "업체 등록" : "업체 수정" %></div>
       <div style="width:40px;"></div>
     </div>
   </div>
@@ -20,49 +20,133 @@
     <%= form_with model: vendor, local: true do |f| %>
       <div style="background:white; border-radius:16px; padding:18px; box-shadow:0 2px 8px rgba(0,0,0,0.04); display:flex; flex-direction:column; gap:16px;">
 
-        <%# 거래처 구분 %>
+        <%# 업체 구분 %>
         <div>
           <label style="font-size:13px; font-weight:800; color:#374151; display:block; margin-bottom:6px;">구분 *</label>
           <div style="display:flex; gap:12px;" id="vendor_type_container">
-            <label style="flex:1; display:flex; align-items:center; justify-content:center; padding:12px; border:1px solid #dcdfe4; border-radius:12px; cursor:pointer; background:<%= vendor.vendor_type == 'individual' ? 'white' : '#eff6ff' %>; border-color:<%= vendor.vendor_type == 'individual' ? '#dcdfe4' : '#2563eb' %>;">
-              <%= f.radio_button :vendor_type, "company", checked: (vendor.vendor_type != "individual"), style: "display:none;" %>
-              <span style="font-size:14px; font-weight:800; color:<%= vendor.vendor_type == 'individual' ? '#6b7280' : '#1d4ed8' %>;">🏢 업체</span>
-            </label>
-            <label style="flex:1; display:flex; align-items:center; justify-content:center; padding:12px; border:1px solid #dcdfe4; border-radius:12px; cursor:pointer; background:<%= vendor.vendor_type == 'individual' ? '#fff7ed' : 'white' %>; border-color:<%= vendor.vendor_type == 'individual' ? '#ea580c' : '#dcdfe4' %>;">
-              <%= f.radio_button :vendor_type, "individual", checked: (vendor.vendor_type == "individual"), style: "display:none;" %>
-              <span style="font-size:14px; font-weight:800; color:<%= vendor.vendor_type == 'individual' ? '#c2410c' : '#6b7280' %>;">👤 개인</span>
+            <label style="flex:1; display:flex; align-items:center; justify-content:center; padding:12px; border:1px solid #2563eb; border-radius:12px; background:#eff6ff;">
+              <%= f.hidden_field :vendor_type, value: "company" %>
+              <span style="font-size:14px; font-weight:800; color:#1d4ed8;">🏢 업체</span>
             </label>
           </div>
-          <script>
-            document.querySelectorAll('input[name="vendor[vendor_type]"]').forEach(function(radio) {
-              radio.addEventListener('change', function() {
-                var isCompany = (this.value === 'company');
-                var companyLabel = document.getElementById('vendor_type_container').children[0];
-                var individualLabel = document.getElementById('vendor_type_container').children[1];
-                
-                companyLabel.style.background = isCompany ? '#eff6ff' : 'white';
-                companyLabel.style.borderColor = isCompany ? '#2563eb' : '#dcdfe4';
-                companyLabel.querySelector('span').style.color = isCompany ? '#1d4ed8' : '#6b7280';
-                
-                individualLabel.style.background = !isCompany ? '#fff7ed' : 'white';
-                individualLabel.style.borderColor = !isCompany ? '#ea580c' : '#dcdfe4';
-                individualLabel.querySelector('span').style.color = !isCompany ? '#c2410c' : '#6b7280';
-              });
-            });
-          </script>
         </div>
+
+        <%# AI 스캔 %>
+        <div style="margin-bottom:8px;">
+          <input type="file" id="ai_scan_input" accept="image/*" capture="environment" style="display:none;" />
+          <button type="button" id="ai_scan_btn" style="width:100%; height:52px; background:linear-gradient(135deg, #2563eb, #7c3aed); color:white; border:none; border-radius:14px; font-size:15px; font-weight:800; cursor:pointer; display:flex; justify-content:center; align-items:center; gap:8px; box-shadow:0 4px 12px rgba(37,99,235,0.2);">
+            <span>📸</span> 명함/사업자등록증 AI 스캔
+          </button>
+          
+          <div id="ai_scan_loading" style="display:none; padding:16px; text-align:center; background:#f3f4f6; border-radius:14px; margin-top:8px;">
+            <div style="font-size:14px; font-weight:700; color:#4b5563; display:flex; align-items:center; justify-content:center; gap:8px;">
+              <span class="spinner" style="display:inline-block; width:16px; height:16px; border:2px solid #2563eb; border-radius:50%; border-top-color:transparent; animation:spin 1s linear infinite;"></span>
+              AI가 이미지를 분석하고 있습니다...
+            </div>
+            <style>
+              @keyframes spin { 100% { transform:rotate(360deg); } }
+            </style>
+          </div>
+        </div>
+
+        <script>
+          document.addEventListener('DOMContentLoaded', function() {
+            var scanBtn = document.getElementById('ai_scan_btn');
+            var scanInput = document.getElementById('ai_scan_input');
+            var scanLoading = document.getElementById('ai_scan_loading');
+            
+            if (scanBtn && scanInput) {
+              scanBtn.addEventListener('click', function() {
+                scanInput.click();
+              });
+              
+              scanInput.addEventListener('change', function(e) {
+                var file = e.target.files[0];
+                if (!file) return;
+                
+                scanBtn.style.display = 'none';
+                scanLoading.style.display = 'block';
+                
+                var formData = new FormData();
+                formData.append('image', file);
+                
+                var csrfToken = document.querySelector('meta[name="csrf-token"]');
+                var token = csrfToken ? csrfToken.content : '';
+                
+                fetch('/ai_registrations/analyze_image', {
+                  method: 'POST',
+                  headers: {
+                    'X-CSRF-Token': token
+                  },
+                  body: formData
+                })
+                .then(response => response.json().then(data => ({ status: response.status, body: data })))
+                .then(result => {
+                  scanLoading.style.display = 'none';
+                  scanBtn.style.display = 'flex';
+                  scanInput.value = '';
+                  
+                  if (result.status === 200 && result.body.success) {
+                    var data = result.body.data;
+                    
+                    if (data.vendor_name) document.getElementById('vendor_name').value = data.vendor_name;
+                    if (data.contact_name) document.getElementById('vendor_contact_name').value = data.contact_name;
+                    if (data.phone) {
+                      var phoneInput = document.getElementById('vendor_phone_input');
+                      if (phoneInput && typeof formatPhoneNumber === 'function') {
+                        phoneInput.value = formatPhoneNumber(data.phone);
+                      } else if (phoneInput) {
+                        phoneInput.value = data.phone;
+                      }
+                    }
+                    if (data.business_number) document.getElementById('vendor_business_number').value = data.business_number;
+                    if (data.address) {
+                      document.getElementById('vendor_address').value = data.address;
+                      var addressText = document.getElementById('vendor_address_display_text');
+                      if (addressText) {
+                        addressText.textContent = data.address;
+                        addressText.style.color = '#111827';
+                      }
+                    }
+                  } else {
+                    alert(result.body.error || '분석 중 오류가 발생했습니다.');
+                  }
+                })
+                .catch(error => {
+                  scanLoading.style.display = 'none';
+                  scanBtn.style.display = 'flex';
+                  scanInput.value = '';
+                  alert('네트워크 오류가 발생했습니다. 다시 시도해주세요.');
+                  console.error(error);
+                });
+              });
+            }
+          });
+        </script>
 
         <%# 업체명 %>
         <div>
-          <label style="font-size:13px; font-weight:800; color:#374151; display:block; margin-bottom:6px;"><span id="vendor-name-label"><%= vendor.vendor_type == 'individual' ? '고객명' : '업체명' %></span> *</label>
+          <label style="font-size:13px; font-weight:800; color:#374151; display:block; margin-bottom:6px;"><span id="vendor-name-label">업체명</span> *</label>
           <%= f.text_field :name, placeholder: "업체명 또는 고객명을 등록해 주세요",
               style: "width:100%; height:48px; border:1.5px solid #e5e7eb; border-radius:12px; padding:0 14px; font-size:15px; font-weight:700; font-family:inherit; box-sizing:border-box;" %>
         </div>
 
-        <%# 사업자등록번호 %>
+        <%# 고객명 %>
         <div>
-          <label style="font-size:13px; font-weight:800; color:#374151; display:block; margin-bottom:6px;">사업자등록번호</label>
-          <%= f.text_field :business_number, placeholder: "000-00-00000",
+          <label style="font-size:13px; font-weight:800; color:#374151; display:block; margin-bottom:6px;">고객명</label>
+          <%= f.text_field :contact_name, placeholder: "담당자 이름 (예: 김부장)",
+              style: "width:100%; height:48px; border:1.5px solid #e5e7eb; border-radius:12px; padding:0 14px; font-size:15px; font-weight:700; font-family:inherit; box-sizing:border-box;" %>
+        </div>
+
+        <%# 전화번호 %>
+        <div>
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+            <label style="font-size:13px; font-weight:800; color:#374151;">전화번호</label>
+            <button type="button" id="import_contact_btn" style="background:none; border:none; color:#2563eb; font-size:13px; font-weight:800; padding:0; cursor:pointer; display:none;">
+              📞 연락처 불러오기
+            </button>
+          </div>
+          <%= f.telephone_field :phone, placeholder: "010-0000-0000", id: "vendor_phone_input",
               style: "width:100%; height:48px; border:1.5px solid #e5e7eb; border-radius:12px; padding:0 14px; font-size:15px; font-weight:700; font-family:inherit; box-sizing:border-box;" %>
         </div>
 
@@ -88,32 +172,10 @@
                  style="margin-top:8px; width:100%; height:48px; border:1.5px solid #e5e7eb; border-radius:12px; padding:0 14px; font-size:15px; font-weight:700; font-family:inherit; box-sizing:border-box;">
         </div>
 
-        <script>
-          // 라디오 버튼 선택 시 라벨 동기화
-          document.querySelectorAll('input[name="vendor[vendor_type]"]').forEach(function(radio) {
-            radio.addEventListener('change', function() {
-              var isCompany = (this.value === 'company');
-              document.getElementById('vendor-name-label').textContent = isCompany ? '업체명' : '고객명';
-            });
-          });
-        </script>
-
-        <%# 고객명 %>
+        <%# 사업자등록번호 %>
         <div>
-          <label style="font-size:13px; font-weight:800; color:#374151; display:block; margin-bottom:6px;">고객명</label>
-          <%= f.text_field :contact_name, placeholder: "담당자 이름 (예: 김부장)",
-              style: "width:100%; height:48px; border:1.5px solid #e5e7eb; border-radius:12px; padding:0 14px; font-size:15px; font-weight:700; font-family:inherit; box-sizing:border-box;" %>
-        </div>
-
-        <%# 전화번호 %>
-        <div>
-          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
-            <label style="font-size:13px; font-weight:800; color:#374151;">전화번호</label>
-            <button type="button" id="import_contact_btn" style="background:none; border:none; color:#2563eb; font-size:13px; font-weight:800; padding:0; cursor:pointer; display:none;">
-              📞 연락처 불러오기
-            </button>
-          </div>
-          <%= f.telephone_field :phone, placeholder: "010-0000-0000", id: "vendor_phone_input",
+          <label style="font-size:13px; font-weight:800; color:#374151; display:block; margin-bottom:6px;">사업자등록번호</label>
+          <%= f.text_field :business_number, placeholder: "000-00-00000",
               style: "width:100%; height:48px; border:1.5px solid #e5e7eb; border-radius:12px; padding:0 14px; font-size:15px; font-weight:700; font-family:inherit; box-sizing:border-box;" %>
         </div>
 
@@ -340,7 +402,7 @@
 
       <%# Action buttons - 수정 완료 버튼만 form 안에 %>
       <div style="display:flex; flex-direction:column; gap:10px; margin-top:20px;">
-        <%= f.submit vendor.new_record? ? "거래처 등록하기" : "수정 완료",
+        <%= f.submit vendor.new_record? ? "업체 등록하기" : "수정 완료",
             style: "display:block; width:100%; padding:16px; background:#111827; color:white; border:none; border-radius:14px; font-size:18px; font-weight:900; cursor:pointer; font-family:inherit; box-sizing:border-box;" %>
       </div>
 
@@ -348,8 +410,8 @@
     <%# 삭제·취소 버튼은 form 바깥에 위치 (form 중첩 방지) %>
     <div style="display:flex; flex-direction:column; gap:10px; margin-top:10px;">
       <% unless vendor.new_record? %>
-        <%= button_to "거래처 삭제", vendor_path(vendor), method: :delete,
-            form: { onsubmit: "return confirm('\"#{vendor.name}\" 거래처를 삭제할까요?');" },
+        <%= button_to "업체 삭제", vendor_path(vendor), method: :delete,
+            form: { onsubmit: "return confirm('\"#{vendor.name}\" 업체를 삭제할까요?');" },
             style: "width:100%; padding:14px; background:#fee2e2; color:#dc2626; border:none; border-radius:14px; font-size:16px; font-weight:900; cursor:pointer; font-family:inherit;" %>
       <% end %>
 

@@ -165,6 +165,7 @@ Rails.application.routes.draw do
   end
 
   post "ai_registrations/analyze_text", to: "ai_registrations#analyze_text"
+  post "ai_registrations/analyze_image", to: "ai_registrations#analyze_image"
 
   # Widget API
   namespace :api do
