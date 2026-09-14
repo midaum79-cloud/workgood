@@ -805,13 +805,17 @@ function bsFilterVendors(query) {
   });
 }
 
+var isQuickCreatingProject = false;
 function bsGoToNewProject(clientName, projectName, clientPhone, address) {
+  if (isQuickCreatingProject) return; // 중복 클릭 방지
   var pName = projectName || clientName;
   var cName = clientName;
   var phone = clientPhone || '';
   var addr = address || '';
 
   if (!pName || !pName.trim()) { alert('일정 이름이나 업체명을 입력해주세요.'); return; }
+  
+  isQuickCreatingProject = true; // 통신 시작 시 락 걸기
   
   fetch('<%= quick_create_projects_path %>', {
     method: 'POST',
@@ -834,11 +838,13 @@ function bsGoToNewProject(clientName, projectName, clientPhone, address) {
       window.location.reload();
     } else {
       alert(data.error || '일정 추가에 실패했습니다.');
+      isQuickCreatingProject = false; // 에러 시 다시 풀기
     }
   })
   .catch(function(err) {
     console.error('Quick create error:', err);
     alert('네트워크 오류가 발생했습니다.');
+    isQuickCreatingProject = false; // 에러 시 다시 풀기
   });
 }
 
@@ -1003,7 +1009,11 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 });
 
+var isPastingSchedule = false;
 function pasteSchedule(projectId, dateStr) {
+  if (isPastingSchedule) return; // 중복 클릭 방지
+  isPastingSchedule = true; // 통신 시작 시 락 걸기
+  
   fetch('<%= toggle_schedule_projects_path %>', {
     method: 'POST',
     headers: {
@@ -1023,11 +1033,13 @@ function pasteSchedule(projectId, dateStr) {
       window.location.reload();
     } else {
       alert(data.error || '일정 복사에 실패했습니다.');
+      isPastingSchedule = false; // 에러 시 풀기
     }
   })
   .catch(function(err) {
     console.error('Paste error:', err);
     alert('네트워크 오류가 발생했습니다.');
+    isPastingSchedule = false; // 에러 시 풀기
   });
 }
 </script>
