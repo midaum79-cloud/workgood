@@ -204,17 +204,17 @@
     }
 
     function fallbackCopyTextToClipboard(text) {
-      if (navigator.clipboard && navigator.clipboard.writeText) {
-        navigator.clipboard.writeText(text).then(() => {
-          alert('현장 정보가 클립보드에 복사되었습니다.');
-        }).catch(console.error);
-      } else {
+      const execCopy = function() {
         const textArea = document.createElement("textarea");
         textArea.value = text;
         textArea.style.position = "fixed";
+        textArea.style.top = "0";
+        textArea.style.left = "0";
+        textArea.style.opacity = "0";
         document.body.appendChild(textArea);
         textArea.focus();
         textArea.select();
+        textArea.setSelectionRange(0, 99999);
         try {
           document.execCommand('copy');
           alert('현장 정보가 클립보드에 복사되었습니다.');
@@ -222,6 +222,17 @@
           console.error('Fallback copy failed', err);
         }
         document.body.removeChild(textArea);
+      };
+
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(() => {
+          alert('현장 정보가 클립보드에 복사되었습니다.');
+        }).catch(err => {
+          console.error(err);
+          execCopy();
+        });
+      } else {
+        execCopy();
       }
     }
     </script>
