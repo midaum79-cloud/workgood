@@ -267,7 +267,7 @@
       <input type="text" id="bsDirectClientPhone" placeholder="연락처를 입력하세요 (선택)"
         style="width:100%; padding:14px 16px; border:1px solid #dcdfe4; border-radius:12px; font-size:15px; box-sizing:border-box; margin-bottom:10px;">
       
-      <button type="button" onclick="openDaumPostcodeDirect()" style="width:100%; padding:14px; background:#4b5563; color:white; border:none; border-radius:12px; font-size:15px; font-weight:800; cursor:pointer; margin-bottom:8px; display:flex; justify-content:center; align-items:center; gap:8px;">
+      <button type="button" onclick="execDaumPostcodeDirect()" style="width:100%; padding:14px; background:#4b5563; color:white; border:none; border-radius:12px; font-size:15px; font-weight:800; cursor:pointer; margin-bottom:8px; display:flex; justify-content:center; align-items:center; gap:8px;">
         <span>🔍</span> 주소 검색
       </button>
       <input type="text" id="bsDirectAddress" placeholder="주소를 입력하세요 (또는 AI 분석 결과)"
@@ -660,6 +660,17 @@ function execDaumPostcodeForConsultation() {
     document.head.appendChild(script);
   } else {
     openDaumPostcode();
+  }
+}
+
+function execDaumPostcodeDirect() {
+  if (typeof daum === 'undefined' || !daum.Postcode) {
+    var script = document.createElement('script');
+    script.src = '//t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js';
+    script.onload = function() { openDaumPostcodeDirect(); };
+    document.head.appendChild(script);
+  } else {
+    openDaumPostcodeDirect();
   }
 }
 
