@@ -429,6 +429,7 @@
     <script>
       (function() {
         var preloader = document.getElementById('global-preloader');
+        var startTime = Date.now();
         
         // 세션(앱 구동) 중 최초 1회만 스플래시 표시
         if (sessionStorage.getItem('app_splash_shown') === 'true') {
@@ -438,10 +439,17 @@
 
         function hidePreloader() {
           if (!preloader || preloader.style.display === 'none') return;
-          preloader.style.opacity = '0';
-          preloader.style.visibility = 'hidden';
-          sessionStorage.setItem('app_splash_shown', 'true');
-          setTimeout(function() { preloader.remove(); }, 400); 
+          
+          var elapsed = Date.now() - startTime;
+          var minDisplayTime = 1200; // 최소 1.2초 노출 (진짜 앱처럼 브랜드 인지)
+          var delay = Math.max(0, minDisplayTime - elapsed);
+
+          setTimeout(function() {
+            preloader.style.opacity = '0';
+            preloader.style.visibility = 'hidden';
+            sessionStorage.setItem('app_splash_shown', 'true');
+            setTimeout(function() { preloader.remove(); }, 400); 
+          }, delay);
         }
 
         window.addEventListener('load', hidePreloader);
