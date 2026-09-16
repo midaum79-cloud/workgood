@@ -188,31 +188,32 @@
             },
             on: {
               ready: (fancybox) => {
-                // 하단 닫기 배너 생성
+                // 하단 닫기 버튼 (썸네일 위 플로팅) 생성
                 const banner = document.createElement('div');
                 banner.id = 'fancybox-custom-close-banner';
                 banner.style.position = 'fixed';
-                banner.style.bottom = '0';
-                banner.style.left = '0';
-                banner.style.width = '100%';
-                banner.style.padding = '16px 20px 30px 20px'; // 하단 여유 공간 확보 (아이폰 홈바 등 고려)
-                banner.style.background = 'linear-gradient(to top, rgba(0,0,0,0.9), transparent)';
+                banner.style.bottom = '95px'; // 썸네일(보통 70~80px) 위로 띄움
+                banner.style.left = '50%';
+                banner.style.transform = 'translateX(-50%)';
+                banner.style.width = '90%';
+                banner.style.maxWidth = '300px';
                 banner.style.zIndex = '9999999';
                 banner.style.display = 'flex';
                 banner.style.justifyContent = 'center';
-                banner.style.boxSizing = 'border-box';
                 
                 const btn = document.createElement('button');
                 btn.style.width = '100%';
-                btn.style.padding = '16px';
-                btn.style.borderRadius = '14px';
-                btn.style.background = 'rgba(255, 255, 255, 0.2)';
+                btn.style.padding = '14px';
+                btn.style.borderRadius = '999px';
+                btn.style.background = 'rgba(30, 30, 30, 0.85)';
                 btn.style.backdropFilter = 'blur(10px)';
                 btn.style.color = 'white';
-                btn.style.fontSize = '17px';
+                btn.style.fontSize = '16px';
                 btn.style.fontWeight = '800';
-                btn.style.border = '1px solid rgba(255,255,255,0.3)';
-                btn.innerText = '사진 닫기';
+                btn.style.border = '1px solid rgba(255,255,255,0.2)';
+                btn.style.boxShadow = '0 6px 16px rgba(0,0,0,0.5)';
+                btn.style.cursor = 'pointer';
+                btn.innerText = '✕ 사진 닫기';
                 
                 banner.appendChild(btn);
                 banner.onclick = () => Fancybox.close();
