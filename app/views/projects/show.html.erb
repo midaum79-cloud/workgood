@@ -389,6 +389,143 @@
       </div>
     </div>
 
+    <!-- 📸 현장 사진첩 -->
+    <div style="background:white; border-radius:20px; padding:20px; margin-bottom:14px; box-shadow:0 2px 10px rgba(0,0,0,0.04);">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
+        <div style="font-size:16px; font-weight:900; color:#111827;">📸 현장 사진첩</div>
+        <label for="project-photos-input" style="background:#f3f4f6; color:#374151; padding:8px 12px; border-radius:10px; font-size:13px; font-weight:800; cursor:pointer;">
+          + 사진 추가 (최대 20장)
+        </label>
+        <input type="file" id="project-photos-input" accept="image/*" multiple style="display:none;">
+      </div>
+
+      <% if @project.photos.attached? %>
+        <div style="display:flex; gap:10px; overflow-x:auto; padding-bottom:8px; -webkit-overflow-scrolling:touch; scroll-snap-type:x mandatory;">
+          <% @project.photos.each do |photo| %>
+            <div style="flex:0 0 auto; width:120px; height:120px; border-radius:12px; overflow:hidden; scroll-snap-align:start; position:relative; background:#f3f4f6;">
+              <%= image_tag photo, style: "width:100%; height:100%; object-fit:cover; cursor:pointer;", onclick: "openLightbox('#{url_for(photo)}')" %>
+            </div>
+          <% end %>
+        </div>
+      <% else %>
+        <div style="text-align:center; padding:30px 0; color:#9ca3af; font-size:14px; font-weight:700; background:#f9fafb; border-radius:12px;">
+          등록된 현장 사진이 없습니다.<br>
+          <span style="font-size:12px; font-weight:600;">영수증이나 현장 사진을 보관해보세요!</span>
+        </div>
+      <% end %>
+    </div>
+    
+    <!-- Lightbox Modal -->
+    <div id="photo-lightbox" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.9); z-index:9999; flex-direction:column; justify-content:center; align-items:center;">
+      <div style="position:absolute; top:20px; right:20px; color:white; font-size:30px; font-weight:bold; cursor:pointer;" onclick="closeLightbox()">✕</div>
+      <img id="lightbox-img" src="" style="max-width:95vw; max-height:85vh; object-fit:contain; border-radius:8px;">
+    </div>
+
+    <script>
+      function openLightbox(url) {
+        document.getElementById('lightbox-img').src = url;
+        document.getElementById('photo-lightbox').style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+      }
+      function closeLightbox() {
+        document.getElementById('photo-lightbox').style.display = 'none';
+        document.getElementById('lightbox-img').src = '';
+        document.body.style.overflow = '';
+      }
+
+      document.getElementById('project-photos-input').addEventListener('change', async function(e) {
+        const files = Array.from(e.target.files);
+        if (files.length === 0) return;
+
+        // 기존 업로드된 사진 수 계산
+        const existingCount = <%= @project.photos.attached? ? @project.photos.count : 0 %>;
+        if (existingCount + files.length > 20) {
+          alert('사진은 최대 20장까지만 등록 가능합니다. (현재 ' + existingCount + '장 등록됨)');
+          e.target.value = '';
+          return;
+        }
+
+        // 압축 및 업로드 시작 알림 (UX)
+        const uploadBtnLabel = document.querySelector('label[for="project-photos-input"]');
+        const originalText = uploadBtnLabel.innerText;
+        uploadBtnLabel.innerText = '압축 및 업로드 중... ⏳';
+        uploadBtnLabel.style.pointerEvents = 'none';
+
+        const formData = new FormData();
+        // project patch 처리를 위한 기본 필드
+        formData.append('_method', 'patch');
+        formData.append('authenticity_token', document.querySelector('meta[name="csrf-token"]').content);
+
+        // 이미지 압축 (최대 1920x1920)
+        const MAX_SIZE = 1920;
+        
+        for (let i = 0; i < files.length; i++) {
+          const file = files[i];
+          const compressedBlob = await compressImage(file, MAX_SIZE);
+          formData.append('project[photos][]', compressedBlob, file.name);
+        }
+
+        try {
+          const response = await fetch('<%= project_path(@project) %>', {
+            method: 'POST', // patch method override via _method
+            body: formData,
+            headers: { 'Accept': 'application/json' }
+          });
+          
+          if (response.ok || response.redirected) {
+            window.location.reload();
+          } else {
+            alert('업로드 중 오류가 발생했습니다.');
+            uploadBtnLabel.innerText = originalText;
+            uploadBtnLabel.style.pointerEvents = 'auto';
+          }
+        } catch (err) {
+          console.error(err);
+          alert('네트워크 오류가 발생했습니다.');
+          uploadBtnLabel.innerText = originalText;
+          uploadBtnLabel.style.pointerEvents = 'auto';
+        }
+      });
+
+      function compressImage(file, maxSize) {
+        return new Promise((resolve, reject) => {
+          const reader = new FileReader();
+          reader.readAsDataURL(file);
+          reader.onload = function(event) {
+            const img = new Image();
+            img.src = event.target.result;
+            img.onload = function() {
+              let width = img.width;
+              let height = img.height;
+
+              if (width > maxSize || height > maxSize) {
+                if (width > height) {
+                  height = Math.round((height *= maxSize / width));
+                  width = maxSize;
+                } else {
+                  width = Math.round((width *= maxSize / height));
+                  height = maxSize;
+                }
+              }
+
+              const canvas = document.createElement('canvas');
+              canvas.width = width;
+              canvas.height = height;
+              const ctx = canvas.getContext('2d');
+              ctx.drawImage(img, 0, 0, width, height);
+
+              // webp 또는 jpeg 로 압축
+              canvas.toBlob((blob) => {
+                resolve(blob);
+              }, file.type, 0.8);
+            };
+            img.onerror = reject;
+          };
+          reader.onerror = reject;
+        });
+      }
+    </script>
+
     <div style="display:flex; flex-direction:column; gap:10px;">
       <%= button_to "현장 삭제", @project, method: :delete, data: { turbo_confirm: "정말로 이 현장을 삭제하시겠습니까? 모든 공정 데이터가 함께 삭제됩니다." }, style: "width:100%; padding:16px; background:#dc2626; color:white; border:none; border-radius:14px; font-size:18px; font-weight:900; cursor:pointer;" %>
     </div>
