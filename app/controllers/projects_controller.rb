@@ -694,7 +694,14 @@ class ProjectsController < ApplicationController
     @project = current_user.projects.find(params[:id])
     begin
       if params[:photos].present?
-        Array(params[:photos]).each do |photo|
+        new_photos = Array(params[:photos])
+        current_count = @project.photos.count
+
+        if current_count + new_photos.length > 10
+          return render json: { success: false, error: "현장 사진은 최대 10장까지만 업로드할 수 있습니다. (현재 #{current_count}장 존재)" }, status: :unprocessable_entity
+        end
+
+        new_photos.each do |photo|
           next if photo.blank?
           @project.photos.attach(photo)
         end
