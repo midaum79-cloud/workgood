@@ -217,12 +217,8 @@
                 
                 banner.appendChild(btn);
                 banner.onclick = () => Fancybox.close();
-                document.body.appendChild(banner);
-              },
-              destroy: () => {
-                // 닫힐 때 배너 제거
-                const banner = document.getElementById('fancybox-custom-close-banner');
-                if (banner) banner.remove();
+                // body가 아닌 fancybox 컨테이너 내부에 넣어서 닫힐 때 같이 투명해지며 사라지도록 함
+                fancybox.container.appendChild(banner);
               }
             }
           });
