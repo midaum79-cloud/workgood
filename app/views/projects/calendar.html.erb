@@ -351,8 +351,9 @@
 
       <input type="hidden" id="cId">
       <input type="hidden" id="cType" value="consultation">
-      <input type="text" id="cName" placeholder="고객명 (필수)" style="height:46px; border:1px solid #dcdcdc; border-radius:12px; padding:0 14px; font-size:15px; font-weight:700;">
-      <input type="tel" id="cPhone" placeholder="연락처" oninput="this.value = this.value.replace(/[^0-9]/g, '').replace(/(^02|^0505|^1[0-9]{3}|^0[0-9]{2})([0-9]+)?([0-9]{4})$/,'$1-$2-$3').replace('--','-');" style="height:46px; border:1px solid #dcdcdc; border-radius:12px; padding:0 14px; font-size:15px; font-weight:700;">
+      <input type="text" id="cCompanyName" placeholder="업체명 / 일정 내용 (필수)" style="height:46px; border:1px solid #dcdcdc; border-radius:12px; padding:0 14px; font-size:15px; font-weight:700;">
+      <input type="text" id="cName" placeholder="고객명 (선택)" style="height:46px; border:1px solid #dcdcdc; border-radius:12px; padding:0 14px; font-size:15px; font-weight:700;">
+      <input type="tel" id="cPhone" placeholder="연락처 (필수)" oninput="this.value = this.value.replace(/[^0-9]/g, '').replace(/(^02|^0505|^1[0-9]{3}|^0[0-9]{2})([0-9]+)?([0-9]{4})$/,'$1-$2-$3').replace('--','-');" style="height:46px; border:1px solid #dcdcdc; border-radius:12px; padding:0 14px; font-size:15px; font-weight:700;">
       
       <input type="text" id="cAddress" readonly onclick="execDaumPostcodeForConsultation()" placeholder="주소 검색 (여기를 눌러주세요)" style="height:46px; border:1px solid #dcdcdc; border-radius:12px; padding:0 14px; font-size:15px; font-weight:700; background:#f9fafb; cursor:pointer;">
       <input type="text" id="cDetailAddress" placeholder="나머지 상세 주소" style="height:46px; border:1px solid #dcdcdc; border-radius:12px; padding:0 14px; font-size:15px; font-weight:700;">
@@ -430,6 +431,7 @@ var calendarConsultations = [
   <% current_user.consultations.where(consultation_date: @calendar_rows.flatten.compact.first..@calendar_rows.flatten.compact.last).each do |c| %>
   {
     id: <%= c.id %>,
+    company_name: '<%= j(c.company_name.to_s) %>',
     name: '<%= j(c.customer_name.to_s) %>',
     phone: '<%= j(c.contact_number.to_s) %>',
     address: '<%= j(c.address.to_s) %>',
@@ -548,7 +550,7 @@ function bsViewConsultation(id) {
   document.getElementById('bsConsultationView').style.display = 'block';
   document.getElementById('bsTitle').textContent = c.type === 'as' ? 'AS 일정 상세' : '상담 일정 상세';
   
-  document.getElementById('vName').textContent = c.name;
+  document.getElementById('vName').textContent = (c.company_name || c.name || '업체명 없음');
   document.getElementById('vTime').textContent = c.time || '시간 미지정';
   document.getElementById('vPhone').textContent = c.phone || '연락처 없음';
   var fullAddrDisplay = c.address || '';
@@ -568,6 +570,7 @@ function bsOpenAddConsultation(type = 'consultation') {
   document.getElementById('bsTitle').textContent = type === 'as' ? 'AS 일정 추가' : '상담 일정 추가';
   document.getElementById('cType').value = type;
   document.getElementById('cId').value = '';
+  document.getElementById('cCompanyName').value = '';
   document.getElementById('cName').value = '';
   document.getElementById('cPhone').value = '';
   document.getElementById('cAddress').value = '';
@@ -591,7 +594,8 @@ function bsEditConsultation(id) {
   document.getElementById('bsTitle').textContent = c.type === 'as' ? 'AS 일정 수정' : '상담 일정 수정';
   document.getElementById('cType').value = c.type;
   document.getElementById('cId').value = c.id;
-  document.getElementById('cName').value = c.name;
+  document.getElementById('cCompanyName').value = c.company_name || '';
+  document.getElementById('cName').value = c.name || '';
   document.getElementById('cPhone').value = c.phone || '';
   document.getElementById('cAddress').value = c.address || '';
   document.getElementById('cDetailAddress').value = c.detail_address || '';
@@ -607,16 +611,21 @@ function bsEditConsultation(id) {
 
 function bsSaveConsultation() {
   var id = document.getElementById('cId').value;
+  var company_name = document.getElementById('cCompanyName').value.trim();
   var name = document.getElementById('cName').value.trim();
-  if(!name) { alert('고객명을 입력해주세요.'); return; }
+  var phone = document.getElementById('cPhone').value.trim();
+  
+  if(!company_name) { alert('업체명을 입력해주세요.'); return; }
+  if(!phone) { alert('연락처를 입력해주세요.'); return; }
   
   var addr = document.getElementById('cAddress').value.trim();
   var detailAddr = document.getElementById('cDetailAddress').value.trim();
 
   var payload = {
     consultation: {
+      company_name: company_name,
       customer_name: name,
-      contact_number: document.getElementById('cPhone').value.trim(),
+      contact_number: phone,
       address: addr,
       detail_address: detailAddr,
       consultation_date: bsSelectedDate,
@@ -965,8 +974,8 @@ function analyzeAiConsultationText(e) {
   .then(function(res) { return res.json(); })
   .then(function(data) {
     if (data.success) {
-      var nameVal = data.data.client_name || data.data.project_name || '';
-      if(nameVal) document.getElementById('cName').value = nameVal;
+      if(data.data.project_name) document.getElementById('cCompanyName').value = data.data.project_name;
+      if(data.data.client_name) document.getElementById('cName').value = data.data.client_name;
       
       if(data.data.client_phone) document.getElementById('cPhone').value = data.data.client_phone;
       if(data.data.address) document.getElementById('cAddress').value = data.data.address;

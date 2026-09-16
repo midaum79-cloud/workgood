@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html>
+<head>
+<script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0/dist/fancybox/fancybox.umd.js"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0/dist/fancybox/fancybox.css" />
+</head>
+<body>
+<a href="https://via.placeholder.com/600" data-fancybox="gallery">Open</a>
+<script>
+  Fancybox.bind('[data-fancybox="gallery"]', {
+    on: {
+      ready: (f) => {
+        console.log(f.container);
+      }
+    }
+  });
+</script>
+</body>
+</html>

@@ -918,7 +918,10 @@
         if(data.data.address) {
           document.getElementById('edit_project_address').value = data.data.address;
           document.getElementById('edit_address_display_text').textContent = data.data.address;
-          document.getElementById('edit_address_display_text').style.color = "#111827";
+          document.getElementById('edit_address_display_text').style.color = '#111';
+        }
+        if(data.data.detail_address) {
+          document.getElementById('edit_project_detail_address').value = data.data.detail_address;
         }
       } else {
         alert(data.error || "분석에 실패했습니다.");
