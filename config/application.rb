@@ -31,5 +31,12 @@ module Workgood
     config.time_zone = "Seoul"
     config.active_record.default_timezone = :local
     # config.eager_load_paths << Rails.root.join("extras")
+
+    # ActiveRecord Encryption Settings
+    config.active_record.encryption.primary_key = ENV["ACTIVE_RECORD_ENCRYPTION_PRIMARY_KEY"]
+    config.active_record.encryption.deterministic_key = ENV["ACTIVE_RECORD_ENCRYPTION_DETERMINISTIC_KEY"]
+    config.active_record.encryption.key_derivation_salt = ENV["ACTIVE_RECORD_ENCRYPTION_KEY_DERIVATION_SALT"]
+    # Allow reading existing unencrypted passwords
+    config.active_record.encryption.support_unencrypted_data = true
   end
 end
