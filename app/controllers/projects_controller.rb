@@ -368,7 +368,11 @@ class ProjectsController < ApplicationController
 
     # 같은 거래처의 모든 프로젝트 조회
     @client_name = @project.client_name.presence || @project.project_name
-    @client_projects = current_user.projects.where(client_name: @client_name).order(:start_date)
+    @client_projects = if @project.client_name.present?
+      current_user.projects.where(client_name: @project.client_name).order(:start_date)
+    else
+      current_user.projects.where(id: @project.id).order(:start_date)
+    end
 
     base_date =
       if params[:year].present? && params[:month].present?
@@ -445,7 +449,11 @@ class ProjectsController < ApplicationController
   # AJAX: 프로젝트 캘린더 패널 HTML 조각 반환
   def project_calendar_panel
     @client_name = @project.client_name.presence || @project.project_name
-    @client_projects = current_user.projects.where(client_name: @client_name).order(:start_date)
+    @client_projects = if @project.client_name.present?
+      current_user.projects.where(client_name: @project.client_name).order(:start_date)
+    else
+      current_user.projects.where(id: @project.id).order(:start_date)
+    end
 
     base_date = Date.new(params[:year].to_i, params[:month].to_i, 1)
 
