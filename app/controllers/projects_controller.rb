@@ -664,7 +664,10 @@ class ProjectsController < ApplicationController
       end
     end
 
-    redirect_to edit_project_path(@project), status: :see_other, notice: "사진이 삭제되었습니다."
+    respond_to do |format|
+      format.html { redirect_to edit_project_path(@project), status: :see_other, notice: "사진이 삭제되었습니다." }
+      format.json { render json: { success: true } }
+    end
   end
 
   def update_payment

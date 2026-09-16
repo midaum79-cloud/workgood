@@ -142,7 +142,7 @@
             <% @project.photos.each do |photo| %>
               <div style="flex:0 0 auto; width:120px; height:120px; border-radius:12px; overflow:hidden; scroll-snap-align:start; position:relative; background:#f3f4f6;">
                 <%= image_tag photo, style: "width:100%; height:100%; object-fit:cover;" %>
-                <%= link_to "🗑", purge_photo_project_path(@project, photo_id: photo.id), data: { turbo_method: :delete, turbo_confirm: "이 사진을 삭제하시겠습니까?" }, style: "position:absolute; top:4px; right:4px; background:rgba(0,0,0,0.6); color:white; border:none; border-radius:50%; width:28px; height:28px; font-size:14px; cursor:pointer; display:flex; align-items:center; justify-content:center; text-decoration:none;" %>
+                <button type="button" onclick="deletePhoto(<%= photo.id %>)" style="position:absolute; top:4px; right:4px; background:rgba(0,0,0,0.6); color:white; border:none; border-radius:50%; width:28px; height:28px; font-size:14px; cursor:pointer; display:flex; align-items:center; justify-content:center;">🗑</button>
               </div>
             <% end %>
           </div>
@@ -927,6 +927,27 @@
     .finally(function() {
       btn.textContent = origText;
       btn.disabled = false;
+    });
+  }
+  function deletePhoto(photoId) {
+    if (!confirm('사진을 삭제하시겠습니까?')) return;
+    
+    fetch('<%= project_path(@project) %>/purge_photo?photo_id=' + photoId, {
+      method: 'DELETE',
+      headers: {
+        'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').content,
+        'Accept': 'application/json'
+      }
+    })
+    .then(res => {
+      if(res.ok || res.status === 303 || res.status === 200) {
+        location.reload();
+      } else {
+        alert('삭제 중 오류가 발생했습니다.');
+      }
+    })
+    .catch(err => {
+      alert('오류: ' + err.message);
     });
   }
 </script><%= render 'projects/photo_upload_js' %>
