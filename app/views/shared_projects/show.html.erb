@@ -290,7 +290,7 @@
         <div class="text-box">
           <div class="info-label">주소</div>
           <% if @project.full_address.present? %>
-            <a href="https://map.naver.com/p/search/<%= CGI.escape(@project.full_address) %>" target="_blank" class="info-value" style="color:#2563eb; text-decoration:underline;">
+            <a href="https://map.naver.com/p/search/<%= CGI.escape(@project.address) %>" target="_blank" class="info-value" style="color:#2563eb; text-decoration:underline;">
               <%= @project.full_address %>
             </a>
           <% else %>
