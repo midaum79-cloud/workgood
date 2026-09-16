@@ -49,8 +49,18 @@
 
       <!-- 달력 표시 영역 -->
       <div style="background:white; border-radius:12px; margin-bottom:10px; box-shadow:0 1px 3px rgba(0,0,0,0.1); overflow:hidden;">
-        <div style="text-align:center; padding:12px; font-size:16px; font-weight:900; color:#111827; border-bottom:1px solid #f0f0f0;">
+        <div style="text-align:center; padding:12px 12px 6px 12px; font-size:16px; font-weight:900; color:#111827;">
           <%= @calendar_year %>. <%= @calendar_month %>
+        </div>
+        <div style="display:flex; justify-content:center; gap:16px; padding-bottom:12px; font-size:11px; font-weight:700; color:#6b7280; border-bottom:1px solid #f0f0f0;">
+          <div style="display:flex; align-items:center; gap:4px;">
+            <div style="width:12px; height:4px; background:#f97316; border-radius:2px;"></div>
+            오늘 날짜
+          </div>
+          <div style="display:flex; align-items:center; gap:4px;">
+            <div style="width:12px; height:4px; background:#3b82f6; border-radius:2px;"></div>
+            시공 일정
+          </div>
         </div>
         <!-- 요일 헤더 -->
         <div style="display:grid; grid-template-columns:repeat(7, minmax(0, 1fr)); border-bottom:1px solid #f0f0f0; background:white;">
