@@ -32,10 +32,10 @@
 
       <div>
         <div style="font-size:14px; font-weight:800; color:#374151; margin-bottom:8px;">업체명</div>
-        <!-- 탭 선택: 업체 / 직접입력 -->
+        <!-- 탭 선택: 직접입력 / 업체 -->
         <div style="display:flex; background:#f3f4f6; border-radius:10px; padding:3px; margin-bottom:10px;">
-          <div id="vendorTabCompany" onclick="switchVendorTab('company')" style="flex:1; text-align:center; padding:8px; font-size:13px; font-weight:800; border-radius:8px; cursor:pointer; background:white; color:#2563eb; box-shadow:0 1px 3px rgba(0,0,0,0.08);">🏢 업체</div>
-          <div id="vendorTabDirect" onclick="switchVendorTab('direct')" style="flex:1; text-align:center; padding:8px; font-size:13px; font-weight:800; border-radius:8px; cursor:pointer; color:#6b7280;">✏️ 직접입력</div>
+          <div id="vendorTabDirect" onclick="switchVendorTab('direct')" style="flex:1; text-align:center; padding:8px; font-size:13px; font-weight:800; border-radius:8px; cursor:pointer; background:white; color:#2563eb; box-shadow:0 1px 3px rgba(0,0,0,0.08);">✏️ 직접입력</div>
+          <div id="vendorTabCompany" onclick="switchVendorTab('company')" style="flex:1; text-align:center; padding:8px; font-size:13px; font-weight:800; border-radius:8px; cursor:pointer; color:#6b7280;">🏢 업체</div>
         </div>
 
         <div id="vendorSearchArea" style="display:none;">
@@ -736,7 +736,7 @@
   });
 
   // 거래처 관리 탭 및 선택 로직
-  var currentVendorTab = 'company';
+  var currentVendorTab = 'direct';
 
   function switchVendorTab(tab) {
     currentVendorTab = tab;
@@ -786,6 +786,10 @@
   }
 
   var allVendors = [];
+
+  document.addEventListener("DOMContentLoaded", function() {
+    switchVendorTab('direct');
+  });
 
   function loadVendorList(vendorType) {
     var listContainer = document.getElementById('vendorList');
