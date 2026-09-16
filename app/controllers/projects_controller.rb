@@ -366,10 +366,10 @@ class ProjectsController < ApplicationController
   def project_calendar
     @view_mode = "month"
 
-    # 같은 거래처의 모든 프로젝트 조회
-    @client_name = @project.client_name.presence || "업체 모든"
-    @client_projects = if @project.client_name.present?
-      current_user.projects.where(client_name: @project.client_name).order(:start_date)
+    # 같은 거래처의 모든 프로젝트 조회 (업체명/일내용 기준)
+    @client_name = @project.project_name.presence || "업체 모든"
+    @client_projects = if @project.project_name.present?
+      current_user.projects.where(project_name: @project.project_name).order(:start_date)
     else
       current_user.projects.where(id: @project.id).order(:start_date)
     end
@@ -448,9 +448,9 @@ class ProjectsController < ApplicationController
 
   # AJAX: 프로젝트 캘린더 패널 HTML 조각 반환
   def project_calendar_panel
-    @client_name = @project.client_name.presence || "업체 모든"
-    @client_projects = if @project.client_name.present?
-      current_user.projects.where(client_name: @project.client_name).order(:start_date)
+    @client_name = @project.project_name.presence || "업체 모든"
+    @client_projects = if @project.project_name.present?
+      current_user.projects.where(project_name: @project.project_name).order(:start_date)
     else
       current_user.projects.where(id: @project.id).order(:start_date)
     end
