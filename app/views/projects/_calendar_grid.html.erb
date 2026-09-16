@@ -21,6 +21,24 @@
             '#111827'
           end %>
 
+        <%
+          date_bg_color = 'transparent'
+          date_final_color = date_text_color
+          has_schedule = day_projects.any?
+
+          if is_today && has_schedule && local_assigns[:is_project_detail]
+            # 오늘이면서 일정이 있는 날 (하나의 바)
+            date_bg_color = '#f59e0b'
+            date_final_color = 'white'
+          elsif is_today
+            date_bg_color = '#f59e0b'
+            date_final_color = 'white'
+          elsif has_schedule && local_assigns[:is_project_detail]
+            date_bg_color = '#3b82f6' # 파란색 바
+            date_final_color = 'white'
+          end
+        %>
+
         <div class="calendar-date-cell"
              data-date="<%= day.to_s %>"
              style="
@@ -45,8 +63,8 @@
               border-radius:4px;
               font-size:11px;
               font-weight:900;
-              color:<%= is_today ? 'white' : date_text_color %>;
-              background:<%= is_today ? '#f59e0b' : 'transparent' %>;
+              color:<%= date_final_color %>;
+              background:<%= date_bg_color %>;
             "><%= format('%02d', day.day) %></div>
           </div>
 
@@ -65,7 +83,9 @@
               end
               
               day_projects.each do |proj|
-                calendar_items << { type: 'project', label: (proj.project_name.presence || proj.client_name), id: proj.id }
+                unless local_assigns[:is_project_detail]
+                  calendar_items << { type: 'project', label: (proj.project_name.presence || proj.client_name), id: proj.id }
+                end
               end
             %>
             <% calendar_items.each_with_index do |item, idx| %>

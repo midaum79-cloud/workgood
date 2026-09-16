@@ -69,7 +69,7 @@
         </div>
         <!-- 캘린더 그리드 랜더링 (높이 축소) -->
         <div style="background:white; display:flex; flex-direction:column; overflow:hidden;">
-          <%= render partial: "projects/calendar_grid", locals: { cell_min_height: "50px" } %>
+          <%= render partial: "projects/calendar_grid", locals: { cell_min_height: "50px", is_project_detail: true } %>
         </div>
       </div>
 
