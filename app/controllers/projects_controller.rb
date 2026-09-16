@@ -804,6 +804,7 @@ class ProjectsController < ApplicationController
       :labor_details,
       :equipment_cost,
       :equipment_details,
+      :selected_dates,
       selected_process_names: [],
       photos: []
     )

@@ -127,9 +127,10 @@
             style: "width:100%; padding:14px 16px; border:1px solid #dcdfe4; border-radius:14px; font-size:16px; box-sizing:border-box; resize:none;" %>
       </div>
 
-      <!-- 시작일/종료일 hidden fields -->
+      <!-- 시작일/종료일/선택된날짜 hidden fields -->
       <%= form.hidden_field :start_date, id: "edit_project_start_date" %>
       <%= form.hidden_field :end_date, id: "edit_project_end_date" %>
+      <%= form.hidden_field :selected_dates, id: "edit_project_selected_dates", value: @project.project_schedules.pluck(:work_date).map(&:to_s).join(',') %>
 
       <!-- 시공 일정 캘린더 -->
       <div>
@@ -481,20 +482,16 @@
 
   function initCal() {
     // 기존 날짜 프리셋
-    var startVal = document.getElementById('edit_project_start_date').value;
-    var endVal = document.getElementById('edit_project_end_date').value;
+    var selectedDatesStr = document.getElementById('edit_project_selected_dates').value;
 
-    if (startVal && endVal) {
-      // 시작일~종료일 사이의 모든 날짜를 선택
-      var start = new Date(startVal);
-      var end = new Date(endVal);
-      var cur = new Date(start);
-      while (cur <= end) {
-        var ds = formatDate(cur.getFullYear(), cur.getMonth(), cur.getDate());
-        selectedDates[ds] = true;
-        cur.setDate(cur.getDate() + 1);
-      }
-      // 시작일 기준으로 캘린더 표시
+    if (selectedDatesStr) {
+      // 징검다리 일정을 포함하여 개별 선택된 모든 날짜 복원
+      var datesArray = selectedDatesStr.split(',');
+      datesArray.forEach(function(ds) {
+        if(ds.trim()) selectedDates[ds] = true;
+      });
+      // 캘린더 시작 월을 가장 빠른 날짜 기준으로 설정
+      var start = new Date(datesArray[0]);
       calYear = start.getFullYear();
       calMonth = start.getMonth();
     } else {
@@ -589,11 +586,13 @@
     var rangeEl = document.getElementById('selectedDatesRange');
     var startInput = document.getElementById('edit_project_start_date');
     var endInput = document.getElementById('edit_project_end_date');
+    var selectedInput = document.getElementById('edit_project_selected_dates');
 
     if (dates.length === 0) {
       info.style.display = 'none';
       startInput.value = '';
       endInput.value = '';
+      selectedInput.value = '';
       return;
     }
 
@@ -602,6 +601,7 @@
     rangeEl.textContent = dates[0] + ' ~ ' + dates[dates.length - 1];
     startInput.value = dates[0];
     endInput.value = dates[dates.length - 1];
+    selectedInput.value = dates.join(',');
   }
 
   document.addEventListener('DOMContentLoaded', initCal);

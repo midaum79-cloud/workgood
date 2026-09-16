@@ -127,9 +127,10 @@
             style: "width:100%; padding:14px 16px; border:1px solid #dcdfe4; border-radius:14px; font-size:16px; box-sizing:border-box; resize:none;" %>
       </div>
 
-      <!-- 시작일/종료일 hidden fields -->
+      <!-- 시작일/종료일/선택된날짜 hidden fields -->
       <%= form.hidden_field :start_date, id: "new_project_start_date" %>
       <%= form.hidden_field :end_date, id: "new_project_end_date" %>
+      <%= form.hidden_field :selected_dates, id: "new_project_selected_dates" %>
 
       <!-- 시공 일정 캘린더 -->
       <div>
@@ -955,11 +956,13 @@
     var rangeEl = document.getElementById('selectedDatesRange');
     var startInput = document.getElementById('new_project_start_date');
     var endInput = document.getElementById('new_project_end_date');
+    var selectedInput = document.getElementById('new_project_selected_dates');
 
     if (dates.length === 0) {
       info.style.display = 'none';
       startInput.value = '';
       endInput.value = '';
+      selectedInput.value = '';
       return;
     }
 
@@ -968,6 +971,7 @@
     rangeEl.textContent = dates[0] + ' ~ ' + dates[dates.length - 1];
     startInput.value = dates[0];
     endInput.value = dates[dates.length - 1];
+    selectedInput.value = dates.join(',');
   }
 
   // DOM 로드 시 캘린더 초기화

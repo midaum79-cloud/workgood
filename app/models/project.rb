@@ -5,7 +5,7 @@ class Project < ApplicationRecord
   has_many :project_schedules, dependent: :destroy
   has_many_attached :photos
 
-  attr_accessor :selected_process_names, :custom_process_names_text, :ai_processes_json
+  attr_accessor :selected_process_names, :custom_process_names_text, :ai_processes_json, :selected_dates
 
   validates :start_date, presence: { message: "공사 시작일을 입력해 주세요." }, on: :create
   validates :end_date,   presence: { message: "공사 종료일을 입력해 주세요." }, on: :create
@@ -13,17 +13,40 @@ class Project < ApplicationRecord
   after_create :create_selected_processes
   after_create :create_initial_schedules
 
-  # 기존 start_date~end_date 범위로 개별 스케줄 자동 생성
+  # 기존 start_date~end_date 범위로 개별 스케줄 자동 생성 (또는 selected_dates 기반)
   def create_initial_schedules
-    return unless start_date && end_date
-    (start_date..end_date).each do |date|
-      project_schedules.find_or_create_by(work_date: date)
+    if selected_dates.present?
+      dates_array = selected_dates.split(',').reject(&:blank?)
+      dates_array.each do |date_str|
+        project_schedules.find_or_create_by(work_date: date_str)
+      end
+      recalculate_dates_from_schedules!
+    else
+      return unless start_date && end_date
+      (start_date..end_date).each do |date|
+        project_schedules.find_or_create_by(work_date: date)
+      end
+    end
+  end
+
+  after_update :update_schedules_from_selected_dates
+
+  def update_schedules_from_selected_dates
+    if selected_dates.present?
+      dates_array = selected_dates.split(',').reject(&:blank?)
+      if dates_array.any?
+        project_schedules.where.not(work_date: dates_array).destroy_all
+        dates_array.each do |date_str|
+          project_schedules.find_or_create_by(work_date: date_str)
+        end
+        recalculate_dates_from_schedules!
+      end
     end
   end
 
   def recalculate_dates_from_schedules!
     dates = project_schedules.pluck(:work_date).sort
-    update_columns(start_date: dates.first, end_date: dates.last)
+    update_columns(start_date: dates.first, end_date: dates.last) if dates.any?
   end
 
   def ordered_work_processes
