@@ -1,13 +1,13 @@
 <div style="padding-bottom:120px; background:#f9fafb; min-height:100vh;">
   <%# Header %>
-  <div style="background:white; padding:16px 20px; position:sticky; top:env(safe-area-inset-top, 0); z-index:100; border-bottom:1px solid #f3f4f6; display:flex; align-items:center; gap:16px;">
+  <div style="background:white; padding:calc(env(safe-area-inset-top, 0px) + 16px) 20px 16px 20px; position:sticky; top:0; z-index:100; border-bottom:1px solid #f3f4f6; display:flex; align-items:center; gap:16px;">
     <%= link_to @vendor.vendor_type.present? ? process_templates_path : vendors_path, style: "display:flex; align-items:center; color:#111827; text-decoration:none;" do %>
       <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg>
     <% end %>
-    <div style="font-size:18px; font-weight:900; color:#111827; flex:1;">
+    <div style="font-size:18px; font-weight:900; color:#111827; flex:1; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
       <%= @vendor.name %> 상세
     </div>
-    <%= link_to edit_vendor_path(@vendor), style: "padding:8px 16px; background:#f3f4f6; color:#374151; border-radius:12px; font-size:14px; font-weight:800; text-decoration:none;" do %>
+    <%= link_to edit_vendor_path(@vendor), style: "padding:8px 16px; background:#f3f4f6; color:#374151; border-radius:12px; font-size:14px; font-weight:800; text-decoration:none; flex-shrink:0;" do %>
       수정
     <% end %>
   </div>
