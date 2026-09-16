@@ -626,6 +626,7 @@ class ProjectsController < ApplicationController
       project_name:   params[:project_name] || params[:client_name],
       client_phone:   params[:client_phone],
       address:        params[:address],
+      detail_address: params[:detail_address],
       start_date:     params[:date],
       end_date:       params[:date],
       payment_status: "미결제",

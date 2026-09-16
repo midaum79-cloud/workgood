@@ -271,10 +271,12 @@
       <button type="button" onclick="execDaumPostcodeDirect()" style="width:100%; padding:14px; background:#4b5563; color:white; border:none; border-radius:12px; font-size:15px; font-weight:800; cursor:pointer; margin-bottom:8px; display:flex; justify-content:center; align-items:center; gap:8px;">
         <span>🔍</span> 주소 검색
       </button>
-      <input type="text" id="bsDirectAddress" placeholder="주소를 입력하세요 (또는 AI 분석 결과)"
+      <input type="text" id="bsDirectAddress" placeholder="기본 주소를 입력하세요 (또는 AI 분석 결과)"
+        style="width:100%; padding:14px 16px; border:1px solid #dcdfe4; border-radius:12px; font-size:15px; box-sizing:border-box; margin-bottom:8px;">
+      <input type="text" id="bsDirectDetailAddress" placeholder="상세주소를 입력하세요"
         style="width:100%; padding:14px 16px; border:1px solid #dcdfe4; border-radius:12px; font-size:15px; box-sizing:border-box; margin-bottom:14px;">
 
-      <button type="button" onclick="bsGoToNewProject(document.getElementById('bsDirectClientName').value, document.getElementById('bsDirectProjectName').value, document.getElementById('bsDirectClientPhone').value, document.getElementById('bsDirectAddress').value)"
+      <button type="button" onclick="bsGoToNewProject(document.getElementById('bsDirectClientName').value, document.getElementById('bsDirectProjectName').value, document.getElementById('bsDirectClientPhone').value, document.getElementById('bsDirectAddress').value, document.getElementById('bsDirectDetailAddress').value)"
         style="width:100%; padding:14px; border:none; border-radius:12px; background:#2563eb; color:white; font-size:16px; font-weight:900; cursor:pointer;">
         일정에 바로 추가하기
       </button>
@@ -484,6 +486,7 @@ function openBottomSheet(dateStr) {
   document.getElementById('bsDirectClientName').value = '';
   document.getElementById('bsDirectClientPhone').value = '';
   document.getElementById('bsDirectAddress').value = '';
+  document.getElementById('bsDirectDetailAddress').value = '';
   document.getElementById('aiRegistrationText').value = '';
   bsSwitchTab('direct');
   
@@ -807,6 +810,7 @@ function bsFilterVendors(query) {
       document.getElementById('bsDirectProjectName').value = v.name || '';
       document.getElementById('bsDirectClientPhone').value = v.phone || '';
       document.getElementById('bsDirectAddress').value = '';
+      document.getElementById('bsDirectDetailAddress').value = '';
       bsSwitchTab('direct');
       
       var bsMenu = document.getElementById('bsMenu');
@@ -821,12 +825,13 @@ function bsFilterVendors(query) {
 }
 
 var isQuickCreatingProject = false;
-function bsGoToNewProject(clientName, projectName, clientPhone, address) {
+function bsGoToNewProject(clientName, projectName, clientPhone, address, detailAddress) {
   if (isQuickCreatingProject) return; // 중복 클릭 방지
   var pName = projectName || clientName;
   var cName = clientName;
   var phone = clientPhone || '';
   var addr = address || '';
+  var detailAddr = detailAddress || '';
 
   if (!pName || !pName.trim()) { alert('일정 이름이나 업체명을 입력해주세요.'); return; }
   
@@ -844,7 +849,8 @@ function bsGoToNewProject(clientName, projectName, clientPhone, address) {
       client_name: cName ? cName.trim() : null,
       project_name: pName.trim(),
       client_phone: phone.trim(),
-      address: addr.trim()
+      address: addr.trim(),
+      detail_address: detailAddr.trim()
     })
   })
   .then(function(res) { return res.json(); })
@@ -897,6 +903,7 @@ function analyzeAiRegistrationText() {
       if(data.data.client_name) document.getElementById('bsDirectClientName').value = data.data.client_name;
       if(data.data.client_phone) document.getElementById('bsDirectClientPhone').value = data.data.client_phone;
       if(data.data.address) document.getElementById('bsDirectAddress').value = data.data.address;
+      if(data.data.detail_address) document.getElementById('bsDirectDetailAddress').value = data.data.detail_address;
     } else {
       alert(data.error || "분석에 실패했습니다.");
     }

@@ -19,7 +19,8 @@ class AiRegistrationsController < ApplicationController
         - 업체명 (또는 캘린더에 표시될 핵심 이름)
         - 고객명 (또는 현장 담당자)
         - 연락처
-        - 주소 (상세주소 포함)
+        - 주소 (상세주소 제외한 기본 지도 검색용 주소)
+        - 상세주소 (동, 호수, 층 등)
 
         ★ 규칙:
         1. 추출 불가능한 정보는 빈 문자열("")로 반환하세요.
@@ -29,7 +30,8 @@ class AiRegistrationsController < ApplicationController
           "project_name": "추출한 업체명 (또는 캘린더에 표시될 이름)",
           "client_name": "추출한 고객명 (또는 현장 담당자 이름)",
           "client_phone": "추출한 연락처 (형식: 010-0000-0000 등)",
-          "address": "추출한 주소 (상세주소 포함)"
+          "address": "추출한 기본 주소 (상세주소 제외)",
+          "detail_address": "추출한 상세 주소 (동, 호수, 층 등)"
         }
       PROMPT
 
