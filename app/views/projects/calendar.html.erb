@@ -334,6 +334,21 @@
   <div id="bsConsultationForm" style="display:none; padding:0 16px 20px 16px;">
     <button onclick="bsGoBack()" style="background:none; border:none; font-size:14px; font-weight:800; color:#10b981; cursor:pointer; padding:0 0 12px 0; font-family:inherit;">← 이전으로</button>
     <div style="display:flex; flex-direction:column; gap:12px;">
+      
+      <!-- AI 등록 기능 (프리미엄 전용) -->
+      <div style="padding:12px; border:1px solid #c7d2fe; border-radius:12px; background:#eef2ff;">
+        <div style="font-size:14px; font-weight:800; color:#3730a3; margin-bottom:8px; display:flex; justify-content:space-between; align-items:center;">
+          <span>🤖 AI 문자 자동 등록</span>
+          <% unless current_user.premium? %>
+            <span style="font-size:11px; background:#fff; padding:2px 6px; border-radius:4px; border:1px solid #818cf8;">👑 프리미엄</span>
+          <% end %>
+        </div>
+        <textarea id="aiConsultationText" placeholder="고객정보가 담긴 문자를 복사해서 붙여넣으세요." style="width:100%; height:80px; padding:10px; border:1px solid #a5b4fc; border-radius:8px; font-size:13px; box-sizing:border-box; resize:none; margin-bottom:8px;"></textarea>
+        <button type="button" onclick="analyzeAiConsultationText(event)" style="width:100%; padding:10px; border:none; border-radius:8px; background:#4f46e5; color:white; font-size:14px; font-weight:900; cursor:pointer;">
+          AI 자동 분석하기
+        </button>
+      </div>
+
       <input type="hidden" id="cId">
       <input type="hidden" id="cType" value="consultation">
       <input type="text" id="cName" placeholder="고객명 (필수)" style="height:46px; border:1px solid #dcdcdc; border-radius:12px; padding:0 14px; font-size:15px; font-weight:700;">
@@ -905,6 +920,57 @@ function analyzeAiRegistrationText() {
       if(data.data.client_phone) document.getElementById('bsDirectClientPhone').value = data.data.client_phone;
       if(data.data.address) document.getElementById('bsDirectAddress').value = data.data.address;
       if(data.data.detail_address) document.getElementById('bsDirectDetailAddress').value = data.data.detail_address;
+    } else {
+      alert(data.error || "분석에 실패했습니다.");
+    }
+  })
+  .catch(function(err) {
+    console.error(err);
+    alert('네트워크 오류가 발생했습니다.');
+  })
+  .finally(function() {
+    btn.textContent = origText;
+    btn.disabled = false;
+  });
+}
+
+
+function analyzeAiConsultationText(e) {
+  <% unless current_user.standard_or_above? %>
+    alert("스탠다드 요금제 이상부터 사용 가능합니다.");
+    window.location.href = '<%= subscription_path %>';
+    return;
+  <% end %>
+
+  var text = document.getElementById('aiConsultationText').value;
+  if (!text || !text.trim()) {
+    alert("분석할 문자를 입력해주세요.");
+    return;
+  }
+
+  var btn = e.currentTarget;
+  var origText = btn.textContent;
+  btn.textContent = "분석 중...";
+  btn.disabled = true;
+
+  fetch('/ai_registrations/analyze_text', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').content,
+      'Accept': 'application/json'
+    },
+    body: JSON.stringify({ text: text })
+  })
+  .then(function(res) { return res.json(); })
+  .then(function(data) {
+    if (data.success) {
+      var nameVal = data.data.client_name || data.data.project_name || '';
+      if(nameVal) document.getElementById('cName').value = nameVal;
+      
+      if(data.data.client_phone) document.getElementById('cPhone').value = data.data.client_phone;
+      if(data.data.address) document.getElementById('cAddress').value = data.data.address;
+      if(data.data.detail_address) document.getElementById('cDetailAddress').value = data.data.detail_address;
     } else {
       alert(data.error || "분석에 실패했습니다.");
     }
