@@ -50,7 +50,11 @@
       </div>
 
       <div style="background:#f7f7f7; border-radius:12px; padding:12px 14px; margin-bottom:10px; color:#4b5563; font-size:15px; font-weight:600;">
-        📅 <%= @project.start_date %> ~ <%= @project.end_date %>
+        <% if @project.start_date.present? || @project.end_date.present? %>
+          📅 <%= @project.start_date %> ~ <%= @project.end_date %>
+        <% else %>
+          📅 일정 미지정 (캘린더에 일정이 없습니다)
+        <% end %>
       </div>
 
       <div style="background:#f7f7f7; border-radius:12px; padding:12px 14px; margin-bottom:10px; color:#4b5563; font-size:15px; font-weight:600;">

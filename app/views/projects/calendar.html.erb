@@ -951,34 +951,47 @@ function closeChipMenu() {
 
 function deleteScheduleOnly() {
   if (!activeChipProjectId || !activeChipDate) return;
-  if (!confirm("이 날짜의 일정만 삭제하시겠습니까?\n(현장 정보와 다른 날짜의 일정은 그대로 유지됩니다)")) return;
-  
-  closeChipMenu();
-  
-  fetch('<%= toggle_schedule_projects_path %>', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').content,
-      'Accept': 'application/json'
-    },
-    body: JSON.stringify({
-      project_id: activeChipProjectId,
-      date: activeChipDate
+
+  // 서버에서 해당 현장의 총 일정 개수를 먼저 확인
+  fetch('/projects/' + activeChipProjectId + '.json')
+    .then(function(res) { return res.json(); })
+    .then(function(data) {
+      if (data.schedule_count <= 1) {
+        if (!confirm("⚠️ 주의: 이 현장의 유일한(마지막) 일정입니다.\n\n이 일정만 지울 경우 캘린더에서는 사라지지만, 빈 현장으로 남아 오류처럼 보일 수 있습니다.\n현장을 완전히 삭제하시려면 [취소]를 누르고 '현장 상세 보기'에서 삭제해 주세요.\n\n그래도 일정만 지우시겠습니까?")) return;
+      } else {
+        if (!confirm("이 날짜의 일정만 삭제하시겠습니까?\n(현장 정보와 다른 날짜의 일정은 그대로 유지됩니다)")) return;
+      }
+
+      closeChipMenu();
+      
+      return fetch('<%= toggle_schedule_projects_path %>', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').content,
+          'Accept': 'application/json'
+        },
+        body: JSON.stringify({
+          project_id: activeChipProjectId,
+          date: activeChipDate
+        })
+      });
     })
-  })
-  .then(function(res) { return res.json(); })
-  .then(function(data) {
-    if (data.success) {
-      window.location.reload();
-    } else {
-      alert(data.error || '삭제에 실패했습니다.');
-    }
-  })
-  .catch(function(err) {
-    console.error('Delete error:', err);
-    alert('네트워크 오류가 발생했습니다.');
-  });
+    .then(function(res) { 
+      if(res) return res.json(); 
+    })
+    .then(function(data) {
+      if (!data) return;
+      if (data.success) {
+        window.location.reload();
+      } else {
+        alert(data.error || '삭제에 실패했습니다.');
+      }
+    })
+    .catch(function(err) {
+      console.error('Delete error:', err);
+      alert('네트워크 오류가 발생했습니다.');
+    });
 }
 
 function goToProjectDetails() {
@@ -988,6 +1001,8 @@ function goToProjectDetails() {
 }
 
 function startCopyMode() {
+  if (!confirm("기존 현장(주소)이 그대로 복사됩니다.\n새로운 현장이라면 '신규 등록'을 이용해 주세요.\n\n계속해서 복사할까요?")) return;
+
   copiedProjectId = activeChipProjectId;
   copiedProjectName = activeChipProjectName;
   

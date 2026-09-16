@@ -38,10 +38,16 @@ class Project < ApplicationRecord
 
   # Date-aware project status: computed from start_date / end_date
   def effective_status(today = Date.current)
+    # 사용자가 명시적으로 '완료'로 설정한 경우 최우선 적용
+    return "완료" if self[:status] == "완료"
+
     return self[:status].presence || "예정" if start_date.blank?
 
     s = start_date.to_date
     e = (end_date || start_date).to_date
+
+    # 수동으로 '진행중'으로 바꿨으나 날짜상 아직 '예정'인 경우 진행중 우선
+    return "진행중" if self[:status] == "진행중" && today < s
 
     if today < s
       "예정"
