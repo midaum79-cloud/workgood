@@ -232,9 +232,10 @@
 
   <div id="bsStep1" style="padding:0 16px 20px 16px;">
     <!-- 공사일정 섹션 -->
-    <div style="font-size:16px; font-weight:900; color:#111827; margin-bottom:12px; display:flex; align-items:center; gap:6px;">
-      <span style="font-size:18px;">🏗️</span> 공사일정 추가
-    </div>
+    <div id="bsProjectSection">
+      <div style="font-size:16px; font-weight:900; color:#111827; margin-bottom:12px; display:flex; align-items:center; gap:6px;">
+        <span style="font-size:18px;">🏗️</span> 공사일정 추가
+      </div>
     <div style="display:flex; gap:8px; margin-bottom:14px;">
       <button type="button" id="bsTabCompany" onclick="bsSwitchTab('company')" style="flex:1; padding:10px; border:none; border-radius:12px; font-size:14px; font-weight:800; cursor:pointer; background:#f3f4f6; color:#6b7280;">🏢 업체</button>
       <button type="button" id="bsTabDirect" onclick="bsSwitchTab('direct')" style="flex:1; padding:10px; border:none; border-radius:12px; font-size:14px; font-weight:800; cursor:pointer; background:#111827; color:white;">✏️ 직접입력</button>
@@ -277,6 +278,7 @@
         style="width:100%; padding:14px; border:none; border-radius:12px; background:#2563eb; color:white; font-size:16px; font-weight:900; cursor:pointer;">
         일정에 바로 추가하기
       </button>
+    </div>
     </div>
 
     <!-- 상담 일정 섹션 -->
@@ -428,6 +430,11 @@ function openBottomSheet(dateStr) {
   var parts = dateStr.split('-');
   document.getElementById('bsSubtitle').textContent = parts[0] + '년 ' + parseInt(parts[1]) + '월 ' + parseInt(parts[2]) + '일';
   
+  // 전체(현장+상담+AS) 표시
+  var projSec = document.getElementById('bsProjectSection');
+  if(projSec) projSec.style.display = 'block';
+  document.getElementById('bsTitle').textContent = '일정 관리';
+
   var listEl = document.getElementById('bsConsultationList');
   var asListEl = document.getElementById('bsAsList');
   if (listEl) {
@@ -486,6 +493,14 @@ function openBottomSheet(dateStr) {
   document.getElementById('bsOverlay').style.visibility = 'visible';
   document.getElementById('bottomSheet').style.transform = 'translateY(0)';
   document.body.style.overflow = 'hidden';
+}
+
+function openConsultationOnlySheet(dateStr) {
+  openBottomSheet(dateStr);
+  // 공사일정 섹션 숨기고 제목 변경
+  var projSec = document.getElementById('bsProjectSection');
+  if(projSec) projSec.style.display = 'none';
+  document.getElementById('bsTitle').textContent = '상담 / AS 일정';
 }
 
 function closeBottomSheet() {
