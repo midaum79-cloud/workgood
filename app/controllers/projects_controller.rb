@@ -479,6 +479,25 @@ class ProjectsController < ApplicationController
   def show
     @project = @project.class.includes(work_processes: :work_days).find(@project.id)
     @work_processes = @project.ordered_work_processes
+
+    # 캘린더를 위한 변수 세팅
+    base_date = @project.start_date || Time.zone.today
+    @calendar_year = base_date.year
+    @calendar_month = base_date.month
+
+    month_first_day = Date.new(@calendar_year, @calendar_month, 1)
+    month_last_day = Date.new(@calendar_year, @calendar_month, -1)
+    calendar_start = month_first_day.beginning_of_week(:sunday)
+    calendar_end = month_last_day.end_of_week(:sunday)
+    all_days = (calendar_start..calendar_end).to_a
+    @calendar_rows = all_days.each_slice(7).to_a
+
+    schedules = ProjectSchedule.where(project_id: @project.id, work_date: calendar_start..calendar_end)
+    @projects_by_date = {}
+    schedules.each do |schedule|
+      @projects_by_date[schedule.work_date] ||= []
+      @projects_by_date[schedule.work_date] << @project
+    end
   end
 
   def new

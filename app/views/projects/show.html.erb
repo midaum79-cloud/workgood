@@ -49,12 +49,28 @@
         </span>
       </div>
 
-      <div style="background:#f7f7f7; border-radius:12px; padding:12px 14px; margin-bottom:10px; color:#4b5563; font-size:15px; font-weight:600;">
-        <% if @project.start_date.present? || @project.end_date.present? %>
-          📅 <%= @project.start_date %> ~ <%= @project.end_date %>
-        <% else %>
-          📅 일정 미지정 (캘린더에 일정이 없습니다)
-        <% end %>
+      <!-- 달력 표시 영역 -->
+      <div style="background:white; border-radius:12px; margin-bottom:10px; box-shadow:0 1px 3px rgba(0,0,0,0.1); overflow:hidden;">
+        <div style="text-align:center; padding:12px; font-size:16px; font-weight:900; color:#111827; border-bottom:1px solid #f0f0f0;">
+          <%= @calendar_year %>. <%= @calendar_month %>
+        </div>
+        <!-- 요일 헤더 -->
+        <div style="display:grid; grid-template-columns:repeat(7, minmax(0, 1fr)); border-bottom:1px solid #f0f0f0; background:white;">
+          <% ["일", "월", "화", "수", "목", "금", "토"].each do |weekday| %>
+            <% header_color = case weekday
+                when "일" then "#ef4444"
+                when "토" then "#3b82f6"
+                else "#6b7280"
+               end %>
+            <div style="padding:6px 0; text-align:center; font-size:12px; font-weight:800; color:<%= header_color %>;">
+              <%= weekday %>
+            </div>
+          <% end %>
+        </div>
+        <!-- 캘린더 그리드 랜더링 (높이 축소) -->
+        <div style="background:white; display:flex; flex-direction:column; overflow:hidden;">
+          <%= render partial: "projects/calendar_grid", locals: { cell_min_height: "50px" } %>
+        </div>
       </div>
 
       <div style="background:#f7f7f7; border-radius:12px; padding:12px 14px; margin-bottom:10px; color:#4b5563; font-size:15px; font-weight:600;">
