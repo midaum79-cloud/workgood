@@ -16,8 +16,8 @@ class AiRegistrationsController < ApplicationController
       prompt = <<~PROMPT
         사용자가 전달한 문자(텍스트)에서 인테리어 공사 관련 고객정보를 추출해주세요.
         추출할 정보:
-        - 캘린더명(또는 고객명/현장명/일내용)
-        - 업체명
+        - 업체명 (또는 캘린더에 표시될 핵심 이름)
+        - 고객명 (또는 현장 담당자)
         - 연락처
         - 주소 (상세주소 포함)
 
@@ -26,8 +26,8 @@ class AiRegistrationsController < ApplicationController
         2. "고객명"이 없고 "업체명"만 있다면 고객명에 업체명을 넣어도 좋습니다.
         3. 반드시 다음과 같은 순수 JSON 형식으로 응답하세요. 마크다운(```json)이나 다른 설명은 절대 추가하지 마세요.
         {
-          "project_name": "추출한 캘린더명 또는 고객명/현장명",
-          "client_name": "추출한 업체명",
+          "project_name": "추출한 업체명 (또는 캘린더에 표시될 이름)",
+          "client_name": "추출한 고객명 (또는 현장 담당자 이름)",
           "client_phone": "추출한 연락처 (형식: 010-0000-0000 등)",
           "address": "추출한 주소 (상세주소 포함)"
         }
