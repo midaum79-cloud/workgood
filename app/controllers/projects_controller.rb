@@ -635,7 +635,7 @@ class ProjectsController < ApplicationController
     @project = current_user.projects.find(params[:id])
     photo = @project.photos.find(params[:photo_id])
     photo.purge
-    redirect_to edit_project_path(@project), status: :see_other, notice: "사진이 삭제되었습니다."
+    redirect_back fallback_location: edit_project_path(@project), notice: "사진이 삭제되었습니다."
   end
 
   def update_payment
