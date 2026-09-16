@@ -80,9 +80,6 @@ Rails.application.routes.draw do
   end
 
   resources :receipts, only: [ :index, :new, :create, :destroy ] do
-    member do
-      get :serve_image
-    end
     collection do
       post :analyze
     end

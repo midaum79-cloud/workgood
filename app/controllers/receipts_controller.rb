@@ -9,9 +9,9 @@ class ReceiptsController < ApplicationController
       Date.current.beginning_of_month
     end
 
-    # DB에 직접 저장된 이미지가 있는 영수증만 표시
+    # ActiveStorage 이미지가 첨부된 영수증만 표시 (조인 방식으로 필터링)
     @receipts = current_user.receipts
-                            .where.not(image_data: nil)
+                            .joins(:image_attachment)
                             .where(receipt_date: @current_date.beginning_of_month..@current_date.end_of_month)
                             .order(receipt_date: :asc, created_at: :asc)
 
@@ -29,37 +29,32 @@ class ReceiptsController < ApplicationController
       receipt_date: params.dig(:receipt, :receipt_date)
     )
 
-    # 이미지를 서버에서 압축 후 DB에 직접 저장 (R2/S3 완전 우회)
+    # 이미지를 서버에서 압축 후 R2(ActiveStorage)에 업로드
     if params.dig(:receipt, :image).present?
       uploaded = params[:receipt][:image]
       compressed = compress_image(uploaded)
-      @receipt.image_data = compressed[:data]
-      @receipt.image_content_type = compressed[:content_type]
+      
+      io = StringIO.new(compressed[:data])
+      ext = uploaded.original_filename.split(".").last || "jpg"
+      filename = "receipt_#{Time.current.to_i}.#{ext}"
+      
+      @receipt.image.attach(
+        io: io,
+        filename: filename,
+        content_type: compressed[:content_type]
+      )
     end
 
-    if @receipt.image_data.present? && @receipt.save
+    if @receipt.image.attached? && @receipt.save
       redirect_to receipts_path(year: @receipt.receipt_date.year, month: @receipt.receipt_date.month), notice: "영수증이 저장되었습니다."
     else
       @selected_date = params.dig(:receipt, :receipt_date) || Date.current.to_s
-      flash.now[:alert] = "이미지를 선택해주세요." if @receipt.image_data.blank?
+      flash.now[:alert] = "이미지를 선택해주세요." unless @receipt.image.attached?
       render :new, status: :unprocessable_entity
     end
   rescue => e
     Rails.logger.error("Receipt create error: #{e.class} - #{e.message}")
     redirect_to receipts_path, alert: "저장 중 오류가 발생했습니다. 다시 시도해 주세요."
-  end
-
-  # DB에 저장된 이미지를 직접 서빙
-  def serve_image
-    receipt = current_user.receipts.find(params[:id])
-    if receipt.image_data.present?
-      expires_in 1.hour, public: false
-      send_data receipt.image_data,
-                type: receipt.image_content_type || "image/jpeg",
-                disposition: "inline"
-    else
-      head :not_found
-    end
   end
 
   def destroy
