@@ -968,7 +968,7 @@
 
     info.style.display = 'block';
     countEl.textContent = dates.length;
-    rangeEl.textContent = dates[0] + ' ~ ' + dates[dates.length - 1];
+    rangeEl.textContent = dates.join(', ');
     startInput.value = dates[0];
     endInput.value = dates[dates.length - 1];
     selectedInput.value = dates.join(',');
