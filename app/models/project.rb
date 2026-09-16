@@ -185,6 +185,14 @@ class Project < ApplicationRecord
     end
   end
 
+  def full_address
+    if detail_address.present?
+      [address, detail_address].reject(&:blank?).join(" ")
+    else
+      address
+    end
+  end
+
   def total_collected
     if payment_status == "완납"
       estimate_amount.to_i

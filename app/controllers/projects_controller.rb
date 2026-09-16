@@ -572,8 +572,8 @@ class ProjectsController < ApplicationController
       @project.custom_process_names_text = ""
     end
 
-    if detail_address_present?
-      @project.address = [ @project.address, params[:detail_address] ].reject(&:blank?).join(" ")
+    if params[:detail_address].present?
+      @project.detail_address = params[:detail_address]
     end
 
     # Auto-assign a unique color based on the number of existing projects (cycles through 10 colors)
@@ -639,9 +639,10 @@ class ProjectsController < ApplicationController
   end
 
   def update
-    if detail_address_present?
-      merged_address = [ params[:project][:address], params[:detail_address] ].reject(&:blank?).join(" ")
-      params[:project][:address] = merged_address
+    if params[:detail_address].present?
+      @project.detail_address = params[:detail_address]
+    else
+      @project.detail_address = nil
     end
 
     # 사진 파일은 별도 처리 (빈 파일 필드가 오류 일으키지 않도록)

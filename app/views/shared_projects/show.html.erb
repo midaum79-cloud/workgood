@@ -6,7 +6,7 @@
   
   <!-- Open Graph Tags for Kakao/Message Preview -->
   <meta property="og:title" content="[현장 공유] <%= @project.project_name.presence || @project.client_name %>">
-  <meta property="og:description" content="일정: <%= @project.start_date %> ~ <%= @project.end_date %>\n주소: <%= @project.address.presence || '주소 미입력' %>">
+  <meta property="og:description" content="일정: <%= @project.start_date %> ~ <%= @project.end_date %>\n주소: <%= @project.full_address.presence || '주소 미입력' %>">
   <meta property="og:image" content="https://workgood.co.kr/logo.png">
   <meta property="og:url" content="<%= request.original_url %>">
   <meta property="og:type" content="website">
@@ -289,9 +289,9 @@
         <div class="icon-box">📍</div>
         <div class="text-box">
           <div class="info-label">주소</div>
-          <% if @project.address.present? %>
-            <a href="https://map.naver.com/p/search/<%= CGI.escape(@project.address) %>" target="_blank" class="info-value" style="color:#2563eb; text-decoration:underline;">
-              <%= @project.address %>
+          <% if @project.full_address.present? %>
+            <a href="https://map.naver.com/p/search/<%= CGI.escape(@project.full_address) %>" target="_blank" class="info-value" style="color:#2563eb; text-decoration:underline;">
+              <%= @project.full_address %>
             </a>
           <% else %>
             <div class="info-value">주소 미입력</div>
@@ -335,7 +335,7 @@
 [현장 정보 공유]
 현장: <%= @project.project_name.presence || @project.client_name %>
 일정: <%= dates_str.presence || "#{@project.start_date} ~ #{@project.end_date}" %>
-주소: <%= @project.address.presence || "주소 미입력" %>
+주소: <%= @project.full_address.presence || "주소 미입력" %>
 <% if @project.common_entrance_password.present? %>공동현관: <%= @project.common_entrance_password %><% end %>
 <% if @project.private_entrance_password.present? %>호실현관: <%= @project.private_entrance_password %><% end %>
 <% if @project.memo.present? %>
