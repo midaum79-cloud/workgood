@@ -25,32 +25,42 @@ class ReceiptsController < ApplicationController
   end
 
   def create
-    @receipt = current_user.receipts.build(
-      receipt_date: params.dig(:receipt, :receipt_date)
-    )
+    uploaded_images = params.dig(:receipt, :images)
+    uploaded_images = [uploaded_images] if uploaded_images.present? && !uploaded_images.is_a?(Array)
+    uploaded_images = Array(uploaded_images).reject(&:blank?)
+    
+    receipt_date = params.dig(:receipt, :receipt_date)
+    
+    if uploaded_images.empty?
+      @receipt = current_user.receipts.build(receipt_date: receipt_date)
+      @selected_date = receipt_date || Date.current.to_s
+      flash.now[:alert] = "이미지를 선택해주세요."
+      render :new, status: :unprocessable_entity
+      return
+    end
 
-    # 이미지를 서버에서 압축 후 R2(ActiveStorage)에 업로드
-    if params.dig(:receipt, :image).present?
-      uploaded = params[:receipt][:image]
-      compressed = compress_image(uploaded)
+    success_count = 0
+    uploaded_images.each do |uploaded|
+      receipt = current_user.receipts.build(receipt_date: receipt_date)
       
+      compressed = compress_image(uploaded)
       io = StringIO.new(compressed[:data])
       ext = uploaded.original_filename.split(".").last || "jpg"
-      filename = "receipt_#{Time.current.to_i}.#{ext}"
+      filename = "receipt_#{Time.current.to_i}_#{SecureRandom.hex(4)}.#{ext}"
       
-      @receipt.image.attach(
+      receipt.image.attach(
         io: io,
         filename: filename,
         content_type: compressed[:content_type]
       )
+      
+      success_count += 1 if receipt.save
     end
 
-    if @receipt.image.attached? && @receipt.save
-      redirect_to receipts_path(year: @receipt.receipt_date.year, month: @receipt.receipt_date.month), notice: "영수증이 저장되었습니다."
+    if success_count > 0
+      redirect_to receipts_path(year: Date.parse(receipt_date).year, month: Date.parse(receipt_date).month), notice: "#{success_count}장의 영수증이 저장되었습니다."
     else
-      @selected_date = params.dig(:receipt, :receipt_date) || Date.current.to_s
-      flash.now[:alert] = "이미지를 선택해주세요." unless @receipt.image.attached?
-      render :new, status: :unprocessable_entity
+      redirect_to receipts_path, alert: "저장 중 오류가 발생했습니다."
     end
   rescue => e
     Rails.logger.error("Receipt create error: #{e.class} - #{e.message}")

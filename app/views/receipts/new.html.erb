@@ -53,7 +53,7 @@
     </div>
 
     <!-- 갤러리용 (capture 없음) — 폼 안에 위치 -->
-    <input type="file" id="galleryInput" name="receipt[image]" accept="image/*" style="position:absolute; left:-9999px; opacity:0; width:1px; height:1px;">
+    <input type="file" id="galleryInput" name="receipt[images][]" multiple accept="image/*" style="position:absolute; left:-9999px; opacity:0; width:1px; height:1px;">
     <!-- 카메라용 (capture 있음) — 폼 안에 위치 -->
     <input type="file" id="cameraInput" accept="image/*" capture="environment" style="position:absolute; left:-9999px; opacity:0; width:1px; height:1px;">
 
@@ -111,15 +111,40 @@ document.addEventListener('DOMContentLoaded', function() {
   function handleFile(inputEl) {
     if (!inputEl.files || inputEl.files.length === 0) return;
     
-    var file = inputEl.files[0];
+    imagePreview.style.display = 'none';
     
-    // 미리보기 표시
-    var reader = new FileReader();
-    reader.onload = function(e) {
-      imagePreview.src = e.target.result;
-      imagePreview.style.display = 'block';
-    };
-    reader.readAsDataURL(file);
+    var oldContainer = document.getElementById('multiPreviewContainer');
+    if (oldContainer) oldContainer.remove();
+    
+    var container = document.createElement('div');
+    container.id = 'multiPreviewContainer';
+    container.style.display = 'grid';
+    container.style.gridTemplateColumns = 'repeat(3, 1fr)';
+    container.style.gap = '8px';
+    
+    Array.from(inputEl.files).forEach(function(file) {
+      var reader = new FileReader();
+      reader.onload = function(e) {
+        var wrapper = document.createElement('div');
+        wrapper.style.aspectRatio = '1';
+        wrapper.style.borderRadius = '8px';
+        wrapper.style.overflow = 'hidden';
+        wrapper.style.boxShadow = '0 2px 4px rgba(0,0,0,0.1)';
+        
+        var img = document.createElement('img');
+        img.src = e.target.result;
+        img.style.width = '100%';
+        img.style.height = '100%';
+        img.style.objectFit = 'cover';
+        
+        wrapper.appendChild(img);
+        container.appendChild(wrapper);
+      };
+      reader.readAsDataURL(file);
+    });
+    
+    var previewParent = document.getElementById('formDetails').firstElementChild;
+    previewParent.appendChild(container);
 
     // UI 전환
     instructionArea.style.display = 'none';
