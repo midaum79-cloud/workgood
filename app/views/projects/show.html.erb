@@ -1,5 +1,3 @@
-<p style="color: green; margin-bottom: 12px; text-align:center;"><%= notice %></p>
-
 <% ordered_processes = @project.ordered_work_processes %>
 <% 
   current_process = ordered_processes.find { |p| p.effective_status(Date.current) == "진행중" }
