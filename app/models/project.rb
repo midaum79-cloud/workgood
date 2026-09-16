@@ -8,6 +8,9 @@ class Project < ApplicationRecord
 
   attr_accessor :selected_process_names, :custom_process_names_text, :ai_processes_json, :selected_dates
 
+  validates :project_name, presence: { message: "업체명을 입력해 주세요." }, on: :create
+  validates :client_phone, presence: { message: "연락처를 입력해 주세요." }, on: :create
+
   validates :start_date, presence: { message: "공사 시작일을 입력해 주세요." }, on: :create
   validates :end_date,   presence: { message: "공사 종료일을 입력해 주세요." }, on: :create
 

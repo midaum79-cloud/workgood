@@ -87,7 +87,7 @@
             style="width:100%; padding:14px 16px; border:1px solid #dcdfe4; border-radius:14px; font-size:16px; box-sizing:border-box;">
             
           <input type="tel" id="vendorDirectPhoneInput"
-            placeholder="연락처를 입력하세요 (선택)"
+            placeholder="연락처를 입력하세요 (필수)"
             oninput="document.getElementById('project_client_phone').value = this.value;"
             style="width:100%; padding:14px 16px; border:1px solid #dcdfe4; border-radius:14px; font-size:16px; box-sizing:border-box;">
         </div>
@@ -840,6 +840,9 @@
 
   function selectVendor(vendor) {
     document.getElementById('project_client_name').value = vendor.name;
+    document.getElementById('hidden_project_name').value = vendor.name;
+    document.getElementById('project_client_phone').value = vendor.phone || '';
+    
     document.getElementById('vendorSelectedName').textContent = '🏢 ' + vendor.name;
     var infoParts = [];
     if (vendor.contact_name) infoParts.push('담당: ' + vendor.contact_name);
