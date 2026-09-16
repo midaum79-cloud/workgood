@@ -653,7 +653,17 @@ class ProjectsController < ApplicationController
   def purge_photo
     @project = current_user.projects.find(params[:id])
     photo = @project.photos.find_by(id: params[:photo_id])
-    photo.purge if photo
+    
+    if photo
+      begin
+        photo.purge
+      rescue StandardError => e
+        Rails.logger.error "Photo purge error: #{e.message}"
+        # 물리적 파일이 없어서 purge가 실패하더라도 DB 레코드는 삭제
+        photo.destroy
+      end
+    end
+
     redirect_to edit_project_path(@project), status: :see_other, notice: "사진이 삭제되었습니다."
   end
 
