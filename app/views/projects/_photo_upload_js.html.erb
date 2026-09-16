@@ -26,7 +26,10 @@
         for (let i = 0; i < files.length; i++) {
           const file = files[i];
           const compressedBlob = await compressImage(file, 1920);
-          formData.append("photos[]", compressedBlob, file.name);
+          // 파일명에 한글 등 비-ASCII 문자가 포함될 경우 R2 Signature 오류 발생 방지
+          const ext = file.name.split('.').pop() || "jpg";
+          const safeName = "photo_" + Date.now() + "_" + i + "." + ext;
+          formData.append("photos[]", compressedBlob, safeName);
         }
 
         const response = await fetch("<%= add_photos_project_path(@project) %>", {
