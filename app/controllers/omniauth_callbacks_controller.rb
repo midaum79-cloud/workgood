@@ -15,14 +15,11 @@ class OmniauthCallbacksController < ApplicationController
       auth_params = request.env["omniauth.params"] || {}
       from_app = origin.include?("source=app") || auth_params["source"] == "app"
 
-      # 세션 유실 대비: origin에서 nonce를 찾기
+      # 세션 유실 대비: IP 기반으로 앱 nonce 복구
       nonce = nil
       if from_app
         nonce = origin.match(/nonce=([^&]+)/)&.captures&.first || auth_params["nonce"]
-      end
-
-      # 세션 완전 유실 시 폴백: redirect_to_provider에서 IP 기반으로 미리 저장한 nonce 복구
-      unless from_app
+      else
         cached_nonce = Rails.cache.read("app_oauth_pending:#{request.remote_ip}")
         if cached_nonce.present?
           Rails.logger.info "[OmniAuth] Session lost but recovered app nonce via IP: #{cached_nonce}"
@@ -32,17 +29,15 @@ class OmniauthCallbacksController < ApplicationController
         end
       end
 
-      if from_app
+      if from_app && nonce
+        # 외부 브라우저 폴백용: 토큰 생성 및 nonce→토큰 매핑 (폴링 대응)
         token = SecureRandom.hex(32)
         Rails.cache.write("app_login_token:#{token}", user.id, expires_in: 60.seconds)
+        Rails.cache.write("app_login_nonce:#{nonce}", token, expires_in: 120.seconds)
         @deep_link = "workgood://auth/callback?token=#{token}"
-
-        if nonce
-          Rails.cache.write("app_login_nonce:#{nonce}", token, expires_in: 120.seconds)
-        end
-
         render "omniauth_callbacks/app_redirect", layout: false
       else
+        # 앱 내부 WebView 또는 일반 웹: 세션 로그인 후 바로 메인 페이지
         session[:user_id] = user.id
         redirect_to root_path, notice: "Google 로그인 성공!"
       end
