@@ -32,6 +32,13 @@
     "CAPBrowserPlugin",
     "PurchasesPlugin",
     "AppleSignInPlugin",
-    "SocialLoginPlugin"
+    "SocialLoginPlugin",
+    "DocumentScannerPlugin",
+    "AppPlugin",
+    "FilesystemPlugin",
+    "SharePlugin",
+    "ContactsPlugin",
+    "MediaPlugin",
+    "OneSignalPlugin"
   ]
 }
