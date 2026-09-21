@@ -288,18 +288,18 @@
               if (err && err.code === 'SIGN_IN_CANCELED') { resetBtn(); return; }
               if (errMsg === 'The user canceled the sign-in flow.') { resetBtn(); return; }
 
-              // 네이티브 실패 → 앱 내부 WebView에서 직접 OAuth 처리 (외부 브라우저 사용 금지!)
-              console.log('[일잘러] 네이티브 실패, 앱 내부 OAuth 폴백:', errMsg);
-              googleBtn.innerHTML = '<div style="width:20px;height:20px;border:2px solid #ccc;border-top:2px solid #333;border-radius:50%;animation:spin 0.8s linear infinite;"></div> 로그인 중...';
-              window.location.href = '/auth/redirect/google_oauth2';
+              // 네이티브 실패 → 외부 브라우저(커스텀탭)로 안전한 폴백
+              console.log('[일잘러] 네이티브 실패, 외부 브라우저 폴백:', errMsg);
+              googleBtn.innerHTML = '<div style="width:20px;height:20px;border:2px solid #ccc;border-top:2px solid #333;border-radius:50%;animation:spin 0.8s linear infinite;"></div> 브라우저로 로그인 중...';
+              fallbackToExternalBrowser('/auth/redirect/google_oauth2');
             });
           }
           tryLogin();
         } else {
-          // SocialLogin 플러그인 없음 → 앱 내부 WebView에서 직접 OAuth 처리
-          console.log('[일잘러] SocialLogin 플러그인 없음, 앱 내부 OAuth 폴백');
+          // SocialLogin 플러그인 없음 → 외부 브라우저(커스텀탭) 폴백
+          console.log('[일잘러] SocialLogin 플러그인 없음, 외부 브라우저 폴백');
           resetBtn();
-          window.location.href = '/auth/redirect/google_oauth2';
+          fallbackToExternalBrowser('/auth/redirect/google_oauth2');
         }
       });
     }
