@@ -1,4 +1,34 @@
 begin
+  # OmniAuth OAuth2 몽키패치: 세션 유실 방지를 위해 state 파라미터에 app_nonce 주입
+  module OmniAuth
+    module Strategies
+      class OAuth2
+        def authorize_params
+          options.authorize_params[:state] = SecureRandom.hex(24)
+          
+          # 요청 파라미터에 app_nonce가 있으면 state 끝에 붙여서 구글로 보냄
+          if request.params["app_nonce"].present?
+            options.authorize_params[:state] += "___#{request.params["app_nonce"]}"
+          end
+
+          if OmniAuth.config.test_mode
+            @env ||= {}
+            @env["rack.session"] ||= {}
+          end
+
+          params = options.authorize_params
+                          .merge(options_for("authorize"))
+                          .merge(pkce_authorize_params)
+
+          session["omniauth.pkce.verifier"] = options.pkce_verifier if options.pkce
+          session["omniauth.state"] = params[:state]
+
+          params
+        end
+      end
+    end
+  end
+
   Rails.application.config.middleware.use OmniAuth::Builder do
     # Google OAuth2
     if ENV["GOOGLE_CLIENT_ID"].present? && ENV["GOOGLE_CLIENT_SECRET"].present?

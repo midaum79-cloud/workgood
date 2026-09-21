@@ -15,11 +15,27 @@ class OmniauthCallbacksController < ApplicationController
       auth_params = request.env["omniauth.params"] || {}
       from_app = origin.include?("source=app") || auth_params["source"] == "app"
 
-      # 세션 유실 대비: IP 기반으로 앱 nonce 복구
+      # 1. 일반적인 세션 기반 확인
       nonce = nil
       if from_app
         nonce = origin.match(/nonce=([^&]+)/)&.captures&.first || auth_params["nonce"]
-      else
+      end
+
+      # 2. State 파라미터 기반 복구 (강력한 폴백: 세션 유실 및 IP 변경 대응)
+      unless from_app
+        state_param = params[:state].to_s
+        if state_param.include?("___")
+          extracted_nonce = state_param.split("___").last
+          if extracted_nonce.present?
+            Rails.logger.info "[OmniAuth] Session lost but recovered app nonce via state parameter: #{extracted_nonce}"
+            from_app = true
+            nonce = extracted_nonce
+          end
+        end
+      end
+
+      # 3. IP 기반 복구 (마지막 폴백)
+      unless from_app
         cached_nonce = Rails.cache.read("app_oauth_pending:#{request.remote_ip}")
         if cached_nonce.present?
           Rails.logger.info "[OmniAuth] Session lost but recovered app nonce via IP: #{cached_nonce}"
@@ -55,15 +71,19 @@ class OmniauthCallbacksController < ApplicationController
     action_url = "/auth/#{@provider}"
     action_url += "?#{request.query_string}" if request.query_string.present?
 
-    # 세션 쿠키 유실 대비: origin에서 nonce를 추출해 IP 기반으로 서버 캐시에 저장
-    # 구글 콜백에서 세션이 사라져도 같은 IP의 nonce를 복구할 수 있음
+    # 세션 쿠키 유실 대비: origin에서 nonce를 추출해 IP 캐시 + state 파라미터 주입
     origin_param = params[:origin].to_s
     if origin_param.include?("source=app")
       nonce_match = origin_param.match(/nonce=([^&]+)/)
       if nonce_match
         nonce = nonce_match[1]
+        
+        # 1. IP 캐시 (기존 방식 유지)
         Rails.cache.write("app_oauth_pending:#{request.remote_ip}", nonce, expires_in: 5.minutes)
         Rails.logger.info "[OmniAuth] Pre-stored app nonce for IP #{request.remote_ip}: #{nonce}"
+        
+        # 2. State 파라미터 주입용 (OmniAuth 몽키패치와 연동)
+        action_url += (action_url.include?("?") ? "&" : "?") + "app_nonce=#{nonce}"
       end
     end
     
