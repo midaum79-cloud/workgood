@@ -10,7 +10,7 @@
   "plugins": {
     "SplashScreen": {
       "launchShowDuration": 2000,
-      "backgroundColor": "#000000",
+      "backgroundColor": "#ffffff",
       "showSpinner": false
     },
     "SocialLogin": {
