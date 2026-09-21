@@ -9,7 +9,8 @@ begin
           scope: "email,profile",
           prompt: "select_account",
           image_aspect_ratio: "square",
-          image_size: 200
+          image_size: 200,
+          provider_ignores_state: true
         }
       Rails.logger.info "[OmniAuth] Google OAuth2 enabled"
     else

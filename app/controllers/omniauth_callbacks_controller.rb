@@ -39,6 +39,29 @@ class OmniauthCallbacksController < ApplicationController
     redirect_to login_path, alert: "Google 로그인 중 오류가 발생했습니다. 다시 시도해주세요."
   end
 
+  def redirect_to_provider
+    @provider = params[:provider]
+    action_url = "/auth/#{@provider}"
+    action_url += "?#{request.query_string}" if request.query_string.present?
+    
+    render inline: <<~HTML, layout: false
+      <!DOCTYPE html>
+      <html>
+        <head><title>Redirecting...</title></head>
+        <body onload="document.forms[0].submit()" style="background:#0a0f1e; color:white; display:flex; align-items:center; justify-content:center; height:100vh;">
+          <form method="POST" action="#{action_url}">
+            <%= hidden_field_tag :authenticity_token, form_authenticity_token %>
+          </form>
+          <div style="font-family:sans-serif; text-align:center;">
+            <div style="width:24px; height:24px; border:2px solid #333; border-top:2px solid #fff; border-radius:50%; animation:spin 0.8s linear infinite; margin:0 auto 12px;"></div>
+            <p>로그인 페이지로 이동 중...</p>
+          </div>
+          <style>@keyframes spin { to { transform: rotate(360deg); } }</style>
+        </body>
+      </html>
+    HTML
+  end
+
   def apple
     auth = request.env["omniauth.auth"]
     unless auth

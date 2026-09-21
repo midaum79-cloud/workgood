@@ -110,8 +110,15 @@
 
   // ── 스캔 시작 ─────────────────────────────────────────────
   document.getElementById('startScanBtn').addEventListener('click', async function() {
-    if (!window.Capacitor || !window.Capacitor.Plugins.DocumentScanner) {
+    var isCapacitor = !!(window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform());
+
+    if (!isCapacitor) {
       alert("문서 스캐너는 일잘러 모바일 앱에서만 지원되는 기능입니다.\n아이폰/안드로이드 앱을 이용해주세요!");
+      return;
+    }
+
+    if (!window.Capacitor.Plugins.DocumentScanner) {
+      alert("문서 스캐너 기능을 사용하려면 최신 버전의 앱으로 업데이트 해주세요!");
       return;
     }
     
