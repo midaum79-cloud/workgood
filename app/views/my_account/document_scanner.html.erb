@@ -170,20 +170,9 @@
         const { Share, Filesystem } = window.Capacitor.Plugins;
         let pathToShare = lastScannedFilePath;
 
-        if (Filesystem) {
-          let base64Data;
-          if (imgSrc.startsWith('data:')) {
-            base64Data = imgSrc.split(',')[1];
-          } else {
-            // 원본 스캔 이미지(웹 URL)를 fetch로 읽어서 Base64로 변환
-            const response = await fetch(imgSrc);
-            const blob = await response.blob();
-            base64Data = await new Promise((resolve) => {
-              const reader = new FileReader();
-              reader.onloadend = () => resolve(reader.result.split(',')[1]);
-              reader.readAsDataURL(blob);
-            });
-          }
+        if (Filesystem && imgSrc.startsWith('data:')) {
+          // 사용자가 크롭/편집을 거쳐 base64 데이터로 변환된 경우만 새 파일로 저장
+          let base64Data = imgSrc.split(',')[1];
           const fileName = 'scanned_' + new Date().getTime() + '.jpeg';
           const savedFile = await Filesystem.writeFile({
             path: fileName,
@@ -191,12 +180,15 @@
             directory: 'CACHE'
           });
           pathToShare = savedFile.uri;
+        } else {
+          // 편집하지 않은 원본은 lastScannedFilePath(네이티브 파일 경로)를 그대로 사용
+          // (iOS에서 capacitor:// URL을 fetch하면 Load failed 오류 발생하므로 원본 경로 즉시 사용)
+          pathToShare = lastScannedFilePath;
         }
 
         await Share.share({
           title: '스캔된 문서',
           text: '일잘러 앱에서 스캔한 문서입니다.',
-          url: pathToShare,
           files: [pathToShare],
           dialogTitle: '문서 공유 또는 저장'
         });
