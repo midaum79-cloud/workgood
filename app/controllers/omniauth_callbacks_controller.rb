@@ -15,12 +15,28 @@ class OmniauthCallbacksController < ApplicationController
       auth_params = request.env["omniauth.params"] || {}
       from_app = origin.include?("source=app") || auth_params["source"] == "app"
 
+      # 세션 유실 대비: origin에서 nonce를 찾기
+      nonce = nil
+      if from_app
+        nonce = origin.match(/nonce=([^&]+)/)&.captures&.first || auth_params["nonce"]
+      end
+
+      # 세션 완전 유실 시 폴백: redirect_to_provider에서 IP 기반으로 미리 저장한 nonce 복구
+      unless from_app
+        cached_nonce = Rails.cache.read("app_oauth_pending:#{request.remote_ip}")
+        if cached_nonce.present?
+          Rails.logger.info "[OmniAuth] Session lost but recovered app nonce via IP: #{cached_nonce}"
+          from_app = true
+          nonce = cached_nonce
+          Rails.cache.delete("app_oauth_pending:#{request.remote_ip}")
+        end
+      end
+
       if from_app
         token = SecureRandom.hex(32)
         Rails.cache.write("app_login_token:#{token}", user.id, expires_in: 60.seconds)
         @deep_link = "workgood://auth/callback?token=#{token}"
 
-        nonce = origin.match(/nonce=([^&]+)/)&.captures&.first || auth_params["nonce"]
         if nonce
           Rails.cache.write("app_login_nonce:#{nonce}", token, expires_in: 120.seconds)
         end
@@ -43,6 +59,18 @@ class OmniauthCallbacksController < ApplicationController
     @provider = params[:provider]
     action_url = "/auth/#{@provider}"
     action_url += "?#{request.query_string}" if request.query_string.present?
+
+    # 세션 쿠키 유실 대비: origin에서 nonce를 추출해 IP 기반으로 서버 캐시에 저장
+    # 구글 콜백에서 세션이 사라져도 같은 IP의 nonce를 복구할 수 있음
+    origin_param = params[:origin].to_s
+    if origin_param.include?("source=app")
+      nonce_match = origin_param.match(/nonce=([^&]+)/)
+      if nonce_match
+        nonce = nonce_match[1]
+        Rails.cache.write("app_oauth_pending:#{request.remote_ip}", nonce, expires_in: 5.minutes)
+        Rails.logger.info "[OmniAuth] Pre-stored app nonce for IP #{request.remote_ip}: #{nonce}"
+      end
+    end
     
     render inline: <<~HTML, layout: false
       <!DOCTYPE html>
