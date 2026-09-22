@@ -955,6 +955,10 @@
         // 페이지 로드 완료 시에도 오버레이 제거 (안전장치)
         document.addEventListener('turbo:load', function() {
           overlay.classList.remove('active');
+          // 원격 웹앱 로딩이 끝나면 수동으로 스플래시 화면 닫기 (블랙아웃 방지)
+          if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.SplashScreen) {
+            window.Capacitor.Plugins.SplashScreen.hide();
+          }
         });
       })();
     </script>
