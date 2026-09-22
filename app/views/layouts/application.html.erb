@@ -1086,18 +1086,29 @@
         if (!magnifierActive) return;
         if (e.target.closest('.bottom-nav')) return;
         
+        // 캘린더 등 하위 요소의 스와이프/터치 이벤트를 원천 차단
+        e.stopPropagation();
+        e.stopImmediatePropagation();
+        e.preventDefault();
+        
         isDragging = true;
         startTouchX = e.touches ? e.touches[0].clientX : e.clientX;
         startTouchY = e.touches ? e.touches[0].clientY : e.clientY;
         
         startLensX = currentLensX;
         startLensY = currentLensY;
-        
-        e.preventDefault();
       }
       
       function onPointerMove(e) {
-        if (!isDragging || !magnifierActive) return;
+        if (!magnifierActive) return;
+        if (e.target.closest('.bottom-nav')) return;
+        
+        // 캘린더 등 하위 요소의 스와이프/터치 이벤트를 원천 차단
+        e.stopPropagation();
+        e.stopImmediatePropagation();
+        e.preventDefault();
+        
+        if (!isDragging) return;
         
         var clientX = e.touches ? e.touches[0].clientX : e.clientX;
         var clientY = e.touches ? e.touches[0].clientY : e.clientY;
@@ -1106,20 +1117,25 @@
         var deltaY = clientY - startTouchY;
         
         updateMagnifierPosition(startLensX + deltaX, startLensY + deltaY);
-        e.preventDefault();
       }
       
       function onPointerUp(e) {
+        if (!magnifierActive) return;
+        if (e.target.closest('.bottom-nav')) return;
+        
+        e.stopPropagation();
+        e.stopImmediatePropagation();
+        
         isDragging = false;
       }
       
-      // 화면 전체에 이벤트 리스너 등록
-      document.addEventListener('touchstart', onPointerDown, {passive: false});
-      document.addEventListener('touchmove', onPointerMove, {passive: false});
-      document.addEventListener('touchend', onPointerUp, {passive: false});
-      document.addEventListener('mousedown', onPointerDown, {passive: false});
-      document.addEventListener('mousemove', onPointerMove, {passive: false});
-      document.addEventListener('mouseup', onPointerUp, {passive: false});
+      // 화면 전체에 이벤트 리스너 등록 (capture: true로 설정하여 캘린더보다 먼저 이벤트를 가로챔)
+      document.addEventListener('touchstart', onPointerDown, {passive: false, capture: true});
+      document.addEventListener('touchmove', onPointerMove, {passive: false, capture: true});
+      document.addEventListener('touchend', onPointerUp, {passive: false, capture: true});
+      document.addEventListener('mousedown', onPointerDown, {passive: false, capture: true});
+      document.addEventListener('mousemove', onPointerMove, {passive: false, capture: true});
+      document.addEventListener('mouseup', onPointerUp, {passive: false, capture: true});
     </script>
     <% end %>
   </body>
