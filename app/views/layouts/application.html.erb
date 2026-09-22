@@ -611,9 +611,16 @@
           <span>다이어리</span>
         <% end %>
 
-        <%= link_to calendar_projects_path, class: "bottom-nav-item #{current_path == '/' || current_path == '/projects/calendar' ? 'active' : ''}" do %>
-          <span class="bottom-nav-icon">📅</span>
-          <span>캘린더</span>
+        <% if current_path == '/' || current_path == '/projects/calendar' %>
+          <div class="bottom-nav-item" onclick="toggleMagnifier()" id="magnifierToggleBtn">
+            <span class="bottom-nav-icon">🔎</span>
+            <span>돋보기</span>
+          </div>
+        <% else %>
+          <%= link_to calendar_projects_path, class: "bottom-nav-item" do %>
+            <span class="bottom-nav-icon">📅</span>
+            <span>캘린더</span>
+          <% end %>
         <% end %>
       </div>
     </nav>
@@ -962,5 +969,137 @@
         });
       })();
     </script>
+
+    <!-- 돋보기 기능 (캘린더 전용) -->
+    <% if current_path == '/' || current_path == '/projects/calendar' %>
+    <div id="magnifierLens" style="
+      display: none;
+      position: fixed;
+      width: 150px;
+      height: 150px;
+      border: 4px solid #2563eb;
+      border-radius: 50%;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.4);
+      z-index: 9999;
+      pointer-events: auto;
+      overflow: hidden;
+      background: white;
+      touch-action: none;
+    ">
+      <div id="magnifierContent" style="
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        transform-origin: 0 0;
+        transform: scale(2);
+        pointer-events: none;
+      "></div>
+    </div>
+    
+    <script>
+      var magnifierActive = false;
+      var lens = document.getElementById('magnifierLens');
+      var magContent = document.getElementById('magnifierContent');
+      var toggleBtn = document.getElementById('magnifierToggleBtn');
+      
+      var lensSize = 150;
+      var zoomScale = 2;
+      
+      function toggleMagnifier() {
+        magnifierActive = !magnifierActive;
+        if (magnifierActive) {
+          // 활성화
+          lens.style.display = 'block';
+          if (toggleBtn) toggleBtn.classList.add('active');
+          
+          // 콘텐츠 복제
+          var rootToClone = document.getElementById('calendarRoot');
+          magContent.innerHTML = '';
+          if (rootToClone) {
+            var clone = rootToClone.cloneNode(true);
+            clone.id = 'calendarRoot_clone';
+            
+            // 캐러셀 트랙이나 이벤트가 충돌하지 않도록 조정
+            var carousel = clone.querySelector('#carouselTrack');
+            if (carousel) {
+              carousel.style.willChange = 'auto'; // 복제본 성능 문제 방지
+            }
+            
+            magContent.appendChild(clone);
+          }
+          
+          // 초기 위치를 화면 중앙으로 설정
+          var cx = window.innerWidth / 2;
+          var cy = window.innerHeight / 2;
+          updateMagnifierPosition(cx, cy);
+        } else {
+          // 비활성화
+          lens.style.display = 'none';
+          if (toggleBtn) toggleBtn.classList.remove('active');
+          magContent.innerHTML = '';
+        }
+      }
+      
+      function updateMagnifierPosition(x, y) {
+        var lensLeft = x - (lensSize / 2);
+        var lensTop = y - (lensSize / 2);
+        lens.style.left = lensLeft + 'px';
+        lens.style.top = lensTop + 'px';
+        
+        var contentLeft = - (x * zoomScale) + (lensSize / 2);
+        var contentTop = - (y * zoomScale) + (lensSize / 2);
+        
+        magContent.style.left = contentLeft + 'px';
+        magContent.style.top = contentTop + 'px';
+      }
+      
+      // 터치 및 마우스 드래그 로직
+      var isDragging = false;
+      var dragOffsetX = 0;
+      var dragOffsetY = 0;
+      
+      function onPointerDown(e) {
+        isDragging = true;
+        var clientX = e.touches ? e.touches[0].clientX : e.clientX;
+        var clientY = e.touches ? e.touches[0].clientY : e.clientY;
+        
+        var rect = lens.getBoundingClientRect();
+        var lensCenterX = rect.left + (lensSize / 2);
+        var lensCenterY = rect.top + (lensSize / 2);
+        
+        dragOffsetX = clientX - lensCenterX;
+        dragOffsetY = clientY - lensCenterY;
+        
+        e.preventDefault(); // 기본 스크롤 방지
+      }
+      
+      function onPointerMove(e) {
+        if (!isDragging) return;
+        var clientX = e.touches ? e.touches[0].clientX : e.clientX;
+        var clientY = e.touches ? e.touches[0].clientY : e.clientY;
+        
+        var targetX = clientX - dragOffsetX;
+        var targetY = clientY - dragOffsetY;
+        
+        updateMagnifierPosition(targetX, targetY);
+        e.preventDefault();
+      }
+      
+      function onPointerUp(e) {
+        isDragging = false;
+      }
+      
+      if (lens) {
+        lens.addEventListener('touchstart', onPointerDown, {passive: false});
+        lens.addEventListener('touchmove', onPointerMove, {passive: false});
+        lens.addEventListener('touchend', onPointerUp, {passive: false});
+        lens.addEventListener('mousedown', onPointerDown, {passive: false});
+      }
+      document.addEventListener('mousemove', onPointerMove, {passive: false});
+      document.addEventListener('mouseup', onPointerUp, {passive: false});
+    </script>
+    <% end %>
   </body>
 </html>
