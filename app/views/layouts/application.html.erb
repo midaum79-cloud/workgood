@@ -977,15 +977,16 @@
       position: fixed;
       width: 150px;
       height: 150px;
-      border: none;
+      border: 5px solid #d1d5db; /* 실제 돋보기 프레임 같은 회색 테두리 */
       border-radius: 50%;
-      box-shadow: 0 10px 25px rgba(0,0,0,0.4);
+      box-shadow: 0 10px 25px rgba(0,0,0,0.5); /* 외부 그림자 */
       z-index: 9999;
-      pointer-events: none; /* 렌즈 자체가 이벤트를 가로채지 않도록 변경 */
+      pointer-events: none;
       overflow: hidden;
       background: white;
       touch-action: none;
     ">
+      <!-- 복제된 콘텐츠 영역 -->
       <div id="magnifierContent" style="
         position: absolute;
         top: 0;
@@ -995,6 +996,18 @@
         transform-origin: 0 0;
         transform: scale(2);
         pointer-events: none;
+        z-index: 1;
+      "></div>
+      
+      <!-- 유리 렌즈 질감/빛 반사 오버레이 -->
+      <div style="
+        position: absolute;
+        inset: 0;
+        border-radius: 50%;
+        box-shadow: inset 0 0 20px rgba(0,0,0,0.4), inset 0 6px 10px rgba(255,255,255,0.8);
+        background: radial-gradient(circle at 35% 35%, rgba(255,255,255,0.5) 0%, rgba(255,255,255,0) 45%);
+        pointer-events: none;
+        z-index: 2;
       "></div>
     </div>
     
@@ -1006,6 +1019,10 @@
       
       var lensSize = 150;
       var zoomScale = 2;
+      
+      // 렌즈의 현재 중심 좌표
+      var currentLensX = 0;
+      var currentLensY = 0;
       
       function toggleMagnifier() {
         magnifierActive = !magnifierActive;
@@ -1024,7 +1041,7 @@
             // 캐러셀 트랙이나 이벤트가 충돌하지 않도록 조정
             var carousel = clone.querySelector('#carouselTrack');
             if (carousel) {
-              carousel.style.willChange = 'auto'; // 복제본 성능 문제 방지
+              carousel.style.willChange = 'auto';
             }
             
             magContent.appendChild(clone);
@@ -1043,6 +1060,9 @@
       }
       
       function updateMagnifierPosition(x, y) {
+        currentLensX = x;
+        currentLensY = y;
+        
         var lensLeft = x - (lensSize / 2);
         var lensTop = y - (lensSize / 2);
         lens.style.left = lensLeft + 'px';
@@ -1055,22 +1075,25 @@
         magContent.style.top = contentTop + 'px';
       }
       
-      // 터치 및 마우스 드래그 로직 (화면 전체에서 동작)
+      // 터치 및 마우스 드래그 로직 (상대적 이동)
       var isDragging = false;
+      var startTouchX = 0;
+      var startTouchY = 0;
+      var startLensX = 0;
+      var startLensY = 0;
       
       function onPointerDown(e) {
         if (!magnifierActive) return;
-        
-        // 하단 네비게이션 클릭 시 돋보기 이동 방지
         if (e.target.closest('.bottom-nav')) return;
         
         isDragging = true;
-        var clientX = e.touches ? e.touches[0].clientX : e.clientX;
-        var clientY = e.touches ? e.touches[0].clientY : e.clientY;
+        startTouchX = e.touches ? e.touches[0].clientX : e.clientX;
+        startTouchY = e.touches ? e.touches[0].clientY : e.clientY;
         
-        // 누른 곳으로 즉시 돋보기 이동
-        updateMagnifierPosition(clientX, clientY);
-        e.preventDefault(); // 기본 스크롤 방지
+        startLensX = currentLensX;
+        startLensY = currentLensY;
+        
+        e.preventDefault();
       }
       
       function onPointerMove(e) {
@@ -1079,8 +1102,10 @@
         var clientX = e.touches ? e.touches[0].clientX : e.clientX;
         var clientY = e.touches ? e.touches[0].clientY : e.clientY;
         
-        // 손가락 위치 따라가기
-        updateMagnifierPosition(clientX, clientY);
+        var deltaX = clientX - startTouchX;
+        var deltaY = clientY - startTouchY;
+        
+        updateMagnifierPosition(startLensX + deltaX, startLensY + deltaY);
         e.preventDefault();
       }
       
