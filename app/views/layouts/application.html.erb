@@ -977,11 +977,11 @@
       position: fixed;
       width: 150px;
       height: 150px;
-      border: 4px solid #2563eb;
+      border: none;
       border-radius: 50%;
       box-shadow: 0 10px 25px rgba(0,0,0,0.4);
       z-index: 9999;
-      pointer-events: auto;
+      pointer-events: none; /* 렌즈 자체가 이벤트를 가로채지 않도록 변경 */
       overflow: hidden;
       background: white;
       touch-action: none;
@@ -1055,35 +1055,32 @@
         magContent.style.top = contentTop + 'px';
       }
       
-      // 터치 및 마우스 드래그 로직
+      // 터치 및 마우스 드래그 로직 (화면 전체에서 동작)
       var isDragging = false;
-      var dragOffsetX = 0;
-      var dragOffsetY = 0;
       
       function onPointerDown(e) {
+        if (!magnifierActive) return;
+        
+        // 하단 네비게이션 클릭 시 돋보기 이동 방지
+        if (e.target.closest('.bottom-nav')) return;
+        
         isDragging = true;
         var clientX = e.touches ? e.touches[0].clientX : e.clientX;
         var clientY = e.touches ? e.touches[0].clientY : e.clientY;
         
-        var rect = lens.getBoundingClientRect();
-        var lensCenterX = rect.left + (lensSize / 2);
-        var lensCenterY = rect.top + (lensSize / 2);
-        
-        dragOffsetX = clientX - lensCenterX;
-        dragOffsetY = clientY - lensCenterY;
-        
+        // 누른 곳으로 즉시 돋보기 이동
+        updateMagnifierPosition(clientX, clientY);
         e.preventDefault(); // 기본 스크롤 방지
       }
       
       function onPointerMove(e) {
-        if (!isDragging) return;
+        if (!isDragging || !magnifierActive) return;
+        
         var clientX = e.touches ? e.touches[0].clientX : e.clientX;
         var clientY = e.touches ? e.touches[0].clientY : e.clientY;
         
-        var targetX = clientX - dragOffsetX;
-        var targetY = clientY - dragOffsetY;
-        
-        updateMagnifierPosition(targetX, targetY);
+        // 손가락 위치 따라가기
+        updateMagnifierPosition(clientX, clientY);
         e.preventDefault();
       }
       
@@ -1091,12 +1088,11 @@
         isDragging = false;
       }
       
-      if (lens) {
-        lens.addEventListener('touchstart', onPointerDown, {passive: false});
-        lens.addEventListener('touchmove', onPointerMove, {passive: false});
-        lens.addEventListener('touchend', onPointerUp, {passive: false});
-        lens.addEventListener('mousedown', onPointerDown, {passive: false});
-      }
+      // 화면 전체에 이벤트 리스너 등록
+      document.addEventListener('touchstart', onPointerDown, {passive: false});
+      document.addEventListener('touchmove', onPointerMove, {passive: false});
+      document.addEventListener('touchend', onPointerUp, {passive: false});
+      document.addEventListener('mousedown', onPointerDown, {passive: false});
       document.addEventListener('mousemove', onPointerMove, {passive: false});
       document.addEventListener('mouseup', onPointerUp, {passive: false});
     </script>
