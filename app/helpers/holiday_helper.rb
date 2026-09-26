@@ -26,9 +26,11 @@ module HolidayHelper
 
         # 대체공휴일 적용 대상 공휴일인 경우
         if SUBSTITUTE_TARGETS.include?(name)
-          # 해당 공휴일이 주말(토/일)과 겹쳤는지 확인
-          # (설/추석 연휴 등은 주말이 아니더라도 다른 공휴일과 겹칠 수 있으나, 보통 주말과 겹침)
-          if prev_date.saturday? || prev_date.sunday?
+          # 설날/추석 연휴는 일요일과 겹칠 때만 대체공휴일 발생 (토요일 제외)
+          is_sunday_only_target = ["설날", "설날 연휴", "추석", "추석 연휴"].include?(name)
+          overlaps_with_weekend = is_sunday_only_target ? prev_date.sunday? : (prev_date.saturday? || prev_date.sunday?)
+
+          if overlaps_with_weekend
             # 해당 공휴일과 오늘 사이의 모든 날짜가 휴일(주말 또는 공휴일)이었는지 확인
             between_days = (prev_date + 1.day...date).to_a
             all_off = between_days.all? do |d|
