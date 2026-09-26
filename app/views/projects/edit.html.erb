@@ -904,16 +904,22 @@
     .then(function(data) {
       if (data.success) {
         if(data.data.client_name) {
-          document.getElementById('vendorDirectNameInput').value = data.data.client_name;
-          document.getElementById('edit_project_client_name').value = data.data.client_name;
+          if (!document.getElementById('vendorDirectNameInput').value.trim()) {
+            document.getElementById('vendorDirectNameInput').value = data.data.client_name;
+            document.getElementById('edit_project_client_name').value = data.data.client_name;
+          }
         }
         if(data.data.project_name) {
-          document.getElementById('vendorDirectProjectNameInput').value = data.data.project_name;
-          document.getElementById('hidden_edit_project_name').value = data.data.project_name;
+          if (!document.getElementById('vendorDirectProjectNameInput').value.trim()) {
+            document.getElementById('vendorDirectProjectNameInput').value = data.data.project_name;
+            document.getElementById('hidden_edit_project_name').value = data.data.project_name;
+          }
         }
         if(data.data.client_phone) {
-          document.getElementById('vendorDirectPhoneInput').value = data.data.client_phone;
-          document.getElementById('edit_project_client_phone').value = data.data.client_phone;
+          if (!document.getElementById('vendorDirectPhoneInput').value.trim()) {
+            document.getElementById('vendorDirectPhoneInput').value = data.data.client_phone;
+            document.getElementById('edit_project_client_phone').value = data.data.client_phone;
+          }
         }
         if(data.data.address) {
           document.getElementById('edit_project_address').value = data.data.address;

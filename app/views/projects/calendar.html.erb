@@ -650,7 +650,7 @@ function bsSaveConsultation() {
   .then(function(res) { return res.json(); })
   .then(function(data) {
     if(data.success) {
-      window.location.reload();
+      window.location.href = window.location.pathname + window.location.search;
     } else {
       alert(data.error || '저장에 실패했습니다.');
     }
@@ -677,7 +677,7 @@ function bsDeleteConsultation() {
   .then(function(res) { return res.json(); })
   .then(function(data) {
     if(data.success) {
-      window.location.reload();
+      window.location.href = window.location.pathname + window.location.search;
     } else {
       alert(data.error || '삭제에 실패했습니다.');
     }
@@ -881,7 +881,7 @@ function bsGoToNewProject(clientName, projectName, clientPhone, address, detailA
   .then(function(res) { return res.json(); })
   .then(function(data) {
     if (data.success) {
-      window.location.reload();
+      window.location.href = window.location.pathname + window.location.search;
     } else {
       alert(data.error || '일정 추가에 실패했습니다.');
       isQuickCreatingProject = false; // 에러 시 다시 풀기
@@ -924,9 +924,9 @@ function analyzeAiRegistrationText() {
   .then(function(res) { return res.json(); })
   .then(function(data) {
     if (data.success) {
-      if(data.data.project_name) document.getElementById('bsDirectProjectName').value = data.data.project_name;
-      if(data.data.client_name) document.getElementById('bsDirectClientName').value = data.data.client_name;
-      if(data.data.client_phone) document.getElementById('bsDirectClientPhone').value = data.data.client_phone;
+      if(data.data.project_name && !document.getElementById('bsDirectProjectName').value.trim()) document.getElementById('bsDirectProjectName').value = data.data.project_name;
+      if(data.data.client_name && !document.getElementById('bsDirectClientName').value.trim()) document.getElementById('bsDirectClientName').value = data.data.client_name;
+      if(data.data.client_phone && !document.getElementById('bsDirectClientPhone').value.trim()) document.getElementById('bsDirectClientPhone').value = data.data.client_phone;
       if(data.data.address) document.getElementById('bsDirectAddress').value = data.data.address;
       if(data.data.detail_address) document.getElementById('bsDirectDetailAddress').value = data.data.detail_address;
     } else {
@@ -974,10 +974,10 @@ function analyzeAiConsultationText(e) {
   .then(function(res) { return res.json(); })
   .then(function(data) {
     if (data.success) {
-      if(data.data.project_name) document.getElementById('cCompanyName').value = data.data.project_name;
-      if(data.data.client_name) document.getElementById('cName').value = data.data.client_name;
+      if(data.data.project_name && !document.getElementById('cCompanyName').value.trim()) document.getElementById('cCompanyName').value = data.data.project_name;
+      if(data.data.client_name && !document.getElementById('cName').value.trim()) document.getElementById('cName').value = data.data.client_name;
       
-      if(data.data.client_phone) document.getElementById('cPhone').value = data.data.client_phone;
+      if(data.data.client_phone && !document.getElementById('cPhone').value.trim()) document.getElementById('cPhone').value = data.data.client_phone;
       if(data.data.address) document.getElementById('cAddress').value = data.data.address;
       if(data.data.detail_address) document.getElementById('cDetailAddress').value = data.data.detail_address;
     } else {
@@ -1066,7 +1066,7 @@ function deleteScheduleOnly() {
     .then(function(data) {
       if (!data) return;
       if (data.success) {
-        window.location.reload();
+        window.location.href = window.location.pathname + window.location.search;
       } else {
         alert(data.error || '삭제에 실패했습니다.');
       }
@@ -1143,7 +1143,7 @@ function pasteSchedule(projectId, dateStr) {
   .then(function(data) {
     if (data.success) {
       if (navigator.vibrate) navigator.vibrate(30);
-      window.location.reload();
+      window.location.href = window.location.pathname + window.location.search;
     } else {
       alert(data.error || '일정 복사에 실패했습니다.');
       isPastingSchedule = false; // 에러 시 풀기
@@ -1344,7 +1344,7 @@ document.addEventListener('DOMContentLoaded', function() {
     .then(function(res) { return res.json(); })
     .then(function(data) {
       if (data.success) {
-        window.location.reload();
+        window.location.href = window.location.pathname + window.location.search;
       } else {
         alert(data.error || '이동에 실패했습니다.');
       }
