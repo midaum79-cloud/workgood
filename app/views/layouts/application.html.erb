@@ -1037,6 +1037,14 @@
             var clone = rootToClone.cloneNode(true);
             clone.id = 'calendarRoot_clone';
             
+            // 모든 스크롤 가능 요소의 스크롤 위치 복사 (시야 어긋남 방지)
+            var originals = rootToClone.querySelectorAll('*');
+            var clones = clone.querySelectorAll('*');
+            for (var i = 0; i < originals.length; i++) {
+              if (originals[i].scrollTop > 0) clones[i].scrollTop = originals[i].scrollTop;
+              if (originals[i].scrollLeft > 0) clones[i].scrollLeft = originals[i].scrollLeft;
+            }
+            
             // 캐러셀 트랙이나 이벤트가 충돌하지 않도록 조정
             var carousel = clone.querySelector('#carouselTrack');
             if (carousel) {
