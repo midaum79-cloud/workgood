@@ -1076,7 +1076,8 @@
         lens.style.top = lensTop + 'px';
         
         var contentLeft = - (x * zoomScale) + (lensSize / 2);
-        var contentTop = - (y * zoomScale) + (lensSize / 2);
+        // 내용이 너무 위로 올라가 초점이 아래로 맺히는 현상을 방지하기 위해 + 40px 보정
+        var contentTop = - (y * zoomScale) + (lensSize / 2) + 40; 
         
         magContent.style.left = contentLeft + 'px';
         magContent.style.top = contentTop + 'px';
