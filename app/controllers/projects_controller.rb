@@ -663,7 +663,7 @@ class ProjectsController < ApplicationController
   def purge_photo
     @project = current_user.projects.find(params[:id])
     photo = @project.photos.find_by(id: params[:photo_id])
-    
+
     if photo
       begin
         photo.purge

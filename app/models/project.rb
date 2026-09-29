@@ -20,7 +20,7 @@ class Project < ApplicationRecord
   # 기존 start_date~end_date 범위로 개별 스케줄 자동 생성 (또는 selected_dates 기반)
   def create_initial_schedules
     if selected_dates.present?
-      dates_array = selected_dates.split(',').reject(&:blank?)
+      dates_array = selected_dates.split(",").reject(&:blank?)
       dates_array.each do |date_str|
         project_schedules.find_or_create_by(work_date: date_str)
       end
@@ -37,7 +37,7 @@ class Project < ApplicationRecord
 
   def update_schedules_from_selected_dates
     if selected_dates.present?
-      dates_array = selected_dates.split(',').reject(&:blank?)
+      dates_array = selected_dates.split(",").reject(&:blank?)
       if dates_array.any?
         project_schedules.where.not(work_date: dates_array).destroy_all
         dates_array.each do |date_str|
@@ -190,7 +190,7 @@ class Project < ApplicationRecord
 
   def full_address
     if detail_address.present?
-      [address, detail_address].reject(&:blank?).join(" ")
+      [ address, detail_address ].reject(&:blank?).join(" ")
     else
       address
     end

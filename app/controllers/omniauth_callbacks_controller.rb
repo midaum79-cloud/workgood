@@ -77,22 +77,22 @@ class OmniauthCallbacksController < ApplicationController
       nonce_match = origin_param.match(/nonce=([^&]+)/)
       if nonce_match
         nonce = nonce_match[1]
-        
+
         # 1. IP 캐시 (기존 방식 유지)
         Rails.cache.write("app_oauth_pending:#{request.remote_ip}", nonce, expires_in: 5.minutes)
         Rails.logger.info "[OmniAuth] Pre-stored app nonce for IP #{request.remote_ip}: #{nonce}"
-        
+
         # 2. State 파라미터 주입용 (OmniAuth 몽키패치와 연동)
         action_url += (action_url.include?("?") ? "&" : "?") + "app_nonce=#{nonce}"
       end
     end
-    
+
     render inline: <<~HTML, layout: false
       <!DOCTYPE html>
       <html>
         <head><title>Redirecting...</title></head>
         <body onload="document.forms[0].submit()" style="background:#0a0f1e; color:white; display:flex; align-items:center; justify-content:center; height:100vh;">
-          <form method="POST" action="#{action_url}">
+          <form method="POST" action="#{ERB::Util.html_escape(action_url)}">
             <%= hidden_field_tag :authenticity_token, form_authenticity_token %>
           </form>
           <div style="font-family:sans-serif; text-align:center;">

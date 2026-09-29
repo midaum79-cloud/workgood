@@ -26,11 +26,11 @@ class ReceiptsController < ApplicationController
 
   def create
     uploaded_images = params.dig(:receipt, :images)
-    uploaded_images = [uploaded_images] if uploaded_images.present? && !uploaded_images.is_a?(Array)
+    uploaded_images = [ uploaded_images ] if uploaded_images.present? && !uploaded_images.is_a?(Array)
     uploaded_images = Array(uploaded_images).reject(&:blank?)
-    
+
     receipt_date = params.dig(:receipt, :receipt_date)
-    
+
     if uploaded_images.empty?
       @receipt = current_user.receipts.build(receipt_date: receipt_date)
       @selected_date = receipt_date || Date.current.to_s
@@ -42,18 +42,18 @@ class ReceiptsController < ApplicationController
     success_count = 0
     uploaded_images.each do |uploaded|
       receipt = current_user.receipts.build(receipt_date: receipt_date)
-      
+
       compressed = compress_image(uploaded)
       io = StringIO.new(compressed[:data])
       ext = uploaded.original_filename.split(".").last || "jpg"
       filename = "receipt_#{Time.current.to_i}_#{SecureRandom.hex(4)}.#{ext}"
-      
+
       receipt.image.attach(
         io: io,
         filename: filename,
         content_type: compressed[:content_type]
       )
-      
+
       success_count += 1 if receipt.save
     end
 

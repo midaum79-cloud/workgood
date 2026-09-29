@@ -5,7 +5,7 @@ begin
       class OAuth2
         def authorize_params
           options.authorize_params[:state] = SecureRandom.hex(24)
-          
+
           # 요청 파라미터에 app_nonce가 있으면 state 끝에 붙여서 구글로 보냄
           if request.params["app_nonce"].present?
             options.authorize_params[:state] += "___#{request.params["app_nonce"]}"
