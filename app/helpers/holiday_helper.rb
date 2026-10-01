@@ -22,7 +22,7 @@ module HolidayHelper
       prev_holidays = Holidays.on(prev_date, :kr)
 
       if prev_holidays.any?
-        name = prev_holidays.first[:name]
+        name = prev_holidays.first[:name최적화가 안된것
 
         # 대체공휴일 적용 대상 공휴일인 경우
         if SUBSTITUTE_TARGETS.include?(name)
