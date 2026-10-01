@@ -177,12 +177,12 @@
         flex-direction: column;
         align-items: center;
         justify-content: center;
-        padding: 10px 0 8px 0;
+        padding: 8px 0 6px 0;
         text-decoration: none;
         color: #9ca3af;
-        font-size: 11px;
-        font-weight: 700;
-        gap: 3px;
+        font-size: 10px;
+        font-weight: 600;
+        gap: 2px;
         position: relative;
         transition: color 0.15s ease;
         -webkit-touch-callout: none;
@@ -199,8 +199,9 @@
       }
 
       .bottom-nav-icon {
-        font-size: 22px;
+        font-size: 20px;
         line-height: 1;
+        margin-bottom: 2px;
       }
 
       .bottom-nav-badge {
@@ -262,8 +263,8 @@
       }
 
       .drawer-title {
-        font-size: 20px;
-        font-weight: 900;
+        font-size: 18px;
+        font-weight: 800;
         color: #2563eb;
       }
 
@@ -284,9 +285,9 @@
       }
 
       .drawer-item-icon {
-        font-size: 18px;
-        margin-right: 10px;
-        width: 24px;
+        font-size: 17px;
+        margin-right: 8px;
+        width: 22px;
         display: inline-block;
         text-align: center;
         flex-shrink: 0;
@@ -295,11 +296,11 @@
       .drawer-item {
         display: flex;
         align-items: center;
-        padding: 14px 20px;
+        padding: 12px 18px;
         color: #374151;
         text-decoration: none;
         font-size: 14px;
-        font-weight: 700;
+        font-weight: 600;
         transition: background 0.2s;
         white-space: nowrap;
         overflow: hidden;
@@ -656,21 +657,21 @@
         <% if logged_in? %>
           <%# 내 계정 — profile card %>
           <%= link_to my_account_path, onclick: "closeDrawer()",
-              style: "display:flex; align-items:center; gap:12px; padding:14px 20px; text-decoration:none; border-bottom:1px solid #f3f4f6;" do %>
-            <div style="width:42px; height:42px; border-radius:50%; background:#111827; display:flex; align-items:center; justify-content:center; font-size:18px; font-weight:900; color:white; flex-shrink:0;">
+              style: "display:flex; align-items:center; gap:12px; padding:12px 18px; text-decoration:none; border-bottom:1px solid #f3f4f6;" do %>
+            <div style="width:38px; height:38px; border-radius:50%; background:#111827; display:flex; align-items:center; justify-content:center; font-size:16px; font-weight:800; color:white; flex-shrink:0;">
               <%= current_user.name.chars.first.upcase %>
             </div>
             <div style="flex:1; min-width:0;">
-              <div style="font-size:15px; font-weight:900; color:#111827; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;"><%= current_user.name %></div>
-              <div style="font-size:12px; color:#9ca3af; font-weight:600; margin-top:1px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;"><%= current_user.email %></div>
+              <div style="font-size:14px; font-weight:800; color:#111827; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;"><%= current_user.name %></div>
+              <div style="font-size:11px; color:#9ca3af; font-weight:600; margin-top:1px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;"><%= current_user.email %></div>
             </div>
             <div style="font-size:16px; color:#d1d5db;">→</div>
           <% end %>
           <%= link_to subscription_path, class: "drawer-item", onclick: "closeDrawer()", style: "flex-direction:column; align-items:flex-start; gap:10px; padding-bottom:16px;" do %>
             <div style="display:flex; align-items:center; gap:8px; width:100%;">
               <span class="drawer-item-icon" style="color:#007AFF;">💳</span>
-              <span style="font-weight:900; color:#111827;">요금제 / 구독</span>
-              <span style="margin-left:auto; font-size:11px; font-weight:800; background:#f3f4f6; color:#007AFF; padding:3px 9px; border-radius:999px;">
+              <span style="font-weight:800; color:#111827;">요금제 / 구독</span>
+              <span style="margin-left:auto; font-size:10px; font-weight:700; background:#f3f4f6; color:#007AFF; padding:3px 9px; border-radius:999px;">
                 <%= current_user.plan_label %> 이용중
               </span>
             </div>
