@@ -33,11 +33,9 @@ public class MainActivity extends BridgeActivity {
         super.onCreate(savedInstanceState);
         setTitle("");
 
-        // 안드로이드 텍스트 크기 축소 (-2포인트 체감, 시스템 폰트 배율 반영)
+        // 갤럭시(안드로이드) 시스템 설정의 폰트 크기 강제 확대를 무시하고 100%로 고정 (일머리와 동일한 최적화 비율)
         if (getBridge() != null && getBridge().getWebView() != null) {
-            WebView webView = getBridge().getWebView();
-            int currentZoom = webView.getSettings().getTextZoom();
-            webView.getSettings().setTextZoom((int)(currentZoom * 0.88));
+            getBridge().getWebView().getSettings().setTextZoom(100);
         }
         
         // 확실하게 Action Bar 숨김 처리 (안드로이드 테마 충돌 방지)
@@ -66,6 +64,11 @@ public class MainActivity extends BridgeActivity {
         super.onResume();
         // 앱이 포그라운드로 올 때마다 위젯 토큰 갱신 시도
         fetchAndSaveWidgetToken();
+
+        // 갤럭시(안드로이드) 시스템 설정의 폰트 크기 강제 확대를 무시하고 100%로 고정
+        if (getBridge() != null && getBridge().getWebView() != null) {
+            getBridge().getWebView().getSettings().setTextZoom(100);
+        }
     }
 
     private void handleDeepLink(Intent intent) {
