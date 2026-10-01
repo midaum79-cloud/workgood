@@ -176,7 +176,7 @@
 
 <!-- 오늘로 돌아가기 버튼 (FAB 스타일) -->
 <div id="goTodayBtn" onclick="window.location.href='<%= calendar_projects_path(status: @selected_status) %>'" style="
-  display:none;
+  display:<%= (@calendar_year == Date.current.year && @calendar_month == Date.current.month) ? 'none' : 'flex' %>;
   position:fixed;
   bottom:calc(76px + env(safe-area-inset-bottom));
   right:16px;
@@ -193,7 +193,6 @@
   box-shadow:0 4px 12px rgba(37,99,235,0.4);
   cursor:pointer;
   transition:opacity 0.3s, transform 0.3s;
-  display:flex;
   align-items:center;
   justify-content:center;
 ">오늘</div>
