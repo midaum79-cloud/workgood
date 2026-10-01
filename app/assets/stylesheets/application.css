@@ -10,6 +10,11 @@
  */
 
 html {
-  -webkit-text-size-adjust: 100%;
-  text-size-adjust: 100%;
+  -webkit-text-size-adjust: none !important;
+  text-size-adjust: none !important;
+}
+
+body * {
+  /* 안드로이드 고질적인 Font Boosting(레이아웃 가로가 넓을 때 글씨가 뻥튀기되는 현상) 완벽 방지 */
+  max-height: 999999px;
 }
