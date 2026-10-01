@@ -185,7 +185,7 @@
 <div id="goTodayBtn" onclick="window.location.href='<%= project_calendar_project_path(@project) %>'" style="
   display:none;
   position:fixed;
-  bottom:80px;
+  bottom:calc(76px + env(safe-area-inset-bottom));
   right:16px;
   z-index:40;
   background:#2563eb;
