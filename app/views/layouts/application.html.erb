@@ -1031,11 +1031,11 @@
           if (toggleBtn) toggleBtn.classList.add('active');
           
           // 콘텐츠 복제
-          var rootToClone = document.getElementById('calendarRoot');
+          var rootToClone = document.getElementById('calendarRoot') || document.getElementById('projectCalendarRoot');
           magContent.innerHTML = '';
           if (rootToClone) {
             var clone = rootToClone.cloneNode(true);
-            clone.id = 'calendarRoot_clone';
+            clone.id = rootToClone.id + '_clone';
             
             // 모든 스크롤 가능 요소의 스크롤 위치 복사 (시야 어긋남 방지)
             var originals = rootToClone.querySelectorAll('*');
