@@ -85,7 +85,7 @@
 
       <!-- 센터 네이티브 월 선택기 -->
       <div style="position:relative; display:inline-flex; align-items:center; cursor:pointer;">
-        <div id="monthLabel" style="font-size:20px; font-weight:900; color:#111827; letter-spacing:-0.5px;">
+        <div id="monthLabel" style="font-size:18px; font-weight:800; color:#111827; letter-spacing:-0.5px;">
           <%= @calendar_year %>. <%= @calendar_month %> <span style="font-size:15px; margin-left:2px; vertical-align:middle;">⌃</span>
         </div>
         <input type="month" 
@@ -103,7 +103,7 @@
             when "토" then "#3b82f6"
             else "#6b7280"
            end %>
-        <div style="padding:8px 0; text-align:center; font-size:14px; font-weight:800; color:<%= header_color %>;">
+        <div style="padding:8px 0; text-align:center; font-size:13px; font-weight:600; color:<%= header_color %>;">
           <%= weekday %>
         </div>
       <% end %>
@@ -174,26 +174,28 @@
   var TODAY_MONTH = <%= Date.current.month %>;
 </script>
 
-<!-- 오늘로 돌아가기 버튼 -->
+<!-- 오늘로 돌아가기 버튼 (FAB 스타일) -->
 <div id="goTodayBtn" onclick="window.location.href='<%= calendar_projects_path(status: @selected_status) %>'" style="
   display:none;
   position:fixed;
   bottom:80px;
-  left:50%;
-  transform:translateX(-50%);
+  right:16px;
   z-index:40;
-  background:#111827;
+  background:#2563eb;
   color:white;
-  padding:10px 20px;
-  border-radius:999px;
-  font-size:13px;
-  font-weight:900;
-  box-shadow:0 4px 16px rgba(0,0,0,0.25);
+  width:56px;
+  height:56px;
+  border-radius:50%;
+  font-size:14px;
+  font-weight:700;
+  box-shadow:0 4px 12px rgba(37,99,235,0.4);
   cursor:pointer;
   transition:opacity 0.3s, transform 0.3s;
-  white-space:nowrap;
+  display:flex;
+  align-items:center;
+  justify-content:center;
 ">
-  📅 오늘로
+  오늘
 </div>
 
 <!-- Bottom Sheet Overlay -->
