@@ -1,5 +1,5 @@
 <% @calendar_rows.each_with_index do |row_days, row_index| %>
-  <div style="flex:1; border-bottom:<%= row_index == @calendar_rows.length - 1 ? 'none' : '1px solid #f3f4f6' %>; display:flex; flex-direction:column;">
+  <div style="flex:1; min-height:110px; border-bottom:<%= row_index == @calendar_rows.length - 1 ? 'none' : '1px solid #f3f4f6' %>; display:flex; flex-direction:column;">
     <div style="display:grid; grid-template-columns:repeat(7, minmax(0, 1fr)); height:100%;">
       <% row_days.each do |day| %>
         <% is_current_month = (day.month == @calendar_month) %>
