@@ -1,5 +1,5 @@
 <% @calendar_rows.each_with_index do |row_days, row_index| %>
-  <div style="min-height:115px; flex-shrink:0; border-bottom:<%= row_index == @calendar_rows.length - 1 ? 'none' : '1px solid #f3f4f6' %>; display:flex; flex-direction:column;">
+  <div style="<%= local_assigns[:is_project_detail] ? 'flex:1;' : 'min-height:115px; flex-shrink:0;' %> border-bottom:<%= row_index == @calendar_rows.length - 1 ? 'none' : '1px solid #f3f4f6' %>; display:flex; flex-direction:column;">
     <div style="display:grid; grid-template-columns:repeat(7, minmax(0, 1fr)); height:100%;">
       <% row_days.each do |day| %>
         <% is_current_month = (day.month == @calendar_month) %>
@@ -128,5 +128,7 @@
   </div>
 <% end %>
 
-<!-- 하단 띄움 방지 여백 (오늘 버튼 등과 겹침 방지) -->
-<div style="height: 70px; flex-shrink: 0;"></div>
+<% unless local_assigns[:is_project_detail] %>
+  <!-- 하단 띄움 방지 여백 (오늘 버튼 등과 겹침 방지) -->
+  <div style="height: 70px; flex-shrink: 0;"></div>
+<% end %>
