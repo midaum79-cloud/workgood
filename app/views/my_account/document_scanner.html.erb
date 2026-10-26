@@ -36,24 +36,36 @@
       스마트 문서 스캔 무제한 이용 가능 🚀
     </div>
 
-    <button id="startScanBtn" style="width:100%; background:#16a34a; color:white; border:none; border-radius:14px; padding:16px; font-size:16px; font-weight:800; cursor:pointer; box-shadow:0 4px 12px rgba(22,163,74,0.2);">
-      스캔 시작하기 📸
-    </button>
+    <div style="display:flex; flex-direction:column; gap:10px;">
+      <button id="startScanBtn" style="width:100%; background:#16a34a; color:white; border:none; border-radius:14px; padding:16px; font-size:16px; font-weight:800; cursor:pointer; box-shadow:0 4px 12px rgba(22,163,74,0.2); display:flex; align-items:center; justify-content:center; gap:8px;">
+        <span>📸</span> 문서 스캔 시작하기
+      </button>
+      <button id="selectGalleryBtn" type="button" style="width:100%; background:#f8fafc; color:#334155; border:1px solid #cbd5e1; border-radius:14px; padding:13px; font-size:14px; font-weight:700; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:6px;">
+        <span>🖼️</span> 앨범에서 사진 불러오기
+      </button>
+    </div>
+
+    <!-- 숨김 input: 네이티브 미지원 환경 및 카메라/앨범 연동 -->
+    <input type="file" id="cameraFallbackInput" accept="image/*" capture="environment" style="display:none;" />
+    <input type="file" id="galleryInput" accept="image/*" style="display:none;" />
   </div>
 
   <div id="scanResultArea" style="display:none; margin-top:16px; background:white; border-radius:20px; padding:20px; box-shadow:0 2px 10px rgba(0,0,0,0.04);">
     <div style="font-size:16px; font-weight:900; color:#111827; margin-bottom:12px;">스캔 결과</div>
     <img id="scanResultImg" src="" style="width:100%; border-radius:12px; border:1px solid #e5e7eb; margin-bottom:16px;">
     
-    <div style="display:flex; gap:10px;">
-      <button onclick="openCropEditor()" style="flex:1; background:#0891b2; color:white; border:none; border-radius:12px; padding:14px; font-size:14px; font-weight:800; cursor:pointer; box-shadow:0 2px 8px rgba(8,145,178,0.2);">
-        ✏️ 모서리 조정
+    <div style="display:grid; grid-template-columns: repeat(2, 1fr); gap:10px;">
+      <button onclick="openCropEditor()" style="background:#0891b2; color:white; border:none; border-radius:12px; padding:14px; font-size:14px; font-weight:800; cursor:pointer; box-shadow:0 2px 8px rgba(8,145,178,0.2); display:flex; align-items:center; justify-content:center; gap:6px;">
+        <span>✏️</span> 모서리 조정
       </button>
-      <button onclick="shareScannedImage()" style="flex:2; background:#6366f1; color:white; border:none; border-radius:12px; padding:14px; font-size:14px; font-weight:800; cursor:pointer; box-shadow:0 2px 8px rgba(99,102,241,0.2);">
-        공유하기 (저장가능)
+      <button onclick="saveScannedImageToDevice()" style="background:#059669; color:white; border:none; border-radius:12px; padding:14px; font-size:14px; font-weight:800; cursor:pointer; box-shadow:0 2px 8px rgba(5,150,105,0.2); display:flex; align-items:center; justify-content:center; gap:6px;">
+        <span>💾</span> 사진첩 저장
       </button>
-      <button onclick="deleteScannedImage()" style="flex:1; background:#ef4444; color:white; border:none; border-radius:12px; padding:14px; font-size:14px; font-weight:800; cursor:pointer; box-shadow:0 2px 8px rgba(239,68,68,0.2);">
-        삭제
+      <button onclick="shareScannedImage()" style="background:#6366f1; color:white; border:none; border-radius:12px; padding:14px; font-size:14px; font-weight:800; cursor:pointer; box-shadow:0 2px 8px rgba(99,102,241,0.2); display:flex; align-items:center; justify-content:center; gap:6px;">
+        <span>📤</span> 공유하기
+      </button>
+      <button onclick="deleteScannedImage()" style="background:#ef4444; color:white; border:none; border-radius:12px; padding:14px; font-size:14px; font-weight:800; cursor:pointer; box-shadow:0 2px 8px rgba(239,68,68,0.2); display:flex; align-items:center; justify-content:center; gap:6px;">
+        <span>🗑️</span> 삭제
       </button>
     </div>
   </div>
@@ -110,69 +122,146 @@
 
   // ── 스캔 시작 ─────────────────────────────────────────────
   document.getElementById('startScanBtn').addEventListener('click', async function() {
-    var isCapacitor = !!(window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform());
+    var hasNativeScanner = !!(window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.DocumentScanner);
 
-    if (!isCapacitor) {
-      alert("문서 스캐너는 일잘러 모바일 앱에서만 지원되는 기능입니다.\n아이폰/안드로이드 앱을 이용해주세요!");
-      return;
-    }
-
-    if (!window.Capacitor.Plugins.DocumentScanner) {
-      alert("문서 스캐너 기능을 사용하려면 최신 버전의 앱으로 업데이트 해주세요!");
-      return;
-    }
-    
-    try {
-      const { DocumentScanner } = window.Capacitor.Plugins;
-      // iOS/Android 모두 maxNumDocuments 없이 호출 → 네이티브 완료 버튼 사용
-      // letUserAdjustCrop: true 를 유지하되, 웹 편집기로 일관성 확보
-      const result = await DocumentScanner.scanDocument({
-        letUserAdjustCrop: true,
-        reviewCapturedDocument: true
-      });
-      
-      const scannedImages = result.scannedImages;
-      if (scannedImages && scannedImages.length > 0) {
-        lastScannedFilePath = scannedImages[0];
-        const webPath = window.Capacitor.convertFileSrc(lastScannedFilePath);
+    if (hasNativeScanner) {
+      try {
+        const { DocumentScanner } = window.Capacitor.Plugins;
+        const result = await DocumentScanner.scanDocument({
+          letUserAdjustCrop: true,
+          reviewCapturedDocument: true
+        });
         
-        document.getElementById('scanResultImg').src = webPath;
-        document.getElementById('scanResultArea').style.display = 'block';
-        document.getElementById('scanResultArea').scrollIntoView({ behavior: 'smooth', block: 'start' });
+        const scannedImages = result.scannedImages;
+        if (scannedImages && scannedImages.length > 0) {
+          lastScannedFilePath = scannedImages[0];
+          const webPath = window.Capacitor.convertFileSrc(lastScannedFilePath);
+          
+          document.getElementById('scanResultImg').src = webPath;
+          document.getElementById('scanResultArea').style.display = 'block';
+          document.getElementById('scanResultArea').scrollIntoView({ behavior: 'smooth', block: 'start' });
 
-        // 서버 카운트
-        fetch('<%= increment_document_scan_path %>', {
-          method: 'POST',
-          headers: {
-            'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').content,
-            'Accept': 'application/json'
-          }
-        }).catch(err => console.error(err));
+          // 서버 카운트
+          fetch('<%= increment_document_scan_path %>', {
+            method: 'POST',
+            headers: {
+              'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').content,
+              'Accept': 'application/json'
+            }
+          }).catch(err => console.error(err));
+          return;
+        }
+      } catch (e) {
+        if (e.message && (e.message.includes("User cancelled") || e.message.includes("canceled") || e.message.includes("cancel"))) {
+          return;
+        }
+        console.warn("Native scanner unavailable or error, falling back to camera:", e);
       }
-    } catch (e) {
-      if (e.message && !e.message.includes("User cancelled") && !e.message.includes("canceled") && !e.message.includes("cancel")) {
-        alert("스캔 중 오류가 발생했습니다: " + e.message);
-      }
+    }
+
+    // 네이티브 플러그인이 없거나 오류/구버전인 경우 차단 없이 즉시 카메라 촬영으로 자동 실행
+    const cameraInput = document.getElementById('cameraFallbackInput');
+    if (cameraInput) {
+      cameraInput.click();
     }
   });
+
+  // 앨범에서 사진 선택 버튼
+  document.getElementById('selectGalleryBtn').addEventListener('click', function() {
+    const galleryInput = document.getElementById('galleryInput');
+    if (galleryInput) {
+      galleryInput.click();
+    }
+  });
+
+  // 카메라 촬영 및 앨범 사진 로드 공통 핸들러
+  function handleSelectedFile(file) {
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      const dataUrl = e.target.result;
+      lastScannedFilePath = null;
+      document.getElementById('scanResultImg').src = dataUrl;
+      document.getElementById('scanResultArea').style.display = 'block';
+      document.getElementById('scanResultArea').scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+      // 서버 카운트
+      fetch('<%= increment_document_scan_path %>', {
+        method: 'POST',
+        headers: {
+          'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').content,
+          'Accept': 'application/json'
+        }
+      }).catch(err => console.error(err));
+
+      // 촬영/선택 직후 바로 모서리 조정(크롭) 편집기 자동 실행
+      openCropEditor();
+    };
+    reader.readAsDataURL(file);
+  }
+
+  document.getElementById('cameraFallbackInput').addEventListener('change', function(e) {
+    if (e.target.files && e.target.files[0]) {
+      handleSelectedFile(e.target.files[0]);
+      e.target.value = '';
+    }
+  });
+
+  document.getElementById('galleryInput').addEventListener('change', function(e) {
+    if (e.target.files && e.target.files[0]) {
+      handleSelectedFile(e.target.files[0]);
+      e.target.value = '';
+    }
+  });
+
+  // 사진첩 / 기기 저장 기능
+  async function saveScannedImageToDevice() {
+    const imgSrc = document.getElementById('scanResultImg').src;
+    if (!imgSrc) return;
+
+    // 1. Capacitor Media 플러그인 시도
+    if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.Media) {
+      try {
+        const { Media } = window.Capacitor.Plugins;
+        await Media.savePhoto({ path: imgSrc });
+        alert("사진첩(갤러리)에 이미지가 안전하게 저장되었습니다! 📸");
+        return;
+      } catch (err) {
+        console.warn("Capacitor Media.savePhoto error:", err);
+      }
+    }
+
+    // 2. 브라우저/웹 다운로드 Fallback
+    try {
+      const res = await fetch(imgSrc);
+      const blob = await res.blob();
+      const fallbackBlobUrl = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = fallbackBlobUrl;
+      a.download = '일잘러_문서스캔_' + new Date().toISOString().slice(0, 10) + '.jpeg';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      setTimeout(() => URL.revokeObjectURL(fallbackBlobUrl), 1000);
+      alert("기기에 이미지가 저장(다운로드)되었습니다! 📁");
+    } catch(e) {
+      console.error(e);
+      alert("저장 중 오류가 발생했습니다: " + e.message);
+    }
+  }
 
   async function shareScannedImage() {
     const imgSrc = document.getElementById('scanResultImg').src;
     if (!imgSrc) return;
 
-    if (!window.Capacitor) {
-      alert("공유 기능을 지원하지 않는 환경입니다. 기기의 일잘러 앱을 최신 버전으로 업데이트해주세요.");
-      return;
-    }
-
-    try {
-      if (window.Capacitor.Plugins.Share) {
+    // 1. Capacitor Native Share 시도
+    if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.Share) {
+      try {
         const { Share, Filesystem } = window.Capacitor.Plugins;
         let pathToShare = lastScannedFilePath;
 
-        if (Filesystem && imgSrc.startsWith('data:')) {
-          // 사용자가 크롭/편집을 거쳐 base64 데이터로 변환된 경우만 새 파일로 저장
-          let base64Data = imgSrc.split(',')[1];
+        if (Filesystem && (!lastScannedFilePath || imgSrc.startsWith('data:'))) {
+          let base64Data = imgSrc.includes(',') ? imgSrc.split(',')[1] : imgSrc;
           const fileName = 'scanned_' + new Date().getTime() + '.jpeg';
           const savedFile = await Filesystem.writeFile({
             path: fileName,
@@ -180,27 +269,53 @@
             directory: 'CACHE'
           });
           pathToShare = savedFile.uri;
-        } else {
-          // 편집하지 않은 원본은 lastScannedFilePath(네이티브 파일 경로)를 그대로 사용
-          // (iOS에서 capacitor:// URL을 fetch하면 Load failed 오류 발생하므로 원본 경로 즉시 사용)
-          pathToShare = lastScannedFilePath;
         }
 
-        await Share.share({
-          title: '스캔된 문서',
-          text: '일잘러 앱에서 스캔한 문서입니다.',
-          files: [pathToShare],
-          dialogTitle: '문서 공유 또는 저장'
-        });
-      } else {
-        alert("현재 기기에서는 앱 업데이트가 필요합니다.");
-      }
-    } catch(e) {
-      console.error(e);
-      if (e.message && !e.message.includes("User cancelled") && !e.message.includes("canceled") && !e.message.includes("cancel")) {
-        alert("이미지 공유 중 오류가 발생했습니다: " + e.message);
+        if (pathToShare) {
+          await Share.share({
+            title: '스캔된 문서',
+            text: '일잘러 앱에서 스캔한 문서입니다.',
+            files: [pathToShare],
+            dialogTitle: '문서 공유 또는 저장'
+          });
+          return;
+        }
+      } catch(e) {
+        if (e.message && (e.message.includes("User cancelled") || e.message.includes("canceled") || e.message.includes("cancel"))) {
+          return;
+        }
+        console.warn("Capacitor Share failed, fallback to Web Share:", e);
       }
     }
+
+    // 2. Web Share API 시도
+    if (navigator.share) {
+      try {
+        const res = await fetch(imgSrc);
+        const blob = await res.blob();
+        const file = new File([blob], 'scanned_document.jpeg', { type: 'image/jpeg' });
+        if (navigator.canShare && navigator.canShare({ files: [file] })) {
+          await navigator.share({
+            title: '스캔된 문서',
+            text: '일잘러 앱에서 스캔한 문서입니다.',
+            files: [file]
+          });
+          return;
+        } else {
+          await navigator.share({
+            title: '스캔된 문서',
+            url: imgSrc
+          });
+          return;
+        }
+      } catch (err) {
+        if (err.name === 'AbortError') return;
+        console.warn("Web Share failed, fallback to save:", err);
+      }
+    }
+
+    // 3. 브라우저/기기 직접 저장 Fallback
+    saveScannedImageToDevice();
   }
 
   function deleteScannedImage() {

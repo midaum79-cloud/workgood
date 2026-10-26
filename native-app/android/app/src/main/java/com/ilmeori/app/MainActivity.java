@@ -10,6 +10,7 @@ import android.webkit.WebView;
 import androidx.activity.EdgeToEdge;
 
 import com.getcapacitor.BridgeActivity;
+import app.capgo.plugin.documentscanner.DocumentScannerPlugin;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
@@ -30,6 +31,10 @@ public class MainActivity extends BridgeActivity {
 
         // Android 15+ Edge-to-Edge 디스플레이 대응
         EdgeToEdge.enable(this);
+
+        // 네이티브 플러그인 명시적 등록 (플러그인 자동 로드 누락 방지)
+        registerPlugin(DocumentScannerPlugin.class);
+
         super.onCreate(savedInstanceState);
         setTitle("");
 
