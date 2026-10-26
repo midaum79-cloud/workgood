@@ -122,11 +122,17 @@
 
   // ── 스캔 시작 ─────────────────────────────────────────────
   document.getElementById('startScanBtn').addEventListener('click', async function() {
-    var hasNativeScanner = !!(window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.DocumentScanner);
-
-    if (hasNativeScanner) {
+    let DocumentScanner = window.Capacitor?.Plugins?.DocumentScanner;
+    if (!DocumentScanner && window.Capacitor && typeof window.Capacitor.registerPlugin === 'function') {
       try {
-        const { DocumentScanner } = window.Capacitor.Plugins;
+        DocumentScanner = window.Capacitor.registerPlugin('DocumentScanner');
+      } catch (e) {
+        console.warn("registerPlugin DocumentScanner error:", e);
+      }
+    }
+
+    if (DocumentScanner && typeof DocumentScanner.scanDocument === 'function') {
+      try {
         const result = await DocumentScanner.scanDocument({
           letUserAdjustCrop: true,
           reviewCapturedDocument: true
