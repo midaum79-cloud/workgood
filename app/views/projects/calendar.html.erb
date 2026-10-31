@@ -297,7 +297,16 @@
     <button id="vBackBtn" onclick="bsBackToForm()" style="background:none; border:none; font-size:14px; font-weight:800; color:#10b981; cursor:pointer; padding:0 0 12px 0; font-family:inherit;">← 입력 화면으로</button>
     <div style="display:flex; flex-direction:column; gap:12px;">
       <div style="font-size:20px; font-weight:900; color:#111827;" id="vName"></div>
-      <div style="display:flex; flex-direction:column; gap:8px; margin-top:8px; border:1px solid #f3f4f6; border-radius:12px; padding:16px; background:#f9fafb;">
+      <div style="display:flex; flex-direction:column; gap:10px; margin-top:4px; border:1px solid #f3f4f6; border-radius:12px; padding:16px; background:#f9fafb;">
+        <div style="font-size:14px; font-weight:800; color:#4b5563; display:flex; align-items:center; justify-content:space-between; gap:8px;">
+          <div style="display:flex; align-items:center; gap:8px;">
+            <span style="font-size:16px;">📅</span> <span id="vDateText" style="color:#111827;"></span>
+          </div>
+          <label style="position:relative; display:inline-flex; align-items:center; gap:4px; background:#eff6ff; color:#2563eb; border:1px solid #bfdbfe; padding:5px 10px; border-radius:8px; font-size:12px; font-weight:800; cursor:pointer;">
+            <span>날짜 변경</span>
+            <input type="date" id="vQuickDateInput" onchange="bsQuickMoveConsultationDate(this.value)" style="position:absolute; inset:0; opacity:0; width:100%; height:100%; cursor:pointer;">
+          </label>
+        </div>
         <div style="font-size:14px; font-weight:800; color:#4b5563; display:flex; align-items:center; gap:8px;">
           <span style="font-size:16px;">⏰</span> <span id="vTime" style="color:#111827;"></span>
         </div>
@@ -359,6 +368,10 @@
       <input type="text" id="cAddress" readonly onclick="execDaumPostcodeForConsultation()" placeholder="주소 검색 (여기를 눌러주세요)" style="height:46px; border:1px solid #dcdcdc; border-radius:12px; padding:0 14px; font-size:15px; font-weight:700; background:#f9fafb; cursor:pointer;">
       <input type="text" id="cDetailAddress" placeholder="나머지 상세 주소" style="height:46px; border:1px solid #dcdcdc; border-radius:12px; padding:0 14px; font-size:15px; font-weight:700;">
       
+      <div style="display:flex; align-items:center; gap:16px; padding:0 4px;">
+        <label id="cDateLabel" for="cDate" style="font-size:14px; font-weight:800; color:#4b5563; white-space:nowrap;">상담 날짜</label>
+        <input type="date" id="cDate" style="flex:1; height:46px; border:1px solid #dcdcdc; border-radius:12px; padding:0 14px; font-size:15px; font-weight:700; background:white; text-align:center;">
+      </div>
       <div style="display:flex; align-items:center; gap:16px; padding:0 4px;">
         <label id="cTimeLabel" for="cTime" style="font-size:14px; font-weight:800; color:#4b5563; white-space:nowrap;">상담 시간</label>
         <input type="time" id="cTime" style="flex:1; height:46px; border:1px solid #dcdcdc; border-radius:12px; padding:0 14px; font-size:15px; font-weight:700; background:white; text-align:center;">
@@ -602,7 +615,8 @@ function bsViewConsultation(id) {
   if(!c) return;
   bsSelectedDate = c.date;
   var parts = bsSelectedDate.split('-');
-  document.getElementById('bsSubtitle').textContent = parts[0] + '년 ' + parseInt(parts[1]) + '월 ' + parseInt(parts[2]) + '일';
+  var formattedDate = parts[0] + '년 ' + parseInt(parts[1]) + '월 ' + parseInt(parts[2]) + '일';
+  document.getElementById('bsSubtitle').textContent = formattedDate;
   
   document.getElementById('bsStep1').style.display = 'none';
   document.getElementById('bsConsultationForm').style.display = 'none';
@@ -615,6 +629,10 @@ function bsViewConsultation(id) {
   }
 
   document.getElementById('vName').textContent = (c.company_name || c.name || '업체명 없음') + (c.company_name && c.name ? ' (' + c.name + ')' : '');
+  var vDateText = document.getElementById('vDateText');
+  if (vDateText) vDateText.textContent = formattedDate;
+  var vQuickDateInput = document.getElementById('vQuickDateInput');
+  if (vQuickDateInput) vQuickDateInput.value = c.date;
   document.getElementById('vTime').textContent = c.time || '시간 미지정';
   document.getElementById('vPhone').textContent = c.phone || '연락처 없음';
   var fullAddrDisplay = c.address || '';
@@ -625,6 +643,33 @@ function bsViewConsultation(id) {
   document.getElementById('vEditBtn').onclick = function() { bsEditConsultation(id); };
   document.getElementById('cId').value = id; // set ID for delete
   document.getElementById('cType').value = c.type || 'consultation';
+}
+
+function bsQuickMoveConsultationDate(newDate) {
+  var id = document.getElementById('cId').value;
+  if (!id || !newDate || newDate === bsSelectedDate) return;
+
+  fetch('/consultations/move', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').content,
+      'Accept': 'application/json'
+    },
+    body: JSON.stringify({ id: id, new_date: newDate })
+  })
+  .then(function(res) { return res.json(); })
+  .then(function(data) {
+    if (data.success) {
+      window.location.href = window.location.pathname + window.location.search;
+    } else {
+      alert(data.error || '날짜 이동에 실패했습니다.');
+    }
+  })
+  .catch(function(err) {
+    console.error(err);
+    alert('네트워크 오류가 발생했습니다.');
+  });
 }
 
 function bsOpenAddConsultation(type = 'consultation') {
@@ -640,6 +685,8 @@ function bsOpenAddConsultation(type = 'consultation') {
   document.getElementById('cPhone').value = '';
   document.getElementById('cAddress').value = '';
   document.getElementById('cDetailAddress').value = '';
+  var cDateEl = document.getElementById('cDate');
+  if (cDateEl) cDateEl.value = bsSelectedDate || '';
   document.getElementById('cTime').value = '';
   document.getElementById('cMemo').value = '';
   var aiText = document.getElementById('aiConsultationText');
@@ -658,6 +705,8 @@ function bsOpenAddConsultation(type = 'consultation') {
 
   var headerText = document.getElementById('cFormHeaderText');
   if (headerText) headerText.textContent = type === 'as' ? '🔧 새 AS 일정 입력' : '📞 새 상담 일정 입력';
+  var dateLabel = document.getElementById('cDateLabel');
+  if (dateLabel) dateLabel.textContent = type === 'as' ? 'AS 날짜' : '상담 날짜';
   var timeLabel = document.getElementById('cTimeLabel');
   if (timeLabel) timeLabel.textContent = type === 'as' ? 'AS 시간' : '상담 시간';
   var saveBtn = document.getElementById('cSaveBtn');
@@ -689,6 +738,8 @@ function bsEditConsultation(id) {
   document.getElementById('cPhone').value = c.phone || '';
   document.getElementById('cAddress').value = c.address || '';
   document.getElementById('cDetailAddress').value = c.detail_address || '';
+  var cDateEl = document.getElementById('cDate');
+  if (cDateEl) cDateEl.value = c.date || bsSelectedDate || '';
   document.getElementById('cTime').value = c.time || '';
   document.getElementById('cMemo').value = c.memo || '';
   document.getElementById('cDeleteBtn').style.display = 'block';
@@ -710,6 +761,8 @@ function bsSaveConsultation() {
   var company_name = document.getElementById('cCompanyName').value.trim();
   var name = document.getElementById('cName').value.trim();
   var phone = document.getElementById('cPhone').value.trim();
+  var cDateEl = document.getElementById('cDate');
+  var targetDate = (cDateEl && cDateEl.value) ? cDateEl.value : bsSelectedDate;
   
   if(!company_name) { alert('업체명을 입력해주세요.'); return; }
   if(!phone) { alert('연락처를 입력해주세요.'); return; }
@@ -724,7 +777,7 @@ function bsSaveConsultation() {
       contact_number: phone,
       address: addr,
       detail_address: detailAddr,
-      consultation_date: bsSelectedDate,
+      consultation_date: targetDate,
       consultation_time: document.getElementById('cTime').value,
       memo: document.getElementById('cMemo').value.trim(),
       schedule_type: document.getElementById('cType').value
@@ -1262,16 +1315,18 @@ document.addEventListener('DOMContentLoaded', function() {
   // === 드래그 앤 드롭 (데스크톱) ===
   var draggedChip = null;
   var dragProjectId = null;
+  var dragConsultationType = null;
   var dragOldDate = null;
 
   document.querySelectorAll('.schedule-chip').forEach(function(chip) {
     chip.addEventListener('dragstart', function(e) {
       draggedChip = chip;
-      dragProjectId = chip.dataset.projectId;
+      dragProjectId = chip.dataset.projectId || '';
+      dragConsultationType = chip.dataset.consultationType || '';
       dragOldDate = chip.dataset.date;
       chip.style.opacity = '0.4';
       e.dataTransfer.effectAllowed = 'move';
-      e.dataTransfer.setData('text/plain', dragProjectId + '|' + dragOldDate);
+      e.dataTransfer.setData('text/plain', dragProjectId + '|' + dragOldDate + '|' + dragConsultationType);
     });
 
     chip.addEventListener('dragend', function(e) {
@@ -1308,14 +1363,20 @@ document.addEventListener('DOMContentLoaded', function() {
       var data = e.dataTransfer.getData('text/plain').split('|');
       var projectId = data[0];
       var oldDate = data[1];
-      if (oldDate === newDate) return;
-      moveSchedule(projectId, oldDate, newDate);
+      var consultationType = data[2];
+      if (!newDate || oldDate === newDate) return;
+      if (consultationType) {
+        moveConsultationGroup(consultationType, oldDate, newDate);
+      } else if (projectId) {
+        moveSchedule(projectId, oldDate, newDate);
+      }
     });
   });
 
   // === 터치 드래그 앤 드롭 (모바일) ===
   var touchChip = null;
   var touchProjectId = null;
+  var touchConsultationType = null;
   var touchOldDate = null;
   var touchClone = null;
   var touchStartTime = 0;
@@ -1331,7 +1392,8 @@ document.addEventListener('DOMContentLoaded', function() {
       // 길게 누르면 드래그 시작
       longPressTimer = setTimeout(function() {
         touchChip = self;
-        touchProjectId = self.dataset.projectId;
+        touchProjectId = self.dataset.projectId || '';
+        touchConsultationType = self.dataset.consultationType || '';
         touchOldDate = self.dataset.date;
         touchMoved = true;
 
@@ -1387,8 +1449,12 @@ document.addEventListener('DOMContentLoaded', function() {
 
         if (elem) {
           var cell = elem.closest('.calendar-date-cell');
-          if (cell && cell.dataset.date !== touchOldDate) {
-            moveSchedule(touchProjectId, touchOldDate, cell.dataset.date);
+          if (cell && cell.dataset.date && cell.dataset.date !== touchOldDate) {
+            if (touchConsultationType) {
+              moveConsultationGroup(touchConsultationType, touchOldDate, cell.dataset.date);
+            } else if (touchProjectId) {
+              moveSchedule(touchProjectId, touchOldDate, cell.dataset.date);
+            }
           }
         }
 
@@ -1447,6 +1513,34 @@ document.addEventListener('DOMContentLoaded', function() {
     })
     .catch(function(err) {
       console.error('Move error:', err);
+      alert('네트워크 오류가 발생했습니다.');
+    });
+  }
+
+  function moveConsultationGroup(scheduleType, oldDate, newDate) {
+    fetch('/consultations/move', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRF-Token': csrfToken,
+        'Accept': 'application/json'
+      },
+      body: JSON.stringify({
+        schedule_type: scheduleType,
+        old_date: oldDate,
+        new_date: newDate
+      })
+    })
+    .then(function(res) { return res.json(); })
+    .then(function(data) {
+      if (data.success) {
+        window.location.href = window.location.pathname + window.location.search;
+      } else {
+        alert(data.error || '이동에 실패했습니다.');
+      }
+    })
+    .catch(function(err) {
+      console.error('Move consultation error:', err);
       alert('네트워크 오류가 발생했습니다.');
     });
   }

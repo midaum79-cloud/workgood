@@ -25,6 +25,25 @@ class ConsultationsController < ApplicationController
     render json: { success: true }
   end
 
+  def move
+    if params[:id].present?
+      consultation = current_user.consultations.find(params[:id])
+      consultation.update!(consultation_date: params[:new_date])
+    elsif params[:old_date].present? && params[:schedule_type].present?
+      scope = current_user.consultations.where(consultation_date: params[:old_date])
+      if params[:schedule_type] == "as"
+        scope = scope.where(schedule_type: "as")
+      else
+        scope = scope.where.not(schedule_type: "as").or(current_user.consultations.where(consultation_date: params[:old_date], schedule_type: nil))
+      end
+      scope.update_all(consultation_date: params[:new_date])
+    end
+
+    render json: { success: true }
+  rescue StandardError => e
+    render json: { success: false, error: e.message }, status: :unprocessable_entity
+  end
+
   private
 
   def set_consultation
