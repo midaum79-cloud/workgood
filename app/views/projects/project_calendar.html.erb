@@ -179,6 +179,72 @@
   };
   var TODAY_YEAR = <%= Date.current.year %>;
   var TODAY_MONTH = <%= Date.current.month %>;
+  var TODAY_DATE_STR = '<%= Date.current.to_s %>';
+
+  function getLocalTodayStr() {
+    var now = new Date();
+    var y = now.getFullYear();
+    var m = String(now.getMonth() + 1).padStart(2, '0');
+    var d = String(now.getDate()).padStart(2, '0');
+    return y + '-' + m + '-' + d;
+  }
+
+  function syncCalendarTodayHighlight() {
+    var now = new Date();
+    var currentDateStr = getLocalTodayStr();
+    var currentYear = now.getFullYear();
+    var currentMonth = now.getMonth() + 1;
+
+    document.querySelectorAll('.calendar-date-cell').forEach(function(cell) {
+      var badge = cell.querySelector('.calendar-day-badge');
+      if (!badge) return;
+      var cellDate = cell.dataset.date;
+      var baseColor = cell.dataset.baseColor || '#111827';
+      var hasSchedule = cell.dataset.hasSchedule === 'true';
+      var isProjectDetail = cell.dataset.isProjectDetail === 'true';
+
+      if (cellDate === currentDateStr) {
+        badge.style.background = '#f59e0b';
+        badge.style.color = 'white';
+      } else if (hasSchedule && isProjectDetail) {
+        badge.style.background = '#3b82f6';
+        badge.style.color = 'white';
+      } else {
+        badge.style.background = 'transparent';
+        badge.style.color = baseColor;
+      }
+    });
+
+    if (currentDateStr !== TODAY_DATE_STR) {
+      var prevMonth = TODAY_MONTH;
+      var prevYear = TODAY_YEAR;
+      TODAY_DATE_STR = currentDateStr;
+      TODAY_YEAR = currentYear;
+      TODAY_MONTH = currentMonth;
+
+      if ((prevYear !== currentYear || prevMonth !== currentMonth) &&
+          CAROUSEL_STATE.currentYear === prevYear && CAROUSEL_STATE.currentMonth === prevMonth) {
+        window.location.href = '<%= project_calendar_project_path(@project) %>';
+        return;
+      }
+
+      var todayBtn = document.getElementById('goTodayBtn');
+      if (todayBtn) {
+        var isCurrentMonth = (CAROUSEL_STATE.currentYear === TODAY_YEAR && CAROUSEL_STATE.currentMonth === TODAY_MONTH);
+        todayBtn.style.display = isCurrentMonth ? 'none' : 'flex';
+      }
+    }
+  }
+
+  document.addEventListener('DOMContentLoaded', function() {
+    syncCalendarTodayHighlight();
+    setInterval(syncCalendarTodayHighlight, 30000);
+  });
+  document.addEventListener('visibilitychange', function() {
+    if (document.visibilityState === 'visible') syncCalendarTodayHighlight();
+  });
+  window.addEventListener('focus', syncCalendarTodayHighlight);
+  window.addEventListener('pageshow', syncCalendarTodayHighlight);
 </script>
 
 <!-- 오늘로 돌아가기 버튼 (FAB 스타일) -->

@@ -41,6 +41,9 @@
 
         <div class="calendar-date-cell"
              data-date="<%= day.to_s %>"
+             data-base-color="<%= date_text_color %>"
+             data-has-schedule="<%= has_schedule %>"
+             data-is-project-detail="<%= local_assigns[:is_project_detail] ? 'true' : 'false' %>"
              style="
               min-height:<%= local_assigns[:cell_min_height] || '0' %>;
               border-right:none;
@@ -54,7 +57,7 @@
               transition: background 0.2s;
             ">
           <div style="display:flex; justify-content:center; margin-bottom:4px; padding:0 2px;">
-            <div style="
+            <div class="calendar-day-badge" style="
               display:flex;
               align-items:center;
               justify-content:center;

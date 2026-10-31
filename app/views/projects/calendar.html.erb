@@ -172,6 +172,81 @@
   };
   var TODAY_YEAR = <%= Date.current.year %>;
   var TODAY_MONTH = <%= Date.current.month %>;
+  var TODAY_DATE_STR = '<%= Date.current.to_s %>';
+
+  function getLocalTodayStr() {
+    var now = new Date();
+    var y = now.getFullYear();
+    var m = String(now.getMonth() + 1).padStart(2, '0');
+    var d = String(now.getDate()).padStart(2, '0');
+    return y + '-' + m + '-' + d;
+  }
+
+  function syncCalendarTodayHighlight() {
+    var now = new Date();
+    var currentDateStr = getLocalTodayStr();
+    var currentYear = now.getFullYear();
+    var currentMonth = now.getMonth() + 1;
+
+    // 1. 모든 날짜 셀의 당일(주황색) 배지 실시간 갱신
+    document.querySelectorAll('.calendar-date-cell').forEach(function(cell) {
+      var badge = cell.querySelector('.calendar-day-badge');
+      if (!badge) return;
+      var cellDate = cell.dataset.date;
+      var baseColor = cell.dataset.baseColor || '#111827';
+      var hasSchedule = cell.dataset.hasSchedule === 'true';
+      var isProjectDetail = cell.dataset.isProjectDetail === 'true';
+
+      if (cellDate === currentDateStr) {
+        badge.style.background = '#f59e0b';
+        badge.style.color = 'white';
+      } else if (hasSchedule && isProjectDetail) {
+        badge.style.background = '#3b82f6';
+        badge.style.color = 'white';
+      } else {
+        badge.style.background = 'transparent';
+        badge.style.color = baseColor;
+      }
+    });
+
+    // 2. 자정이 지나 날짜가 바뀌었을 때 처리
+    if (currentDateStr !== TODAY_DATE_STR) {
+      var prevMonth = TODAY_MONTH;
+      var prevYear = TODAY_YEAR;
+      TODAY_DATE_STR = currentDateStr;
+      TODAY_YEAR = currentYear;
+      TODAY_MONTH = currentMonth;
+
+      // 만약 달(Month)까지 바뀐 경우이고 이전 달(즉 어제 기준 이번 달)을 보고 있었다면 새 달로 자동 이동
+      if ((prevYear !== currentYear || prevMonth !== currentMonth) &&
+          CAROUSEL_STATE.currentYear === prevYear && CAROUSEL_STATE.currentMonth === prevMonth) {
+        window.location.href = '<%= calendar_projects_path(status: @selected_status) %>';
+        return;
+      }
+
+      // 오늘 버튼 표시 상태 업데이트
+      var todayBtn = document.getElementById('goTodayBtn');
+      if (todayBtn) {
+        var isCurrentMonth = (CAROUSEL_STATE.currentYear === TODAY_YEAR && CAROUSEL_STATE.currentMonth === TODAY_MONTH);
+        todayBtn.style.display = isCurrentMonth ? 'none' : 'flex';
+      }
+    }
+  }
+
+  document.addEventListener('DOMContentLoaded', function() {
+    syncCalendarTodayHighlight();
+    // 30초마다 자정 경과 여부 체크
+    setInterval(syncCalendarTodayHighlight, 30000);
+  });
+
+  // 앱이 백그라운드에서 다시 켜지거나 화면이 활성화될 때 즉시 체크
+  document.addEventListener('visibilitychange', function() {
+    if (document.visibilityState === 'visible') {
+      syncCalendarTodayHighlight();
+    }
+  });
+  window.addEventListener('focus', syncCalendarTodayHighlight);
+  window.addEventListener('pageshow', syncCalendarTodayHighlight);
 </script>
 
 <!-- 오늘로 돌아가기 버튼 (FAB 스타일) -->
@@ -1790,6 +1865,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
   // 셀 클릭 이벤트 재바인드 (AJAX로 새 패널 로드 후)
   function rebindCellEvents() {
+    if (typeof syncCalendarTodayHighlight === 'function') syncCalendarTodayHighlight();
     var centerPanel = getPanels()[1];
     if (!centerPanel) return;
     
