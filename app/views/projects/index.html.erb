@@ -120,7 +120,8 @@
   })();
   </script>
 
-  <!-- 날씨 위젯 (컴팩트) -->
+  <!-- 날씨 위젯 (현재 비공개 처리 - 추후 재사용 시 false 제거하여 활성화) -->
+  <% if false %>
   <div id="weatherWidget" style="
     border-radius:16px; 
     padding:14px 16px; 
@@ -170,6 +171,7 @@
       </div>
     </div>
   </div>
+  <% end %>
 
   <!-- ═══ 이벤트 배너 영역 (현재 비공개 처리 - 추후 이벤트 시 false 제거하여 활성화) ═══ -->
   <% if false # Date.current.year == 2026 && Date.current.month == 10 %>
@@ -311,6 +313,7 @@
     }
 
     function initWeatherWidget() {
+      if (!document.getElementById('weatherWidget')) return;
       var savedName = localStorage.getItem('workgood_weather_name') || '서울특별시';
       var savedLat = localStorage.getItem('workgood_weather_lat') || '37.566';
       var savedLng = localStorage.getItem('workgood_weather_lng') || '126.9784';
