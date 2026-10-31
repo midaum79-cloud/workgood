@@ -171,8 +171,8 @@
     </div>
   </div>
 
-  <!-- ═══ 이벤트 배너 영역 ═══ -->
-  <% if Date.current.year == 2026 && Date.current.month == 10 %>
+  <!-- ═══ 이벤트 배너 영역 (현재 비공개 처리 - 추후 이벤트 시 false 제거하여 활성화) ═══ -->
+  <% if false # Date.current.year == 2026 && Date.current.month == 10 %>
     <div id="eventBannerArea" style="margin-bottom:14px;">
       <!-- 리뷰 이벤트 게시판 배너 -->
       <div style="background: white; border: 1px solid #e5e7eb; border-radius: 12px; padding: 16px; position: relative; box-shadow: 0 4px 12px rgba(0,0,0,0.05); border-top: 4px solid #ef4444;">
